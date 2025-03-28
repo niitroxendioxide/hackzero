@@ -1,0 +1,307 @@
+--
+--
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local ServerStorage = game:GetService('ServerStorage')
+local Players = game:GetService('Players')
+
+local Shared = ReplicatedStorage.Modules.Shared
+local Database = Shared.Database
+
+local Types = require(Shared.Types)
+local Network = require(Shared.Network)
+local BufferUtil = require(Shared.Utility.Buffer)
+local Characters = require(Database.Characters)
+local Enemies = require(Database.Enemies)
+local GameEnum = require(Shared.GameEnum)
+local Agents = require(script.Parent.Agents)
+
+--
+local ReplicatePlayerToo = false
+local Replicator = {}
+
+function Replicator:Effect(Args: {})
+	
+end
+
+function Replicator:AddAgent(Player: Player, CharacterClass: Types.ServerCharacterClass, Target: Player, At: CFrame)
+	local Object = buffer.create(6)
+	buffer.writeu8(Object, 0, GameEnum.Replication.AddAgent)
+	buffer.writeu8(Object, 1, Characters:GetIdForCharacter(CharacterClass.Name))
+	buffer.writei32(Object, 2, Player.UserId)
+
+	if Target then
+		Network:Fire('Replicate', Target, Object, At)
+	else
+		Network:FireForAll('Replicate', Object)
+	end
+end
+
+function Replicator:RemoveAgent(Player: Player, Name: string)
+	local Object = buffer.create(6)
+	buffer.writeu8(Object, 0, GameEnum.Replication.RemoveAgent)
+	buffer.writeu8(Object, 1, Characters:GetIdForCharacter(Name))
+	buffer.writei32(Object, 2, Player.UserId)
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:Move(Player: Player, Target: Player)
+	local Object = buffer.create(5)
+	buffer.writeu8(Object, 0, GameEnum.Replication.Move)
+	buffer.writei32(Object, 1, Player.UserId)
+
+
+	if Target then
+		Network:Fire('Replicate', Target, Object)
+	else
+		Network:FireForAllBut(Player, 'Replicate', Object)
+	end
+end
+
+function Replicator:PivotTo(Player: Player, At: CFrame, Target: Player)
+	local Object = buffer.create(16)
+	buffer.writeu8(Object, 0, GameEnum.Replication.PivotTo)
+	buffer.writei32(Object, 1, Player.UserId)
+	buffer.writef32(Object, 5, At.X)
+	buffer.writef32(Object, 9, At.Z)
+	buffer.writei16(Object, 13, At.Y * 100)
+
+	if Target then
+		Network:Fire('Replicate', Target, Object, At)
+	else
+		Network:FireForAllBut(Player, 'Replicate', Object, At)
+	end
+end
+
+function Replicator:Stop(Player: Player)
+	local Object = buffer.create(5)
+	buffer.writeu8(Object, 0, GameEnum.Replication.Stop)
+	buffer.writei32(Object, 1, Player.UserId)
+
+	Network:FireForAllBut(Player, 'Replicate', Object)
+end
+
+function Replicator:Rotate(Player: Player, Direction: Vector3, Target: Player)
+	local Angle = math.deg(math.atan2(Direction.X, Direction.Z))
+
+	local Object = buffer.create(7)
+	buffer.writeu8(Object, 0, GameEnum.Replication.Rotate)
+	buffer.writei16(Object, 1, Angle * 180)
+	buffer.writei32(Object, 3, Player.UserId)
+
+	if Target then
+		Network:Fire('Replicate', Target, Object)
+	else
+		Network:FireForAllBut(Player, 'Replicate', Object)
+	end
+end
+
+function Replicator:KeySwitch(Player: Player, Key: string, Value: boolean, Target: Player)
+	local Object = buffer.create(6)
+	buffer.writeu8(Object, 0, GameEnum.Replication.KeySwitch)
+	buffer.writeu8(Object, 1, GameEnum.Agent_Keys[Key])
+	buffer.writei32(Object, 2, Player.UserId)
+	
+	if Target then
+		Network:Fire('Replicate', Target, Object, Key, Value)
+	else
+		Network:FireForAllBut(Player, 'Replicate', Object, Key, Value)
+	end
+end
+
+function Replicator:SyncVelocities(Player: Player, Target: Player, ...)
+	local Object = buffer.create(5)
+	buffer.writeu8(Object, 0, GameEnum.Replication.SyncVelocities)
+	buffer.writei32(Object, 1, Player.UserId)
+
+	Network:Fire('Replicate', Target, Object, ...)
+end
+
+function Replicator:CharacterSwitch(Player: Player, Direction: number)
+	local Object = buffer.create(6)
+	buffer.writeu8(Object, 0, GameEnum.Replication.CharacterSwitch)
+	buffer.writei8(Object, 1, Direction)
+	buffer.writei32(Object, 2, Player.UserId)
+
+	Network:FireForAllBut(Player, 'Replicate', Object)
+end
+
+function Replicator:AddEnemy(Id: number, Enemy: Types.ServerEnemyClass, Target: Player)
+	local Object = buffer.create(4)
+	buffer.writeu8(Object, 0, GameEnum.Replication.AddEnemy)
+	buffer.writeu8(Object, 1, Id)
+	buffer.writeu8(Object, 2, Enemies:GetIdForEnemy(Enemy.__Name))
+	buffer.writeu8(Object, 3, Enemy.__Status.__Level)
+
+	if not Target then
+		Network:FireForAll('Replicate', Object, Enemy:GetPivot().Position)
+	else
+		Network:Fire('Replicate', Target, Object, Enemy:GetPivot().Position)
+	end
+end
+
+function Replicator:PivotEnemy(Id: number, At: Vector3, TargetPlayer: Player)
+	local Object = buffer.create(12)
+	buffer.writeu8(Object, 0, GameEnum.Replication.PivotEnemy)
+	buffer.writeu8(Object, 1, Id)
+	buffer.writef32(Object, 2, At.X)
+	buffer.writef32(Object, 6, At.Z)
+	buffer.writei16(Object, 10, At.Y * 100)
+	
+	if TargetPlayer then
+		Network:Fire('Replicate', TargetPlayer, Object)
+		return
+	end
+
+	Network:FireForAll('Replicate', Object)
+end
+
+
+function Replicator:MoveEnemy(Id: number, Direction: Vector3, TargetPlayer: Player)
+	--local Angle = math.deg(math.atan2(Direction.X, Direction.Z))
+	
+	local Object = buffer.create(4)
+	buffer.writeu8(Object, 0, GameEnum.Replication.MoveEnemy)
+	buffer.writeu8(Object, 1, Id)
+	buffer.writei8(Object, 2, Direction.X * 100)
+	buffer.writei8(Object, 3, Direction.Z * 100)
+
+	if TargetPlayer then
+		Network:Fire('Replicate', TargetPlayer, Object)
+		return
+	end
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:RotateEnemy(Id: number, Target: Types.ServerAgentClass, TargetPlayer: Player)
+	local At = typeof(Target) == 'Vector3' and Target or Target:GetPivot()
+	local Object = buffer.create(10)
+	buffer.writeu8(Object, 0, GameEnum.Replication.RotateEnemy)
+	buffer.writeu8(Object, 1, Id)
+	buffer.writef32(Object, 2, At.X)
+	buffer.writef32(Object, 6, At.Z)
+	
+	if TargetPlayer then
+		Network:Fire('Replicate', TargetPlayer, Object)
+		return
+	end
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:RemoveEnemy(Key: number)
+	local Object = buffer.create(2)
+	buffer.writeu8(Object, 0, GameEnum.Replication.RemoveEnemy)
+	buffer.writeu8(Object, 1, Key)
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:EnemyUseSkill(EnemyId: number, SkillId: number, State: string)
+	local Object = buffer.create(8)
+	buffer.writeu8(Object, 0, GameEnum.Replication.EnemyUseSkill)
+	buffer.writeu8(Object, 1, SkillId)
+	buffer.writeu8(Object, 2, EnemyId)	
+	buffer.writeu8(Object, 3, State == 'Begin' and 1 or 0)
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:UseSkill(Player: Player, SkillId: number, AgentNumber: number, EnemyNumber: number)
+	local Object = buffer.create(8)
+	buffer.writeu8(Object, 0, GameEnum.Replication.UseSkill)
+	buffer.writeu8(Object, 1, SkillId)	
+	buffer.writeu8(Object, 2, AgentNumber or 1)
+	buffer.writeu8(Object, 3, EnemyNumber or 255)
+	buffer.writei32(Object, 4, Player.UserId)
+	
+	Network:FireForAllBut(Player, 'Replicate', Object)
+end
+
+function Replicator:DisplayDamage(Enemy: Types.ServerEnemyClass, Damage: number, Critical: boolean, Affliction: string, Burst: boolean)
+	local Object = buffer.create(9)
+	buffer.writeu8(Object, 0, GameEnum.Replication.DisplayDamage)
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
+	buffer.writeu8(Object, 2, GameEnum.Afflictions[Affliction] or GameEnum.Afflictions.Default)
+	buffer.writeu8(Object, 3, Critical and 1 or 0)
+	buffer.writeu8(Object, 4, Burst and 1 or 0)
+	buffer.writef32(Object, 5, Damage)
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:Knockback(Enemy: Types.ServerEnemyClass, Direction: Vector3, Power: number, Time: number)
+
+	local Object = buffer.create(5)
+	buffer.writeu8(Object, 0, GameEnum.Replication.Knockback)
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
+	buffer.writeu8(Object, 2, GameEnum.Knockback_Directions[Direction])	
+	buffer.writeu8(Object, 3, Power)
+	buffer.writeu8(Object, 4, math.floor(Time * 10))
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:DamageAgent(Agent: Types.ServerAgentClass, Damage: number)
+	local UserId = Agent.__User
+	local AgentIndex = table.find(Agents:GetAll(UserId), Agent)
+	
+	local Object = buffer.create(10)
+	buffer.writeu8(Object, 0, GameEnum.Replication.DamageAgent)
+	buffer.writeu8(Object, 1, AgentIndex)	
+	buffer.writei32(Object, 2, UserId)	
+	buffer.writef32(Object, 6, Damage)
+	
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:FillAffliction(Enemy: Types.ServerEnemyClass, Type: Types.Element, Amount: number)
+	local Object = buffer.create(5)
+	buffer.writeu8(Object, 0, GameEnum.Replication.FillAffliction)
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
+	buffer.writeu8(Object, 2, GameEnum.Afflictions[Type])	
+	buffer.writei16(Object, 3, Amount * 500)
+
+	Network:FireForAll('Replicate', Object)
+end
+
+
+function Replicator:ResetAffliction(Enemy: Types.ServerEnemyClass, Type: Types.Element)
+	local Object = buffer.create(3)
+	buffer.writeu8(Object, 0, GameEnum.Replication.ResetAffliction)
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
+	buffer.writeu8(Object, 2, GameEnum.Afflictions[Type])	
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:DazeEnemy(Enemy: Types.ServerEnemyClass, Daze: number)
+	local Object = buffer.create(4)
+	buffer.writeu8(Object, 0, GameEnum.Replication.DazeEnemy)
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
+	buffer.writeu16(Object, 2, Daze * 325)	
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:EnterDaze(Enemy: Types.ServerEnemyClass)
+	local Object = buffer.create(3)
+	buffer.writeu8(Object, 0, GameEnum.Replication.EnterDaze)
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
+	
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:SwitchStateEnemy(EnemyId: number, State: string, Time: number)
+	local Object = buffer.create(5)
+	buffer.writeu8(Object, 0, GameEnum.Replication.EnterDaze)
+	buffer.writeu8(Object, 1, EnemyId)
+	buffer.writeu8(Object, 2, table.find(GameEnum.Agent_States, State))
+	buffer.writeu16(Object, 3, Time * 100)	
+
+	Network:FireForAll('Replicate', Object)
+end
+
+
+return Replicator

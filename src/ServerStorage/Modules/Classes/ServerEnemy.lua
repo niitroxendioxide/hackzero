@@ -1,0 +1,268 @@
+--
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local ServerStorage = game:GetService('ServerStorage')
+
+--
+local Libraries = ServerStorage.Modules.Libraries
+local Shared = ReplicatedStorage.Modules.Shared
+
+local ClockUtil = require(Shared.Utility.Clock)
+local Replicator = require(Libraries.Replicator)
+local AgentsLibrary = require(Libraries.Agents)
+
+local Types = require(Shared.Types)
+local EnemyStatus = require(Shared.Classes.Enemy.EnemyStatus)
+local MovementClass = require(Shared.Classes.Enemy.EnemyMovement)
+local EnemyDatabase = require(Shared.Database.Enemies)
+
+local EnemyLibrary = require(Shared.Libraries.Enemies)
+local MovesetLibrary = require(Libraries.Movesets)
+
+--
+local Rng = Random.new()
+local ServerEnemy = {} :: {new: (At: Vector3, Name: string) -> (), [string]: (self: Types.ServerEnemyClass, any) -> (any)}
+ServerEnemy.__index = ServerEnemy
+ServerEnemy.__tostring = function()
+	return 'EnemyClass'
+end
+
+function ServerEnemy.new(At: Vector3, Name: string, Level: number)
+	
+	local self = setmetatable({}, ServerEnemy)
+	self.__Name = Name or 'Default'
+	self.__Movement = MovementClass.new(At)
+	self.__Level = Level or 1
+	self.__Status = EnemyStatus.new(self.__Name, self.__Level)
+	
+	self.__LastMovement = os.clock()
+	self.__EnemyId = -1
+	self.__Next = 1
+	self.__Next_Attack = 'Skill 1'
+	self.__Snapfix = os.clock()
+		
+		
+	return self
+end
+
+function ServerEnemy:Destroy()
+	self.__Movement:Destroy()
+	
+	if self.__Thread then
+		self.__Thread:Disconnect()
+	end
+end
+
+function ServerEnemy:EnterDazedState()
+	self:Move(Vector3.zero)
+	
+	return self.__Status:EnterDazedState()
+end
+
+function ServerEnemy:Attack()
+	local Moveset_Skills = EnemyDatabase:GetAbilities(self.Name)
+	local Moveset = MovesetLibrary:Get(self.Name, true)
+	local Next = Moveset_Skills[math.random(1, #Moveset_Skills)]
+	
+	if not Moveset:Verify(self, self.__Next_Attack) then
+		print('cancelled?')
+		self.__Next_Attack = Next
+		
+		Next = Moveset_Skills[math.random(1, #Moveset_Skills)]
+	end
+	
+	local Split = string.split(self.__Next_Attack, ' ')
+	local Number = tonumber(Split[2], 10)
+	
+	Replicator:EnemyUseSkill(self.__EnemyId, Number, 'Begin')
+	Moveset:Begin(self.__Next_Attack, self)
+	
+	-- skip
+	self.__Next_Attack = Next
+end
+
+function ServerEnemy:Init(Key: number)
+	if not Key then 
+		return warn('Cannot initialize an enemy with an empty id')
+	end
+	
+	self.__EnemyId = Key
+	
+	self.Name = `"{self.__Name}"-id:{self.__EnemyId}`
+	
+	--
+	local NextAttack = os.clock()
+	local Clock = os.clock()
+	self.__Snapfix = os.clock()
+	self.__Thread = ClockUtil:Heartbeat(function(delta: number)
+		
+		
+		--
+		if self:GetState() == 'Attacking' and os.clock() - Clock > 1/30 then
+			Clock = os.clock()
+			self:TrackCurrentTarget()
+		elseif os.clock() - Clock > 1/3 and self:GetState() == 'Idle' then
+			Clock = os.clock()
+			self:FindRandomAggro()
+		end
+		
+		if os.clock() - self.__Snapfix > 3.5 then
+			self.__Snapfix = os.clock()
+			Replicator:PivotEnemy(self.__EnemyId, self:GetPivot())
+		end
+		
+		if os.clock() - NextAttack >= 4.5 then
+			NextAttack = os.clock()
+			self:Attack()
+		end
+		
+		if (self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5) or self:GetState() ~= 'Idle' then
+			self:Move(Vector3.zero)
+		end
+		
+		if ((os.clock() - self.__LastMovement > self.__Next) and self:GetState() == 'Idle') then
+			self:Move(Vector3.new(Rng:NextInteger(-1, 1), 0, Rng:NextInteger(-1, 1)))
+		end
+		
+		self.__Movement:Update(delta)
+	end)
+	
+end
+
+function ServerEnemy:Stun(Time: number): ()
+	self.__Next = Time + 0.5
+	self.__LastMovement = os.clock()
+	
+	--
+	self:Move(Vector3.zero)
+	self:SwitchState('Stunned', Time)
+end
+
+function ServerEnemy:SwitchState(State: string, Time: number)
+	Replicator:SwitchStateEnemy(self.__EnemyId, State, Time)
+	
+	return self.__Status:SwitchState(State, Time)
+end
+
+function ServerEnemy:GetState(): Types.State
+	return self.__Status.__State
+end
+
+function ServerEnemy:TimeSinceLastPivot(): number
+	return os.clock() - self.__Snapfix
+end
+
+function ServerEnemy:PivotTo(Pivot: CFrame)
+	self.__Snapfix = os.clock()
+	
+	Replicator:PivotEnemy(self.__EnemyId, Pivot)
+	self.__Movement:PivotTo(Pivot)
+end
+
+function ServerEnemy:Knockback(Dir: Vector3, Pow: number, Time: number)
+	local Velocity = self:GetPivot():VectorToWorldSpace(Dir) * Pow
+	
+	return self.__Movement:Knockback(Velocity, Time)
+end
+
+function ServerEnemy:Move(Direction: Vector3)
+	if self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5 and Direction.Z < 0 then
+		return
+	end
+	
+	if self.__Status:IsKnocked() then
+		return
+	end
+	
+	--
+	self.__Movement:Move(Direction)
+	self.__LastMovement = os.clock()
+
+	self.__Next = Rng:NextNumber(0.5, 3.5)
+	
+	Replicator:MoveEnemy(self.__EnemyId, Direction)
+end
+
+function ServerEnemy:TrackCurrentTarget()
+	local CurrentTarget = self.__Current_Target
+	local At = CurrentTarget:GetPivot().Position
+
+	At = At + (CurrentTarget:GetTotalVelocity() * 1/15)
+	
+	--
+	self:Rotate(At)
+end
+
+function ServerEnemy:FindRandomAggro()
+	local Agents = AgentsLibrary:GetActiveAgents()
+	local At = self.__Movement.__Position
+	local MaxDistance = math.huge
+	local Chosen: Types.ServerAgentClass = nil
+
+	for _, Agent in Agents do
+		local Distance = (Agent:GetPivot().Position - At).Magnitude
+		if Distance < MaxDistance then
+			MaxDistance = Distance
+			Chosen = Agent
+		end
+	end
+	
+	if Chosen then
+		local At = Chosen:GetPivot().Position
+		
+		self.__Current_Target = Chosen
+		self:Rotate(At)
+	end
+end
+
+function ServerEnemy:Rotate(Direction: Vector3 | CFrame)
+	if typeof(Direction) == 'CFrame' then
+		Direction = Direction.Position
+	end
+
+	Replicator:RotateEnemy(self.__EnemyId, Direction)
+	
+	return self.__Movement:Rotate(Direction)
+end
+
+function ServerEnemy:TakeDamage(number: number)
+	self.__Status:Damage(number)
+	
+	if not(self.__Status:IsAlive()) and EnemyLibrary:GetEnemy(self.__EnemyId) == self then
+		local Key = EnemyLibrary:RemoveEnemy(self)
+		
+		Replicator:RemoveEnemy(Key)
+		
+		return self:Destroy()
+	end
+end
+
+function ServerEnemy:TakeDaze(number: number)
+	return self.__Status:Daze(number)
+end
+
+function ServerEnemy:TakeAffliction(Type: string, Amount: number, Damage: number)
+	return self.__Status:FillAffliction(Type, Amount, Damage)
+end
+
+function ServerEnemy:GetAffliction(Type: string)
+	return self.__Status:GetAffliction(Type)
+end
+function ServerEnemy:GetAfflictionStackedDamage(Type)
+	return self.__Status:GetAfflictionStackedDamage(Type)
+end
+
+function ServerEnemy:ResetAffliction(Type: string)
+	Replicator:ResetAffliction(self, Type)
+	
+	return self.__Status:ResetAffliction(Type)
+end
+
+function ServerEnemy:GetHitbox()
+	return self.__Movement:GetHitbox()
+end
+
+function ServerEnemy:GetPivot()
+	return self.__Movement:GetPivot()
+end
+
+return ServerEnemy

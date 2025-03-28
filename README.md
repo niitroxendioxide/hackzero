@@ -1,2 +1,1 @@
-# hackzero
-hck n sash
+#hack and slas

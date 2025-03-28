@@ -1,0 +1,88 @@
+--
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+
+local Shared = ReplicatedStorage.Modules.Shared
+local Types = require(Shared.Types)
+
+--
+local EnemyLibrary = {
+	__Enemies = {},
+	__Last_Enemy_Pos = {},
+}
+
+function EnemyLibrary:AddEnemy(Id: number, Enemy: Types.EnemyClass)
+	if EnemyLibrary:GetEnemy(Id) ~= nil then
+		EnemyLibrary:RemoveEnemy(Id)
+	end
+	
+	EnemyLibrary.__Enemies[Id] = Enemy
+end
+
+function EnemyLibrary:RemoveEnemy(Enemy: number | Types.ServerEnemyClass)
+	local Id = Enemy
+	
+	if typeof(Id) ~= 'number' then
+		local Enemy = Id
+		for key, SavedEnemy in EnemyLibrary:GetAll() do
+			if Enemy == SavedEnemy then
+				Id = key
+			end
+		end
+
+		if typeof(Id) ~= 'number' then return end
+	end
+	
+	EnemyLibrary.__Last_Enemy_Pos[Id] = EnemyLibrary.__Enemies[Id]:GetPivot()
+	EnemyLibrary.__Enemies[Id] = nil
+	
+	return Id
+end
+
+function EnemyLibrary:GetEnemy(Id: number)
+	return EnemyLibrary.__Enemies[Id]
+end
+
+function EnemyLibrary:GetAll()
+	return EnemyLibrary.__Enemies
+end
+
+function EnemyLibrary:GetEnemyCount()
+	local k = 0
+	for _ in self:GetAll() do
+		k += 1
+	end
+	
+	return k
+end
+
+function EnemyLibrary:GetNearestEnemy(Point: Vector3): (number, Types.EnemyClass)
+	local Distance = math.huge
+	local Selected = nil
+	
+	for Key, Enemy in EnemyLibrary:GetAll() do
+		local DistanceToEnemy = (Point - Enemy:GetPivot().Position).Magnitude
+		
+		if DistanceToEnemy < Distance then
+			Distance = DistanceToEnemy
+			Selected = Key
+		end
+	end
+	
+	if Selected then
+		return Selected, EnemyLibrary:GetEnemy(Selected)
+	end
+	
+	return nil, nil
+end
+
+function EnemyLibrary:GetHitboxes()
+	local List = {}
+	for _, Enemy in EnemyLibrary:GetAll() do
+		List[Enemy:GetHitbox()] = Enemy
+	end
+
+	return List
+end
+
+
+return EnemyLibrary
