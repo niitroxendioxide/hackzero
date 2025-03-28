@@ -1,0 +1,2 @@
+# hackzero
+hck n sash
