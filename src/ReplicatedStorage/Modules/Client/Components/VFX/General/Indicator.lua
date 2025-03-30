@@ -36,7 +36,7 @@ local Gradients = {
 }
 
 ---
-return function(At: Vector3 | Types.EnemyClass, Data: Types.EffectAnyData)
+return function(At: Vector3 | Types.EnemyClass| CFrame, Data: Types.EffectAnyData)
 	if typeof(At) == 'nil' then return end
 
 	local Indicator = Effects:Create(Assets.Interface.Combat.DamageIndicator, 10)
@@ -53,7 +53,7 @@ return function(At: Vector3 | Types.EnemyClass, Data: Types.EffectAnyData)
 
 		Effects:Tween(Indicator, {.4, 'Back'}, {Position = Indicator.Position + Effects:RandomV3() * Effects:Random(0.8, 1.3)})
 	else
-		Indicator.Position = typeof(At) == 'Vector3' and At or At.Position
+		Indicator.Position = typeof(At) == 'Vector3' and At or (At :: CFrame).Position
 	end
 
 	local Color = Gradients[Affliction] or Gradients.Default
