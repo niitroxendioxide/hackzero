@@ -1,13 +1,13 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local UserInputService = game:GetService('UserInputService')
-local RunService = game:GetService('RunService')
+local _UserInputService = game:GetService('UserInputService')
+local _RunService = game:GetService('RunService')
 local Players = game:GetService('Players')
 
 --
 local Player = Players.LocalPlayer
 
-local Shared = ReplicatedStorage.Modules.Shared
+local _Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 

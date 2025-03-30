@@ -21,8 +21,6 @@ local CharacterLibrary = require(Client.Libraries.Characters)
 
 local Replicator = require(Client.Systems.ReplicationController)
 local GameEnum = require(Shared.GameEnum)
-local COOLDOWN = os.clock()
-
 --
 local INPUT_DIRECTIONS = {
 	['Front'] = Vector3.new(0, 0, -1), 
@@ -53,20 +51,20 @@ function Controller:Init()
 	RunService:BindToRenderStep('PlayerControllerMainLoop', Enum.RenderPriority.Camera.Value, function(Delta: number)
 		local CurrentCharacter = CharacterLibrary:GetCurrent(Player.UserId)
 		local Direction = Controller:GetCurrentMovementDirection()
-		
+
 		if CurrentCharacter == nil then
 			return
 		end
-		
+
 		if not(UserInputService:IsKeyDown(Enum.KeyCode.Tab)) or UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton3) then
 			UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 		else
 			UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 		end
-		
-		workspace.CurrentCamera.CameraSubject = CurrentCharacter.__Character.Humanoid
+
+		workspace.CurrentCamera.CameraSubject = CurrentCharacter.__Character.Humanoid 
 		workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
-		
+
 		debug.profilebegin('Moving character')
 		if Direction.Magnitude > 0 then
 			CurrentCharacter:Look(Direction.Unit)
@@ -75,15 +73,15 @@ function Controller:Init()
 			CurrentCharacter:Stop()
 		end
 		debug.profileend()
-		
+
 		CameraLibrary:SetSubject(CurrentCharacter:GetModel())
 		CameraLibrary:Update(Delta)
-		
+
 		local At = CurrentCharacter:GetPivot()
-		
+
 		Replicator:Replicate(GameEnum.Replication.Rotate, CurrentCharacter:GetRotation())
 		Replicator:Replicate(GameEnum.Replication.PivotTo, CurrentCharacter:GetPivot())
-		
+
 		--local Ping = Players.LocalPlayer:GetNetworkPing()
 		task.delay(Controller.__Ping, function()
 			CurrentCharacter.__ServerLocation = At
@@ -93,7 +91,7 @@ end
 
 function Controller:AddAgent(Name: string)
 	local NewCharacter = AgentClass.new(Name)
-		
+
 	NewCharacter:Init(Player.UserId)
 	NewCharacter:SetVisible(false)
 
@@ -105,11 +103,11 @@ function Controller:GetCurrentMovementDirection(): Vector3
 end
 
 function Controller:ForCharacters(Callback: (Character: Types.CharacterClass) -> ())
-	
+
 	for _, Character in CharacterLibrary:GetCharacters(Player.UserId) do
 		Callback(Character)
 	end
-	
+
 end
 
 function Controller:SetupKeybinds()
@@ -124,7 +122,7 @@ function Controller:SetupKeybinds()
 					Controller.__HeldKeys[Key] = false
 					Controller.__CurrentMovementVector -= Direction
 				end
-				
+
 				if Controller:GetCurrentMovementDirection().Magnitude > 0 then
 					Replicator:Replicate(GameEnum.Replication.Move)
 				else
@@ -136,23 +134,22 @@ function Controller:SetupKeybinds()
 
 	Inputs:Bind('Jog', {
 		Release = false,
-		Callback = function(State: 'Begin' | 'End')
+		Callback = function(_: 'Begin' | 'End')
 			local State = false
 			Controller:ForCharacters(function(Character)
 				Character:SetKey('Jog')
 				State = Character:GetKey('Jog')
 			end)
-			
-			
+
 			Replicator:Replicate(GameEnum.Replication.KeySwitch, GameEnum.Agent_Keys.Jog, State)
 		end,
 	})
 
 	Inputs:Bind('Sprint', {
 		Release = false,
-		Callback = function(State: 'Begin' | 'End')
+		Callback = function(_: 'Begin' | 'End')
 			local CanRun = true
-			if not CharacterLibrary:GetCurrent(Player.UserId):GetKey('Jog') then
+			if not (CharacterLibrary:GetCurrent(Player.UserId) :: Types.AgentClass):GetKey('Jog') then
 				CanRun = false
 				Replicator:Replicate(GameEnum.Replication.KeySwitch, GameEnum.Agent_Keys.Jog, true)
 			end
@@ -178,9 +175,8 @@ function Controller:SetupKeybinds()
 	
 	Inputs:Bind('TESTING', {
 		Release = false,
-		Callback = function(State: 'Begin' | 'End')
-			print('hi?')
-			CharacterLibrary:GetCurrent(Player.UserId):SwitchState('Attacking', .5)
+		Callback = function(_: 'Begin' | 'End')
+			(CharacterLibrary:GetCurrent(Player.UserId) :: Types.AgentClass):SwitchState('Attacking', .5)
 		end,
 	})
 end

@@ -9,7 +9,7 @@ local Defense_Factors = require(Shared.Database.Defense)
 local RNG = Random.new()
 local DamageLibrary = {}
 
-function DamageLibrary:Deal(Agent:Types.AgentClass,Enemy:Types.ServerEnemyClass,Data:Types.HitEnemyData): (number, number, number, number, number)
+function DamageLibrary:Deal(Agent:Types.ServerAgentClass,Enemy:Types.ServerEnemyClass,Data:Types.HitEnemyData): (number, number, number, number, number)
 	local EnemyStatus = Enemy.__Status
 	
 	-- Agent
@@ -20,7 +20,7 @@ function DamageLibrary:Deal(Agent:Types.AgentClass,Enemy:Types.ServerEnemyClass,
 	local Pen_Ratio = Agent:GetStat('Pen_Ratio')
 	local Affliction_Aptitude = Agent:GetStat('Affliction_Aptitude')
 	local Level = Agent.__Level
-	local Damage_Bonus_Mult = 1 + Agent:GetMultBonus(Data.Affliction) + Agent:GetMultBonus(Data.Attack_Type)
+	local Damage_Bonus_Mult = 1 + Agent:GetMultBonus(Data.Affliction :: Types.Element) + Agent:GetMultBonus(Data.Attack_Type)
 	
 	local Is_Critical = RNG:NextNumber(0, 100) < Crit_Rate
 	
@@ -49,7 +49,7 @@ function DamageLibrary:Deal(Agent:Types.AgentClass,Enemy:Types.ServerEnemyClass,
 		-- TODO: Fix the res mult to change based on enemy stuff idk
 		Burst_Damage = DamageLibrary:CalculateAfflictionBurst(Attack, Data.Affliction, Defense_Mult, Resistance_Multiplier, Agent, Enemy)
 		Enemy:TakeDamage(Burst_Damage)
-		
+	
 		Enemy:ResetAffliction(Data.Affliction)
 	end
 	
@@ -59,7 +59,7 @@ function DamageLibrary:Deal(Agent:Types.AgentClass,Enemy:Types.ServerEnemyClass,
 end
 
 
-function DamageLibrary:Daze(Agent: Types.AgentClass, Enemy: Types.ServerEnemyClass, Base_Multiplier: number)
+function DamageLibrary:Daze(Agent: Types.ServerAgentClass, Enemy: Types.ServerEnemyClass, Base_Multiplier: number)
 	local EnemyStatus = Enemy.__Status
 
 	-- Values
@@ -83,7 +83,7 @@ local VALUES = {
 	Fire = 0.5,
 }
 
-function DamageLibrary:CalculateAfflictionBurst(Attack: number, Type: Types.Element, Defense: number, Resistance: number, Agent: Types.AgentClass, Enemy: Types.EnemyClass)
+function DamageLibrary:CalculateAfflictionBurst(Attack: number, Type: Types.Element, Defense: number, Resistance: number, Agent: Types.ServerAgentClass, Enemy: Types.ServerEnemyClass)
 	local EnemyStatus = Enemy.__Status
 	
 	local Damage_Taken_Mult = EnemyStatus:GetDamageTakenMultiplier()
@@ -91,9 +91,9 @@ function DamageLibrary:CalculateAfflictionBurst(Attack: number, Type: Types.Elem
 	
 	local Aptitude_Multiplier = Agent:GetStat('Affliction_Aptitude') / 100
 	local Level_Multiplier = Agent.__Level + (1 / 59) * (Agent.__Level - 1)
-	local Total_Damage = Enemy:GetAfflictionStackedDamage(Type)
+	local Stacked_Damage = Enemy:GetAfflictionStackedDamage(Type)
 	local Base_Divider = (100 + Agent:GetStat('Attack')/100)
-	local Taken_Damage = (Base_Divider + Total_Damage) / 100
+	local Taken_Damage = (Base_Divider + Stacked_Damage) / 100
 	local Dazed_State_Multiplier = EnemyStatus:IsKnocked() and EnemyStatus:GetDazeMultiplier() or 1
 	
 	local Resistance_Multiplier = 1 - Resistance

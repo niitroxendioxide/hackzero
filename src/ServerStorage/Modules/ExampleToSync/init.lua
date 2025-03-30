@@ -1,1 +1,0 @@
--- This script is only an example i've created to see if the Studio project syncs with this

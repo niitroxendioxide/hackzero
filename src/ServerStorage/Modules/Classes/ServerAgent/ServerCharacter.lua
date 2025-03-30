@@ -21,14 +21,15 @@ ServerCharacterClass.__tostring = function(self)
 end
 
 function ServerCharacterClass.new(Name: string, Height: number): Types.ServerCharacterClass
+	local Spawn = workspace:WaitForChild("SpawnLocation")
 	local self = setmetatable({}, ServerCharacterClass)
 	self.Name = Name
 	self.States = StatesClass.new(Name)
-	
+
 	-- Privates
 	self.__Height = Height or 3.15
 	self.__Normal = Vector3.yAxis
-	self.__Position = workspace.SpawnLocation.Position + Vector3.new(0, self.__Height, 0)
+	self.__Position = Spawn.Position + Vector3.new(0, self.__Height, 0)
 	self.__Rotation = Vector3.zAxis
 	
 	self.__MovementVelocity = Vector3.zero
@@ -62,7 +63,7 @@ function ServerCharacterClass:Init()
 end
 
 
-function ServerCharacterClass:Move(Velocity)
+function ServerCharacterClass:Move(_)
 	if self.__Moving == false then
 		self.__MovementAcceleration = 0
 	end
@@ -158,7 +159,7 @@ function ServerCharacterClass:Update(Delta: number)
 	local Velocity = self.__Velocity + self:GetAdditionalVelocities()
 	
 	local Origin = self:GetPivot() * CFrame.new(0, 0, 1.5)
-	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetEnemyColliderParams())
+	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
 	if EnemyCollisions then
 		Velocity = Vector3.zero
 	end
@@ -169,8 +170,8 @@ function ServerCharacterClass:Update(Delta: number)
 		local Moved = (TotalDisplacement * CurrentWorldSpeed * Delta)
 
 		local Extra = math.atan(self.__Normal:Dot(Vector3.yAxis)) + World.StepHeight
-		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams())
-		local Collision = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetCollisionParams())
+		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams() :: RaycastParams)
+		local Collision = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetCollisionParams() :: RaycastParams)
 
 		if CanReachFloor and (CanReachFloor.Position.Y - (self.__Position.Y - self.__Height)) < World.StepHeight then
 			if not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1 then
@@ -183,7 +184,7 @@ function ServerCharacterClass:Update(Delta: number)
 		end
 	end
 
-	local Cast = workspace:Raycast(self:GetPivot().Position, Vector3.yAxis * -100, World:GetMapParams())
+	local Cast = workspace:Raycast(self:GetPivot().Position, Vector3.yAxis * -100, World:GetMapParams() :: RaycastParams)
 	if Cast then
 		self.__SurfaceVelocity = Cast.Instance.AssemblyLinearVelocity
 		self.__Position = Vector3.new(self.__Position.X, Cast.Position.Y + self.__Height, self.__Position.Z)
@@ -203,6 +204,7 @@ function ServerCharacterClass:CreateCollider()
 		self.__Collider:Destroy()
 	end
 
+	local WorldFolder = workspace:FindFirstChild("World")::Folder
 	local Collider = Instance.new('Part')
 	Collider.Size = Vector3.new(4, self.__Height * 1.5873015873, 3)
 	Collider.Transparency = .85
@@ -210,7 +212,7 @@ function ServerCharacterClass:CreateCollider()
 	Collider.Anchored = true
 	Collider.CanCollide = false
 	Collider.Position = self.__Position
-	Collider.Parent = REPLICATE_HITBOX and workspace.World.Entities.Hitboxes or workspace.Camera
+	Collider.Parent = REPLICATE_HITBOX and WorldFolder.Entities.Hitboxes or workspace:FindFirstAncestorOfClass("Camera")
 
 	self.__Collider = Collider
 end

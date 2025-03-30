@@ -19,7 +19,7 @@ function Ability:Play(Agent: Types.AgentClass)
 		Animator:Stop('Dash')
 	end
 	
-	local Track = Animator:Play('Dash'..(Ability:Get(Agent, 'Side') == 1 and 'Right' or 'Left'), {Name = 'Dash'})
+	Animator:Play('Dash'..(Ability:Get(Agent, 'Side') == 1 and 'Right' or 'Left'), {Name = 'Dash'})
 	Agent:SwitchState('Dashing', .3)
 	Agent:ApplyImpulse(Agent:GetPivot().LookVector * 75)
 end

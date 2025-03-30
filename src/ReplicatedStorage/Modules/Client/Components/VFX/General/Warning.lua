@@ -9,12 +9,12 @@ local Types = require(Shared.Types)
 local Effects = require(Shared.Utility.Effects)
 
 ---
-return function(Enemy: Types.EnemyClass, Data: {})
+return function(Enemy: Types.EnemyClass)
 	--
 	local Object = Effects:Create(Assets.Effects.General.Combat.Warning, 2.5)
 	Object.CFrame = Enemy:GetPivot() * CFrame.new(0, 0.65, 0)
-	
-	Effects:Weld(Object, Enemy:GetModel().HumanoidRootPart)
-	
+
+	Effects:Weld(Object, Enemy:GetModel().PrimaryPart :: BasePart)
+
 	Effects:Emit(Object)
 end

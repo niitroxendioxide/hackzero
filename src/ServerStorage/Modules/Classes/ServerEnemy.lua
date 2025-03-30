@@ -27,13 +27,13 @@ ServerEnemy.__tostring = function()
 end
 
 function ServerEnemy.new(At: Vector3, Name: string, Level: number)
-	
+
 	local self = setmetatable({}, ServerEnemy)
 	self.__Name = Name or 'Default'
 	self.__Movement = MovementClass.new(At)
 	self.__Level = Level or 1
 	self.__Status = EnemyStatus.new(self.__Name, self.__Level)
-	
+
 	self.__LastMovement = os.clock()
 	self.__EnemyId = -1
 	self.__Next = 1
@@ -94,8 +94,6 @@ function ServerEnemy:Init(Key: number)
 	local Clock = os.clock()
 	self.__Snapfix = os.clock()
 	self.__Thread = ClockUtil:Heartbeat(function(delta: number)
-		
-		
 		--
 		if self:GetState() == 'Attacking' and os.clock() - Clock > 1/30 then
 			Clock = os.clock()
@@ -104,28 +102,33 @@ function ServerEnemy:Init(Key: number)
 			Clock = os.clock()
 			self:FindRandomAggro()
 		end
-		
+
 		if os.clock() - self.__Snapfix > 3.5 then
 			self.__Snapfix = os.clock()
 			Replicator:PivotEnemy(self.__EnemyId, self:GetPivot())
 		end
-		
+
 		if os.clock() - NextAttack >= 4.5 then
 			NextAttack = os.clock()
 			self:Attack()
 		end
-		
+
 		if (self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5) or self:GetState() ~= 'Idle' then
 			self:Move(Vector3.zero)
 		end
-		
-		if ((os.clock() - self.__LastMovement > self.__Next) and self:GetState() == 'Idle') then
+
+		if (os.clock() - self.__LastMovement > self.__Next) and self:GetState() == 'Idle' then
 			self:Move(Vector3.new(Rng:NextInteger(-1, 1), 0, Rng:NextInteger(-1, 1)))
 		end
-		
+
 		self.__Movement:Update(delta)
 	end)
-	
+
+	return;
+end
+
+function ServerEnemy:GetId(): number
+	return self.__EnemyId
 end
 
 function ServerEnemy:Stun(Time: number): ()
@@ -207,14 +210,14 @@ function ServerEnemy:FindRandomAggro()
 	end
 	
 	if Chosen then
-		local At = Chosen:GetPivot().Position
+		At = Chosen:GetPivot().Position
 		
 		self.__Current_Target = Chosen
 		self:Rotate(At)
 	end
 end
 
-function ServerEnemy:Rotate(Direction: Vector3 | CFrame)
+function ServerEnemy:Rotate(Direction: Vector3 | Types.ServerAgentClass)
 	if typeof(Direction) == 'CFrame' then
 		Direction = Direction.Position
 	end
@@ -234,6 +237,8 @@ function ServerEnemy:TakeDamage(number: number)
 		
 		return self:Destroy()
 	end
+
+	return;
 end
 
 function ServerEnemy:TakeDaze(number: number)
@@ -251,7 +256,7 @@ function ServerEnemy:GetAfflictionStackedDamage(Type)
 	return self.__Status:GetAfflictionStackedDamage(Type)
 end
 
-function ServerEnemy:ResetAffliction(Type: string)
+function ServerEnemy:ResetAffliction(Type: Types.Element)
 	Replicator:ResetAffliction(self, Type)
 	
 	return self.__Status:ResetAffliction(Type)

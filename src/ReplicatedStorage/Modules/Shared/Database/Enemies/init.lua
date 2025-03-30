@@ -6,7 +6,7 @@ local Types = require(Shared.Types)
 
 --
 local EnemyData = {
-	__Saved = {} :: {Types.CharacterData},
+	__Saved = {} :: {[string]: Types.CharacterData},
 	__Ids = {},
 }
 

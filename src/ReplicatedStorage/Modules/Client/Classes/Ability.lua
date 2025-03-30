@@ -15,7 +15,7 @@ local Hitbox = require(Shared.Utility.Hitbox)
 local Enemies = require(Shared.Libraries.Enemies)
 local Sequence = require(Shared.Utility.Sequence)
 local CharactersLib = require(Client.Libraries.Characters)
-local CharacterDatabase = require(Shared.Database.Characters)
+--local CharacterDatabase = require(Shared.Database.Characters)
 
 local Cooldown = require(Shared.Utility.Cooldown)
 local GameEnum = require(Shared.GameEnum)
@@ -27,7 +27,7 @@ AbilityClass.__index = AbilityClass
 
 function AbilityClass.new(Holdable: boolean): Types.AbilityClass
 	local Dir = string.split(debug.info(2, 's'), '.')
-	
+
 	local self = setmetatable({}, AbilityClass)
 	self.__Character = Dir[#Dir - 1]
 	self.__Name = Dir[#Dir]:gsub(' ', '_')
@@ -37,20 +37,20 @@ function AbilityClass.new(Holdable: boolean): Types.AbilityClass
 	self.__Signal = Signal.new()
 	self.__Cooldown = Signal.new()
 	self.__Ability_Data = {}
-	
+
 	self.__Held = false
-	
+
 	return self
 end
 
 function AbilityClass:SetCooldown(Agent: Types.AgentClass, Time: number)
 	local ID = self.__Character..self.__Name..Agent.PlayerId
-	
+
 	Cooldown:Add(ID, Time)
 end
 
 function AbilityClass:Play(Agent: Types.AgentClass)
-	print(Agent.__Name, 'Ability executed!')
+	print(Agent.Name, 'Ability executed!')
 	
 	self:Begin(Agent, {})
 end
@@ -59,7 +59,7 @@ function AbilityClass:IsHeld()
 	return self.__Held
 end
 
-function AbilityClass:PlayAnimation(Agent: Types.AgentClass, Track: string, Data: {Fade: number, Speed: number, Weight: number})
+function AbilityClass:PlayAnimation(Agent: Types.AgentClass, Track: string, Data: Types.AnimationDataOptions)
 	Data = Data or {}
 
 	--
@@ -67,7 +67,7 @@ function AbilityClass:PlayAnimation(Agent: Types.AgentClass, Track: string, Data
 	local TrackObject = AnimLibrary:GetAnim(Type..Track)
 	local AnimTrack = AnimLibrary:Play(Agent:GetModel(), TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
 	AnimTrack.Priority = Enum.AnimationPriority.Action2 or Data.Priority
-	
+
 	if tostring(Agent) == 'AgentClass' then
 		Agent:AddTrackToState('Attacking', AnimTrack, Data.Active_Time or 0.35)
 	end
@@ -82,6 +82,8 @@ function AbilityClass:CreateHitbox(Caster: Types.AgentClass | Types.EnemyClass, 
 	elseif tostring(Caster) == 'AgentClass' then
 		return self:CreateEnemyHitbox(Caster, Offset, Size, Event)
 	end
+
+	return;
 end
 
 function AbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> ())
@@ -100,8 +102,10 @@ end
 
 
 function AbilityClass:CreateEnemyHitbox(Agent: Types.AgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> ())
+	local World = workspace:FindFirstChild('World') :: Folder
+
 	local EnemyHitboxes = Enemies:GetHitboxes()
-	local AreaParts = Hitbox:GetPartsInArea({workspace.World.Entities.Hitboxes}, Size, Agent:GetPivot() * CFrame.new(Offset))
+	local AreaParts = Hitbox:GetPartsInArea({World.Entities.Hitboxes}, Size, Agent:GetPivot() * CFrame.new(Offset))
 
 	for _, Part in  AreaParts do
 		local Enemy = EnemyHitboxes[Part]
@@ -111,9 +115,9 @@ function AbilityClass:CreateEnemyHitbox(Agent: Types.AgentClass, Offset: Vector3
 
 		--
 		task.spawn(Event, Enemy)
-		
+
 		--
-		local AgentPivot = Agent:GetPivot()
+		--local AgentPivot = Agent:GetPivot()
 		Agent:GiveEnergy(10)
 	end
 end
@@ -122,11 +126,11 @@ function AbilityClass:Save(Agent: Types.AgentClass, Key: string, Value: any)
 	if not self.__Cache[Agent] then
 		self.__Cache[Agent] = {}
 	end
-	
+
 	if typeof(self.__Cache[Agent][Key]) ~= 'nil' and typeof(self.__Cache[Agent][Key]) ~= typeof(Value) then
 		warn(`Given value for key "{Key}" is a type value than previous value ({Value} {typeof(Value)})`)
 	end
-	
+
 	self.__Cache[Agent][Key] = Value
 end
 
@@ -134,11 +138,11 @@ function AbilityClass:Get(Agent: Types.AgentClass, Key: string)
 	if not self.__Cache[Agent] then
 		self.__Cache[Agent] = {}
 	end
-	
+
 	return self.__Cache[Agent][Key] 
 end
 
-function AbilityClass:Increase(Agent: Types, Key: string, Data: {Rate: number, Limit: number}?)
+function AbilityClass:Increase(Agent: Types.AgentClass, Key: string, Data: {Rate: number?, Limit: number?})
 	Data = Data or {}
 
 	local Limit = Data.Limit or math.huge
@@ -152,50 +156,50 @@ function AbilityClass:Increase(Agent: Types, Key: string, Data: {Rate: number, L
 	end
 end
 
-function AbilityClass:Begin(Agent: Types.AgentClass, Frames: Sequence.SequenceFrames): Sequence
+function AbilityClass:Begin(Agent: Types.AgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
 	if self.__Active_Sequences[Agent] then
 		self.__Active_Sequences[Agent]:Destroy()
 	end
-	
+
 	--
-	local Sequence = Sequence.new(Frames)
+	local AbilitySequence = Sequence.new(Frames)
 	local Attack_Warnings = self:FromData('Attack_Warning')
-	
+
 	if typeof(Attack_Warnings) == 'number' and Attack_Warnings > 0 then
 		local function PlayWarningEffect()
 			Effects:Play('Warning', Agent)
 		end
-		
+
 		if typeof(Attack_Warnings) == 'table' then
 			for _, Time in Attack_Warnings do
-				Sequence:Add(Time, PlayWarningEffect)
+				AbilitySequence:Add(Time, PlayWarningEffect)
 			end
 		else
-			Sequence:Add(Attack_Warnings, PlayWarningEffect)
+			AbilitySequence:Add(Attack_Warnings, PlayWarningEffect)
 		end
 	end
-	
-	Sequence:SetSpeed(self:FromData('Speed') or 1)
-	Sequence:After(function()
+
+	AbilitySequence:SetSpeed(self:FromData('Speed') or 1)
+	AbilitySequence:After(function()
 		self.__Signal:Fire()
 	end)
-	
-	self.__Active_Sequences[Agent] = Sequence
-	
-	return Sequence:Start()
+
+	self.__Active_Sequences[Agent] = AbilitySequence
+
+	return AbilitySequence:Start()
 end
 
 function AbilityClass:Connect(Agent: Types.AgentClass)
 	local User = Players.LocalPlayer
 	local Id = User.UserId
-	
+
 	if Id == Agent.PlayerId then
 		local EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position)
-		
+
 		if Enemy and self.__Name ~= 'Dodge' then
 			Agent:Look(CFrame.lookAt(Agent:GetPivot().Position * Vector3.new(1, 0, 1), Enemy:GetPivot().Position * Vector3.new(1, 0 ,1)).LookVector, false, true)
 		end
-		
+
 		Replicator:Replicate(GameEnum.Replication.PivotTo, Agent:GetPivot(), true)
 		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId)
 	end
@@ -213,7 +217,7 @@ function AbilityClass:FromData(Key: string, Sub_Key: number, Level: number?): ()
 	local Base = self.__Ability_Data.Base
 	local Upgrade = self.__Ability_Data.Upgrades
 
-	local Level = math.max((Level or 1) - 1, 0)
+	Level = math.max((Level or 1) - 1, 0)
 	local Value = Base[Key] or 0
 	local Upgraded_Value = Upgrade[Key]
 

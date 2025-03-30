@@ -1,5 +1,6 @@
 --
-local Types = require('../Types')
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Types = require(ReplicatedStorage.Modules.Shared.Types)
 
 --
 local Artifacts = {

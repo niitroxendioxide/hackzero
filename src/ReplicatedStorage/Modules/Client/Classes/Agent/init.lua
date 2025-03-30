@@ -2,15 +2,15 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
 
-local Client = ReplicatedStorage.Modules.Client
+--local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(Shared.Types)
-local Enemies = require(Shared.Libraries.Enemies)
+--local Enemies = require(Shared.Libraries.Enemies)
 local CharacterClass = require(script:WaitForChild('Character'))
 local StatusClass = require(Shared.Classes.Agents:WaitForChild('Status'))
 
-local InterfaceStates = require(Client.Packages.InterfaceStates)
+--local InterfaceStates = require(Client.Packages.InterfaceStates)
 local CharacterDatabase = require(Shared.Database.Characters)
 
 --
@@ -20,24 +20,28 @@ AgentClass.__tostring = function()
 	return 'AgentClass'
 end
 
-function AgentClass.new(Name: string, Level: number)
+function AgentClass.new(Name: string, Level: number): Types.AgentClass
 	local self = setmetatable({}, AgentClass)
-	
+
 	self.Name = Name
 	self.PlayerId = -125
-	
+
 	-- # Private
 	self.__Tags = {}
 	self.__Look_Marked = false
 	self.__Character = CharacterClass.new(Name)
 	self:SetLevel(Level)
-	
+
 	return self
+end
+
+function AgentClass:GetId(): number
+	return self.PlayerId
 end
 
 function AgentClass:SetLevel(Amount: number)
 	self.__Level = Amount
-	self.__Status = StatusClass.new(CharacterDatabase:GetStats(self.Name, self.__Level))
+	self.__Status = StatusClass.new(CharacterDatabase:GetStatsAtLevel(self.Name, self.__Level))
 end
 
 function AgentClass:GetStat(Key: string)
@@ -84,7 +88,7 @@ function AgentClass:BlockRotation(Time: number)
 end
 
 function AgentClass:Look(Vector, Instant, Bypass)
-	if (not Bypass and (self:GetState() ~= 'Idle' or (self.__Character.__States:GetLastChangeTime() < .1) and self:GetState() ~= 'Dashing')) then
+	if not Bypass and (self:GetState() ~= 'Idle' or (self.__Character.__States:GetLastChangeTime() < .1) and self:GetState() ~= 'Dashing') then
 		return
 	end
 	

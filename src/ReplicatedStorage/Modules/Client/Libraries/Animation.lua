@@ -19,45 +19,45 @@ function AnimationLibrary:GetAnim(Directory: string)
 	return Object[Split[#Split]]
 end
 
-function AnimationLibrary:GetMovementAnim(Character: string, Track: string)
+function AnimationLibrary:GetMovementAnim(Character: string, TrackName: string)
 	local MovementDirectory = General
-	
+
 	if Characters:FindFirstChild(Character) and Characters:FindFirstChild(Character):FindFirstChild('Movement') then
 		MovementDirectory = Characters:FindFirstChild(Character)
 	end
-	
+
 	if not MovementDirectory:FindFirstChild('Movement') then
 		warn('Directory doesn\'t have movement tracks')
-		
-		return	
+
+		return;
 	end
-	
-	local Track =  MovementDirectory:FindFirstChild('Movement'):FindFirstChild(Track) or General.Movement:FindFirstChild(Track)
+
+	local Track =  MovementDirectory:FindFirstChild('Movement'):FindFirstChild(TrackName) or General.Movement:FindFirstChild(TrackName)
 	if Track == nil then return end
-	
+
 	if Track:IsA('Folder') then
 		local Children = Track:GetChildren()
 		return Children[math.random(1, #Children)]
 	end
-	
-	return Track
+
+	return Track;
 end
 
 function AnimationLibrary:Load(Character: Model, Track: Animation)
 	local Animator = AnimationLibrary:GetAnimator(Character)
 	local LoadedTrack = Animator:LoadAnimation(Track)
-	
+
 	return LoadedTrack
 end
 
-function AnimationLibrary:Play(Character: Model, Track: Animation, ...)
-	local Track = AnimationLibrary:Load(Character, Track)
+function AnimationLibrary:Play(Character: Model, TrackName: Animation, ...)
+	local Track = AnimationLibrary:Load(Character, TrackName)
 	Track:Play(...)
-	
+
 	Track.Stopped:Once(function()
 		Track:Destroy()
 	end)
-	
+
 	return Track
 end
 

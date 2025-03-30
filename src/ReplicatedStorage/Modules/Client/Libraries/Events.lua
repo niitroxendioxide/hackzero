@@ -10,6 +10,6 @@ local Events = {
 
 	CharacterChanged = Signal.new(),
 	
-} :: {[string]: Signal.ScriptSignal}
+} :: {[string]: Signal.ScriptSignal<any>}
 
 return Events

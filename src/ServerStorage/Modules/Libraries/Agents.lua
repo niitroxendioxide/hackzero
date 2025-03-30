@@ -18,6 +18,8 @@ function Agents:Add(UserId: number, Agent)
 	end
 	
 	table.insert(Agents.__Players[UserId], Agent)
+
+	return;
 end
 
 function Agents:Remove(UserId: number, Agent)
@@ -63,17 +65,17 @@ function Agents:GetActiveAgentsHitboxes()
 	return Active, List
 end
 
-function Agents:GetAll(UserId: number): {Types.AgentClass}
+function Agents:GetAll(UserId: number): {Types.AgentClass | Types.ServerAgentClass}
 	if not Agents.__Players[UserId]  then
-		return
+		return {};
 	end
 
 	return Agents.__Players[UserId]
 end
 
-function Agents:GetCurrentActive(UserId: number): (Types.AgentClass, number)
+function Agents:GetCurrentActive(UserId: number): (Types.AgentClass?, number?)
 	if not Agents.__Players[UserId]  then
-		return
+		return;
 	end
 	
 	for Id, Agent in Agents.__Players[UserId] do
@@ -81,6 +83,8 @@ function Agents:GetCurrentActive(UserId: number): (Types.AgentClass, number)
 			return Agent, Id
 		end
 	end
+
+	return;
 end
 
 return Agents

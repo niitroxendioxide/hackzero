@@ -1,22 +1,20 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local Players = game:GetService('Players')
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local GameEnum = require(Shared.GameEnum)
+local _GameEnum = require(Shared.GameEnum)
 local EffectsLib = require(Client.Libraries.Effects)
-
-local LocalUserId = Players.LocalPlayer.UserId
 
 --
 local Controller = {}
 
-function Controller:Effect(Buffer: buffer, ...)
+function Controller:Effect(Buffer: buffer, ...): ()
+	local EffectId = buffer.readu16(Buffer, 1)
 	local Args = {...}
 	
-	EffectsLib:Play(...)
+	EffectsLib:Play(EffectId, table.unpack(Args))
 end
 
 return Controller

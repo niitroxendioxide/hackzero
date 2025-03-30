@@ -42,6 +42,10 @@ function ServerAgentClass.new(Name: string, Level: number): Types.AgentClass
 	return self
 end
 
+function ServerAgentClass:GetId(): number
+	return self.__User
+end
+
 function ServerAgentClass:GetHitbox()
 	return self.__Character.__Collider
 end

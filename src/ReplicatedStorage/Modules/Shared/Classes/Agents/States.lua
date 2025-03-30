@@ -29,11 +29,11 @@ function StatesClass.new(Character: string): Types.StatesClass
 	return self
 end
 
-function StatesClass:GetLastChangeTime(): GetLastChangeTime
+function StatesClass:GetLastChangeTime(): number
 	return (os.clock() - self.__Last_Change)
 end
 
-function StatesClass:GetVelocityMod(): GetLastChangeTime
+function StatesClass:GetVelocityMod(): number
 	return math.clamp((os.clock() - self.__Last_Change) / 0.3, 0, 1)
 end
 
@@ -57,6 +57,8 @@ function StatesClass:Switch(State: string, Time: number)
 		
 		self.__Threads['CurrentState'] = nil
 	end)
+
+	return;
 end
 
 function StatesClass:GetKey(Key: string): boolean

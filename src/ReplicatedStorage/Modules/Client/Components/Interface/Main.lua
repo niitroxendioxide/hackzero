@@ -6,19 +6,18 @@ local Players = game:GetService('Players')
 local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
 
-local Component = require(Client.Classes.Interface)
+local Types = require(ReplicatedStorage.Modules.Shared.Types)
+local ComponentClass = require(Client.Classes.Interface)
 local Fusion = require(Client.Libraries.Fusion)
-local Events = require(Client.Libraries.Events)
 local CharacterLibrary = require(Client.Libraries.Characters)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
 
 --
 local peek = Fusion.peek
-local Component = Component.new(script.Name, 'HUD', {
+local Component = ComponentClass.new(script.Name, 'HUD', {
 })
 
 function Component:Init()
-	local UserId = Player.UserId
 	local Scope = self:GetScope()
 	local Frame = self:GetFrame()
 	
@@ -33,7 +32,7 @@ function Component:Init()
 	local Info = Frame.Info
 	local Icons = Frame.Icons
 
-	local Meters = Info:FindFirstChild('Meters') :: Component.Meter_Folder
+	local Meters = Info:FindFirstChild('Meters') :: ComponentClass.Meter_Folder
 
 	-- Privates
 	local Active_Pos = UDim2.fromScale(-0.05, 0.898)
@@ -76,19 +75,21 @@ function Component:Init()
 		Icon_Positions[Prev + 3]:set(.6)
 
 		--
-		local Health, Max_Health = CurrentActiveCharacter:GetHealth()
+		local Health, Max_Health = (CurrentActiveCharacter :: Types.AgentClass):GetHealth()
 		InterfaceStates.Health:set(Health)
 		InterfaceStates.Max_Health:set(Max_Health)
-		
-		Info.CharacterName.Text = CurrentActiveCharacter.Name
-	
+
+		Info.CharacterName.Text = (CurrentActiveCharacter :: Types.AgentClass).Name
+
 		for _, Item in Icons:GetChildren() do
 			local Number = tonumber(Item.Name, 10) :: number
 			if not Characters[Number] then continue end
-			
+
+			local Assets: Folder = ReplicatedStorage:WaitForChild("Assets") :: Folder & { Characters: Folder }
+			local CharacterFolder = Assets:FindFirstChild("Characters") :: Folder & { Agents: Folder };
 			local Character = Characters[Number].Name
 			local Viewport = Item.Main :: ViewportFrame
-			local BaseModel = ReplicatedStorage.Assets.Characters.Agents:FindFirstChild(Character)
+			local BaseModel = CharacterFolder.Agents:FindFirstChild(Character) :: Model
 			if not BaseModel then continue end
 
 			local Camera = (Viewport:FindFirstChild('Camera') or Instance.new('Camera')) :: Camera
@@ -103,8 +104,7 @@ function Component:Init()
 			Model.Parent = Viewport:FindFirstChild('WorldModel')
 		end
 	end
-	
-	
+
 	-- Changes
 	Scope:Observer(InterfaceStates.Energy):onChange(function() 
 		local Value = Fusion.peek(InterfaceStates.Energy)
@@ -121,7 +121,7 @@ function Component:Init()
 	UpdateCharacters()
 	
 	--
-	table.insert(Scope, RunService.Heartbeat:Connect(function(delta: number)
+	table.insert(Scope, RunService.Heartbeat:Connect(function(_: number)
 		local EnergySize = math.clamp(peek(EnergySpring) / 100, 0, 1)
 		local HealthSize = math.clamp(peek(HealthSpring) / peek(InterfaceStates.Max_Health), 0, 1)
 		

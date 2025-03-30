@@ -15,7 +15,7 @@ local InterfaceStates = IsClient and require(Client.Packages.InterfaceStates)
 
 --
 local Characters = {
-	__Player_Data = {} :: {[number]: {Active: number, List: {Types.CharacterClass}}},
+	__Player_Data = {} :: {[number]: {Active: number, List: {Types.AgentClass}}},
 }
 
 function Characters:Switch(UserId: number, Direction: number)
@@ -54,7 +54,7 @@ function Characters:Switch(UserId: number, Direction: number)
 	NewCharacter:ApplyImpulse(NewCFrame.LookVector * 75)
 end
 
-function Characters:Add(UserId: number, Character: Types.CharacterClass)
+function Characters:Add(UserId: number, Character: Types.AgentClass)
 	Characters:Build(UserId)
 	
 	local Data = Characters.__Player_Data[UserId]
@@ -72,26 +72,28 @@ function Characters:Add(UserId: number, Character: Types.CharacterClass)
 	end
 end
 
-function Characters:Remove(UserId: number, Name: string)
+function Characters:Remove(UserId: number, Name: string): any
 	local Data = Characters.__Player_Data[UserId]
-	
+
 	for key, Character in Data.List do
 		if Character.Name == Name then
 			table.remove(Data.List, key)
-			
+
 			return Character
 		end
 	end
-	
+
 	if IsClient and Players.LocalPlayer.UserId == UserId then
 		InterfaceStates.Characters:set(Data)
 	end
+
+	return;
 end
 
-function Characters:GetCurrent(UserId: number): (Types.AgentClass, number)
+function Characters:GetCurrent(UserId: number): (Types.AgentClass?, number?)
 	local Data = Characters.__Player_Data[UserId]
 	if not Data then
-		return
+		return nil, nil;
 	end
 	
 	local CurrentActive = Data.Active
@@ -101,16 +103,18 @@ end
 
 function Characters:HasCharacter(UserId: number, Name: string): boolean
 	if not Characters.__Player_Data[UserId] then
-		return
-	end	
+		return false
+	end
 
 	local Data = Characters.__Player_Data[UserId]
-	
-	for key, Character in Data.List do
+
+	for _, Character in Data.List do
 		if Character.Name == Name then
 			return true
 		end
 	end
+
+	return false;
 end
 
 --
@@ -118,18 +122,18 @@ function Characters:Build(UserId: number)
 	if Characters.__Player_Data[UserId] then
 		return
 	end
-	
+
 	Characters.__Player_Data[UserId] = {
 		Active = 1,
 		List = {},
 	}
 end
 
-function Characters:GetCharacters(UserId: number): {[number]: {Name: string}}
+function Characters:GetCharacters(UserId: number): {[number]: Types.AgentClass}
 	if not Characters.__Player_Data[UserId] then
 		return {}
 	end
-	
+
 	return Characters.__Player_Data[UserId].List
 end
 
@@ -144,7 +148,7 @@ function Characters:GetActiveAgentsHitboxes()
 	local Active, List = {}, {}
 
 	for userId, PlayerAgents in Characters.__Player_Data do
-		for id, Agent in PlayerAgents.List do
+		for _, Agent in PlayerAgents.List do
 			if Characters:GetCurrent(userId) == Agent then
 				Active[Agent:GetHitbox()] = Agent
 				table.insert(List, Agent:GetHitbox())

@@ -36,39 +36,39 @@ local Gradients = {
 }
 
 ---
-return function(At: Vector3 | Types.EnemyClass, Data: {})
+return function(At: Vector3 | Types.EnemyClass, Data: Types.EffectAnyData)
 	if typeof(At) == 'nil' then return end
-	
+
 	local Indicator = Effects:Create(Assets.Interface.Combat.DamageIndicator, 10)
 	local NumberToString = tostring(Data.Number)..(Data.Critical and '!' or '')
 	local Affliction = Data.Affliction or 'Default'
 	local Burst = Data.Burst
-	
+
 	if typeof(Affliction) == 'number' then
 		Affliction = GameEnum.KeyLookup(GameEnum.Afflictions, Affliction) or 'Default'
 	end
-	
+
 	if typeof(At) == 'table' and At.GetPivot then
 		Indicator.Position = At:GetPivot().Position
-		
+
 		Effects:Tween(Indicator, {.4, 'Back'}, {Position = Indicator.Position + Effects:RandomV3() * Effects:Random(0.8, 1.3)})
 	else
 		Indicator.Position = typeof(At) == 'Vector3' and At or At.Position
 	end
-	
+
 	local Color = Gradients[Affliction] or Gradients.Default
-	
+
 	if Burst then
 		Indicator.Holder.Size = UDim2.fromScale(10, 5)
-		
+
 		Effects:Tween(Indicator.Holder, {.5}, {Size = UDim2.fromScale(7, 3)})
 	end
-	
-	
+
+
 	for i = 1, #NumberToString do
 		local Number = string.sub(NumberToString, i, i)
 		local X_Size = tonumber(Number) == nil and 0.07 or 0.1
-		
+
 		local Object = Assets.Interface.Combat.DamageNumber:Clone()
 		Object.Name = i
 		Object.Text = Number

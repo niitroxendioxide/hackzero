@@ -83,5 +83,7 @@ return {
 				return Key
 			end
 		end
+
+		return;
 	end
 }

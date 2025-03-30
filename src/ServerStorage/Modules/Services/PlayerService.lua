@@ -6,7 +6,6 @@ local Players = game:GetService('Players')
 local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Replicator = require(Modules.Libraries.Replicator)
 local AgentService = require(script.Parent.AgentService)
 local EnemyService = require(script.Parent.EnemyService)
 local ServerAgentClass = require(Modules.Classes.ServerAgent)
@@ -30,7 +29,8 @@ function Service.PlayerAdded(Player: Player)
 	Service.__Characters[Player] = {}
 	
 	if not Player:HasTag('Ping') then
-		repeat task.wait() until Player:HasTag('Ping')
+		repeat task.wait() 
+		until Player:HasTag('Ping')
 	end
 	
 	local Characters = {'Goku', 'Template', 'Vegeta'}

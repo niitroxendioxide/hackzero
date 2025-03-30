@@ -17,36 +17,36 @@ local Fusion = require(Client.Libraries.Fusion)
 --
 local EnemyClass = {} :: {new: (At: Vector3, Name: string) -> Types.EnemyClass, [string]: (self: Types.EnemyClass, any) -> any}
 EnemyClass.__index = EnemyClass
-EnemyClass.__tostring = function(k)
+EnemyClass.__tostring = function(_)
 	return 'EnemyClass'
 end
 
-function EnemyClass.new(At: Vector3, Name: string, Level: number)
+function EnemyClass.new(At: Vector3, Name: string, Level: number): Types.EnemyClass
 	local self = setmetatable({}, EnemyClass)
 	self.Name = Name or 'EnemyTemplate'
-	
+
 	--
 	self.__Status = EnemyStatus.new(self.Name, Level)
 	self.__Movement = MovementClass.new(At)
 	self.__Animator = AnimatorClass.new(self, self.Name)
 	self.__Appearance = AppearanceClass.new(self.Name)
 	self.__EnemyId = 0
-	
+
 	self.__Daze = Fusion.Value({}, 0)
 	self.__Health = Fusion.Value({}, self.__Status:GetHealth())
 	self.__Affliction = Fusion.Value({}, 0)
 	self.__Affliction_Type = Fusion.Value({}, 'None')
-	
+
 	return self
 end
 
 function EnemyClass:Destroy()
 	self.__Movement:Destroy()
-	
+
 	if self.__Thread then
 		self.__Thread:Disconnect()
 	end
-	
+
 	self.__Appearance:Destroy()
 end
 
@@ -54,10 +54,10 @@ end
 --
 function EnemyClass:TakeDamage(number: number)
 	self.__Status:Damage(number)
-	
+
 	--
 	local Health = self.__Status.__Health
-	
+
 	self.__Health:set(Health)
 end
 
@@ -100,8 +100,15 @@ function EnemyClass:SwitchState(State: string, Time: number): ()
 	return self.__Status:SwitchState(State, Time)
 end
 
+function EnemyClass:GetId(): number
+	return self.__EnemyId
+end
 
 --
+function EnemyClass:GetStat(n: Types.Element): number
+	return self.__Status:GetStat(n)
+end
+
 function EnemyClass:GetState()
 	return self.__Status:GetState()
 end
@@ -147,20 +154,18 @@ function EnemyClass:GetHitbox()
 end
 
 function EnemyClass:Init(Key: number)
-	local Rng = Random.new()
-
 	self.__EnemyId = Key
 	--
 	self.__Appearance:JoinTo(self.__Movement.__Collider)
 	self.__Animator:Init()
-	
+
 	self.__Appearance:SetRotationResponsiveness(30)
 
 	self.__Thread = ClockUtil:Heartbeat(function(delta: number)
 		if self.__Status:GetState() ~= 'Idle' then
 			self:Move(Vector3.zero)
 		end
-		
+
 		self.__Movement:Update(delta)
 	end)
 end

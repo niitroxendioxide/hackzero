@@ -1,6 +1,5 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local Players = game:GetService('Players')
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
@@ -9,11 +8,9 @@ local CharacterLibrary = require(Client.Libraries.Characters)
 local AgentClass = require(Client.Classes.Agent)
 local GameEnum = require(Shared.GameEnum)
 
-local BufferUtil = require(Shared.Utility.Buffer)
+--local BufferUtil = require(Shared.Utility.Buffer)
+--local InterfaceStates = require(Client.Packages.InterfaceStates)
 local CharacterDatabase = require(Shared.Database.Characters)
-local InterfaceStates = require(Client.Packages.InterfaceStates)
-
-local LocalUserId = Players.LocalPlayer.UserId
 
 --
 local Controller = {}
@@ -82,7 +79,7 @@ function Controller:PivotTo(Buffer: buffer)
 	Character:PivotTo(CFrame.lookAlong(Vector, Character.__Character.__Controller.__Rotation), true)
 end
 
-function Controller:KeySwitch(Buffer: buffer, Key: string, Value: boolean)
+function Controller:KeySwitch(Buffer: buffer, Value: boolean)
 	local Key = GameEnum.KeyLookup(GameEnum.Agent_Keys, buffer.readu8(Buffer, 1))
 	local UserId = buffer.readi32(Buffer, 2)
 
@@ -111,7 +108,7 @@ end
 function Controller:Stop(Buffer: buffer)
 	local UserId = buffer.readi32(Buffer, 1)
 
-	for id, Character in CharacterLibrary:GetCharacters(UserId) do
+	for _, Character in CharacterLibrary:GetCharacters(UserId) do
 		Character:Stop()
 	end
 end
@@ -130,10 +127,10 @@ function Controller:CharacterSwitch(Buffer: buffer)
 	local UserId = buffer.readi32(Buffer, 2)
 	local Direction = buffer.readi8(Buffer, 1)
 
-	local Previous = CharacterLibrary:GetCurrent(UserId)	
+	local Previous = CharacterLibrary:GetCurrent(UserId)
 	local Moving = Previous:IsMoving()
-	
-	local CFrameClient = Previous:GetPivot()
+
+	--local CFrameClient = Previous:GetPivot()
 
 	CharacterLibrary:Switch(UserId, Direction)
 

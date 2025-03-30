@@ -8,7 +8,7 @@ local Types = require(Shared.Types)
 local StatusClass = {}
 StatusClass.__index = StatusClass
 
-function StatusClass.new(Base: CharacterStats): Types.AgentStatusClass
+function StatusClass.new(Base: Types.CharacterStats): Types.AgentStatusClass
 	local self = setmetatable({}, StatusClass)
 	
 	self.__Base_Stats = Base
@@ -78,15 +78,15 @@ function StatusClass:GetEffect()
 	
 end
 
-function StatusClass:GetArtifactBonus(Type: string)
+function StatusClass:GetArtifactBonus(_Type: string)
 	return 1
 end
 
-function StatusClass:GetWeaponBonus(Type: string)
+function StatusClass:GetWeaponBonus(_Type: string)
 	return 1
 end
 
-function StatusClass:GetMultBonus(Name: string)
+function StatusClass:GetMultBonus(_Name: string)
 	return 0
 end
 

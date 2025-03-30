@@ -7,22 +7,24 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local World = require(Shared.World)
 local Types = require(Shared.Types)
-local Signal = require(Shared.Utility.Signal)
+--local Signal = require(Shared.Utility.Signal)
 
 --
 local PhysicsClass = {} :: {[string]: (self: Types.PhysicsController, any) -> any, new: () -> Types.PhysicsController}
 PhysicsClass.__index = PhysicsClass
 
 function PhysicsClass.new(States: Types.StatesClass, Height: number): Types.PhysicsController
+	local WorldSpawn = workspace:WaitForChild('SpawnLocation') :: BasePart
+
 	local self = setmetatable({}, PhysicsClass)
 	self.__States = States
 	self.__Height = Height or 3.15
 	self.__Normal = Vector3.yAxis
-	self.__Position = workspace:WaitForChild('SpawnLocation').Position + Vector3.new(0, self.__Height, 0)
+	self.__Position = WorldSpawn.Position + Vector3.new(0, self.__Height, 0)
 	self.__Rotation = Vector3.zAxis
 	self.__DelayedPosition = self.__Position
 	self.__RotationGoal = Vector3.zAxis
-	
+
 	self.__MovementVelocity = Vector3.zero
 	self.__SurfaceVelocity = Vector3.zero
 	self.__LastMovementVelocity = Vector3.zero
@@ -33,9 +35,9 @@ function PhysicsClass.new(States: Types.StatesClass, Height: number): Types.Phys
 	self.__Active = false
 	self.__MovementAcceleration = 0
 	self.__Linear_Movements = {}
-	
-	-- >> 
-	
+
+	-- >>
+
 	return self
 end
 
@@ -44,19 +46,19 @@ function PhysicsClass:Run()
 		if not self.__Active then
 			self.__Active = true
 		end
-		
+
 		return
 	end
-	
-	
+
+
 	self:CreateCollider()
-	
+
 	self.__Active = true
 	self.__ActiveThread = RunService.PreRender:Connect(function(Delta: number)
 		if not self.__Active then
 			return
 		end
-		
+
 		self:Update(Delta)
 	end)
 end
@@ -82,7 +84,7 @@ function PhysicsClass:GetPivot()
 end
 
 function PhysicsClass:PivotTo(To: CFrame)
-	assert(typeof(To) == 'CFrame', 'Not a CFrame')	
+	assert(typeof(To) == 'CFrame', 'Not a CFrame')
 	
 	self.__Normal = To.UpVector
 	self.__Position = To.Position
@@ -152,57 +154,57 @@ end
 function PhysicsClass:Update(Delta: number)
 	local TotalSpeedDeceleration =  self:CalculateVelocityDeceleration(self.__Velocity, .4)
 	--local MovementSpeedDeceleration = self:CalculateVelocityDeceleration(self.__MovementVelocity)
-	local Collider = self:GetCollider()	
-	
+	local Collider = self:GetCollider()
+
 	local CurrentWorldSpeed = World:GetSpeed()
-	
+
 	self.__MovementAcceleration = math.clamp(self.__MovementAcceleration + Delta * World.CharacterAcceleration, 0, 1)
-	
+
 	--if not self.__Moving then
 		--self.__MovementVelocity -= MovementSpeedDeceleration * CurrentWorldSpeed * Delta
 	--end
-	
+
 	local MovementVelocity = (self.__MovementVelocity * self.__MovementAcceleration * self.__Rotation.Unit * self.__States:GetVelocityMod())
 	self.__LastMovementVelocity -= self:CalculateVelocityDeceleration(self.__LastMovementVelocity) * CurrentWorldSpeed *Delta
 	self.__Velocity -= TotalSpeedDeceleration * CurrentWorldSpeed * Delta
 	self.__Rotation = self.__Rotation:Lerp(self.__RotationGoal, 1) --Delta * 24
-	
+
 	local Velocity = self.__Velocity + self:GetAdditionalVelocities()
-	
+
 	--
 	local Origin = self:GetPivot() * CFrame.new(0, 0, Collider.Size.Z/2)
-	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetEnemyColliderParams())
+	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
 	if EnemyCollisions then
 		Velocity = Vector3.zero
 	end
-	
+
 	-- Movement
 	local TotalDisplacement =  MovementVelocity + Velocity + self.__SurfaceVelocity + self.__LastMovementVelocity
 	if TotalDisplacement.Magnitude > .1 then
 		local Moved = (TotalDisplacement * CurrentWorldSpeed * Delta)
-		
+
 		local Extra = math.atan(self.__Normal:Dot(Vector3.yAxis)) + World.StepHeight
-		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams())
-		local Collision = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * Collider.Size.Z, World:GetCollisionParams())
+		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams():: RaycastParams)
+		local Collision = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * Collider.Size.Z, World:GetCollisionParams() :: RaycastParams)
 
 		if CanReachFloor and (CanReachFloor.Position.Y - (self.__Position.Y - self.__Height)) < World.StepHeight then
 			if not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1 then
 				self.__Position += Moved
 			elseif Collision then
 				local ProjectedMovement = TotalDisplacement - TotalDisplacement:Dot(Collision.Normal) * Collision.Normal
-				
+
 				self.__Position += ProjectedMovement * CurrentWorldSpeed * Delta
 			end
 		end
 	end
-	
-	local Cast = workspace:Raycast(self:GetPivot().Position, Vector3.yAxis * -100, World:GetMapParams())
+
+	local Cast = workspace:Raycast(self:GetPivot().Position, Vector3.yAxis * -100, World:GetMapParams() :: RaycastParams)
 	if Cast then
 		self.__Normal = Cast.Normal
 		self.__SurfaceVelocity = Cast.Instance.AssemblyLinearVelocity
 		self.__Position = Vector3.new(self.__Position.X, Cast.Position.Y + self.__Height, self.__Position.Z)
 	end
-	
+
 	self.__Collider:PivotTo(self:GetPivot())
 end
 
@@ -211,7 +213,8 @@ function PhysicsClass:CreateCollider()
 	if self.__Collider then
 		self.__Collider:Destroy()
 	end
-	
+
+	local WorldFolder = workspace:FindFirstChild('World') :: Folder
 	local Collider = Instance.new('Part')
 	Collider.Size = Vector3.new(4, self.__Height * 1.5873015873, 3)
 	Collider.Transparency = 1
@@ -219,7 +222,7 @@ function PhysicsClass:CreateCollider()
 	Collider.Anchored = true
 	Collider.CanCollide = false
 	Collider.Position = self.__Position
-	Collider.Parent = workspace.World.Entities.Hitboxes
+	Collider.Parent = WorldFolder.Entities.Hitboxes
 
 	self.__Collider = Collider
 end

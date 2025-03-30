@@ -21,13 +21,13 @@ ComponentClass.__tostring = function()
 	return 'GUIComponent'
 end
 
-function ComponentClass.new(Name: string, Group: string, ...): Types.UIComponent
+function ComponentClass.new(Name: string, Group: string): Types.UIComponent
 	local self = setmetatable({}, ComponentClass)
 	self.__Name = Name
 	self.__Group = Group
 	self.__Scope = Fusion.scoped({Value = Fusion.Value, Spring = Fusion.Spring, Observer = Fusion.Observer})
 	self.__Main_Frame = nil
-	
+
 	return self
 end
 

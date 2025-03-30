@@ -58,6 +58,8 @@ function EnemyStatus:SwitchState(State: string, Time: number)
 
 		self.__Threads['CurrentState'] = nil
 	end)
+
+	return;
 end
 
 function EnemyStatus:IsKnocked()
@@ -74,10 +76,12 @@ function EnemyStatus:Daze(Amount: number): boolean
 	if self.__Daze >= self.__Max_Daze then
 		return true
 	end
+
+	return false;
 end
 
 
-function EnemyStatus:IsAlive(): number
+function EnemyStatus:IsAlive(): boolean
 	return self.__Health > 0
 end
 
@@ -85,7 +89,7 @@ function EnemyStatus:GetHealth(): number
 	return self.__Health
 end
 
-function EnemyStatus:GetState(Name: string)
+function EnemyStatus:GetState()
 	return self.__State
 end
 
@@ -95,7 +99,7 @@ function EnemyStatus:GetStat(Name: string)
 	elseif Name == 'Max_Daze' then
 		return self.__Max_Daze
 	end
-	
+
 	return self.__Stats[Name]
 end
 
@@ -158,7 +162,7 @@ function EnemyStatus:GetAfflictionStackedDamage(Type: string): number
 	return Table[1] / Table[2]
 end
 
-function EnemyStatus:GetDazeMultiplier(Value: number): number
+function EnemyStatus:GetDazeMultiplier(): number
 	return (self:GetStat('Daze_Multiplier') / 100)
 end
 
@@ -171,7 +175,7 @@ function EnemyStatus:EnterDazedState(fn: (DazeValue: number) -> ())
 	self.__Dazed = true
 	
 	local Daze_Length = self:GetStat('Daze_Length')
-	local Daze_Removed = self:GetStat('Max_Daze')
+	local _Daze_Removed = self:GetStat('Max_Daze')
 	local Level_Mult = self.__Level * Statics.Daze_Length_Level_Multiplier
 	
 	self.__Daze_Thread = RunService.Heartbeat:Connect(function(delta: number)

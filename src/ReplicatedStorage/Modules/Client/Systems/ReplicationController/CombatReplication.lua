@@ -18,13 +18,13 @@ local Controller = {}
 
 function Controller:UseSkill(Buffer: buffer)
 	local Skill = buffer.readu8(Buffer, 1)
-	local Character = buffer.readu8(Buffer, 2)
+	local _CharacterId = buffer.readu8(Buffer, 2)
 	local EnemyId = buffer.readu8(Buffer, 3)
 	local UserId = buffer.readi32(Buffer, 4)
 	
 	local ActiveAgent = Characters:GetCurrent(UserId)
 	local Key = GameEnum.KeyLookup(GameEnum.Skills, Skill)
-	local CharacterMoveset = Movesets:Get(Characters:GetCurrentName())
+	local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
 	local AgentEnemy = Enemies:GetEnemy(EnemyId)
 	
 	if AgentEnemy and Key ~= 'Dodge' then

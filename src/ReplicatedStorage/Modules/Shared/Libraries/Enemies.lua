@@ -10,7 +10,7 @@ local EnemyLibrary = {
 	__Last_Enemy_Pos = {},
 }
 
-function EnemyLibrary:AddEnemy(Id: number, Enemy: Types.EnemyClass)
+function EnemyLibrary:AddEnemy(Id: number, Enemy: Types.EnemyClass | Types.ServerEnemyClass)
 	if EnemyLibrary:GetEnemy(Id) ~= nil then
 		EnemyLibrary:RemoveEnemy(Id)
 	end
@@ -18,13 +18,13 @@ function EnemyLibrary:AddEnemy(Id: number, Enemy: Types.EnemyClass)
 	EnemyLibrary.__Enemies[Id] = Enemy
 end
 
-function EnemyLibrary:RemoveEnemy(Enemy: number | Types.ServerEnemyClass)
-	local Id = Enemy
+function EnemyLibrary:RemoveEnemy(EnemyId: number | Types.ServerEnemyClass)
+	local Id = EnemyId
 	
 	if typeof(Id) ~= 'number' then
-		local Enemy = Id
+		local ComparedEnemy = Id
 		for key, SavedEnemy in EnemyLibrary:GetAll() do
-			if Enemy == SavedEnemy then
+			if ComparedEnemy == SavedEnemy then
 				Id = key
 			end
 		end
@@ -55,23 +55,23 @@ function EnemyLibrary:GetEnemyCount()
 	return k
 end
 
-function EnemyLibrary:GetNearestEnemy(Point: Vector3): (number, Types.EnemyClass)
+function EnemyLibrary:GetNearestEnemy(Point: Vector3): (number?, Types.EnemyClass?)
 	local Distance = math.huge
 	local Selected = nil
-	
+
 	for Key, Enemy in EnemyLibrary:GetAll() do
 		local DistanceToEnemy = (Point - Enemy:GetPivot().Position).Magnitude
-		
+
 		if DistanceToEnemy < Distance then
 			Distance = DistanceToEnemy
 			Selected = Key
 		end
 	end
-	
+
 	if Selected then
 		return Selected, EnemyLibrary:GetEnemy(Selected)
 	end
-	
+
 	return nil, nil
 end
 

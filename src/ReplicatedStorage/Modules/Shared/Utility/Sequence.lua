@@ -54,6 +54,8 @@ function Sequence:Add(Time: number, ...)
 	end
 	
 	table.insert(self.__frames, table.pack(Time, ...))
+
+	return;
 end
 
 function Sequence:Update(delta: number)
@@ -82,8 +84,8 @@ function Sequence:Update(delta: number)
 		
 		return self:Destroy()
 	end
-	
-	self:Update(RunService.Heartbeat:Wait())
+
+	return self:Update(RunService.Heartbeat:Wait())
 end
 
 function Sequence:Pause()

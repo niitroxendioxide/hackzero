@@ -46,22 +46,22 @@ function AnimatorClass:Init()
 	self:Play('Sprint', {Weight = 0.001, Speed = .825})
 	self:Play('Jog', {Weight = 0.001})
 	self:Play('Walk', {Weight = 0.001, Speed = 0.7})
-	
+
 	self.__Thread = RunService.PostSimulation:Connect(function(delta: number)
 		self:Update(delta)
 	end)
 end
 
-function AnimatorClass:Play(Track: string, Data: {Fade: number, Speed: number, Weight: number, Name: string})
+function AnimatorClass:Play(Track: string, Data: Types.AnimationDataOptions)
 	Data = Data or {}
-	
+
 	local RemovedId = Data.Name or (tonumber(Track:sub(#Track, #Track)) ~= nil and Track:sub(1, #Track - 1) or Track)
 	local TrackObject = AnimLibrary:GetMovementAnim(self.__Directory, Track)
 	local AnimTrack = AnimLibrary:Play(self.__Character:GetModel(), TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
-	
+
 	AnimTrack.Priority = Priorities[RemovedId] or Enum.AnimationPriority.Idle
 	self.__Tracks[RemovedId] = AnimTrack
-	
+
 	return AnimTrack
 end
 
@@ -113,7 +113,7 @@ function AnimatorClass:Update(delta: number)
 	end
 	
 	for State, Tracks in self.__State_Tracks do
-		for k, Track_Table in Tracks do
+		for _, Track_Table in Tracks do
 			local Track_Object = Track_Table[1] :: AnimationTrack
 			local Time = Track_Table[2]
 			local Passed_Time = os.clock() - Track_Table[3]

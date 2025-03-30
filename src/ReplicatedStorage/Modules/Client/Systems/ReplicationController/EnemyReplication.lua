@@ -7,7 +7,6 @@ local Client = ReplicatedStorage.Modules.Client
 local Enemies = require(Shared.Libraries.Enemies)
 local EnemyDatabase = require(Shared.Database.Enemies)
 local EnemyClass = require(Client.Classes.Enemy)
-local Characters = require(Client.Libraries.Characters)
 local GameEnum = require(Shared.GameEnum)
 local Effects = require(Client.Libraries.Effects)
 

@@ -1,45 +1,47 @@
 --
-local Types = require('../Types')
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Types = require(ReplicatedStorage.Modules.Shared.Types)
 
 --
 local ArtifactClass = {}
 ArtifactClass.__index = ArtifactClass
 
 function ArtifactClass.new(Name: string): Types.Artifact_Class
-	
 	local self = setmetatable({}, ArtifactClass)
-	
+
 	self.Name = Name
 	self.Slot = 1
 	self.Level = 1
 	self.Stats = {}
 	self.Main_Stat = {}
-	
+
 	-- # Privates
 	self.__Events = {
-		
+
 	}
-	
-	
+
+
 	return self
 end
 
-function ArtifactClass.Extend(self: Types.Artifact_Class, Slot: number, Level: number, Mainstat: {Stat | number}, Substats: Substats?)
+function ArtifactClass.Extend(self: Types.Artifact_Class, Slot: number, Level: number, Mainstat: {Types.Stat | number}, Substats: Types.Substats?)
 	if typeof(Slot) ~= 'number' or Slot > 6 or Slot < 1 or #Mainstat ~= 2 then
 		return
 	end
-	
+
 	local OldObject = self
-	
-	local self = ArtifactClass.new(self.Name)
-	self.Slot = Slot
-	self.Level = Level
-	self.Main_Stat = Mainstat
-	self.Stats = Substats or {};	
-	
+
+	local newObject = ArtifactClass.new(self.Name)
+	newObject.Slot = Slot
+	newObject.Level = Level
+	newObject.Main_Stat = Mainstat
+	newObject.Stats = Substats or {};
+
 	-- # Privates
-	self.__Count = 0
-	self.__Events = table.clone(OldObject.__Events)
+	newObject.__Count = 0
+	newObject.__Events = table.clone(OldObject.__Events)
+
+	return newObject;
 end
 
 function ArtifactClass.OnEffectProcess(self: Types.Artifact_Class, Event: (Effect: Types.Element, Data: Types.Process_Event_Data) -> ()): ()
@@ -47,7 +49,9 @@ function ArtifactClass.OnEffectProcess(self: Types.Artifact_Class, Event: (Effec
 		return warn('function', self.__Events['Effect'], 'already bound to event: Affliction Applied')
 	end
 
-	self.__Events['Effect'] = Event	
+	self.__Events['Effect'] = Event
+
+	return;
 end
 
 function ArtifactClass.OnHitProcess(self: Types.Artifact_Class, State: Types.Hit_Process_State, Event: (Data: Types.Process_Event_Data) -> (number, number))
@@ -55,7 +59,9 @@ function ArtifactClass.OnHitProcess(self: Types.Artifact_Class, State: Types.Hit
 		return warn('function', self.__Events[State], 'already bound to event: ', State)
 	end
 	
-	self.__Events[State] = Event	
+	self.__Events[State] = Event
+
+	return;
 end
 
 function ArtifactClass.GetPieceCount(self: Types.Artifact_Class): number

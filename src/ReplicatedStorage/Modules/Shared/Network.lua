@@ -1,5 +1,7 @@
 --
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
+local Players = game:GetService("Players")
 
 --
 local Network = {
@@ -27,25 +29,81 @@ function Network.new(Name: string, Type: 'Event' | 'Function' | 'Unreliable')
 	return EventTypeObject
 end
 
+function Network:GetPing()
+	local Start = tick()
+	local ServerTime = ReplicatedStorage.Ping:InvokeServer()
+	return ServerTime - Start, tick() - ServerTime
+end
+
+function Network:Get(Name: string, MaximumWaitTime: number?)
+	local RemoteExists = script:GetAttribute(Name)
+
+	if RemoteExists == nil then
+		if RunService:IsClient() then
+			local Clock = os.clock()
+
+			repeat
+				RemoteExists = script:GetAttribute(Name)
+				task.wait()
+			until  RemoteExists ~= nil or  os.clock() - Clock > (MaximumWaitTime or 5)
+			if RemoteExists == nil then return end
+		else
+			return
+		end
+	end
+
+	return script:WaitForChild(RemoteExists, 15)
+end
+
+function Network:__GetBufferIdForName(Name: string): buffer
+	local Order = table.find(Network:__GetSortedEventsArray(), Name)
+	local bufferObject = buffer.create(1)
+	buffer.writeu8(bufferObject, 0, Order)
+
+	return bufferObject;
+end
+
+function Network:__GetNameForId(Buffer: buffer): string?
+	local Number = buffer.readu8(Buffer, 0)
+	local Events = Network:__GetSortedEventsArray()
+
+	return Events[Number];
+end
+
+function Network:__GetSortedEventsArray()
+	local TotalEvents = script:GetAttributes()
+	local Names = {}
+	for Key in TotalEvents do
+		table.insert(Names, Key)
+	end
+
+	table.sort(Names, function(a: string, b: string): boolean
+		return a > b;
+	end)
+
+	return Names
+end
+
+
 function Network:Fire(Name: string, ...)
 	local Event: RemoteEvent = Network:Get(Name)
-	
+
 	if not Event then
 		Event = Network.new(Name, 'Event')
 	end
-	
+
 	local bufferObject = Network:__GetBufferIdForName(Name)
 	if RunService:IsClient() then
 		Event:FireServer(bufferObject, ...)
 	else
-		local Args = {...}	
-		local Plr = table.remove(Args, 1)		
-		
+		local Args = {...};
+		local Plr = table.remove(Args, 1);
+
 		Event:FireClient(Plr, bufferObject, table.unpack(Args))
 	end
 end
 
-function Network:FireForAll(Name: string, ...)
+function Network:FireForAll(Name: string, ...: any): ()
 	if RunService:IsClient() then
 		return warn('Cannot fireall in client')
 	end
@@ -58,6 +116,8 @@ function Network:FireForAll(Name: string, ...)
 
 	local bufferObject = Network:__GetBufferIdForName(Name)
 	Event:FireAllClients(bufferObject, ...)
+
+	return;
 end
 
 function Network:FireForAllBut(Blacklisted: Player, Name: string, ...)
@@ -72,18 +132,20 @@ function Network:FireForAllBut(Blacklisted: Player, Name: string, ...)
 	end
 
 	local bufferObject = Network:__GetBufferIdForName(Name)
-	for _, Player in game.Players:GetPlayers() do
+	for _, Player in Players:GetPlayers() do
 		if Player == Blacklisted then
 			continue
 		end
 		
 		Event:FireClient(Player, bufferObject, ...)
 	end
+
+	return;
 end
 
 if RunService:IsServer() then
 	
-	function Network:On(Name: string, fn: (Player: Player, any) -> ())
+	function Network:On<T...>(Name: string, fn: (Player: Player, T...) -> ())
 		local Event = Network:Get(Name) :: RemoteEvent
 		if not Event then
 			return
@@ -120,9 +182,8 @@ if RunService:IsServer() then
 			end
 		end
 	end
-	
 elseif RunService:IsClient() then
-	function Network:On(Name: string, fn: (any) -> ())
+	function Network:On<T...>(Name: string, fn: (Player, T...) -> ())
 		local Event = Network:Get(Name) :: RemoteEvent
 		if not Event then
 			return
@@ -140,59 +201,6 @@ elseif RunService:IsClient() then
 			end
 		end))
 	end
-end
-
-function Network:GetPing()
-	local Start = tick()
-	local ServerTime = game:GetService('ReplicatedStorage').Ping:InvokeServer()
-	return ServerTime - Start, tick() - ServerTime
-end
-
-function Network:Get(Name: string, MaximumWaitTime: number?)
-	local RemoteExists = script:GetAttribute(Name)
-
-	if RemoteExists == nil then
-		if RunService:IsClient() then
-			local Clock = os.clock()
-			
-			repeat
-				RemoteExists = script:GetAttribute(Name)
-				task.wait()
-			until  RemoteExists ~= nil or  os.clock() - Clock > (MaximumWaitTime or 5)
-			if RemoteExists == nil then return end
-		else
-			return
-		end
-	end
-
-	return script:WaitForChild(RemoteExists, 15)
-end
-
-function Network:__GetBufferIdForName(Name: string): buffer
-	local Order = table.find(Network:__GetSortedEventsArray(), Name)
-	local bufferObject = buffer.create(1)
-	buffer.writeu8(bufferObject, 0, Order)
-	
-	return bufferObject
-end
-
-function Network:__GetNameForId(Buffer: buffer): string?
-	local Number = buffer.readu8(Buffer, 0)
-	local Events = Network:__GetSortedEventsArray()
-	
-	return Events[Number]	
-end
-
-function Network:__GetSortedEventsArray()
-	local TotalEvents = script:GetAttributes()
-	local Names = {}
-	for Key in TotalEvents do
-		table.insert(Names, Key)
-	end
-
-	table.sort(Names, function(a, b) return a > b end)
-	
-	return Names
 end
 
 return Network

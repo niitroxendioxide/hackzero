@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
-local Client = ReplicatedStorage.Modules.Client
 
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
@@ -21,7 +20,7 @@ function Controller:Replicate(Action: number, ...)
 	elseif Action == GameEnum.Replication.KeySwitch then
 		Buffer = buffer.create(2)
 		local Key = Args[1]
-		
+
 		Args = {}
 		buffer.writeu8(Buffer, 1, Key)
 	elseif Action == GameEnum.Replication.Rotate then
@@ -41,7 +40,7 @@ function Controller:Replicate(Action: number, ...)
 		buffer.writei16(Buffer, 1, Angle * 180)
 
 		Args = {}
-	elseif Action == GameEnum.Replication.PivotTo then	
+	elseif Action == GameEnum.Replication.PivotTo then
 		if (os.clock() -  Controller.__LastUpdate < Controller.__ReplicationFrequency) and not(Args[2] == true) then
 			return
 		end
@@ -55,13 +54,13 @@ function Controller:Replicate(Action: number, ...)
 		buffer.writei16(Buffer, 10, At.Y * 100)
 
 		Args = {}
-	elseif Action == GameEnum.Replication.CharacterSwitch then	
+	elseif Action == GameEnum.Replication.CharacterSwitch then
 		Buffer = buffer.create(2)
 
 		buffer.writei8(Buffer, 1, Args[1])
 
 		Args = {}
-	elseif Action == GameEnum.Replication.UseSkill then	
+	elseif Action == GameEnum.Replication.UseSkill then
 		Buffer = buffer.create(3)
 
 		buffer.writei8(Buffer, 1, Args[1])

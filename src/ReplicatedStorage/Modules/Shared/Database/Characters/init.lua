@@ -6,7 +6,7 @@ local Types = require(Shared.Types)
 
 --
 local CharacterData = {
-	__Saved = {} :: {Types.CharacterData},
+	__Saved = {} :: {[string]: Types.CharacterData},
 	__Ids = {},
 }
 
@@ -44,12 +44,12 @@ end
 
 
 function CharacterData:GetStatsAtLevel(Character: string, Level: number)
-	local CharacterData = CharacterData:GetCharacterData(Character)
+	local ObtainedData = CharacterData:GetCharacterData(Character)
 	
 	local Converted = {}
 	
-	for Key, Value in CharacterData.Stats do
-		local PerLevel = CharacterData.Level_Stats
+	for Key, Value in ObtainedData.Stats do
+		local PerLevel = ObtainedData.Level_Stats
 		
 		if PerLevel[Key] then
 			Converted[Key] = Value + (PerLevel[Key] * math.max(Level - 1, 0))

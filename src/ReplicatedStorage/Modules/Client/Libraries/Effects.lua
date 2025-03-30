@@ -10,10 +10,10 @@ local Effects = {
 }
 
 function Effects:Init()
-	for _, Effect in ReplicatedStorage.Modules.Client.Components.VFX:GetDescendants() do
+	for _, Effect in Client.Components.VFX:GetDescendants() do
 		if Effect:IsA('ModuleScript') then
 			local Success, Required = pcall(require, Effect)
-			
+
 			if Success then
 				Effects.__Cached[Effect.Name] = Required
 			else
@@ -26,12 +26,18 @@ end
 function Effects:Play(Name: string, ...)
 	--
 	local Module = Effects.__Cached[Name]
-	
+
 	if not Module then
 		return
 	end
+
+	local Args = {...};
 	
-	task.spawn(Module, ...)
+	task.spawn(function()
+		debug.profilebegin('Effect'..Name)
+		Module(table.unpack(Args))
+		debug.profileend()
+	end)
 end
 
 return Effects

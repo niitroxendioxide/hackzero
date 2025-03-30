@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Hitbox = {}
+local Types = require(ReplicatedStorage.Modules.Shared.Types)
 
 function Hitbox:IsPointInArea(Point: Vector3, Size: Vector3, At: CFrame)
 	local v3 = At:PointToObjectSpace(Point)
@@ -17,7 +19,8 @@ function Hitbox:GetPartsInArea(List: {},  Size: Vector3, At: CFrame)
 	return Parts
 end
 
-function Hitbox:ForAgentsInZone(Agents: {}, Size: Vector3, At: CFrame, fn: (Agent: Types.ServerAgentClass) -> ())
+
+function Hitbox:ForAgentsInZone(Agents: {GetActiveAgentsHitboxes: (self: {}) -> ({}, {})}, Size: Vector3, At: CFrame, fn: (Agent: Types.ServerAgentClass) -> ())
 	local Params = OverlapParams.new()
 	local Hitboxes, Whitelist = Agents:GetActiveAgentsHitboxes()
 
