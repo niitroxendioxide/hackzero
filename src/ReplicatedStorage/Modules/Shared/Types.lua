@@ -508,7 +508,7 @@ export type UIComponent = {
 	GetFrame: (self: UIComponent) -> CanvasGroup | Frame,
 	
 	Init: (self: UIComponent) -> (),
-	Link: (self: UIComponent, Object: CanvasGroup | Frame) -> (),
+	Link: (self: UIComponent) -> (boolean),
 	Set: (self: UIComponent, State: boolean) -> (),
 }
 
@@ -570,5 +570,24 @@ export type Artifact_Class = {
 
 export type AnimationDataOptions =  {Name: string?, Fade: number?, Speed: number?, Weight: number?, Priority: Enum.AnimationPriority?, Active_Time: number?}
 export type EffectAnyData = {[string]: (Instance | any)}
+export type GamePlace = "Lobby" | "Mission" | "AFK" | "Raid"
 
-return {};
+
+export type PartyPlayer = {
+	Team: {[number]: string},
+	Level: number,
+}
+export type Party = {
+	Code: number,
+	Players: {[number]: PartyPlayer},
+
+	Stage: string,
+	FriendsOnly: boolean,
+	State: "Queueing"
+}
+
+return {
+	NOT_IMPLEMENTED_ERROR = function()
+		warn("Method", debug.info(2, "n"), "not implemented. Consider writing a hardcoded value of return")
+	end
+};

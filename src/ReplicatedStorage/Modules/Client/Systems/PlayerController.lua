@@ -21,6 +21,8 @@ local CharacterLibrary = require(Client.Libraries.Characters)
 
 local Replicator = require(Client.Systems.ReplicationController)
 local GameEnum = require(Shared.GameEnum)
+local Places = require(Shared.Places)
+
 --
 local INPUT_DIRECTIONS = {
 	['Front'] = Vector3.new(0, 0, -1), 
@@ -36,17 +38,15 @@ local Controller = {
 	__CurrentMovementVector = Vector3.zero,
 }
 
-function Controller:Init()
-	--CharacterLibrary:GetCurrent(Player.UserId):SetVisible(true)
-	
+function Controller:Init(): ()
+
+	Controller:ConnectPing()
+
+	if not Places:CanFight() then
+		return;
+	end
+
 	Controller:SetupKeybinds()
-	
-	task.spawn(function()
-		while task.wait(.5) do
-			local Sent, Receive = Network:GetPing()
-			Controller.__Ping = Receive + Sent
-		end
-	end)
 
 	RunService:BindToRenderStep('PlayerControllerMainLoop', Enum.RenderPriority.Camera.Value, function(Delta: number)
 		local CurrentCharacter = CharacterLibrary:GetCurrent(Player.UserId)
@@ -62,6 +62,7 @@ function Controller:Init()
 			UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 		end
 
+		-- !selene: ignore
 		workspace.CurrentCamera.CameraSubject = CurrentCharacter.__Character.Humanoid 
 		workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
 
@@ -179,6 +180,15 @@ function Controller:SetupKeybinds()
 			(CharacterLibrary:GetCurrent(Player.UserId) :: Types.AgentClass):SwitchState('Attacking', .5)
 		end,
 	})
+end
+
+function Controller:ConnectPing()
+	task.spawn(function()
+		while task.wait(.5) do
+			local Sent, Receive = Network:GetPing()
+			Controller.__Ping = Receive + Sent
+		end
+	end)
 end
 
 return Controller

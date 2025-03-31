@@ -17,6 +17,20 @@ local peek = Fusion.peek
 local Component = ComponentClass.new(script.Name, 'HUD', {
 })
 
+function Component:Link(): boolean
+	local PlayerGui = Player.PlayerGui
+	local HUD = PlayerGui:WaitForChild("PlayerHUD") :: Folder
+	local Main = HUD:FindFirstChild("Main", true)
+
+	if not(Main) then
+		return false;
+	end
+
+	self.__Main_Frame = Main;
+
+	return true;
+end
+
 function Component:Init()
 	local Scope = self:GetScope()
 	local Frame = self:GetFrame()

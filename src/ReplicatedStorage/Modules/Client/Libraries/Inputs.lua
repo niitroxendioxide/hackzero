@@ -10,6 +10,7 @@ local Client = ReplicatedStorage.Modules.Client
 
 local Settings = require(Client.Packages.Settings)
 local Types = require(Shared.Types)
+local Places = require(Shared.Places)
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -68,6 +69,10 @@ function Inputs.OnEvent(InputObject: InputObject, GameProcessedEvent: boolean)
 end
 
 function Inputs.OverrideDefaults()
+	if not Places:CanFight() then
+		return;
+	end
+
 	for _, Action in KEY_ACTIONS do
 		ContextActionService:UnbindAction(Action..'Action')
 	end

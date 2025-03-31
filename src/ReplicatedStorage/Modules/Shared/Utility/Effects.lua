@@ -96,7 +96,7 @@ function EffectUtil:Emit(Asset: Instance, Light: boolean?): ()
 
 			local Delay = Objects:GetAttribute('EmitDelay') or 0
 			task.delay( Delay / WorldSpeed, function()
-				local CorrectedAmount = math.ceil(Objects:GetAttribute('EmitCount') * GraphicSettings)
+				local CorrectedAmount = math.ceil(Objects:GetAttribute('EmitCount') * (GraphicSettings / 10))
 
 				Objects:Emit(CorrectedAmount)
 			end)

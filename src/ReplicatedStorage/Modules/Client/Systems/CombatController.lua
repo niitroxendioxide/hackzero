@@ -3,11 +3,12 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService('Players')
 
 local Client = ReplicatedStorage.Modules.Client
---local Shared = ReplicatedStorage.Modules.Shared
+local Shared = ReplicatedStorage.Modules.Shared
 
 local Inputs = require(Client.Libraries.Inputs)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
+local Places = require(Shared.Places)
 --local Replicator = require(Client.Libraries.Replicator)
 
 --local GameEnum = require(Shared.GameEnum)
@@ -18,9 +19,12 @@ local Controller = {
 }
 
 function Controller:Init()
-	
+	if not Places:CanFight() then
+		return;
+	end
+
 	Movesets:Init()
-	
+
 	for _, Key in Controller.__Abilities do
 		Inputs:Bind(Key, {
 			Release = true,

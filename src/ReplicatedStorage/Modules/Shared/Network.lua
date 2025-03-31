@@ -8,7 +8,7 @@ local Network = {
 	__Cache = {}, 
 }
 
-function Network.new(Name: string, Type: 'Event' | 'Function' | 'Unreliable')
+function Network.new(Name: string, Type: 'Event' | 'Function' | 'Unreliable'): ()
 	assert(RunService:IsServer(), 'Cannot create remotes on client')
 	
 	if script:GetAttribute(Name) ~= nil then

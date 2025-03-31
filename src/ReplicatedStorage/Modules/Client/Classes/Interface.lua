@@ -1,5 +1,6 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
@@ -43,10 +44,18 @@ function ComponentClass:GetFrame()
 	return self.__Main_Frame
 end
 
-function ComponentClass:Link(Main_Frame: Frame | CanvasGroup)
-	assert(self.__Main_Frame == nil, 'Already assigned a UI frame')
+function ComponentClass:Link(): boolean
+	local Player = Players.LocalPlayer
+	local PlayerGui = Player.PlayerGui
+	local GUIObject = PlayerGui:FindFirstChild(script.Name)
 
-	self.__Main_Frame = Main_Frame
+	if not(GUIObject) then
+		return false;
+	end
+
+	self.__Main_Frame = GUIObject;
+
+	return true;
 end
 
 function ComponentClass:Set(Visible: boolean)

@@ -7,6 +7,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(Shared.Types)
 local ClockUtil = require(Shared.Utility.Clock)
 local Enemies = require(Shared.Libraries.Enemies)
+local Places = require(Shared.Places)
 
 local ServerEnemy = require(ServerStorage.Modules.Classes.ServerEnemy)
 
@@ -21,6 +22,10 @@ local Service = {
 local Enemy_Opts = {'Saiyan','Template'}
 
 function Service:Init()
+	if not Places:CanFight() then
+		return;
+	end
+
 	ClockUtil:ThreadLoop(1, function(_: number)
 		
 		if Enemies:GetEnemyCount() < Service.__Limit then
