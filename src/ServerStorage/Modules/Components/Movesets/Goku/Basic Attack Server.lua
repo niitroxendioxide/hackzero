@@ -6,7 +6,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
 local Types = require(Shared.Types)
-local AbilityClass = require(Classes.ServerAbility)
+local AbilityClass = require(Classes.Combat.ServerAbility)
 
 --
 local Ability = AbilityClass.new()
@@ -17,7 +17,7 @@ function Ability:Play(Caster: Types.ServerAgentClass)
 	
 	--
 	Ability:Begin(Caster, {
-		{0, function(self: Types.Sequence)
+		{0, function(_: Types.Sequence)
 			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time', M1_Count) / (Ability:FromData('Speed') or 1))
 		end,},
 		

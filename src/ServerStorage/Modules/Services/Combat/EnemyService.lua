@@ -9,7 +9,7 @@ local ClockUtil = require(Shared.Utility.Clock)
 local Enemies = require(Shared.Libraries.Enemies)
 local Places = require(Shared.Places)
 
-local ServerEnemy = require(ServerStorage.Modules.Classes.ServerEnemy)
+local ServerEnemy = require(ServerStorage.Modules.Classes.Combat.ServerEnemy)
 
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 

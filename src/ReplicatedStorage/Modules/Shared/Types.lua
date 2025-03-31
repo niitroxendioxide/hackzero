@@ -1,6 +1,7 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Fusion = require(ReplicatedStorage.Modules.Client.Libraries.Fusion)
+local _GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 
 -- [[ Other ]]
 
@@ -573,17 +574,94 @@ export type EffectAnyData = {[string]: (Instance | any)}
 export type GamePlace = "Lobby" | "Mission" | "AFK" | "Raid"
 
 
-export type PartyPlayer = {
-	Team: {[number]: string},
+export type ArtifactDataClass = {
+	Name: string,
+	Slot: number,
+	Level: number,
+
+	Main_Stat: {Stat: number},
+	Substats: Substats,
+}
+export type WeaponDataClass = {
+	Name: string,
 	Level: number,
 }
-export type Party = {
-	Code: number,
-	Players: {[number]: PartyPlayer},
+export type AgentDataClass = {
+	Name: string,
+	Level: number,
 
-	Stage: string,
-	FriendsOnly: boolean,
-	State: "Queueing"
+	Items: {
+		Weapon: WeaponDataClass,
+		Artifacts: {ArtifactDataClass},
+	},
+	
+	Skin: string,
+}
+
+export type PartyPlayerTeam = {[number]: AgentDataClass}
+export type PartyState = typeof(_GameEnum.PartyStates.Idle)
+export type PartyPlayer = {
+	Player: Player,
+	Team: PartyPlayerTeam,
+	Level: number,
+
+	GetId: (self: PartyPlayer) -> (number),
+	GetTeam: (self: PartyPlayer) -> (PartyPlayerTeam),
+	GetSimplifiedTeam: (self: PartyPlayer) -> (string),
+}
+
+export type PartyClass = {
+	Code: number,
+	__Players: {[number]: PartyPlayer},
+
+	__Stage: string,
+	__FriendsOnly: boolean,
+	__State: PartyState,
+	__State_Name: string,
+
+	--
+	AddPlayer: (self: PartyClass, Player: PartyPlayer) -> (),
+	HasPlayer: (self: PartyClass, Id: number) -> (),
+	RemovePlayer: (self: PartyClass, Player: PartyPlayer) -> (),
+
+	GetStateName: (self: PartyClass) -> string,
+	GetState: (self: PartyClass) -> PartyState,
+
+	SetStage: (self: PartyClass, Stage: string) -> (),
+
+	Destroy: (self: PartyClass) -> (),
+}
+
+export type PlayerAgentData = {
+	Name: string,
+	Level: number,
+
+	Obtained: number,
+	Skins: {},
+
+
+}
+
+export type PlayerProfileData = {
+	Level: number,
+    Experience: number,
+
+    Stats: {
+        TotalDamage: number,
+        TotalDaze: number,
+        TotalKills: number,
+        TotalPulls: number,
+        TotalGemsSpent: number,
+        TotalCurrencySpent: number,
+    },
+
+    Agents: {
+		[number]: PlayerAgentData,
+	},
+    Achievements: {},
+    Titles: {},
+    Items: {},
+    Warnings: {},
 }
 
 return {

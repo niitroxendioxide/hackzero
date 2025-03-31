@@ -37,7 +37,7 @@ function EnemyMovement:CreateCollider()
 	self.__Collider.CanCollide = false
 	self.__Collider.Anchored = true
 	self.__Collider.Transparency = (RunService:IsClient() and not DEBUG_ENEMY_POSITIONS) and 1 or 0.85
-	self.__Collider.Parent = RunService:IsClient() and WorldFolder.Entities.Hitboxes or (workspace:FindFirstChild("Camera") :: Folder):FindFirstChild("Enemies")
+	self.__Collider.Parent = RunService:IsClient() and WorldFolder.Entities.Hitboxes or (workspace:FindFirstChild("Camera") :: Camera):FindFirstChild("Enemies")
 	
 	if DEBUG_ENEMY_POSITIONS and RunService:IsServer() then
 		self.__debug_collider = Instance.new('Part')

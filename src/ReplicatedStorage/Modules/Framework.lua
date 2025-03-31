@@ -4,17 +4,30 @@ local Framework = {
 
 function Framework:Init(...)
 	for _, Child: ModuleScript | Folder in {...} do
-		if Child:IsA("ModuleScript") then
+		if typeof(Child) == "Instance" and Child:IsA("ModuleScript") then
 			Framework:LoadModule(Child)
 		else
-			for _, Module in Child:GetChildren() do
-				Framework:LoadModule(Module)
+			if typeof(Child) == "table" then
+				local Method = (Child[2] == true and "GetDescendants" or "GetChildren") :: string
+
+				for _, Module in ((Child[1] :: Folder)[Method] :: (self: Folder) -> ({Instance}))(Child[1] :: Folder) do
+					Framework:LoadModule(Module)
+				end
+			else
+				for _, Module in Child:GetChildren() do
+					Framework:LoadModule(Module)
+				end
 			end
+
 		end
 	end
 end
 
 function Framework:LoadModule(Module: ModuleScript)
+	if not Module:IsA("ModuleScript") then
+		return
+	end
+
 	local Success, Required = pcall(require, Module)
 
 	if not Success and Framework.Debug then

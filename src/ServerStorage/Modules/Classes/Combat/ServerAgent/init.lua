@@ -9,7 +9,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(Shared.Types)
 local CharacterDatabase = require(Shared.Database.Characters)
-local CharacterClass = require(Classes.ServerAgent.ServerCharacter)
+local CharacterClass = require(Classes.Combat.ServerAgent.ServerCharacter)
 local AgentStatus = require(Shared.Classes.Agents.Status)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 

@@ -70,13 +70,17 @@ return {
 		[Vector3.new(-1, 0, 1)] = 7,
 		[Vector3.new(-1, 0, -1)] = 8,
 	},
-	
-	
+
 	Boost_Effects = {
 		DODGE_FLOW_TRIGGER = 'DodgeFlowStateTrigger'
 	},
 	Agent_States = {"Attacking", "Dashing", "Idle", "Frozen", "Stunned"},
-	
+	PartyStates = {
+		Idle = 1,
+		Queueing = 2,
+		Teleporting = 3,
+	},
+
 	KeyLookup = function(Table: {}, val: number)
 		for Key, Value in Table do
 			if Value == val then

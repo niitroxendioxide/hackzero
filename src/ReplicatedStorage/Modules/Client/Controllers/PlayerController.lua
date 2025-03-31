@@ -19,7 +19,7 @@ local AgentClass = require(Client.Classes.Agent)
 local CameraLibrary = require(Client.Libraries.Camera)
 local CharacterLibrary = require(Client.Libraries.Characters)
 
-local Replicator = require(Client.Systems.ReplicationController)
+local Replicator = require(Client.Controllers.ReplicationController)
 local GameEnum = require(Shared.GameEnum)
 local Places = require(Shared.Places)
 

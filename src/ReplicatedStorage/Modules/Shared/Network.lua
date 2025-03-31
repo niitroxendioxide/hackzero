@@ -183,7 +183,7 @@ if RunService:IsServer() then
 		end
 	end
 elseif RunService:IsClient() then
-	function Network:On<T...>(Name: string, fn: (Player, T...) -> ())
+	function Network:On<T...>(Name: string, fn: any)
 		local Event = Network:Get(Name) :: RemoteEvent
 		if not Event then
 			return

@@ -1,8 +1,6 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 
-local Assets = ReplicatedStorage.Assets
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 

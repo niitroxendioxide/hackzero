@@ -19,7 +19,7 @@ local Component = ComponentClass.new(script.Name, 'HUD', {
 
 function Component:Link(): boolean
 	local PlayerGui = Player.PlayerGui
-	local HUD = PlayerGui:WaitForChild("PlayerHUD") :: Folder
+	local HUD = PlayerGui:WaitForChild("PlayerHUD") :: ScreenGui
 	local Main = HUD:FindFirstChild("Main", true)
 
 	if not(Main) then

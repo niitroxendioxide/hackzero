@@ -35,6 +35,6 @@ end
 local Framework = require(ReplicatedStorage.Modules.Framework)
 local World = workspace:WaitForChild('World');
 
-Framework:Init(ReplicatedStorage.Modules.Shared.Database, Modules.Services)
+Framework:Init(ReplicatedStorage.Modules.Shared.Database, {Modules.Services, true})
 
 World.Effects:ClearAllChildren()

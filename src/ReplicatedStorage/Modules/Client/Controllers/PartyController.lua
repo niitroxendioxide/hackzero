@@ -19,7 +19,7 @@ function Controller:Init()
     end)
 end
 
-function Controller:JoinQueue(Party: Types.Party)
+function Controller:JoinQueue(Party: Types.PartyClass)
     Controller.__Current_Party = Party;
 end
 

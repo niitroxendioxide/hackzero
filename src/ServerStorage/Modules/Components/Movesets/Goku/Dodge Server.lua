@@ -6,7 +6,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
 local Types = require(Shared.Types)
-local AbilityClass = require(Classes.ServerAbility)
+local AbilityClass = require(Classes.Combat.ServerAbility)
 
 --
 local Ability = AbilityClass.new()
