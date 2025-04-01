@@ -22,6 +22,8 @@ ComponentClass.__tostring = function()
 	return 'GUIComponent'
 end
 
+ComponentClass.Fusion = Fusion :: Fusion.Fusion;
+
 function ComponentClass.new(Name: string, Group: string): Types.UIComponent
 	local self = setmetatable({}, ComponentClass)
 	self.__Name = Name
@@ -44,22 +46,24 @@ function ComponentClass:GetFrame()
 	return self.__Main_Frame
 end
 
-function ComponentClass:Link(): boolean
+function ComponentClass:Link(): Instance?
 	local Player = Players.LocalPlayer
 	local PlayerGui = Player.PlayerGui
 	local GUIObject = PlayerGui:FindFirstChild(script.Name)
 
-	if not(GUIObject) then
-		return false;
-	end
-
-	self.__Main_Frame = GUIObject;
-
-	return true;
+	return GUIObject;
 end
 
 function ComponentClass:Set(Visible: boolean)
 	self.__Main_Frame.Visible = Visible
+end
+
+function ComponentClass:Bind()
+	local Object = self:Link()
+
+	self.__Main_Frame = Object
+
+	return Object ~= nil
 end
 
 return ComponentClass

@@ -504,13 +504,16 @@ export type UIComponent = {
 	__Group: string,
 	__Scope: Fusion.Scope,
 	__Main_Frame: CanvasGroup | Frame,
-	
+
 	GetScope: (self: UIComponent) -> (Fusion.Scope),
 	GetFrame: (self: UIComponent) -> CanvasGroup | Frame,
-	
+
 	Init: (self: UIComponent) -> (),
-	Link: (self: UIComponent) -> (boolean),
+	Link: (self: UIComponent) -> (Instance?),
+	Bind: (self: UIComponent) -> (),
 	Set: (self: UIComponent, State: boolean) -> (),
+
+	[string]: (self: UIComponent) -> (any),
 }
 
 export type Artifact_Substat = "Health%" | "Health" | "Attack" | "Attack%" | "Defense" | "Defense%" | "Crit_Rate" | "Crit_Damage" | "Penetration" | "Affliction_Aptitude"
@@ -662,6 +665,25 @@ export type PlayerProfileData = {
     Titles: {},
     Items: {},
     Warnings: {},
+}
+
+export type Signal<T...> = RBXScriptSignal & {Fire: (self: RBXScriptSignal, T...) -> ()}
+export type ClientAreaClass = {
+	--
+	__Params: OverlapParams,
+	__IsInside: boolean,
+	__AreaInstances: {Instance} | Instance,
+	__Loop: RBXScriptConnection,
+
+	--
+	OnEnter: Signal<>,
+	OnLeave: Signal<>,
+
+
+	Destroy: (self: ClientAreaClass) -> (),
+
+	__IsPartInPlayer: (self: ClientAreaClass, Part: BasePart) -> (boolean),
+	__GetPartsInInstances: (self: ClientAreaClass, Part: BasePart) -> (boolean),
 }
 
 return {

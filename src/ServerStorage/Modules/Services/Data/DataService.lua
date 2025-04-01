@@ -54,12 +54,11 @@ function Service:AddPlayer(Player: Player)
 
         RetrievedProfile.OnSessionEnd:Connect(function()
             Service.__Profiles[Player] = nil
-            Player:Kick(`Profile session end - Please rejoin`)
+            Player:Kick(`Profile session ended. Rejoin (Data disconnected)`)
         end)
 
         if Player.Parent == Players then
             Service.__Profiles[Player] = RetrievedProfile
-            print(`Profile loaded for {Player.DisplayName}!`)
         else
         -- The player has left before the profile session started
             RetrievedProfile:EndSession()

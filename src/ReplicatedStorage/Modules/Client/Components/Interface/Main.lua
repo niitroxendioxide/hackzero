@@ -17,18 +17,12 @@ local peek = Fusion.peek
 local Component = ComponentClass.new(script.Name, 'HUD', {
 })
 
-function Component:Link(): boolean
+function Component:Link(): Instance?
 	local PlayerGui = Player.PlayerGui
 	local HUD = PlayerGui:WaitForChild("PlayerHUD") :: ScreenGui
 	local Main = HUD:FindFirstChild("Main", true)
 
-	if not(Main) then
-		return false;
-	end
-
-	self.__Main_Frame = Main;
-
-	return true;
+	return Main;
 end
 
 function Component:Init()

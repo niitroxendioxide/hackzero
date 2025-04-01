@@ -16,7 +16,7 @@ MAD STUDIO (by loleris)
 		
 	Members:
 	
-		ProfileStore.IsClosing          [bool]
+		(ProfileStore.IsClosing :: boolean)          [bool]
 			-- Set to true after a game:BindToClose() trigger
 			
 		ProfileStore.IsCriticalState    [bool]
@@ -515,7 +515,7 @@ local function UpdateAsync(profile_store, profile_key, transform_params, is_user
 
 	local next_in_queue = WaitInUpdateQueue(SessionToken(profile_store.Name, profile_key, is_user_mock))
 
-	local success = true
+	local _success = true
 
 	local success, error_message = pcall(function()
 		local transform_function = function(latest_data)
@@ -1023,12 +1023,17 @@ export type ProfileStoreModule = {
 	IsCriticalState: boolean,
 	OnError: {Connect: (self: any, listener: (message: string, store_name: string, profile_key: string) -> ()) -> ({Disconnect: (self: any) -> ()})},
 	OnOverwrite: {Connect: (self: any, listener: (store_name: string, profile_key: string) -> ()) -> ({Disconnect: (self: any) -> ()})},
-	OnCriticalToggle: {Connect: (self: any, listener: (is_critical: boolean) -> ()) -> ({Disconnect: (self: any) -> ()})},
+	OnCriticalToggle: {Fire: (self: any, any) -> (), Connect: (self: any, listener: (is_critical: boolean) -> ()) -> ({Disconnect: (self: any) -> ()})},
 	DataStoreState: "NotReady" | "NoInternet" | "NoAccess" | "Access",
 	New: <T>(store_name: string, template: (T & JSONAcceptable)?) -> (ProfileStore<T>),
 	SetConstant: (name: ConstantName, value: number) -> (),
 	StartSessionAsync: (self: ProfileStoreModule, profile_key: string?, params: {Steal: boolean?}?) -> (),
 	Test: () -> ()?,
+
+	MessageAsync: (() -> ())?,
+	GetAsync: (() -> ())?,
+	RemoveAsync: (() -> ())?,
+	VersionQuery: (() -> ())?,
 }
 
 local Profile = {}
@@ -1204,6 +1209,7 @@ local ProfileStore: ProfileStoreModule = {
 	New = nil,
 	SetConstant = nil,
 	StartSessionAsync = nil,
+
 }
 ProfileStore.__index = ProfileStore
 
@@ -1385,7 +1391,7 @@ function ProfileStore:StartSessionAsync(profile_key, params)
 
 	params = params or {}
 
-	if ProfileStore.IsClosing == true then
+	if (ProfileStore.IsClosing :: boolean) == true then
 		return nil
 	end
 
@@ -1420,7 +1426,7 @@ function ProfileStore:StartSessionAsync(profile_key, params)
 	local start = os.clock()
 	local exp_backoff = 1
 
-	while ProfileStore.IsClosing == false and cancel_condition() == false do
+	while (ProfileStore.IsClosing :: boolean) == false and cancel_condition() == false do
 
 		-- Load profile:
 
@@ -1461,7 +1467,7 @@ function ProfileStore:StartSessionAsync(profile_key, params)
 				{
 					ExistingProfileHandle = function(latest_data)
 
-						if ProfileStore.IsClosing == true or cancel_condition() == true then
+						if (ProfileStore.IsClosing :: boolean) == true or cancel_condition() == true then
 							return
 						end
 
@@ -1498,7 +1504,7 @@ function ProfileStore:StartSessionAsync(profile_key, params)
 					end,
 					MissingProfileHandle = function(latest_data)
 
-						local is_cancel = ProfileStore.IsClosing == true or cancel_condition() == true
+						local is_cancel = (ProfileStore.IsClosing :: boolean) == true or cancel_condition() == true
 
 						latest_data.Data = DeepCopyTable(self.template)
 						latest_data.MetaData = {
@@ -1512,7 +1518,7 @@ function ProfileStore:StartSessionAsync(profile_key, params)
 					end,
 					EditProfile = function(latest_data)
 
-						if ProfileStore.IsClosing == true or cancel_condition() == true then
+						if (ProfileStore.IsClosing :: boolean) == true or cancel_condition() == true then
 							return
 						end
 
@@ -1555,7 +1561,7 @@ function ProfileStore:StartSessionAsync(profile_key, params)
 
 					end
 
-					if ProfileStore.IsClosing == true or cancel_condition() == true then
+					if (ProfileStore.IsClosing :: boolean) == true or cancel_condition() == true then
 						-- The server has initiated a shutdown by the time this profile was loaded
 						SaveProfileAsync(profile, true) -- Release profile and yield until the DataStore call is finished
 						profile = nil -- Don't return the profile object
@@ -1566,7 +1572,7 @@ function ProfileStore:StartSessionAsync(profile_key, params)
 
 				else
 
-					if ProfileStore.IsClosing == true or cancel_condition() == true then
+					if (ProfileStore.IsClosing :: boolean) == true or cancel_condition() == true then
 						ActiveProfileLoadJobs = ActiveProfileLoadJobs - 1
 						return nil
 					end
@@ -1593,7 +1599,7 @@ function ProfileStore:StartSessionAsync(profile_key, params)
 
 						-- Attempt to load the profile again after a delay
 						local wait_until = os.clock() + if request_force_load == true then FIRST_LOAD_REPEAT else LOAD_REPEAT_PERIOD
-						repeat task.wait() until os.clock() >= wait_until or ProfileStore.IsClosing == true
+						repeat task.wait() until os.clock() >= wait_until or (ProfileStore.IsClosing :: boolean) == true
 
 					else
 						-- Another session tried to load this profile:
@@ -1619,7 +1625,7 @@ function ProfileStore:StartSessionAsync(profile_key, params)
 				default_timeout = os.clock() - start >= START_SESSION_TIMEOUT
 			end
 
-			if default_timeout == true or ProfileStore.IsClosing == true or cancel_condition() == true then
+			if default_timeout == true or (ProfileStore.IsClosing :: boolean) == true or cancel_condition() == true then
 				ActiveProfileLoadJobs = ActiveProfileLoadJobs - 1
 				return nil
 			end
@@ -1652,7 +1658,7 @@ function ProfileStore:MessageAsync(profile_key, message)
 		error(`[{script.Name}]: message must be a table`)
 	end
 
-	if ProfileStore.IsClosing == true then
+	if (ProfileStore.IsClosing :: boolean) == true then
 		return false
 	end
 
@@ -1660,7 +1666,7 @@ function ProfileStore:MessageAsync(profile_key, message)
 
 	local exp_backoff = 1
 
-	while ProfileStore.IsClosing == false do
+	while (ProfileStore.IsClosing :: boolean) == false do
 
 		-- Updating profile:
 
@@ -1746,7 +1752,7 @@ function ProfileStore:GetAsync(profile_key, version)
 		error(`[{script.Name}]: profile_key is too long`)
 	end
 
-	if ProfileStore.IsClosing == true then
+	if (ProfileStore.IsClosing :: boolean) == true then
 		return nil
 	end
 
@@ -1758,7 +1764,7 @@ function ProfileStore:GetAsync(profile_key, version)
 
 	local exp_backoff = 1
 
-	while ProfileStore.IsClosing == false do
+	while (ProfileStore.IsClosing :: boolean) == false do
 
 		-- Load profile:
 
@@ -1820,7 +1826,7 @@ function ProfileStore:RemoveAsync(profile_key)
 		error(`[{script.Name}]: Invalid profile_key`)
 	end
 
-	if ProfileStore.IsClosing == true then
+	if (ProfileStore.IsClosing :: boolean) == true then
 		return false
 	end
 
@@ -1923,7 +1929,7 @@ function ProfileVersionQuery:NextAsync()
 
 	WaitForStoreReady(self.profile_store)
 
-	if ProfileStore.IsClosing == true then
+	if (ProfileStore.IsClosing :: boolean) == true then
 		return nil -- Silently fail :NextAsync() requests
 	end
 
@@ -2001,7 +2007,7 @@ function ProfileVersionQuery:NextAsync()
 				is_finished = true
 			end)
 
-			local success, error_message = pcall(function()
+			local success, _error_message = pcall(function()
 				self.query_pages:AdvanceToNextPageAsync()
 				self.query_index = 0
 			end)

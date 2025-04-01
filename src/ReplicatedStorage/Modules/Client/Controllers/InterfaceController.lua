@@ -1,11 +1,13 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local _UserInputService = game:GetService('UserInputService')
+local StarterGUI = game:GetService("StarterGui")
 local _RunService = game:GetService('RunService')
 
-local _Shared = ReplicatedStorage.Modules.Shared
+local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Types = require(Shared.Types)
 
 --
 local Controller = {
@@ -13,11 +15,13 @@ local Controller = {
 }
 
 function Controller:Init(): ()
+	Controller:DisableCallback("ResetButtonCallback")
+
 	for _, Component in Client.Components.Interface:GetChildren() do
 		task.spawn(function()
-			local Object = require(Component)
+			local Object = require(Component) :: Types.UIComponent
 
-			if tostring(Object) == 'GUIComponent' and Object:Link() then
+			if tostring(Object) == 'GUIComponent' and Object:Bind() then
 				task.spawn(Object.Init, Object)
 
 				Controller.__Components[Component.Name] = Object
@@ -26,8 +30,22 @@ function Controller:Init(): ()
 	end
 end
 
-function Controller:GetComponent(Name: string): {}
+function Controller:GetComponent(Name: string): Types.UIComponent
 	return Controller.__Components[Name]
+end
+
+function Controller:DisableCallback(Id: string)
+	task.spawn(function()
+		repeat
+			local success = pcall(function() 
+				StarterGUI:SetCore(Id, false) 
+			end)
+
+			task.wait(1)
+		until success
+
+		print(Id, "successfully disabled");
+	end)
 end
 
 return Controller
