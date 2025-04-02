@@ -16,23 +16,23 @@ function CharacterData:Init()
 
 		if Success then
 			CharacterData.__Saved[Module.Name] = table.freeze(Character)
-			
+
 			table.insert(CharacterData.__Ids, Module.Name)
 		else
 			warn('Error on character data for:', Module.Name)
 		end
 	end
-	
+
 	table.sort(CharacterData.__Ids, function(a, b)
 		return a < b
 	end)
-	
+
 	table.freeze(CharacterData.__Ids)
 end
 
 function CharacterData:GetStats(Character: string): Types.CharacterStats
 	local AccessedData = CharacterData:GetCharacterData(Character)
-	
+
 	return AccessedData.Stats
 end
 
@@ -45,19 +45,19 @@ end
 
 function CharacterData:GetStatsAtLevel(Character: string, Level: number)
 	local ObtainedData = CharacterData:GetCharacterData(Character)
-	
+
 	local Converted = {}
-	
+
 	for Key, Value in ObtainedData.Stats do
 		local PerLevel = ObtainedData.Level_Stats
-		
+
 		if PerLevel[Key] then
 			Converted[Key] = Value + (PerLevel[Key] * math.max(Level - 1, 0))
 		else
 			Converted[Key] = Value
 		end
-	end	
-	
+	end
+
 	return table.freeze(Converted)
 end
 
@@ -93,5 +93,13 @@ function CharacterData:GetCharacterFromId(Id: number)
 	return CharacterData.__Ids[Id]
 end
 
+function CharacterData:GetAllCharacterNames(): {string}
+	local List = {}
+	for _, Name in CharacterData.__Ids do
+		table.insert(List, Name)
+	end
+
+	return List
+end
 
 return CharacterData

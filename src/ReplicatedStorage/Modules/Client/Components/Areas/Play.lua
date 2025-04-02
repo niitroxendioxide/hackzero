@@ -8,16 +8,15 @@ local InterfaceController = require(Client.Controllers.InterfaceController)
 local PlayArea = {}
 
 function PlayArea.OnEnter()
-    local UIComponent = InterfaceController:GetComponent("Party")
+    local UIComponent = InterfaceController:GetComponent("Interactions")
 
-    print("hey :3")
-    UIComponent:Set(true)
+    UIComponent:SetButton("Play", true)
 end
 
 function PlayArea.OnLeave()
-    local UIComponent = InterfaceController:GetComponent("Party")
+    local UIComponent = InterfaceController:GetComponent("Interactions")
 
-    UIComponent:Set(false)
+    UIComponent:SetButton("Play", false)
 end
 
 return PlayArea

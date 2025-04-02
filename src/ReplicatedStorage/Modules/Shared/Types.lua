@@ -512,6 +512,7 @@ export type UIComponent = {
 	Link: (self: UIComponent) -> (Instance?),
 	Bind: (self: UIComponent) -> (),
 	Set: (self: UIComponent, State: boolean) -> (),
+	BindToStateChange: (self: UIComponent, Callback: (State: boolean) -> ()) -> (),
 
 	[string]: (self: UIComponent) -> (any),
 }
@@ -526,23 +527,44 @@ export type Artifact_Data = {
 		Two_Piece: {
 			[Stat]: number,
 		},
-		
+
 		Four_Piece: {
 			[Stat]: number,
 		}
 	},
-	
+
 	Piece_Descriptions: {
 		Two_Piece: string,
 		Four_Piece: string,
 	}
 }
 
+export type Weapon_Data = {
+	Name: string,
+	Role_Needed: Role,
+	Rarity: Rarity,
+
+	ModelName: string,
+	Passive_Description: string,
+
+	Main_Stat: {
+		StatName: Stat,
+		Base: number,
+		UpgradePerAscension: number,
+	},
+
+	Sub_Stat: {
+		StatName: Stat,
+		Base: number,
+		UpgradePerAscension: number,
+	},
+}
+
 export type Process_Event_Data = {
 	Agent: ServerAgentClass,
 	Target: ServerEnemyClass,
 	Critical: boolean,
-	
+
 }
 
 export type Substats = {
@@ -554,20 +576,20 @@ export type Artifact_Class = {
 	Slot: number,
 	Level: number,
 	Rarity: Rarity,
-	
+
 	--
 	Main_Stat: {Stat | number},
 	Stats: Substats,
-	
+
 	-- #Privates
 	__Events: {},
 	__Count: number,
-	
+
 	--
 	Extend: (self: Artifact_Class, Slot: number, Level: number, Mainstat: {Stat | number}, Substats: Substats) -> Artifact_Class,
-	
+
 	GetPieceCount: (self: Artifact_Class) -> (number),
-	
+
 	OnEffectProcess: (self: Artifact_Class, Event: (Effect: Element, Data: Process_Event_Data) -> ()) -> (),
 	OnHitProcess: (self: Artifact_Class, State: Hit_Process_State, Event: (Data: Process_Event_Data) -> (number, number)) -> (),
 }
@@ -582,7 +604,7 @@ export type ArtifactDataClass = {
 	Slot: number,
 	Level: number,
 
-	Main_Stat: {Stat: number},
+	Main_Stat: MainStat,
 	Substats: Substats,
 }
 export type WeaponDataClass = {
@@ -597,7 +619,7 @@ export type AgentDataClass = {
 		Weapon: WeaponDataClass,
 		Artifacts: {ArtifactDataClass},
 	},
-	
+
 	Skin: string,
 }
 
@@ -635,6 +657,7 @@ export type PartyClass = {
 	Destroy: (self: PartyClass) -> (),
 }
 
+export type MainStat = {Stat | number}
 export type PlayerAgentData = {
 	Name: string,
 	Level: number,
@@ -642,7 +665,11 @@ export type PlayerAgentData = {
 	Obtained: number,
 	Skins: {},
 
+	Weapon: WeaponDataClass,
 
+	Artifacts: {
+		[number]: ArtifactDataClass,
+	}
 }
 
 export type PlayerProfileData = {
@@ -683,7 +710,26 @@ export type ClientAreaClass = {
 	Destroy: (self: ClientAreaClass) -> (),
 
 	__IsPartInPlayer: (self: ClientAreaClass, Part: BasePart) -> (boolean),
-	__GetPartsInInstances: (self: ClientAreaClass, Part: BasePart) -> (boolean),
+	__GetPartsInInstances: (self: ClientAreaClass) -> (boolean),
+}
+
+export type PlayerAgentDataClass = {
+	Name: string,
+	Level: number,
+
+	ObtainmentDate: number,
+	Skins: {},
+
+	Weapon: WeaponDataClass,
+
+	Artifacts: {
+		[number]: ArtifactDataClass,
+	},
+
+	SetWeapon: (self: PlayerAgentDataClass, WeaponName: string, Level: number) -> (),
+	SetArtifacts: (self: PlayerAgentDataClass, Artifacts: {ArtifactDataClass}) -> (),
+	ToData: (self: PlayerAgentDataClass) -> (PlayerAgentData),
+	Compress: (self: PlayerAgentDataClass) -> ({}),
 }
 
 return {

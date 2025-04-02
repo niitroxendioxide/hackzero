@@ -15,7 +15,7 @@ function Controller:Init()
     end
 
     Network:On("Party", function()
-
+        
     end)
 end
 

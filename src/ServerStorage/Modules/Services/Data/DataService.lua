@@ -7,8 +7,12 @@ local Packages = ServerStorage.Modules.Packages
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Network = require(Shared.Network)
+
 local Types = require(Shared.Types)
+local Clock = require(Shared.Utility.Clock)
 local ProfileTemplate = require(Database.Data.ProfileTemplate)
+local PlayerAgentDataClass = require(ServerStorage.Modules.Classes.Data.PlayerAgentData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
 local DataStore = ProfileStore.New("Testing0", ProfileTemplate)
@@ -16,6 +20,7 @@ local DataStore = ProfileStore.New("Testing0", ProfileTemplate)
 --
 local Service = {
     __Profiles = {} :: {[Player]: typeof(ProfileStore:StartSessionAsync())},
+    __Agents = {},
 }
 
 local function RecursiveSearch(Data: {}, Key: string): ({}, string)
@@ -36,6 +41,25 @@ end
 
 function Service:Init()
 
+    Network:On("DataFetchRequest", function(Player: Player, Type: string)
+        local _PlayerData = Service:GetDataFor(Player)
+
+        if Type == "Agents" then
+            Network:Fire("DataFetchRequest", Player, Service:FetchAgents(Player))
+        end
+
+    end)
+end
+
+function Service:FetchAgents(Player: Player)
+    local Agents = Service:GetPlayerAgents(Player)
+
+    local Data = {}
+    for _, Agent in Agents do
+        table.insert(Data, Agent:Compress())
+    end
+
+    return Data
 end
 
 function Service:AddPlayer(Player: Player)
@@ -48,13 +72,20 @@ function Service:AddPlayer(Player: Player)
     -- Handling new profile session or failure to start it:
 
     if RetrievedProfile ~= nil then
-
         RetrievedProfile:AddUserId(Player.UserId) -- GDPR compliance
         RetrievedProfile:Reconcile() -- Fill in missing variables from PROFILE_TEMPLATE (optional)
+
+        local Thread = Clock:ThreadLoop(300, function()
+            Service:SavePlayerAgentData(Player)
+        end)
 
         RetrievedProfile.OnSessionEnd:Connect(function()
             Service.__Profiles[Player] = nil
             Player:Kick(`Profile session ended. Rejoin (Data disconnected)`)
+
+            if Thread then
+                task.cancel(Thread)
+            end
         end)
 
         if Player.Parent == Players then
@@ -74,6 +105,10 @@ function Service:RemovePlayer(Player: Player)
     if SavedProfile ~= nil then
         SavedProfile:EndSession()
     end
+
+    if Service.__Agents[Player] then
+        Service.__Agents[Player] = nil
+    end
 end
 
 function Service:GetDataFor(Player: Player): Types.PlayerProfileData
@@ -82,7 +117,7 @@ function Service:GetDataFor(Player: Player): Types.PlayerProfileData
         return {} :: Types.PlayerProfileData;
     end
 
-    return Data
+    return Data.Data
 end
 
 function Service:Set(Player: Player, GivenKey: string, Value: any)
@@ -116,6 +151,64 @@ function Service:Add(Player: Player, GivenKey: string, Object: {}): ()
     table.insert(Dir[Key], Object)
 
     return;
+end
+
+function Service:AddAgent(Player: Player, Agent: Types.PlayerAgentDataClass)
+    local PlayerData = Service:GetDataFor(Player)
+
+    for AgentName in PlayerData.Agents do
+        if AgentName == Agent.Name then
+            return
+        end
+    end
+
+    PlayerData.Agents[Agent.Name] = Agent:ToData()
+end
+
+function Service:UpdateAgent(Player: Player, Agent: Types.PlayerAgentDataClass)
+    local PlayerData = Service:GetDataFor(Player)
+
+    if PlayerData.Agents[Agent.Name] == nil then
+        return
+    end
+
+    PlayerData.Agents[Agent.Name] = Agent:ToData()
+end
+
+function Service:GetAgent(Player: Player, Name: string)
+    local PlayerData = Service:GetDataFor(Player)
+    local AgentData = PlayerData.Agents[Name] or {}
+
+    if Service.__Agents[Player] == nil then
+        Service.__Agents[Player] = {}
+    end
+
+    if Service.__Agents[Player][Name] == nil then
+        local Now = DateTime.now().UnixTimestamp
+        local ClassObject = PlayerAgentDataClass.new(Name, AgentData.Level or 1, AgentData.Obtained or Now)
+
+        if AgentData.Weapon then
+            ClassObject:SetWeapon(AgentData.Weapon.Name, AgentData.Weapon.Level)
+        end
+
+        if AgentData.Artifacts then
+            ClassObject:SetWeapon(AgentData.Artifacts)
+        end
+
+        Service.__Agents[Player][Name] = ClassObject
+    end
+
+    return Service.__Agents[Player][Name]
+end
+
+function Service:GetPlayerAgents(Player: Player): {[string]: Types.PlayerAgentDataClass}
+    return Service.__Agents[Player]
+end
+
+function Service:SavePlayerAgentData(Player: Player)
+    for _, Agent: Types.PlayerAgentDataClass in (Service.__Agents[Player] or {}) do
+        Service:UpdateAgent(Player, Agent)
+    end
 end
 
 return Service

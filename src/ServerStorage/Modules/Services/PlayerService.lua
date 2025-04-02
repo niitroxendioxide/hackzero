@@ -7,6 +7,7 @@ local Players = game:GetService('Players')
 
 local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
+local Database = Shared.Database
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 
 local AgentService = require(script.Parent.Combat.AgentService)
@@ -14,6 +15,9 @@ local EnemyService = require(script.Parent.Combat.EnemyService)
 local ServerAgentClass = require(Modules.Classes.Combat.ServerAgent)
 local PartyService = require(script.Parent.Lobby.PartyService)
 local DataService = require(script.Parent.Data.DataService)
+
+local CharacterDatabase = require(Database.Characters)
+local PlayerAgentDataClass = require(Modules.Classes.Data.PlayerAgentData)
 local Types = require(Shared.Types)
 local Places = require(Shared.Places)
 
@@ -65,6 +69,14 @@ function Service.PlayerAdded(Player: Player): ()
 
 	--
 	DataService:AddPlayer(Player)
+
+	--
+	local Characters = CharacterDatabase:GetAllCharacterNames()
+	for _, CharacterName in Characters do
+		local Agent = PlayerAgentDataClass.new(CharacterName, 1, DateTime.now().UnixTimestamp)
+
+		DataService:AddAgent(Player, Agent)
+	end
 end
 
 function Service.PlayerRemoving(Player: Player): ()
@@ -74,7 +86,6 @@ function Service.PlayerRemoving(Player: Player): ()
 		AgentService:RemoveAgent(Player, Character.Name)
 	end
 
-	
 	DataService:RemovePlayer(Player)
 end
 

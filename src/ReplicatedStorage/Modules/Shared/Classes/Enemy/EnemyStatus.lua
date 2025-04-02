@@ -19,9 +19,9 @@ EnemyStatus.__index = EnemyStatus
 
 function EnemyStatus.new(Name: string, Level: number)
 	local self = setmetatable({}, EnemyStatus)
-	
+
 	self.EnteredDazeState = Signal.new()
-	
+
 	--
 	self.__State = 'Idle'
 	self.__Level = Level or 60
@@ -32,11 +32,11 @@ function EnemyStatus.new(Name: string, Level: number)
 	self.__Max_Daze = self.__Stats.Daze
 	self.__Effects = {}
 	self.__Threads = {}
-	
+
 	self.__AfflictionMeter = {}
 	self.__AfflictionTotalDamage = {}
-	
-	
+
+
 	return self
 end
 

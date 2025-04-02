@@ -37,4 +37,8 @@ function Artifacts:GetTwoPieceEffect(Name: string)
 	}
 end
 
+function Artifacts:Verify(Name: string): boolean
+	return Artifacts:GetArtifactData(Name) ~= nil
+end
+
 return Artifacts
