@@ -81,6 +81,13 @@ return {
 		Teleporting = 3,
 	},
 
+	PartyManaging = {
+		Create = 1,
+		Destroy = 2,
+		Update = 3,
+		
+	},
+
 	KeyLookup = function(Table: {}, val: number)
 		for Key, Value in Table do
 			if Value == val then

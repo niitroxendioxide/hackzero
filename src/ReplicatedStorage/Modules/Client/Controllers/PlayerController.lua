@@ -42,13 +42,32 @@ function Controller:Init(): ()
 
 	Controller:ConnectPing()
 
-	if not Places:CanFight() then
-		return;
+	local FightEnabled = Places:CanFight()
+	if FightEnabled then
+		Controller:SetupKeybinds();
 	end
 
-	Controller:SetupKeybinds()
-
 	RunService:BindToRenderStep('PlayerControllerMainLoop', Enum.RenderPriority.Camera.Value, function(Delta: number)
+		if not FightEnabled then
+			local Character = Player.Character
+			if not Character then return end
+
+			local Humanoid = Character:FindFirstChild("Humanoid") :: Humanoid
+			if not Humanoid then return end
+
+			local MovementBlocked = Player:HasTag("InParty")
+
+			if MovementBlocked then
+				Humanoid.WalkSpeed = 0
+				Humanoid.JumpPower = 0
+			else
+				Humanoid.WalkSpeed = 16
+				Humanoid.JumpPower = 50
+			end
+
+			return
+		end
+
 		local CurrentCharacter = CharacterLibrary:GetCurrent(Player.UserId)
 		local Direction = Controller:GetCurrentMovementDirection()
 

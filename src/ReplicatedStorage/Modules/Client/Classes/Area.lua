@@ -26,7 +26,6 @@ end
 function AreaClass.Init(self: Types.ClientAreaClass): ()
     local Character = Player.Character or Player.CharacterAdded:Wait()
 
-    print("Area inited")
     self.__Params = OverlapParams.new()
     self.__Params.FilterDescendantsInstances = {Character}
     self.__Params.FilterType = Enum.RaycastFilterType.Include

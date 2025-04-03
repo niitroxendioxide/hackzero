@@ -44,8 +44,12 @@ function Party.HasPlayer(self: Types.PartyClass, Id: number): (boolean)
             return true
         end
     end
-    
+
     return false;
+end
+
+function Party.GetPlayers(self: Types.PartyClass)
+    return self.__Players
 end
 
 function Party.SwitchState(self: Types.PartyClass, State: Types.PartyState): ()
@@ -55,8 +59,8 @@ function Party.SwitchState(self: Types.PartyClass, State: Types.PartyState): ()
     self.__State_Name = StateName;
 end
 
-function Party.Destroy(self: Types.PartyClass) 
-    
+function Party.Destroy(self: Types.PartyClass): ()
+
     for _, Player in self.__Players do
         self:RemovePlayer(Player)
     end

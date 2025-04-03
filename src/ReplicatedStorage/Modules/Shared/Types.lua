@@ -626,7 +626,7 @@ export type AgentDataClass = {
 export type PartyPlayerTeam = {[number]: AgentDataClass}
 export type PartyState = typeof(_GameEnum.PartyStates.Idle)
 export type PartyPlayer = {
-	Player: Player,
+	PlayerObject: Player,
 	Team: PartyPlayerTeam,
 	Level: number,
 
@@ -651,6 +651,7 @@ export type PartyClass = {
 
 	GetStateName: (self: PartyClass) -> string,
 	GetState: (self: PartyClass) -> PartyState,
+	GetPlayers: (self: PartyClass) -> {PartyPlayer},
 
 	SetStage: (self: PartyClass, Stage: string) -> (),
 

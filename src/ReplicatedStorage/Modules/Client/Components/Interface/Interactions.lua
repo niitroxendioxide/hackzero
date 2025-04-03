@@ -39,6 +39,7 @@ function Interactions:Init()
         local PartyUI = UIGroups:GetElementClass("Lobby", "Party")
 
         PartyUI:Set(true)
+        PartyUI:CreateParty()
         Interactions:SetButton("Play", false)
     end)
 end

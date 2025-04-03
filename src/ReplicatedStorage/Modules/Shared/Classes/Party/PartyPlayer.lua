@@ -13,10 +13,12 @@ function PartyPlayer.new(Player: Player, Level: number, Team: Types.PartyPlayerT
     self.PlayerObject = Player
     self.Level = Level
     self.Team = Team
+
+    return self
 end
 
 function PartyPlayer.GetId(self: Types.PartyPlayer)
-    return self.Player.UserId
+    return self.PlayerObject.UserId
 end
 
 function PartyPlayer.GetSimplifiedTeam(self: Types.PartyPlayer): (string)

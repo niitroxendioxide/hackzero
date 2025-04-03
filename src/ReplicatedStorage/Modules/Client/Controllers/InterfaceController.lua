@@ -43,8 +43,6 @@ function Controller:DisableCallback(Id: string)
 
 			task.wait(1)
 		until success
-
-		print(Id, "successfully disabled");
 	end)
 end
 

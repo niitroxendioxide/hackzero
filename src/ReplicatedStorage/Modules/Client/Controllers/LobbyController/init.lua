@@ -26,7 +26,6 @@ end
 function Controller.UpdateAreas()
     for _, Area in AreaFolder:GetChildren() do
         if Controller.__Cached[Area.Name] and Controller.__AreaCache[Area.Name] == nil then
-            print("Creating area", Area.Name)
             local Module = Controller.__Cached[Area.Name]
             local NewArea = AreaClass.new(Area)
 

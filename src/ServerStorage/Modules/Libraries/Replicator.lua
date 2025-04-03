@@ -98,7 +98,7 @@ function Replicator:KeySwitch(Player: Player, Key: string, Value: boolean, Targe
 	buffer.writeu8(Object, 0, GameEnum.Replication.KeySwitch)
 	buffer.writeu8(Object, 1, GameEnum.Agent_Keys[Key])
 	buffer.writei32(Object, 2, Player.UserId)
-	
+
 	if Target then
 		Network:Fire('Replicate', Target, Object, Value)
 	else
@@ -144,7 +144,7 @@ function Replicator:PivotEnemy(Id: number, At: Vector3 | CFrame, TargetPlayer: P
 	buffer.writef32(Object, 2, At.X)
 	buffer.writef32(Object, 6, At.Z)
 	buffer.writei16(Object, 10, At.Y * 100)
-	
+
 	if TargetPlayer then
 		Network:Fire('Replicate', TargetPlayer, Object)
 		return
@@ -156,7 +156,7 @@ end
 
 function Replicator:MoveEnemy(Id: number, Direction: Vector3, TargetPlayer: Player?)
 	--local Angle = math.deg(math.atan2(Direction.X, Direction.Z))
-	
+
 	local Object = buffer.create(4)
 	buffer.writeu8(Object, 0, GameEnum.Replication.MoveEnemy)
 	buffer.writeu8(Object, 1, Id)
@@ -212,14 +212,14 @@ function Replicator:UseSkill(Player: Player, SkillId: number, AgentNumber: numbe
 	buffer.writeu8(Object, 2, AgentNumber or 1)
 	buffer.writeu8(Object, 3, EnemyNumber or 255)
 	buffer.writei32(Object, 4, Player.UserId)
-	
+
 	Network:FireForAllBut(Player, 'Replicate', Object)
 end
 
 function Replicator:DisplayDamage(Enemy: Types.ServerEnemyClass, Damage: number, Critical: boolean?, Affliction: string, Burst: boolean?)
 	local Object = buffer.create(9)
 	buffer.writeu8(Object, 0, GameEnum.Replication.DisplayDamage)
-	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)
 	buffer.writeu8(Object, 2, GameEnum.Afflictions[Affliction] or GameEnum.Afflictions.Default)
 	buffer.writeu8(Object, 3, Critical and 1 or 0)
 	buffer.writeu8(Object, 4, Burst and 1 or 0)
@@ -232,8 +232,8 @@ function Replicator:Knockback(Enemy: Types.ServerEnemyClass, Direction: Vector3,
 
 	local Object = buffer.create(5)
 	buffer.writeu8(Object, 0, GameEnum.Replication.Knockback)
-	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
-	buffer.writeu8(Object, 2, GameEnum.Knockback_Directions[Direction])	
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)
+	buffer.writeu8(Object, 2, GameEnum.Knockback_Directions[Direction])
 	buffer.writeu8(Object, 3, Power)
 	buffer.writeu8(Object, 4, math.floor(Time * 10))
 
@@ -256,8 +256,8 @@ end
 function Replicator:FillAffliction(Enemy: Types.ServerEnemyClass, Type: Types.Element | string, Amount: number)
 	local Object = buffer.create(5)
 	buffer.writeu8(Object, 0, GameEnum.Replication.FillAffliction)
-	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
-	buffer.writeu8(Object, 2, GameEnum.Afflictions[Type])	
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)
+	buffer.writeu8(Object, 2, GameEnum.Afflictions[Type])
 	buffer.writei16(Object, 3, Amount * 500)
 
 	Network:FireForAll('Replicate', Object)
@@ -267,8 +267,8 @@ end
 function Replicator:ResetAffliction(Enemy: Types.ServerEnemyClass, Type: Types.Element)
 	local Object = buffer.create(3)
 	buffer.writeu8(Object, 0, GameEnum.Replication.ResetAffliction)
-	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
-	buffer.writeu8(Object, 2, GameEnum.Afflictions[Type])	
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)
+	buffer.writeu8(Object, 2, GameEnum.Afflictions[Type])
 
 	Network:FireForAll('Replicate', Object)
 end
@@ -276,8 +276,8 @@ end
 function Replicator:DazeEnemy(Enemy: Types.ServerEnemyClass, Daze: number)
 	local Object = buffer.create(4)
 	buffer.writeu8(Object, 0, GameEnum.Replication.DazeEnemy)
-	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
-	buffer.writeu16(Object, 2, Daze * 325)	
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)
+	buffer.writeu16(Object, 2, Daze * 325)
 
 	Network:FireForAll('Replicate', Object)
 end
@@ -285,8 +285,8 @@ end
 function Replicator:EnterDaze(Enemy: Types.ServerEnemyClass)
 	local Object = buffer.create(3)
 	buffer.writeu8(Object, 0, GameEnum.Replication.EnterDaze)
-	buffer.writeu8(Object, 1, Enemy.__EnemyId)	
-	
+	buffer.writeu8(Object, 1, Enemy.__EnemyId)
+
 	Network:FireForAll('Replicate', Object)
 end
 
@@ -295,7 +295,7 @@ function Replicator:SwitchStateEnemy(EnemyId: number, State: string, Time: numbe
 	buffer.writeu8(Object, 0, GameEnum.Replication.EnterDaze)
 	buffer.writeu8(Object, 1, EnemyId)
 	buffer.writeu8(Object, 2, table.find(GameEnum.Agent_States, State) :: number)
-	buffer.writeu16(Object, 3, Time * 100)	
+	buffer.writeu16(Object, 3, Time * 100)
 
 	Network:FireForAll('Replicate', Object)
 end
