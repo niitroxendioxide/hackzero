@@ -13,7 +13,7 @@ local Controller = {}
 function Controller:Effect(Buffer: buffer, ...): ()
 	local EffectId = buffer.readu16(Buffer, 1)
 	local Args = {...}
-	
+
 	EffectsLib:Play(EffectId, table.unpack(Args))
 end
 

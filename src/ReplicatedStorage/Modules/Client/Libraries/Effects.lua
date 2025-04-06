@@ -32,11 +32,10 @@ function Effects:Play(Name: string, ...)
 	end
 
 	local Args = {...};
-	
+
 	task.spawn(function()
-		debug.profilebegin('Effect'..Name)
 		Module(table.unpack(Args))
-		debug.profileend()
+
 	end)
 end
 

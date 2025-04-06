@@ -30,7 +30,8 @@ function Service:Init()
 		end
 	end
 
-	Network:On('Replicate', Service.ReplicateEvent)
+	Network.new("Ability", "Event")
+	Network:On('Ability', Service.ReplicateEvent)
 end
 
 function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)

@@ -1,5 +1,4 @@
 return {
-	
 	Replication = {
 		-- Characters
 		AddAgent = 0,
@@ -12,7 +11,7 @@ return {
 		PivotTo = 7,
 		StateSwitch = 10,
 		KeySwitch = 11,
-		
+
 		-- Enemy
 		AddEnemy = 15,
 		RemoveEnemy = 16,
@@ -20,7 +19,7 @@ return {
 		RotateEnemy = 18,
 		PivotEnemy = 19,
 		StateSwitchEnemy = 21,
-		
+
 		-- Combat
 		EnemyUseSkill = 49,
 		UseSkill = 50,
@@ -32,8 +31,8 @@ return {
 		DazeEnemy = 56,
 		EnterDaze = 57,
 	},
-	
-	
+
+
 	Skills = {
 		Basic_Attack = 1,
 		Dodge = 2,
@@ -44,7 +43,7 @@ return {
 		Special = 7,
 		EX_Special = 8,
 	},
-	
+
 	Afflictions = {
 		Physical = 0,
 		Fire = 1,
@@ -54,12 +53,12 @@ return {
 		Earth = 5,
 		Default = 70,
 	},
-	
+
 	Agent_Keys = {
 		Sprint = 1,
 		Jog = 2,
 	},
-	
+
 	Knockback_Directions = {
 		[Vector3.new(1, 0, 0)] = 1,
 		[Vector3.new(-1, 0, 0)] = 2,
@@ -83,9 +82,10 @@ return {
 
 	PartyManaging = {
 		Create = 1,
-		Destroy = 2,
+		Leave = 2,
 		Update = 3,
-		
+		Start = 4,
+		Failed = 5,
 	},
 
 	KeyLookup = function(Table: {}, val: number)
@@ -96,5 +96,11 @@ return {
 		end
 
 		return;
+	end,
+
+	ValueNameFrom = function(self: {KeyLookup: ({}, any) -> (any)}, TableName, Value): ()
+		local Table = self[TableName]
+
+		return self.KeyLookup(Table, Value)
 	end
 }

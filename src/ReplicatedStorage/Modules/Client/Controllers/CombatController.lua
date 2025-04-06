@@ -23,6 +23,8 @@ function Controller:Init()
 		return;
 	end
 
+
+	print("Controls to attack bound")
 	Movesets:Init()
 
 	for _, Key in Controller.__Abilities do
@@ -32,12 +34,13 @@ function Controller:Init()
 				local UserId = Players.LocalPlayer.UserId
 				local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
 
+				--print("Pre-ability", State, Key, CharacterMoveset)
 				if State == 'Begin' then
 					CharacterMoveset:Begin(Key, Characters:GetCurrent(UserId))
 				else
 					CharacterMoveset:Release(Key, Characters:GetCurrent(UserId))
 				end
-				
+
 				if Key == 'Dodge' then
 					for _, Character in Characters:GetCharacters(UserId) do
 						Character:SetKey('Sprint', true)
@@ -46,9 +49,7 @@ function Controller:Init()
 				end
 			end,
 		})
-		
 	end
-	
 end
 
 return Controller

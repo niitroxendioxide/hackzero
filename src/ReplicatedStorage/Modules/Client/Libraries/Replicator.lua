@@ -14,6 +14,7 @@ local Controller = {
 
 function Controller:Replicate(Action: number, ...)
 	local Args = table.pack(...)
+	local EventName = 'Replicate';
 	local Buffer
 	if Action == GameEnum.Replication.Move or Action == GameEnum.Replication.Stop then
 		Buffer = buffer.create(1)
@@ -66,12 +67,13 @@ function Controller:Replicate(Action: number, ...)
 		buffer.writei8(Buffer, 1, Args[1])
 		buffer.writei8(Buffer, 2, Args[2] or 0)
 
+		EventName = 'Ability'
 		Args = {}
 	end
 
 	buffer.writeu8(Buffer, 0, Action)
 
-	Network:Fire('Replicate', Buffer, table.unpack(Args))
+	Network:Fire(EventName, Buffer, table.unpack(Args))
 end
 
 return Controller

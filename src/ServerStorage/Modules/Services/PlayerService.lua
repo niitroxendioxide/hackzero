@@ -94,7 +94,7 @@ function Service:InitializeCharacters(Player: Player): ()
 	Player:LoadCharacter()
 
 	--
-	print("Hey!")
+	print("Player Characters Loaded!")
 	local Characters = {'Goku', 'Template', 'Vegeta'}
 
 	for i, Character in Characters do

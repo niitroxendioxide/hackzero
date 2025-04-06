@@ -41,6 +41,7 @@ end
 
 function Service:Init()
 
+    Network.new("DataFetchRequest", "Event")
     Network:On("DataFetchRequest", function(Player: Player, Type: string)
         local _PlayerData = Service:GetDataFor(Player)
 

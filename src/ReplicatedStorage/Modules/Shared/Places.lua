@@ -22,6 +22,10 @@ function Service:IsInPlace(Place: Types.GamePlace): boolean
     return PlaceId == WorldData[Place];
 end
 
+function Service:GetId(Id: ("AFK" | "Lobby" | "Mission" | "Raid") | string): number
+    return WorldData[Id]
+end
+
 function Service:CanFight(): boolean
     local PlaceId = game.PlaceId
 

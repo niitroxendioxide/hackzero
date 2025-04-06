@@ -642,6 +642,7 @@ export type PartyClass = {
 	__Stage: string,
 	__FriendsOnly: boolean,
 	__State: PartyState,
+	__Owner: number,
 	__State_Name: string,
 
 	--
@@ -650,9 +651,13 @@ export type PartyClass = {
 	RemovePlayer: (self: PartyClass, Player: PartyPlayer) -> (),
 
 	GetStateName: (self: PartyClass) -> string,
+	GetStage: (self: PartyClass) -> string,
+	GetStagePlace: (self: PartyClass) -> (),
 	GetState: (self: PartyClass) -> PartyState,
 	GetPlayers: (self: PartyClass) -> {PartyPlayer},
+	GetRawPlayers: (self: PartyClass) -> ({Player}),
 
+	SetState: (self: PartyClass, State: number) -> (),
 	SetStage: (self: PartyClass, Stage: string) -> (),
 
 	Destroy: (self: PartyClass) -> (),

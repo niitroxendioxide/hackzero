@@ -13,7 +13,6 @@ local Client = ReplicatedStorage.Modules.Client
 local Types = require(Shared.Types)
 local Trove = require(Shared.Utility.Trove)
 local Inputs = require(Client.Libraries.Inputs)
-local Network = require(Shared.Network)
 local AgentClass = require(Client.Classes.Agent)
 
 local CameraLibrary = require(Client.Libraries.Camera)
@@ -25,23 +24,19 @@ local Places = require(Shared.Places)
 
 --
 local INPUT_DIRECTIONS = {
-	['Front'] = Vector3.new(0, 0, -1), 
-	['Back'] = Vector3.new(0, 0, 1), 
+	['Front'] = Vector3.new(0, 0, -1),
+	['Back'] = Vector3.new(0, 0, 1),
 	['Left'] = Vector3.new(-1, 0, 0),
 	['Right'] = Vector3.new(1, 0, 0)
 }
 
 local Controller = {
-	__Ping = 0,
 	__HeldKeys = {},
 	__Trove = Trove.new(),
 	__CurrentMovementVector = Vector3.zero,
 }
 
 function Controller:Init(): ()
-
-	Controller:ConnectPing()
-
 	local FightEnabled = Places:CanFight()
 	if FightEnabled then
 		Controller:SetupKeybinds();
@@ -82,7 +77,7 @@ function Controller:Init(): ()
 		end
 
 		-- !selene: ignore
-		workspace.CurrentCamera.CameraSubject = CurrentCharacter.__Character.Humanoid 
+		workspace.CurrentCamera.CameraSubject = CurrentCharacter.__Character.Humanoid
 		workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
 
 		debug.profilebegin('Moving character')
@@ -103,7 +98,7 @@ function Controller:Init(): ()
 		Replicator:Replicate(GameEnum.Replication.PivotTo, CurrentCharacter:GetPivot())
 
 		--local Ping = Players.LocalPlayer:GetNetworkPing()
-		task.delay(Controller.__Ping, function()
+		task.delay(Replicator:GetPing(), function()
 			CurrentCharacter.__ServerLocation = At
 		end)
 	end)
@@ -173,7 +168,7 @@ function Controller:SetupKeybinds()
 				CanRun = false
 				Replicator:Replicate(GameEnum.Replication.KeySwitch, GameEnum.Agent_Keys.Jog, true)
 			end
-			
+
 			--
 			local State = false
 			Controller:ForCharacters(function(Character)
@@ -186,28 +181,19 @@ function Controller:SetupKeybinds()
 				Character:SetKey('Sprint')
 				State = Character:GetKey('Sprint')
 			end)
-			
+
 			if CanRun then
 				Replicator:Replicate(GameEnum.Replication.KeySwitch,  GameEnum.Agent_Keys.Sprint, State)
 			end
 		end,
 	})
-	
+
 	Inputs:Bind('TESTING', {
 		Release = false,
 		Callback = function(_: 'Begin' | 'End')
 			(CharacterLibrary:GetCurrent(Player.UserId) :: Types.AgentClass):SwitchState('Attacking', .5)
 		end,
 	})
-end
-
-function Controller:ConnectPing()
-	task.spawn(function()
-		while task.wait(.5) do
-			local Sent, Receive = Network:GetPing()
-			Controller.__Ping = Receive + Sent
-		end
-	end)
 end
 
 return Controller

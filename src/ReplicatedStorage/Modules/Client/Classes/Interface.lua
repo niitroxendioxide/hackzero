@@ -64,7 +64,10 @@ function ComponentClass:Set(Visible: boolean?)
 		self.__Main_Frame.Visible = Visible
 	end
 
-	UIGroups:SetActiveElement(self.__Group, self.__Name)
+	if Visible == true then
+		UIGroups:SetActiveElement(self.__Group, self.__Name)
+	end
+
 
 	if self.__State_Change_Callback ~= nil and typeof(self.__State_Change_Callback) == 'function' then
 		self.__State_Change_Callback(Visible)

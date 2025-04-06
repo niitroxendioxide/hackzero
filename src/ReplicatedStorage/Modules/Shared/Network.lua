@@ -5,21 +5,21 @@ local Players = game:GetService("Players")
 
 --
 local Network = {
-	__Cache = {}, 
+	__Cache = {},
 }
 
 function Network.new(Name: string, Type: 'Event' | 'Function' | 'Unreliable'): ()
 	assert(RunService:IsServer(), 'Cannot create remotes on client')
-	
+
 	if script:GetAttribute(Name) ~= nil then
 		warn('Remote'..Type, 'with name', Name, 'already exists')
-		
+
 		return
 	end
-	
+
 	script:SetAttribute(Name, Type)
 
-	local EventTypeObject = script:FindFirstChildOfClass(Type)
+	local EventTypeObject = script:FindFirstChild(Type)
 	if not EventTypeObject then
 		EventTypeObject = Type == 'Unreliable' and Instance.new('UnreliableRemoteEvent') or Instance.new('Remote'..Type)
 		EventTypeObject.Name = Type
@@ -45,10 +45,10 @@ function Network:Get(Name: string, MaximumWaitTime: number?)
 			repeat
 				RemoteExists = script:GetAttribute(Name)
 				task.wait()
-			until  RemoteExists ~= nil or  os.clock() - Clock > (MaximumWaitTime or 5)
-			if RemoteExists == nil then return end
+			until  RemoteExists ~= nil or  os.clock() - Clock > (MaximumWaitTime or 15)
+			if RemoteExists == nil then return warn("Couldn\'t find remote", Name) end
 		else
-			return
+			return warn("Couldn\'t find remote", Name)
 		end
 	end
 
@@ -99,6 +99,10 @@ function Network:Fire(Name: string, ...)
 		local Args = {...};
 		local Plr = table.remove(Args, 1);
 
+		if not Plr:HasTag("Ping") then
+			return
+		end
+
 		Event:FireClient(Plr, bufferObject, table.unpack(Args))
 	end
 end
@@ -107,12 +111,19 @@ function Network:FireForAll(Name: string, ...: any): ()
 	if RunService:IsClient() then
 		return warn('Cannot fireall in client')
 	end
-	
+
 	local Event: RemoteEvent = Network:Get(Name)
 
 	if not Event then
 		Event = Network.new(Name, 'Event')
 	end
+
+	local OnePing = false;
+	for _, Player in Players:GetPlayers() do
+		if Player:HasTag("Ping") then OnePing = true end;
+	end
+
+	if not OnePing then return end;
 
 	local bufferObject = Network:__GetBufferIdForName(Name)
 	Event:FireAllClients(bufferObject, ...)
@@ -133,10 +144,10 @@ function Network:FireForAllBut(Blacklisted: Player, Name: string, ...)
 
 	local bufferObject = Network:__GetBufferIdForName(Name)
 	for _, Player in Players:GetPlayers() do
-		if Player == Blacklisted then
+		if Player == Blacklisted or not Player:HasTag("Ping") then
 			continue
 		end
-		
+
 		Event:FireClient(Player, bufferObject, ...)
 	end
 
@@ -144,7 +155,6 @@ function Network:FireForAllBut(Blacklisted: Player, Name: string, ...)
 end
 
 if RunService:IsServer() then
-	
 	function Network:On<T...>(Name: string, fn: (Player: Player, T...) -> ())
 		local Event = Network:Get(Name) :: RemoteEvent
 		if not Event then
@@ -155,15 +165,19 @@ if RunService:IsServer() then
 			Network.__Cache[Name] = {}
 		end
 
-		table.insert(Network.__Cache[Name], Event.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, ...)
+		local Connection = Event.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, ...)
 			local EventName = Network:__GetNameForId(Buffer)
 
 			if EventName == Name then
 				fn(Player, ...)
 			end
-		end))
+		end)
+
+		table.insert(Network.__Cache[Name], Connection)
+
+		print('Bound', Connection, Name)
 	end
-	
+
 	function Network:Handle(Name: string, fn: (Player: Player, any) -> ())
 		local Event = Network:Get(Name) :: RemoteFunction
 		if not Event then

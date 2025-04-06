@@ -13,7 +13,9 @@ local Interactions = ComponentClass.new("Interactions", "Lobby")
 
 function Interactions:Link()
     local PlayerGui = Player.PlayerGui
-	local HUD = PlayerGui:WaitForChild("LobbyHUD") :: ScreenGui
+	local HUD = PlayerGui:FindFirstChild("LobbyHUD") :: ScreenGui
+    if not HUD then return end
+
 	local Main = HUD:FindFirstChild("Interactions", true)
 
     return Main
@@ -38,7 +40,6 @@ function Interactions:Init()
     PlayButton.PlayButton.MouseButton1Click:Connect(function()
         local PartyUI = UIGroups:GetElementClass("Lobby", "Party")
 
-        PartyUI:Set(true)
         PartyUI:CreateParty()
         Interactions:SetButton("Play", false)
     end)

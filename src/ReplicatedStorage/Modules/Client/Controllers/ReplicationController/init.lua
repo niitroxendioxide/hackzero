@@ -13,37 +13,53 @@ local Replicator = require(Client.Libraries.Replicator)
 --
 local Controller = {
 	__Replicators = {},
+	__Ping = 0,
 }
 
 function Controller:Init()
-	
 	for _, Module in script:GetChildren() do
 		local Success, Required = pcall(require, Module)
-		
+
 		if Success then
 			for Method in Required do
 				Controller.__Replicators[Method] = Required
 			end
 		end
 	end
-	
+
 	Network:On('Replicate', function(Buffer: buffer, ...)
 		local Action = buffer.readu8(Buffer, 0)
-		
+
 		for Key, Value in GameEnum.Replication do
 			if Value == Action and Controller.__Replicators[Key] then
 				local ReplicatorController = Controller.__Replicators[Key]
 				local Method = ReplicatorController[Key]
-				
+
 				Method(ReplicatorController, Buffer, ...)
 			end
 		end
 	end)
+
+	Controller:ConnectPing()
 end
 
 -- @ Action: GameEnum.Replication
 function Controller:Replicate(Action: number, ...)
 	return Replicator:Replicate(Action, ...)
 end
+
+function Controller:ConnectPing()
+	task.spawn(function()
+		while task.wait(.5) do
+			local Sent, Receive = Network:GetPing()
+			Controller.__Ping = Receive + Sent
+		end
+	end)
+end
+
+function Controller:GetPing()
+	return Controller.__Ping;
+end
+
 
 return Controller

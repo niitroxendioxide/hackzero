@@ -39,6 +39,8 @@ end
 function InterfaceStates:SetActiveElement(Group: string, Item: string)
     if not InterfaceStates.__Groups[Group] then return end
 
+    if InterfaceStates.__Groups[Group].Active == Item then return end
+
     if InterfaceStates:GetActiveElement(Group) then
         InterfaceStates:GetActiveElement(Group):Set(false)
     end

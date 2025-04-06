@@ -19,7 +19,8 @@ local Component = ComponentClass.new(script.Name, 'HUD', {
 
 function Component:Link(): Instance?
 	local PlayerGui = Player.PlayerGui
-	local HUD = PlayerGui:WaitForChild("PlayerHUD") :: ScreenGui
+	local HUD = PlayerGui:FindFirstChild("PlayerHUD") :: ScreenGui
+	if not HUD then return end
 	local Main = HUD:FindFirstChild("Main", true)
 
 	return Main;

@@ -9,12 +9,13 @@ local GameEnum = require(Shared.GameEnum)
 local Party = {}
 Party.__index = Party
 
-function Party.new(Code: number): Types.PartyClass
+function Party.new(Code: number, Owner: Types.PartyPlayer): Types.PartyClass
     local self = setmetatable({} :: Types.PartyClass, Party)
     self.Code = Code
 
     self.__Players = {}
-    self.__Stage = ""
+    self.__Owner = Owner:GetId()
+    self.__Stage = "Mission/Earth/Act1"
     self.__FriendsOnly = false
     self.__State = 1
     self.__State_Name = "Idle"
@@ -52,11 +53,34 @@ function Party.GetPlayers(self: Types.PartyClass)
     return self.__Players
 end
 
-function Party.SwitchState(self: Types.PartyClass, State: Types.PartyState): ()
+function Party.GetRawPlayers(self: Types.PartyClass)
+    local List = {}
+    for _, PlayerObject in self.__Players do
+        table.insert(List, PlayerObject.PlayerObject)
+    end
+
+    return List;
+end
+
+function Party.GetStage(self: Types.PartyClass): (string)
+    return self.__Stage
+end
+
+function Party.GetStagePlace(self: Types.PartyClass): (string)
+    local Split = string.split(self.__Stage, "/")
+
+    return Split[1]
+end
+
+function Party.SetState(self: Types.PartyClass, State: Types.PartyState): ()
     local StateName = GameEnum.KeyLookup(GameEnum.PartyStates, State)
 
     self.__State = State;
     self.__State_Name = StateName;
+end
+
+function Party.IsOwner(self: Types.PartyClass, Player: Types.PartyPlayer): ()
+    return self.__Owner == Player:GetId()
 end
 
 function Party.Destroy(self: Types.PartyClass): ()
