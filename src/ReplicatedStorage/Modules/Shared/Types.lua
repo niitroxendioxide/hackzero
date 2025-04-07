@@ -505,8 +505,9 @@ export type UIComponent = {
 	__Scope: Fusion.Scope,
 	__Main_Frame: CanvasGroup | Frame,
 
-	GetScope: (self: UIComponent) -> (Fusion.Scope),
+	GetScope: (self: UIComponent) -> (Fusion.Scope & {Value: Fusion.Value<any, any>, Observer: Fusion.Observer}),
 	GetFrame: (self: UIComponent) -> CanvasGroup | Frame,
+	Peek: (self: UIComponent, Value: Fusion.Value<any, any>) -> (any),
 
 	Init: (self: UIComponent) -> (),
 	Link: (self: UIComponent) -> (Instance?),
@@ -627,12 +628,10 @@ export type PartyPlayerTeam = {[number]: AgentDataClass}
 export type PartyState = typeof(_GameEnum.PartyStates.Idle)
 export type PartyPlayer = {
 	PlayerObject: Player,
-	Team: PartyPlayerTeam,
 	Level: number,
 
+	-- The player associated ID, commonly just the UserID
 	GetId: (self: PartyPlayer) -> (number),
-	GetTeam: (self: PartyPlayer) -> (PartyPlayerTeam),
-	GetSimplifiedTeam: (self: PartyPlayer) -> (string),
 }
 
 export type PartyClass = {
@@ -644,6 +643,7 @@ export type PartyClass = {
 	__State: PartyState,
 	__Owner: number,
 	__State_Name: string,
+	__Teams: {},
 
 	--
 	AddPlayer: (self: PartyClass, Player: PartyPlayer) -> (),
@@ -657,8 +657,20 @@ export type PartyClass = {
 	GetPlayers: (self: PartyClass) -> {PartyPlayer},
 	GetRawPlayers: (self: PartyClass) -> ({Player}),
 
+	GetPlayerTeam: (self: PartyClass, Player: PartyPlayer) -> (),
+	SetPlayerTeam: (self: PartyClass, Player: PartyPlayer, Team: PartyPlayerTeam?) -> (),
+	GetSimplifiedTeam: (self: PartyClass, Player: PartyPlayer) -> (),
+	GetPlayerCompressedTeam: (self: PartyClass, Player: PartyPlayer) -> (),
+
 	SetState: (self: PartyClass, State: number) -> (),
 	SetStage: (self: PartyClass, Stage: string) -> (),
+
+	--[[
+		Compress the table in order to be sent via network
+
+		@return `table`: compressed party data
+	]]
+	Compress: (self: PartyClass, Ignore: PartyPlayer) -> (),
 
 	Destroy: (self: PartyClass) -> (),
 }
@@ -737,6 +749,8 @@ export type PlayerAgentDataClass = {
 	ToData: (self: PlayerAgentDataClass) -> (PlayerAgentData),
 	Compress: (self: PlayerAgentDataClass) -> ({}),
 }
+
+export type Fusion = Fusion.Fusion
 
 return {
 	NOT_IMPLEMENTED_ERROR = function()

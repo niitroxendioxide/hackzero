@@ -10,35 +10,130 @@ local Types = require(Shared.Types)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local ComponentClass = require(Client.Classes.Interface)
+local Fetcher = require(Client.Libraries.Fetcher)
 
 local PartyComponent = ComponentClass.new("Party", "Lobby")
+
+local Scope = PartyComponent:GetScope()
+
+local States = {
+    Agents = Scope:Value({}),
+    Team = Scope:Value({}),
+    Thread = nil,
+}
+
+--
+local AGENT_SELECTED_COLOR = Color3.fromRGB(207, 237, 255)
 
 
 --
 local function RequestPartyCreation()
-    print('Request to create sent')
     Network:Fire("Party", GameEnum.PartyManaging.Create)
+
+    local Data = Fetcher:FetchAgents()
+    States.Agents:set(Data)
 end
 
 local function RequestPartyLeave(): ()
+    States.Team:set({})
     Network:Fire("Party", GameEnum.PartyManaging.Leave)
 end
 
+local function RequestPartyTeamUpdate(): ()
+    Network:Fire("Party", GameEnum.PartyManaging.ChangeTeam, Scope.peek(States.Team))
+end
+
 local function RequestPartyStageBegin(): ()
+    if States.Thread then
+        task.cancel(States.Thread)
+    end
+
+    RequestPartyTeamUpdate()
     Network:Fire("Party", GameEnum.PartyManaging.Start)
 end
 
-local function AddPlayerToList(PlayerName: string)
+
+local function SelectAgent(Name: string)
+    local Selected = Scope.peek(States.Team)
+
+    local Removed = false;
+    for key, Agent in Selected do
+        if Name == Agent then
+            table.remove(Selected, key)
+            Removed = true
+        end
+    end
+
+    if not Removed then
+        if #Selected >= 3 then
+            table.insert(Selected, 1, Name)
+            table.remove(Selected, 4)
+        else
+            table.insert(Selected, Name)
+        end
+    end
+
+    if States.Thread then
+        task.cancel(States.Thread)
+    end
+
+    States.Thread = task.delay(1, RequestPartyTeamUpdate)
+
+    return States.Team:set(Selected)
+end
+
+local function AddPlayerToList(PlayerName: string, Team: string)
     local Main = PartyComponent:GetFrame()
     local Object = Assets.Lobby.Party.PlayerListObject:Clone()
     Object.PlayerName.Text = PlayerName
+    Object.TeamCharacters.Text = Team
+    Object.Name = PlayerName
     Object.Parent = Main.Players
+
+    return Object
+end
+
+local function AddAgentToList(Agent: string, Level: number)
+    local Main = PartyComponent:GetFrame()
+    local Object = Assets.Lobby.Party.CharacterListObject:Clone()
+    Object.CharacterName.Text = Agent
+    Object.CharacterLevel.Text = Level
+    Object.Name = Agent
+    Object:SetAttribute("AgentName", Agent)
+    Object.Parent = Main.Agents
+
+    Object.Select.MouseButton1Click:Connect(function()
+        SelectAgent(Agent)
+    end)
+
+    return Object
+end
+
+
+local function UpdatePlayerTeam(Player: string, Team: string)
+    local Main = PartyComponent:GetFrame()
+    local PlayerObject = Main.Players:FindFirstChild(Player) :: Frame
+
+    if PlayerObject then
+        PlayerObject.TeamCharacters.Text = Team
+    end
+end
+
+local function ClearParty()
+    local Main = PartyComponent:GetFrame()
+    local PlayerList = Main.Players :: ScrollingFrame
+
+    for _, Object in PlayerList:GetChildren() do
+        if Object:IsA("Frame") then
+            Object:Destroy()
+        end
+    end
 end
 
 --
 function PartyComponent:Link()
     local PlayerGui = Player.PlayerGui
-	local HUD = PlayerGui:FindFirstChild("LobbyHUD") :: ScreenGui
+	local HUD = PlayerGui:WaitForChild("LobbyHUD", 10) :: ScreenGui
     if not HUD then return end
 	local Main = HUD:FindFirstChild("Party", true)
 
@@ -49,9 +144,7 @@ end
 function PartyComponent:Init(): ()
     local Frame = self:GetFrame() :: Frame & {QuitButton: TextButton, PlayButton: TextButton}
 
-    Frame.QuitButton.MouseButton1Click:Connect(function()
-        RequestPartyLeave()
-    end)
+    Frame.QuitButton.MouseButton1Click:Connect(RequestPartyLeave)
 
 
     Frame.PlayButton.MouseButton1Click:Connect(function()
@@ -61,6 +154,37 @@ function PartyComponent:Init(): ()
 
         PartyComponent:SetButtonState("Play", false)
         RequestPartyStageBegin()
+    end)
+
+    Scope:Observer(States.Agents):onChange(function()
+        local Agents = Scope.peek(States.Agents)
+
+        for _, Item in Frame.Agents:GetChildren() do
+            if Item:IsA("Frame") then
+                Item:Destroy()
+            end
+        end
+
+        for _, Agent in Agents do
+            AddAgentToList(Agent.Name, Agent.Level)
+        end
+    end)
+
+    Scope:Observer(States.Team):onChange(function()
+        local TeamList = Scope.peek(States.Team)
+
+        for _, ItemInstance in Frame.Agents:GetChildren() do
+            if not ItemInstance:IsA("Frame") then continue end
+
+            if table.find(TeamList, ItemInstance:GetAttribute("AgentName")) then
+                ItemInstance.SelectedStroke.Enabled = true
+                ItemInstance.BackgroundColor3 = AGENT_SELECTED_COLOR
+            else
+                ItemInstance.BackgroundColor3 = Color3.new(1,1,1)
+                ItemInstance.SelectedStroke.Enabled = false
+            end
+        end
+
     end)
 end
 
@@ -86,14 +210,24 @@ function PartyComponent:SetButtonState(ButtonName: string, State: boolean)
     end
 end
 
+function PartyComponent:Clear()
+    return ClearParty()
+end
+
 function PartyComponent:CreateParty()
     return RequestPartyCreation()
 end
 
-function PartyComponent:AddPlayerToList(Name: string)
-    return AddPlayerToList(Name)
+function PartyComponent:AddPlayerToList(Name: string, Team: string)
+    return AddPlayerToList(Name, Team)
+end
+
+function PartyComponent:UpdateTeam(Name: string, Team: string)
+    return UpdatePlayerTeam(Name, Team)
 end
 
 return PartyComponent :: Types.UIComponent & {
-    CreateParty: () -> ()
+    CreateParty: () -> (),
+    AddPlayerToList: (self: Types.UIComponent, Name: string, Team: string) -> (),
+    UpdateTeam: (self: Types.UIComponent, Name: string, Team: string) -> (),
 }

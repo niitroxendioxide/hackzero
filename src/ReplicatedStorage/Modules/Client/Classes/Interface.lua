@@ -29,7 +29,7 @@ function ComponentClass.new(Name: string, Group: string): Types.UIComponent
 	local self = setmetatable({}, ComponentClass)
 	self.__Name = Name
 	self.__Group = Group
-	self.__Scope = Fusion.scoped({Value = Fusion.Value, Spring = Fusion.Spring, Observer = Fusion.Observer})
+	self.__Scope = Fusion.scoped({Value = Fusion.Value, Spring = Fusion.Spring, Observer = Fusion.Observer, peek = Fusion.peek})
 	self.__Main_Frame = nil
 	self.__State_Change_Callback = nil
 
@@ -46,6 +46,10 @@ end
 
 function ComponentClass:GetFrame()
 	return self.__Main_Frame
+end
+
+function ComponentClass:Peek(a)
+	return Fusion.peek(a)
 end
 
 function ComponentClass:Link(): Instance?

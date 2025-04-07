@@ -86,6 +86,12 @@ return {
 		Update = 3,
 		Start = 4,
 		Failed = 5,
+		ChangeTeam = 6,
+	},
+
+	FetchRequests = {
+		Agents = 1,
+		
 	},
 
 	KeyLookup = function(Table: {}, val: number)

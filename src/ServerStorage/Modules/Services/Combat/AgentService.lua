@@ -27,7 +27,7 @@ function Service:Init()
 	Network:On('Replicate', Service.ReplicateEvent)
 end
 
-function Service:Setup(Player: Player)
+function Service:Create(Player: Player)
 	Service.__Characters[Player] = {
 		Active = 1,
 		Characters = {},
@@ -36,7 +36,7 @@ end
 
 function Service:Get(Player: Player): Player_Data
 	if not Service.__Characters[Player] then
-		Service:Setup(Player)
+		Service:Create(Player)
 	end
 
 	return Service.__Characters[Player]
@@ -47,6 +47,11 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 
 	for Action, Value in GameEnum.Replication do
 		if Value == Type and Service[Action] then
+			if Service:GetCurrentCharacter(Player) == nil then
+				print("Request rejected. Player not initialized")
+				return;
+			end
+
 			Service[Action](Service, Player, ClientBuffer, ...)
 		end
 	end
@@ -86,7 +91,7 @@ function Service:Move(Player: Player)
 	CurrentCharacter:Move()
 
 	--
-	Replicator:Move(Player) 
+	Replicator:Move(Player)
 end
 
 function Service:PivotTo(Player: Player, Buffer: buffer, _: CFrame)
@@ -175,7 +180,7 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 	Replicator:CharacterSwitch(Player, Direction)
 end
 
-function Service:GetCurrentCharacter(Player: Player): Types.ServerCharacterClass
+function Service:GetCurrentCharacter(Player: Player): Types.ServerCharacterClass?
 	local Data = Service:Get(Player)
 
 	return Data.Characters[Data.Active]

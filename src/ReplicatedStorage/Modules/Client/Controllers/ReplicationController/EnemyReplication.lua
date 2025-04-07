@@ -17,17 +17,17 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3)
 	local EnemyId = buffer.readu8(Buffer, 1)
 	local EnemyNameId = buffer.readu8(Buffer, 2)
 	local Level = buffer.readu8(Buffer, 3)
-	
+
 	local Name = EnemyDatabase:GetEnemyFromId(EnemyNameId)
 	if not Name then return end
-	
+
 	if Enemies:GetEnemy(EnemyId) ~= nil then
 		Controller:RemoveEnemy(Buffer)
 	end
-	
+
 	local NewEnemy = EnemyClass.new(At, Name, Level)
 	NewEnemy:Init(EnemyId)
-	
+
 	Effects:Play('EnemyStats', NewEnemy)
 	Enemies:AddEnemy(EnemyId, NewEnemy)
 end
@@ -40,7 +40,7 @@ function Controller:RemoveEnemy(Buffer: buffer)
 	Enemies:RemoveEnemy(EnemyId)
 
 	Effects:Play('Death', Enemy)
-	
+
 	Enemy:Destroy()
 end
 
@@ -49,10 +49,10 @@ function Controller:MoveEnemy(Buffer: buffer)
 	local X = buffer.readi8(Buffer, 2) / 100
 	local Z = buffer.readi8(Buffer, 3) / 100
 	local Rebuilt = Vector3.new(X, 0, Z)
-	
+
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	if not Enemy then return end
-	
+
 	Enemy:Move(Rebuilt)
 end
 
@@ -60,10 +60,10 @@ function Controller:RotateEnemy(Buffer: buffer)
 	local EnemyId = buffer.readu8(Buffer, 1)
 	local X = buffer.readf32(Buffer, 2)
 	local Z = buffer.readf32(Buffer, 6)
-	
+
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	if not Enemy then return end
-	
+
 	Enemy:Rotate(Vector3.new(X, Enemy:GetPivot().Y, Z))
 end
 
@@ -72,10 +72,10 @@ function Controller:PivotEnemy(Buffer: buffer)
 	local X = buffer.readf32(Buffer, 2)
 	local Z = buffer.readf32(Buffer, 6)
 	local Y = buffer.readi16(Buffer, 10) / 100
-	
+
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	if not Enemy then return end
-	
+
 	Enemy:PivotTo(Vector3.new(X, Y, Z))
 end
 
@@ -83,22 +83,18 @@ function Controller:StateSwitchEnemy(Buffer: buffer)
 	local EnemyId = buffer.readu8(Buffer, 1)
 	local NewState = GameEnum.Agent_States[buffer.readu8(Buffer, 2)]
 	local Time = buffer.readu16(Buffer, 3) / 100
-	
+
 	local Enemy = Enemies:GetEnemy(EnemyId)
-	
+
 	Enemy:SwitchState(NewState, Time)
-end
-
-function Controller:StopEnemy()
-
 end
 
 function Controller:EnterDaze(Buffer: buffer)
 	local EnemyId = buffer.readu8(Buffer, 1)
-	
+
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	if not Enemy then return end
-	
+
 	Enemy:EnterDazedState()
 end
 

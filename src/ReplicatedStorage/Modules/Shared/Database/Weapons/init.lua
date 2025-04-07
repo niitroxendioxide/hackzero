@@ -51,6 +51,10 @@ function Weapons:GetIdForWeapon(Name: string): number
 end
 
 function Weapons:GetWeaponFromId(Id: number): string
+	if Id == 0 then
+		return "None"
+	end
+
 	return Weapons.__Ids[Id]
 end
 

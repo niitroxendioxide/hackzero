@@ -2,17 +2,20 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
+local Database = Shared.Database
 local Player = Players.LocalPlayer
 
 local Types = require(Shared.Types)
 local Places = require(Shared.Places)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
+local Characters = require(Database.Characters)
 
 --
 local InterfaceController = require(ReplicatedStorage.Modules.Client.Controllers.InterfaceController)
 
 
+type CompressedParty = {number | buffer}
 --
 local Controller = {
     __Current_Party = nil,
@@ -23,18 +26,59 @@ function Controller:Init()
         return;
     end
 
-    Network:On("Party", function(Type: number, PartyData): ()
+    Network:On("Party", function(Type: number, ServerResponse: CompressedParty | string): ()
         local PartyComponent = InterfaceController:GetComponent("Party")
 
         if Type == GameEnum.PartyManaging.Create then
+            local PlayerTeamData = Controller:GetTeamBuffer(ServerResponse :: CompressedParty, Player.UserId)
+            if not PlayerTeamData then
+                return
+            end
+
             PartyComponent:Set(true)
-            PartyComponent:AddPlayerToList(Player.DisplayName)
+            PartyComponent:AddPlayerToList(Player.DisplayName, Controller:BufferToTeamString(PlayerTeamData))
         elseif Type == GameEnum.PartyManaging.Leave then
             PartyComponent:Set(false)
+            PartyComponent:Clear()
         elseif Type == GameEnum.PartyManaging.Failed then
+            local ErrorMessage = ServerResponse :: string
+
+            warn("Server received error:", ErrorMessage)
             PartyComponent:SetButtonState("Play", true)
+        elseif Type == GameEnum.PartyManaging.ChangeTeam then
+            local PlayerTeamData = ServerResponse :: CompressedParty
+
+            local Player = Players:GetPlayerByUserId(PlayerTeamData[1])
+            PartyComponent:UpdateTeam(Player.DisplayName, Controller:BufferToTeamString(PlayerTeamData[2] :: buffer))
         end
     end)
+end
+
+function Controller:GetTeamBuffer(Data: {number | buffer}, Id: number)
+    local index = table.find(Data, Id)
+    if not index then
+        return
+    end
+
+    return Data[index + 1]
+end
+
+function Controller:BufferToTeamString(bufferObject: buffer): string
+    local TeamText = "";
+
+    for i = 0, 2 do
+        local Character = Characters:GetCharacterFromId(buffer.readu8(bufferObject, i))
+
+        if Character then
+            TeamText = TeamText..Character..", "
+        end
+    end
+
+    if #TeamText < 1 then
+        TeamText = "[Empty Team]  "
+    end
+
+    return TeamText:sub(1, #TeamText-2)
 end
 
 function Controller:JoinQueue(Party: Types.PartyClass)

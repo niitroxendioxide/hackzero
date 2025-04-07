@@ -19,7 +19,7 @@ local Component = ComponentClass.new(script.Name, 'HUD', {
 
 function Component:Link(): Instance?
 	local PlayerGui = Player.PlayerGui
-	local HUD = PlayerGui:FindFirstChild("PlayerHUD") :: ScreenGui
+	local HUD = PlayerGui:WaitForChild("PlayerHUD", 10) :: ScreenGui
 	if not HUD then return end
 	local Main = HUD:FindFirstChild("Main", true)
 
@@ -29,10 +29,10 @@ end
 function Component:Init()
 	local Scope = self:GetScope()
 	local Frame = self:GetFrame()
-	
+
 	--
 	local Color = Scope:Value(Color3.fromRGB(104, 133, 152))
-	
+
 	local EnergySpring = Scope:Spring(InterfaceStates.Energy, 15, .8)
 	local HealthSpring = Scope:Spring(InterfaceStates.Health, 30, .8)
 	local ColorSpring = Scope:Spring(Color, 25, .8)
@@ -47,7 +47,7 @@ function Component:Init()
 	local Active_Pos = UDim2.fromScale(-0.05, 0.898)
 	local Next_Pos = UDim2.fromScale(-0.05, 0.33)
 	local Previous_Pos = UDim2.fromScale(-0.05, -0.03)
-	
+
 	local Icon_Positions = {
 		Scope:Value(Active_Pos),
 		Scope:Value(Next_Pos),
@@ -56,7 +56,7 @@ function Component:Init()
 		Scope:Value(.6),
 		Scope:Value(.6),
 	}
-	
+
 	local Icon_Springs = {
 		Scope:Spring(Icon_Positions[1], 25, .8),
 		Scope:Spring(Icon_Positions[2], 25, .8),

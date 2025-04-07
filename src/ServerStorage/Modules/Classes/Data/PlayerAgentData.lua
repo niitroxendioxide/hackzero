@@ -75,8 +75,8 @@ function PlayerAgentDataClass.Compress(self: Types.PlayerAgentDataClass)
     local DataBuffer = buffer.create(4)
     buffer.writeu8(DataBuffer, 0, CharactersDatabase:GetIdForCharacter(self.Name))
     buffer.writeu8(DataBuffer, 1, self.Level)
-    buffer.writeu8(DataBuffer, 2, WeaponsDatabase:GetIdForWeapon(self.Weapon.Name))
-    buffer.writeu8(DataBuffer, 3, self.Weapon.Level)
+    buffer.writeu8(DataBuffer, 2, WeaponsDatabase:GetIdForWeapon(self.Weapon.Name) or 0)
+    buffer.writeu8(DataBuffer, 3, self.Weapon.Level or 1)
 
     return {DataBuffer, self.Artifacts}
 end

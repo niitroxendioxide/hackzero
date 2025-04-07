@@ -50,9 +50,11 @@ end
 
 function Controller:ConnectPing()
 	task.spawn(function()
-		while task.wait(.5) do
+		while true do
 			local Sent, Receive = Network:GetPing()
 			Controller.__Ping = Receive + Sent
+
+			task.wait(.5)
 		end
 	end)
 end

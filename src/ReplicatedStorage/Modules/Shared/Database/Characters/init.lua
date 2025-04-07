@@ -81,7 +81,7 @@ function CharacterData:GetCharacterData(Character: string): Types.CharacterData
 	if CharacterData.__Saved[Character] == nil then
 		return CharacterData.__Saved['Template']
 	end
-	
+
 	return CharacterData.__Saved[Character]
 end
 

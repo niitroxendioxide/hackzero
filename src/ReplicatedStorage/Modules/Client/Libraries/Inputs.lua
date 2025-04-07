@@ -35,14 +35,14 @@ function Inputs.OnEvent(InputObject: InputObject, GameProcessedEvent: boolean)
 	if GameProcessedEvent then
 		return
 	end
-	
+
 	debug.profilebegin('Processing inputs')
 	--print(Inputs.__Bound)
-	
+
 	for _, BoundObject: Types.BoundKeybind in Inputs.__Bound do
 		local EnumObject = Inputs:GetEnumFromKey(BoundObject.Key)
 		local IsKey = false
-		
+
 		if typeof(EnumObject) == 'table' then
 			for _, Object in EnumObject do
 				if InputObject.KeyCode == Object or InputObject.UserInputType == Object then
@@ -53,18 +53,18 @@ function Inputs.OnEvent(InputObject: InputObject, GameProcessedEvent: boolean)
 		else
 			IsKey = (EnumObject == InputObject.KeyCode) or EnumObject == InputObject.UserInputType
 		end
-		
+
 		if IsKey then
 			local Released = InputObject.UserInputState == Enum.UserInputState.End
 			BoundObject.Held = not Released
 			BoundObject.Time = not Released and os.clock() or BoundObject.Time
-			
+
 			if (BoundObject.Release and Released) or not Released then
 				task.spawn(BoundObject.Callback, InputObject.UserInputState.Name)
 			end
 		end
 	end
-	
+
 	debug.profileend()
 end
 

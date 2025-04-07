@@ -5,7 +5,8 @@ local Client = ReplicatedStorage.Modules.Client
 local AreaClass = require(Client.Classes.Area)
 
 --
-local AreaFolder = workspace:WaitForChild("World"):WaitForChild("Zones")
+local AreaFolder: Folder;
+
 local Controller = {
     __Cached = {} :: {{OnEnter: () -> (), OnLeave: () -> ()}},
     __AreaCache = {},
@@ -13,6 +14,11 @@ local Controller = {
 
 function Controller:Init(): ()
     Controller:RequireModules()
+
+    AreaFolder = (workspace:WaitForChild("World"):WaitForChild("Zones", 15) :: Folder)
+    if not AreaFolder then
+        return
+    end
 
     if #AreaFolder:GetChildren() < 1 then
         AreaFolder.ChildAdded:Wait()

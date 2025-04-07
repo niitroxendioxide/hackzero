@@ -16,11 +16,13 @@ local AppearanceClass = {} :: {[string]: (self: Types.AppearanceController, any)
 AppearanceClass.__index = AppearanceClass
 
 function AppearanceClass.new(ModelName: string): Types.AppearanceController
-	assert(Assets:FindFirstChild(ModelName, true), 'Invalid model name given')
-	
+	if not Assets:FindFirstChild(ModelName, true) then
+		ModelName = "Template"
+	end
+
 	local World = workspace:FindFirstChild('World')
 	local AssetsModel = Assets:FindFirstChild(ModelName, true)
-	
+
 	if AssetsModel:IsA('Folder') then
 		local RandomObj = AssetsModel:GetChildren()
 

@@ -18,7 +18,6 @@ function Framework:Init(...)
 					Framework:LoadModule(Module)
 				end
 			end
-
 		end
 	end
 end

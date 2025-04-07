@@ -84,7 +84,12 @@ function Network:__GetSortedEventsArray()
 	return Names
 end
 
+--[[
+	Fire the specified remote event for a single client, or to the server if handled from client
 
+	@param Name the name of the event to be fired
+	@param ... The rest of the arguments to be passed to the client/server specified, includes the player in case of server
+]]
 function Network:Fire(Name: string, ...)
 	local Event: RemoteEvent = Network:Get(Name)
 
@@ -107,6 +112,12 @@ function Network:Fire(Name: string, ...)
 	end
 end
 
+--[[
+	Fire the specified remote event for all clients
+
+	@param Name the name of the event to be fired
+	@param ... The rest of the arguments to be passed to the clients
+]]
 function Network:FireForAll(Name: string, ...: any): ()
 	if RunService:IsClient() then
 		return warn('Cannot fireall in client')
@@ -131,6 +142,13 @@ function Network:FireForAll(Name: string, ...: any): ()
 	return;
 end
 
+--[[
+	Fire the specified remote event for all clients
+
+	@param Blacklisted : `Player` the player for which the event will not be fired for
+	@param Name : `string` the name of the event to be fired
+	@param ... the rest of the arguments to be passed to the clients
+]]
 function Network:FireForAllBut(Blacklisted: Player, Name: string, ...)
 	if RunService:IsClient() then
 		return warn('Cannot fireall in client')
@@ -174,8 +192,6 @@ if RunService:IsServer() then
 		end)
 
 		table.insert(Network.__Cache[Name], Connection)
-
-		print('Bound', Connection, Name)
 	end
 
 	function Network:Handle(Name: string, fn: (Player: Player, any) -> ())

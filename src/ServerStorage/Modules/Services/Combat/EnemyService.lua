@@ -27,13 +27,13 @@ function Service:Init()
 	end
 
 	ClockUtil:ThreadLoop(1, function(_: number)
-		
+
 		if Enemies:GetEnemyCount() < Service.__Limit then
 			Service:Spawn(Enemy_Opts[math.random(1, #Enemy_Opts)])
 		end
-		
+
 	end)
-	
+
 end
 
 function Service:LoadEnemies(Player: Player)

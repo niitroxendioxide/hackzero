@@ -3,19 +3,26 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local Players = game:GetService("Players")
 
-local Packages = ServerStorage.Modules.Packages
+local Modules = ServerStorage.Modules
+local Packages = Modules.Packages
+local Classes = Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local Network = require(Shared.Network)
 
+local GameEnum = require(Shared.GameEnum)
 local Types = require(Shared.Types)
 local Clock = require(Shared.Utility.Clock)
+
 local ProfileTemplate = require(Database.Data.ProfileTemplate)
-local PlayerAgentDataClass = require(ServerStorage.Modules.Classes.Data.PlayerAgentData)
+local CharacterDatabase = require(Database.Characters)
+
+local PlayerAgentDataClass = require(Classes.Data.PlayerAgentData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
 local DataStore = ProfileStore.New("Testing0", ProfileTemplate)
+
 
 --
 local Service = {
@@ -45,10 +52,11 @@ function Service:Init()
     Network:On("DataFetchRequest", function(Player: Player, Type: string)
         local _PlayerData = Service:GetDataFor(Player)
 
-        if Type == "Agents" then
-            Network:Fire("DataFetchRequest", Player, Service:FetchAgents(Player))
-        end
+        if Type == GameEnum.FetchRequests.Agents then
+            local Agents = Service:FetchAgents(Player)
 
+            Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Agents, Agents)
+        end
     end)
 end
 
@@ -73,8 +81,8 @@ function Service:AddPlayer(Player: Player)
     -- Handling new profile session or failure to start it:
 
     if RetrievedProfile ~= nil then
-        RetrievedProfile:AddUserId(Player.UserId) -- GDPR compliance
-        RetrievedProfile:Reconcile() -- Fill in missing variables from PROFILE_TEMPLATE (optional)
+        RetrievedProfile:AddUserId(Player.UserId)
+        RetrievedProfile:Reconcile()
 
         local Thread = Clock:ThreadLoop(300, function()
             Service:SavePlayerAgentData(Player)
@@ -91,11 +99,12 @@ function Service:AddPlayer(Player: Player)
 
         if Player.Parent == Players then
             Service.__Profiles[Player] = RetrievedProfile
+
+            Service:SetupAgents(Player)
         else
         -- The player has left before the profile session started
             RetrievedProfile:EndSession()
         end
-
     else
         Player:Kick(`Profile load fail - Please rejoin`)
     end
@@ -176,7 +185,15 @@ function Service:UpdateAgent(Player: Player, Agent: Types.PlayerAgentDataClass)
     PlayerData.Agents[Agent.Name] = Agent:ToData()
 end
 
-function Service:GetAgent(Player: Player, Name: string)
+function Service:SetupAgents(Player: Player)
+    local PlayerData = Service:GetDataFor(Player)
+
+    for Agent, Data in PlayerData.Agents do
+        Service:CreateAgentClass(Player, Agent)
+    end
+end
+
+function Service:CreateAgentClass(Player: Player, Name: string)
     local PlayerData = Service:GetDataFor(Player)
     local AgentData = PlayerData.Agents[Name] or {}
 
@@ -188,15 +205,25 @@ function Service:GetAgent(Player: Player, Name: string)
         local Now = DateTime.now().UnixTimestamp
         local ClassObject = PlayerAgentDataClass.new(Name, AgentData.Level or 1, AgentData.Obtained or Now)
 
-        if AgentData.Weapon then
+        if (AgentData.Weapon and AgentData.Weapon.Name ~= nil) then
             ClassObject:SetWeapon(AgentData.Weapon.Name, AgentData.Weapon.Level)
         end
 
         if AgentData.Artifacts then
-            ClassObject:SetWeapon(AgentData.Artifacts)
+            ClassObject:SetArtifacts(AgentData.Artifacts)
         end
 
         Service.__Agents[Player][Name] = ClassObject
+    end
+end
+
+function Service:GetAgent(Player: Player, Name: string)
+    if not Service.__Agents[Player] then
+        Service.__Agents[Player] = {}
+    end
+
+    if Service.__Agents[Player][Name] == nil then
+        Service:CreateAgentClass(Player, Name)
     end
 
     return Service.__Agents[Player][Name]
@@ -210,6 +237,15 @@ function Service:SavePlayerAgentData(Player: Player)
     for _, Agent: Types.PlayerAgentDataClass in (Service.__Agents[Player] or {}) do
         Service:UpdateAgent(Player, Agent)
     end
+end
+
+function Service:UnlockAllAgents(Player: Player)
+    local Characters = CharacterDatabase:GetAllCharacterNames()
+	for _, CharacterName in Characters do
+		local Agent = PlayerAgentDataClass.new(CharacterName, 1, DateTime.now().UnixTimestamp)
+
+		Service:AddAgent(Player, Agent)
+	end
 end
 
 return Service

@@ -23,8 +23,6 @@ function Controller:Init()
 		return;
 	end
 
-
-	print("Controls to attack bound")
 	Movesets:Init()
 
 	for _, Key in Controller.__Abilities do
@@ -33,12 +31,17 @@ function Controller:Init()
 			Callback = function(State: 'Begin' | 'End')
 				local UserId = Players.LocalPlayer.UserId
 				local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
+				local CurrentAgent = Characters:GetCurrent(UserId)
+				if CurrentAgent == nil then
+					print("Input rejected. Character is null")
+					return
+				end
 
 				--print("Pre-ability", State, Key, CharacterMoveset)
 				if State == 'Begin' then
-					CharacterMoveset:Begin(Key, Characters:GetCurrent(UserId))
+					CharacterMoveset:Begin(Key, CurrentAgent)
 				else
-					CharacterMoveset:Release(Key, Characters:GetCurrent(UserId))
+					CharacterMoveset:Release(Key, CurrentAgent)
 				end
 
 				if Key == 'Dodge' then

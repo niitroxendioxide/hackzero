@@ -7,32 +7,25 @@ local Players = game:GetService('Players')
 
 local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
-local Database = Shared.Database
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 
-local AgentService = require(script.Parent.Combat.AgentService)
-local EnemyService = require(script.Parent.Combat.EnemyService)
-local ServerAgentClass = require(Modules.Classes.Combat.ServerAgent)
+local TeamService = require(script.Parent.Combat.TeamService)
 local PartyService = require(script.Parent.Lobby.PartyService)
 local DataService = require(script.Parent.Data.DataService)
 
-local CharacterDatabase = require(Database.Characters)
-local PlayerAgentDataClass = require(Modules.Classes.Data.PlayerAgentData)
-local Types = require(Shared.Types)
+local _Types = require(Shared.Types)
 local Places = require(Shared.Places)
 
 local Messages = require(Modules.Packages.Messages)
 
 --
-local Service = {
-	__Characters = {} :: {[Player]: {Types.ServerAgentClass}},
-}
+local Service = {}
 
 function Service:Init(): ()
 	Service:SetupStarterPlayer()
 
 	for _, Player in Players:GetPlayers() do
-		Service.PlayerAdded(Player)
+		task.spawn(Service.PlayerAdded, Player)
 	end
 
 	Players.PlayerAdded:Connect(Service.PlayerAdded)
@@ -51,41 +44,29 @@ function Service:SetupStarterPlayer(): ()
 end
 
 function Service.PlayerAdded(Player: Player): ()
-	Service.__Characters[Player] = {}
-
 	if not RunService:IsStudio() then
 		Messages:Post({Content = `{Player.Name} has joined the game!`, Title = "Player joined"})
 	end
 
 	if not Player:HasTag('Ping') then
-		repeat task.wait() 
+		repeat task.wait()
 		until Player:HasTag('Ping')
 	end
+
+	-- Initialize data before anything else
+	DataService:AddPlayer(Player)
+	DataService:UnlockAllAgents(Player)
 
 	--
 	if Places:CanFight() then
 		Service:InitializeCharacters(Player)
-	end
-
-	--
-	DataService:AddPlayer(Player)
-
-	--
-	local Characters = CharacterDatabase:GetAllCharacterNames()
-	for _, CharacterName in Characters do
-		local Agent = PlayerAgentDataClass.new(CharacterName, 1, DateTime.now().UnixTimestamp)
-
-		DataService:AddAgent(Player, Agent)
 	end
 end
 
 function Service.PlayerRemoving(Player: Player): ()
 	PartyService:ClearPlayer(Player)
 
-	for _, Character in AgentService:GetCharacters(Player) do
-		AgentService:RemoveAgent(Player, Character.Name)
-	end
-
+	TeamService:Clear(Player)
 	DataService:RemovePlayer(Player)
 end
 
@@ -94,30 +75,8 @@ function Service:InitializeCharacters(Player: Player): ()
 	Player:LoadCharacter()
 
 	--
-	print("Player Characters Loaded!")
-	local Characters = {'Goku', 'Template', 'Vegeta'}
-
-	for i, Character in Characters do
-		local NewClass = ServerAgentClass.new(Character, 60)
-		NewClass:Init(Player.UserId)
-
-		AgentService:AddAgent(Player, NewClass)
-
-		if i == 1 then
-			NewClass:SetActive(true)
-		end
-
-		table.insert(Service.__Characters[Player], NewClass)
-	end
-
-	--
-	for _, OtherPlayer in Players:GetPlayers() do
-		if OtherPlayer == Player then continue end
-
-		AgentService:Sync(OtherPlayer, Player)
-	end
-
-	EnemyService:LoadEnemies(Player)
+	TeamService:Create(Player)
+	TeamService:Sync(Player)
 end
 
 return Service

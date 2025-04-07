@@ -21,6 +21,7 @@ function Replicator:Effect(Args: {})
 end
 
 function Replicator:AddAgent(Player: Player, AgentClass: Types.ServerAgentClass, Target: Player?, At: CFrame?)
+	--print(Table:printTable(AgentClass))
 	local Object = buffer.create(6)
 	buffer.writeu8(Object, 0, GameEnum.Replication.AddAgent)
 	buffer.writeu8(Object, 1, Characters:GetIdForCharacter(AgentClass.Name))

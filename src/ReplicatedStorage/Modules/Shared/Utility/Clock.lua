@@ -10,13 +10,13 @@ function ClockUtil:ThreadLoop(Time: number, fn: (delta: number) -> ())
 	local NewThread = task.spawn(function()
 		while true do
 			local Delta = task.wait(Time)
-			
+
 			fn(Delta)
 		end
 	end)
-	
+
 	table.insert(ClockUtil.__Saved, NewThread)
-	
+
 	return NewThread
 end
 

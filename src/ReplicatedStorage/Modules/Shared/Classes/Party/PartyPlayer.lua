@@ -8,27 +8,16 @@ local Types = require(Shared.Types)
 local PartyPlayer = {}
 PartyPlayer.__index = PartyPlayer
 
-function PartyPlayer.new(Player: Player, Level: number, Team: Types.PartyPlayerTeam)
+function PartyPlayer.new(Player: Player, Level: number)
     local self = setmetatable({}, PartyPlayer)
     self.PlayerObject = Player
     self.Level = Level
-    self.Team = Team
 
     return self
 end
 
 function PartyPlayer.GetId(self: Types.PartyPlayer)
     return self.PlayerObject.UserId
-end
-
-function PartyPlayer.GetSimplifiedTeam(self: Types.PartyPlayer): (string)
-    local TeamName = "";
-
-    for _, Character in self.Team do
-        TeamName = TeamName..Character.Name..", "
-    end
-
-    return TeamName;
 end
 
 return PartyPlayer
