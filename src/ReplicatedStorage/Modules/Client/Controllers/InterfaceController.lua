@@ -21,7 +21,7 @@ function Controller:Init(): ()
 		task.spawn(function()
 			local Object = require(Component) :: Types.UIComponent
 
-			if tostring(Object) == 'GUIComponent' and Object:Bind() then
+			if Object.__type == 'GUIComponent' and Object:Bind() then
 				task.spawn(Object.Init, Object)
 
 				Controller.__Components[Component.Name] = Object
@@ -37,8 +37,8 @@ end
 function Controller:DisableCallback(Id: string)
 	task.spawn(function()
 		repeat
-			local success = pcall(function() 
-				StarterGUI:SetCore(Id, false) 
+			local success = pcall(function()
+				StarterGUI:SetCore(Id, false)
 			end)
 
 			task.wait(1)

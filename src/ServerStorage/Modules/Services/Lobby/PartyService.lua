@@ -19,7 +19,7 @@ local TeleportService = require(Data.TeleportService)
 --
 local Service = {
     __Player_Classes = {},
-    __Parties = {},
+    __Parties = {} :: {[string]: Types.PartyClass},
     __Player_Party = {},
 }
 
@@ -39,11 +39,7 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...)
     --print("Server received party request:", GameEnum.KeyLookup(GameEnum.PartyManaging, Type))
 
     if Type == GameEnum.PartyManaging.Create then
-        local Code = HttpService:GenerateGUID(false):sub(1, 7)
-        local NewParty = PartyClass.new(Code,Service:GetClass(Player))
-
-        Service.__Parties[Code] = NewParty
-        Service:JoinParty(Player, Code)
+        local NewParty = Service:CreateParty(Player)
 
         --
         Network:Fire("Party", Player, GameEnum.PartyManaging.Create, NewParty:Compress())
@@ -72,6 +68,8 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...)
 
             Network:Fire("Party", Player, GameEnum.PartyManaging.ChangeTeam, {Player.UserId, Team})
         end
+    elseif Type == GameEnum.FetchRequests.Parties then
+        Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Parties, Service:FetchParties())
     end
 end
 
@@ -80,7 +78,33 @@ function Service:GetCode(Player: Player)
 end
 
 function Service:FetchParties(): ()
-    return Types.NOT_IMPLEMENTED_ERROR()
+    local List = {}
+
+    for Code, Party in Service.__Parties do
+        local Max = Party:GetMaxPlayers()
+        local PlayerCount = 0;
+
+        local Level = 0;
+        for _, Player in Party:GetPlayers() do
+            PlayerCount += 1
+
+            Level += Player.Level
+        end
+
+        table.insert(List, {Code, Party.__Owner, PlayerCount, Max, Level / PlayerCount})
+    end
+
+    return List
+end
+
+function Service:CreateParty(Player: Player)
+    local Code = HttpService:GenerateGUID(false):sub(1, 7)
+    local NewParty = PartyClass.new(Code,Service:GetClass(Player))
+
+    Service.__Parties[Code] = NewParty
+    Service:JoinParty(Player, Code)
+
+    return NewParty
 end
 
 function Service:JoinParty(Player: Player, Code: any): ()

@@ -19,9 +19,7 @@ local ComponentClass = {} :: {
 	[string]: (self: Types.UIComponent, any) -> any,
 }
 ComponentClass.__index = ComponentClass
-ComponentClass.__tostring = function()
-	return 'GUIComponent'
-end
+ComponentClass.__type = "GUIComponent"
 
 ComponentClass.Fusion = Fusion :: Fusion.Fusion;
 

@@ -35,18 +35,40 @@ function Interactions:GetButton(Name: string): Frame
 end
 
 function Interactions:Init()
-    local PlayButton = Interactions:GetButton("Play")
+    local Create = Interactions:GetButton("Create")
+    local Join = Interactions:GetButton("Join")
 
-    PlayButton.PlayButton.MouseButton1Click:Connect(function()
+    Create.Button.MouseButton1Click:Connect(function()
         local PartyUI = UIGroups:GetElementClass("Lobby", "Party")
 
-        Interactions:SetButton("Play", false)
+        Interactions:SetButton("Create", false)
+        Interactions:SetButton("Join", false)
         PartyUI:CreateParty()
+    end)
+
+    Join.Button.MouseButton1Click:Connect(function()
+        local PartiesBrowserUI = UIGroups:GetElementClass("Lobby", "Parties")
+        print(PartiesBrowserUI)
+
+        Interactions:SetButton("Create", false)
+        Interactions:SetButton("Join", false)
+        PartiesBrowserUI:LoadParties()
     end)
 end
 
 function Interactions:Set()
     self:GetFrame().Visible = true
+end
+
+function Interactions:WaitForClose(Handler: () -> ())
+    Interactions.__FiringSignal = Handler
+end
+
+function Interactions:FireLeaveSignal()
+    print(Interactions.__FiringSignal)
+    if typeof(Interactions.__FiringSignal) == "function" then
+        task.defer(Interactions.__FiringSignal)
+    end
 end
 
 return Interactions

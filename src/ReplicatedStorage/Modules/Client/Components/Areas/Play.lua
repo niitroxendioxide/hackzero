@@ -5,18 +5,31 @@ local Client = ReplicatedStorage.Modules.Client
 local InterfaceController = require(Client.Controllers.InterfaceController)
 
 --
-local PlayArea = {}
+local PlayArea = {
+    Connection = nil,
+}
 
 function PlayArea.OnEnter()
     local UIComponent = InterfaceController:GetComponent("Interactions")
 
-    UIComponent:SetButton("Play", true)
+    UIComponent:SetButton("Create", true)
+    UIComponent:SetButton("Join", true)
+
+    PlayArea.Connection = UIComponent:WaitForClose(function()
+        print("Do i not run?")
+        PlayArea.OnEnter()
+    end)
 end
 
 function PlayArea.OnLeave()
+    if PlayArea.Connection then
+        PlayArea.Connection:Disconnect()
+    end
+
     local UIComponent = InterfaceController:GetComponent("Interactions")
 
-    UIComponent:SetButton("Play", false)
+    UIComponent:SetButton("Join", false)
+    UIComponent:SetButton("Create", false)
 end
 
 return PlayArea

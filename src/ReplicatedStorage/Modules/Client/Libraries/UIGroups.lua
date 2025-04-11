@@ -48,8 +48,9 @@ function InterfaceStates:SetActiveElement(Group: string, Item: string)
     InterfaceStates.__Groups[Group].Active = Item
 end
 
-function InterfaceStates:GetElementClass(Group: string, Name: string): ()
-    if not InterfaceStates.__Groups[Group] then return end
+export type Element = Types.UIComponent & {[string]: () -> ()}
+function InterfaceStates:GetElementClass(Group: string, Name: string): (Element)
+    if not InterfaceStates.__Groups[Group] then return {} :: Element end
 
     return InterfaceStates.__Groups[Group].Items[Name]
 end

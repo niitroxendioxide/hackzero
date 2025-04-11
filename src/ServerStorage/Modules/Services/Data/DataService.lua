@@ -168,11 +168,13 @@ function Service:AddAgent(Player: Player, Agent: Types.PlayerAgentDataClass)
 
     for AgentName in PlayerData.Agents do
         if AgentName == Agent.Name then
+            Service:CreateAgentClass(Player, AgentName)
             return
         end
     end
 
     PlayerData.Agents[Agent.Name] = Agent:ToData()
+    Service:SetAgentClass(Player, Agent)
 end
 
 function Service:UpdateAgent(Player: Player, Agent: Types.PlayerAgentDataClass)
@@ -191,6 +193,14 @@ function Service:SetupAgents(Player: Player)
     for Agent, Data in PlayerData.Agents do
         Service:CreateAgentClass(Player, Agent)
     end
+end
+
+function Service:SetAgentClass(Player: Player, AgentClass: Types.PlayerAgentDataClass): ()
+    if Service.__Agents[Player] == nil then
+        Service.__Agents[Player] = {}
+    end
+
+    Service.__Agents[Player][AgentClass.Name] = AgentClass
 end
 
 function Service:CreateAgentClass(Player: Player, Name: string)
@@ -213,7 +223,7 @@ function Service:CreateAgentClass(Player: Player, Name: string)
             ClassObject:SetArtifacts(AgentData.Artifacts)
         end
 
-        Service.__Agents[Player][Name] = ClassObject
+        Service:SetAgentClass(Player, ClassObject)
     end
 end
 

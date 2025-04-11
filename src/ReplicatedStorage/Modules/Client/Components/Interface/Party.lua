@@ -12,6 +12,7 @@ local GameEnum = require(Shared.GameEnum)
 local ComponentClass = require(Client.Classes.Interface)
 local Fetcher = require(Client.Libraries.Fetcher)
 
+local UIGroups = require(Client.Libraries.UIGroups)
 local PartyComponent = ComponentClass.new("Party", "Lobby")
 
 local Scope = PartyComponent:GetScope()
@@ -35,7 +36,8 @@ local function RequestPartyCreation()
 end
 
 local function RequestPartyLeave(): ()
-    States.Team:set({})
+    UIGroups:GetElementClass("Lobby", "Interactions"):FireLeaveSignal()
+    States.Team:set({});
     Network:Fire("Party", GameEnum.PartyManaging.Leave)
 end
 

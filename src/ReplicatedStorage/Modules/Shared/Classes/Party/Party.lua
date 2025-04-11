@@ -19,6 +19,7 @@ function Party.new(Code: number, Owner: Types.PartyPlayer): Types.PartyClass
     self.__Stage = "Mission/Earth/Act1"
     self.__FriendsOnly = false
     self.__State = 1
+    self.__Max_Players = 4
     self.__State_Name = "Idle"
     self.__Teams = {}
 
@@ -67,6 +68,10 @@ function Party.GetRawPlayers(self: Types.PartyClass)
     end
 
     return List;
+end
+
+function Party.GetMaxPlayers(self: Types.PartyClass): number
+    return self.__Max_Players
 end
 
 function Party.GetStage(self: Types.PartyClass): (string)

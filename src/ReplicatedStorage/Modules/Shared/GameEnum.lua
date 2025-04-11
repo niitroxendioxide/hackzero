@@ -82,16 +82,21 @@ return {
 
 	PartyManaging = {
 		Create = 1,
-		Leave = 2,
-		Update = 3,
-		Start = 4,
-		Failed = 5,
-		ChangeTeam = 6,
+		Join = 2,
+		Leave = 3,
+		Update = 4,
+		Start = 5,
+		Failed = 6,
+		ChangeTeam = 7,
 	},
 
 	FetchRequests = {
 		Agents = 1,
-		
+		Parties = 2,
+	},
+
+	NotificationTypes = {
+		PartyInvite = 1,
 	},
 
 	KeyLookup = function(Table: {}, val: number)

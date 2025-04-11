@@ -643,6 +643,7 @@ export type PartyClass = {
 	__State: PartyState,
 	__Owner: number,
 	__State_Name: string,
+	__Max_Players: number,
 	__Teams: {},
 
 	--
@@ -656,6 +657,7 @@ export type PartyClass = {
 	GetState: (self: PartyClass) -> PartyState,
 	GetPlayers: (self: PartyClass) -> {PartyPlayer},
 	GetRawPlayers: (self: PartyClass) -> ({Player}),
+	GetMaxPlayers: (self: PartyClass) -> (number),
 
 	GetPlayerTeam: (self: PartyClass, Player: PartyPlayer) -> (),
 	SetPlayerTeam: (self: PartyClass, Player: PartyPlayer, Team: PartyPlayerTeam?) -> (),
@@ -751,6 +753,9 @@ export type PlayerAgentDataClass = {
 }
 
 export type Fusion = Fusion.Fusion
+export type ButtonContainer<A, B, C, D, E, F, G, H> = {
+	[A | B? | C? | D? | E? | F? | G? | H?]: TextButton,
+}
 
 return {
 	NOT_IMPLEMENTED_ERROR = function()
