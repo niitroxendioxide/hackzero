@@ -14,16 +14,21 @@ local ComponentClass = require(Client.Classes.Interface)
 local Notifications = ComponentClass.new("Notifications", "NTF")
 
 -- Privates
-local function RequestJoinParty(Code: string)
-    Network:Fire("Party", GameEnum.PartyManaging.Join, Code)
+local function AcceptPartyInvite(Code: string)
+    Network:Fire("Party", GameEnum.PartyManaging.AcceptInvite, Code)
 end
+
+local function RejectPartyInvite(Code: string)
+    Network:Fire("Party", GameEnum.PartyManaging.RejectInvite, Code)
+end
+
 
 --
 function Notifications:Link()
     local PlayerGui = Player.PlayerGui
 	local HUD = PlayerGui:WaitForChild("LobbyHUD", 10) :: ScreenGui
     if not HUD then return end
-	local Main = HUD:FindFirstChild("Parties", true)
+	local Main = HUD:FindFirstChild("Notification", true)
 
     return Main
 end
@@ -34,9 +39,8 @@ function Notifications:Add(TypeEnum: number, Data: {[number]: any}): ()
 
     if NewNotification then
         NewNotification = NewNotification:Clone() :: Frame & {UIScale: UIScale}
-        NewNotification.Text = `{Data[2]} invited you to their party!`
+        NewNotification.NotifText.Text = `{Data[2]} invited you to their party!`
         NewNotification.Parent = Notifications:GetFrame().List
-
 
         local IsDestroying = false;
         local function Destroy()
@@ -49,9 +53,13 @@ function Notifications:Add(TypeEnum: number, Data: {[number]: any}): ()
             Effects:CleanUp(NewNotification, 0.25)
         end
 
-        NewNotification.QuitButton.MouseButton1Click:Once(Destroy)
+        NewNotification.QuitButton.MouseButton1Click:Once(function()
+            RejectPartyInvite(Data[1] :: string)
+
+            Destroy()
+        end)
         NewNotification.JoinButton.MouseButton1Click:Once(function()
-            RequestJoinParty(Data[1] :: string)
+            AcceptPartyInvite(Data[1] :: string)
             Destroy()
         end)
 
@@ -60,7 +68,9 @@ function Notifications:Add(TypeEnum: number, Data: {[number]: any}): ()
 end
 
 function Notifications:Init()
-    print("Inited!")
+    Network:On("Notification", function(TypeEnum: number, Data: {})
+        Notifications:Add(TypeEnum, Data)
+    end)
 end
 
 return Notifications :: Types.UIComponent & {

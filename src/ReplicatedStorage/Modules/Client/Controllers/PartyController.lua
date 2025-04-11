@@ -37,6 +37,12 @@ function Controller:Init()
 
             PartyComponent:Set(true)
             PartyComponent:AddPlayerToList(Player.DisplayName, Controller:BufferToTeamString(PlayerTeamData))
+        elseif Type == GameEnum.PartyManaging.Join then
+            PartyComponent:Set(true)
+
+            for Name, Data in Controller:GetPlayerListForParty(ServerResponse :: CompressedParty) do
+                PartyComponent:AddPlayerToList(Name, Data)
+            end
         elseif Type == GameEnum.PartyManaging.Leave then
             PartyComponent:Set(false)
             PartyComponent:Clear()
@@ -52,6 +58,21 @@ function Controller:Init()
             PartyComponent:UpdateTeam(Player.DisplayName, Controller:BufferToTeamString(PlayerTeamData[2] :: buffer))
         end
     end)
+end
+
+function Controller:GetPlayerListForParty(Compressed: CompressedParty)
+    local List = {}
+
+    print(Compressed)
+    for i = 1, #Compressed, 2 do
+
+        local Name = Players:GetPlayerByUserId(Compressed[i])
+        local Team = Controller:BufferToTeamString(Compressed[i + 1] :: buffer)
+
+        List[Name] = Team
+    end
+
+    return List
 end
 
 function Controller:GetTeamBuffer(Data: {number | buffer}, Id: number)

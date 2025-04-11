@@ -35,6 +35,10 @@ local function RequestPartyCreation()
     States.Agents:set(Data)
 end
 
+local function RequestInvitePlayer(Player: string)
+    Network:Fire("Party", GameEnum.PartyManaging.Invite, Player)
+end
+
 local function RequestPartyLeave(): ()
     UIGroups:GetElementClass("Lobby", "Interactions"):FireLeaveSignal()
     States.Team:set({});
@@ -156,6 +160,25 @@ function PartyComponent:Init(): ()
 
         PartyComponent:SetButtonState("Play", false)
         RequestPartyStageBegin()
+    end)
+
+    Frame.InviteButton.MouseButton1Click:Connect(function()
+        if Frame.PlayButton:GetAttribute("State") == false then
+            return
+        end
+
+        PartyComponent:SetButtonState("Invite", false)
+        task.delay(.5, PartyComponent.SetButtonState, PartyComponent, "Invite", true)
+
+        --
+        local Name = Frame.PlayerInvitedName.Text
+        for _, OtherPlayer in Players:GetPlayers() do
+            if (OtherPlayer.Name:lower()):match(Name:lower()) and OtherPlayer ~= Player then
+                Name = OtherPlayer.Name
+            end
+        end
+
+        RequestInvitePlayer(Name)
     end)
 
     Scope:Observer(States.Agents):onChange(function()

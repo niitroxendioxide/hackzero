@@ -88,6 +88,9 @@ return {
 		Start = 5,
 		Failed = 6,
 		ChangeTeam = 7,
+		Invite = 8,
+		AcceptInvite = 9,
+		RejectInvite = 10,
 	},
 
 	FetchRequests = {

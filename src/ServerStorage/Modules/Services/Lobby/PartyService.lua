@@ -1,26 +1,29 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
+local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 
 local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = Shared.Classes
-local Data = Modules.Services.Data
+local DataModules = Modules.Services.Data
 
 local Types = require(Shared.Types)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local PartyPlayerClass = require(Classes.Party.PartyPlayer)
 local PartyClass = require(Classes.Party.Party)
+local Notifications = require(Modules.Packages.Notifications)
 
-local DataService = require(Data.DataService)
-local TeleportService = require(Data.TeleportService)
+local DataService = require(DataModules.DataService)
+local TeleportService = require(DataModules.TeleportService)
 
 --
 local Service = {
     __Player_Classes = {},
     __Parties = {} :: {[string]: Types.PartyClass},
     __Player_Party = {},
+    __Invites = {},
 }
 
 --
@@ -70,7 +73,73 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...)
         end
     elseif Type == GameEnum.FetchRequests.Parties then
         Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Parties, Service:FetchParties())
+    elseif Type == GameEnum.PartyManaging.Invite then
+        local Data = {...}
+        local PlayerName = Data[1]
+        local Code = Service:GetCode(Player)
+        local InvitedPlayer = Players:FindFirstChild(PlayerName)
+        if not InvitedPlayer then
+            return
+        end
+
+        Service:InvitePlayer(InvitedPlayer, Code)
+    elseif Type == GameEnum.PartyManaging.AcceptInvite then
+        local Data = {...}
+
+        if not Service:HasInviteFor(Player, Data[1]) then return end
+
+        print("Accepted!", Data[1])
+        Service:JoinParty(Player, Data[1])
+        Service:RemoveInvite(Player, Data[1])
+        local Party = Service:GetParty(Data[1])
+
+        Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress())
+    elseif Type == GameEnum.PartyManaging.RejectInvite then
+        local Data = {...}
+
+        if Service:HasInviteFor(Player, Data[1]) then
+            Service:RemoveInvite(Player, Data[1])
+        end
     end
+end
+
+function Service:RemoveInvite(Player: Player, Code: string)
+    for key, Invite in Service.__Invites[Player] do
+        if Invite[1] == Code then
+            table.remove(Service.__Invites[Player], key)
+        end
+    end
+end
+
+function Service:InvitePlayer(Player: Player, Code: string)
+    local Party = Service:GetParty(Code)
+    if not Party then return end
+
+    local Data = {
+        Code,
+        Players:GetPlayerByUserId(Party.__Owner),
+        15,
+    }
+
+    if Service:HasInviteFor(Player, Code) then return end
+
+    table.insert(Service.__Invites[Player], Data)
+
+    Notifications:Send(Player, GameEnum.NotificationTypes.PartyInvite, Data)
+end
+function Service:HasInviteFor(Player: Player, Code: string): boolean
+    if not Service.__Invites[Player] then
+        Service.__Invites[Player] = {}
+        return false
+    end
+
+    for _, Invite in Service.__Invites[Player] do
+        if Invite[1] == Code then
+            return true
+        end
+    end
+
+    return false
 end
 
 function Service:GetCode(Player: Player)

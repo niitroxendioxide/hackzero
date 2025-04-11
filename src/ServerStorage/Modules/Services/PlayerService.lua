@@ -9,11 +9,11 @@ local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 
+local Notifications = require(Modules.Packages.Notifications)
 local TeamService = require(script.Parent.Combat.TeamService)
 local PartyService = require(script.Parent.Lobby.PartyService)
 local DataService = require(script.Parent.Data.DataService)
 
-local _Types = require(Shared.Types)
 local Places = require(Shared.Places)
 
 local Messages = require(Modules.Packages.Messages)
@@ -22,6 +22,7 @@ local Messages = require(Modules.Packages.Messages)
 local Service = {}
 
 function Service:Init(): ()
+	Notifications:Init()
 	Service:SetupStarterPlayer()
 
 	for _, Player in Players:GetPlayers() do
