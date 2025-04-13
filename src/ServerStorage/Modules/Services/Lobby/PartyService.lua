@@ -46,10 +46,38 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...)
 
         --
         Network:Fire("Party", Player, GameEnum.PartyManaging.Create, NewParty:Compress())
+    elseif Type == GameEnum.PartyManaging.Join then
+        local Request = {...}
+        local Party = Service:GetParty(Request[1])
+
+        if not Party then
+            return
+        end
+
+        Service:JoinParty(Player, Request[1])
+
+        --
+        Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress())
     elseif Type == GameEnum.PartyManaging.Leave then
+        local Code = Service:GetCode(Player)
+        local Party = Service:GetParty(Code)
         Service:LeaveParty(Player)
 
         Network:Fire("Party", Player, GameEnum.PartyManaging.Leave)
+
+        local Count = 0;
+        for _, PartyUser in Party:GetRawPlayers() do
+            if PartyUser == Player then continue end
+
+            Count+=1;
+            local Sent = {Player.UserId}
+
+            Network:Fire("Party", PartyUser, GameEnum.PartyManaging.PlayerLeft, Sent)
+        end
+
+        if Count <= 0 then
+            Service:DeleteParty(Code)
+        end
     elseif Type == GameEnum.PartyManaging.Start then
         local Result, Message = Service:Start(Player)
 
@@ -88,12 +116,20 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...)
 
         if not Service:HasInviteFor(Player, Data[1]) then return end
 
-        print("Accepted!", Data[1])
+        local PlayerClass = Service:GetClass(Player)
         Service:JoinParty(Player, Data[1])
         Service:RemoveInvite(Player, Data[1])
         local Party = Service:GetParty(Data[1])
 
         Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress())
+
+        for _, PartyUser in Party:GetRawPlayers() do
+            if PartyUser == Player then continue end
+
+            local Sent = {Player.UserId, Party:GetPlayerCompressedTeam(PlayerClass)}
+
+            Network:Fire("Party", PartyUser, GameEnum.PartyManaging.PlayerJoined, Sent)
+        end
     elseif Type == GameEnum.PartyManaging.RejectInvite then
         local Data = {...}
 
@@ -204,8 +240,10 @@ function Service:LeaveParty(Player: Player): ()
     Party:RemovePlayer(PlayerClass)
 end
 
-function Service:DeleteParty(): ()
-    return Types.NOT_IMPLEMENTED_ERROR()
+function Service:DeleteParty(Code: string): ()
+    Service.__Parties[Code]:Destroy()
+
+    Service.__Parties[Code] = nil
 end
 
 function Service:Start(Player: Player): boolean

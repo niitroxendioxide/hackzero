@@ -68,6 +68,8 @@ function ComponentClass:Set(Visible: boolean?)
 
 	if Visible == true then
 		UIGroups:SetActiveElement(self.__Group, self.__Name)
+	elseif Visible == false and UIGroups:GetActiveElementName(self.__Group) == self.__Name then
+		UIGroups:SetActiveElement(self.__Group, nil)
 	end
 
 

@@ -19,6 +19,7 @@ local Scope = PartyComponent:GetScope()
 
 local States = {
     Parties = Scope:Value({}),
+    Selected = nil,
 }
 
 
@@ -27,13 +28,22 @@ local function FetchParties()
     local PartiesFetched = Fetcher:FetchParties()
     States.Parties:set(PartiesFetched)
 
-    print(PartiesFetched)
-
     PartyComponent:Set(true)
 end
 
 local function RequestJoinParty(Code: string): ()
     Network:Fire("Party", GameEnum.PartyManaging.Join, Code)
+end
+
+local function UpdatePartyInfo(Code: string, Owner: string)
+    local Frame = PartyComponent:GetFrame()
+
+    Frame.TitleCode.Visible = Code ~= ''
+    Frame.Code.Visible = Code ~= ''
+    Frame.Owner.Visible = Owner ~= ''
+
+    Frame.Owner.Text = Owner
+    Frame.Code.Text = Code
 end
 
 local function AddPartyToList(Code: string, Owner: string, PlayerCount: string, AverageLevel: number)
@@ -43,10 +53,30 @@ local function AddPartyToList(Code: string, Owner: string, PlayerCount: string, 
     Object.PartyLeader.Text = Owner
     Object.PlayerCount.Text = "Players: "..PlayerCount
     Object.AverageLevel.Text = "Level avg. "..AverageLevel
+    Object:SetAttribute("Code", Code)
+    Object.Name = Code
     Object.Parent = Main.Parties
 
     Object.Select.MouseButton1Click:Connect(function()
-        RequestJoinParty(Code)
+        if States.Selected == Code then
+            Object.SelectedStroke.Enabled = false
+            States.Selected = nil
+
+            UpdatePartyInfo('', '')
+
+            return
+        elseif States.Selected ~= Code and States.Selected ~= nil then
+            local FoundObject = Main.Parties:FindFirstChild(States.Selected)
+
+            if FoundObject then
+                FoundObject.SelectedStroke.Enabled = false
+            end
+        end
+
+        States.Selected = Code
+        Object.SelectedStroke.Enabled = true
+
+        UpdatePartyInfo(Code, Owner)
     end)
 
     return Object
@@ -77,6 +107,9 @@ function PartyComponent:Init(): ()
             return
         end
 
+        if States.Selected == nil then return end
+
+        RequestJoinParty(States.Selected)
     end)
 
     Scope:Observer(States.Parties):onChange(function()

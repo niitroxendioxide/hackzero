@@ -66,9 +66,8 @@ function Fetcher:SendRequest(Type: number, Event: string?)
     local Request = {Type, {}, false};
 
     table.insert(Fetcher.__Requests_Queued, Request);
-
+    
     Network:Fire(Event or "DataFetchRequest", Type);
-
     repeat
         task.wait()
     until Request[3] == true;

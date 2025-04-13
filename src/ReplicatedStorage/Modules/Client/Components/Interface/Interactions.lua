@@ -22,6 +22,10 @@ function Interactions:Link()
 end
 
 function Interactions:SetButton(Button: string, State: boolean)
+    if UIGroups:GetActiveElementName( "Lobby") ~= nil then
+        State = false;
+    end
+
     local ButtonObject = Interactions:GetButton(Button)
     if ButtonObject then
         ButtonObject.Visible = State
@@ -48,11 +52,10 @@ function Interactions:Init()
 
     Join.Button.MouseButton1Click:Connect(function()
         local PartiesBrowserUI = UIGroups:GetElementClass("Lobby", "Parties")
-        print(PartiesBrowserUI)
 
+        PartiesBrowserUI:LoadParties()
         Interactions:SetButton("Create", false)
         Interactions:SetButton("Join", false)
-        PartiesBrowserUI:LoadParties()
     end)
 end
 
@@ -65,7 +68,6 @@ function Interactions:WaitForClose(Handler: () -> ())
 end
 
 function Interactions:FireLeaveSignal()
-    print(Interactions.__FiringSignal)
     if typeof(Interactions.__FiringSignal) == "function" then
         task.defer(Interactions.__FiringSignal)
     end

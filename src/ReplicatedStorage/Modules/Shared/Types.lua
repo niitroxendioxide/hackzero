@@ -757,6 +757,65 @@ export type ButtonContainer<A, B, C, D, E, F, G, H> = {
 	[A | B? | C? | D? | E? | F? | G? | H?]: TextButton,
 }
 
+
+export type Stage_Objective = "KillEnemies" | "TimeSurvive" | "PushLoad"
+export type Reward_Type = "Artifact" | "Gold" | "Gems" | "Agent"
+export type Goal = {
+	[Stage_Objective]: number,
+}
+export type EventHandlerState = {Dead: boolean, [string | Stage_Objective]: boolean}
+export type Action = "KickPlayer"
+export type Stage_Key_Event = {
+	Actions: {
+		[Action]: string,
+	},
+	Objective: string,
+	Goal: Goal,
+
+	Finished: (State: EventHandlerState) -> (string),
+
+	Enemies: {
+		[number]: {string | number},
+	},
+	TimeLimit: number?,
+}
+
+--[[
+
+## Stage Key Event
+Events that happen in that stage, the first one is loaded and then the next one is changed to after the first one finishes, etc
+
+### Objective description tags:
+- {objective[n]} where `n` is the type of objective, returns the value of the objective
+- {player} refers to the name of the player
+- {time} updates the time as it changes
+
+### Finished:
+- Handler, which is passed a `Goal` type for the state at which the event was finished, be it completed or time limit, or death, etc.
+- Handler returns a string that indicates the next stage
+
+]]
+export type Rating = "X" | "B" | "A" | "S" | "SSS"
+export type Stage_Act = {
+	Rewards: {
+		Handler: (Objectives: {[string]: boolean}) -> (Rating),
+
+		[Reward_Type]: string | number,
+	},
+
+	Guide: {
+		Begin: Stage_Key_Event,
+		[string]: Stage_Key_Event,
+	}
+}
+
+export type Stage = {
+
+	Acts: {
+		[string]: Stage_Act,
+	},
+}
+
 return {
 	NOT_IMPLEMENTED_ERROR = function()
 		warn("Method", debug.info(2, "n"), "not implemented. Consider writing a hardcoded value of return")

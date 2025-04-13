@@ -40,9 +40,10 @@ local function RequestInvitePlayer(Player: string)
 end
 
 local function RequestPartyLeave(): ()
-    UIGroups:GetElementClass("Lobby", "Interactions"):FireLeaveSignal()
     States.Team:set({});
+    PartyComponent:Set(false)
     Network:Fire("Party", GameEnum.PartyManaging.Leave)
+    UIGroups:GetElementClass("Lobby", "Interactions"):FireLeaveSignal()
 end
 
 local function RequestPartyTeamUpdate(): ()
@@ -88,12 +89,13 @@ local function SelectAgent(Name: string)
     return States.Team:set(Selected)
 end
 
-local function AddPlayerToList(PlayerName: string, Team: string)
+local function AddPlayerToList(PlayerId: number, Team: string)
+    local User = Players:GetPlayerByUserId(PlayerId)
     local Main = PartyComponent:GetFrame()
     local Object = Assets.Lobby.Party.PlayerListObject:Clone()
-    Object.PlayerName.Text = PlayerName
+    Object.PlayerName.Text = User.DisplayName
     Object.TeamCharacters.Text = Team
-    Object.Name = PlayerName
+    Object.Name = PlayerId
     Object.Parent = Main.Players
 
     return Object
@@ -116,12 +118,21 @@ local function AddAgentToList(Agent: string, Level: number)
 end
 
 
-local function UpdatePlayerTeam(Player: string, Team: string)
+local function UpdatePlayerTeam(PlayerId: number, Team: string)
     local Main = PartyComponent:GetFrame()
-    local PlayerObject = Main.Players:FindFirstChild(Player) :: Frame
+    local PlayerObject = Main.Players:FindFirstChild(PlayerId) :: Frame
 
     if PlayerObject then
         PlayerObject.TeamCharacters.Text = Team
+    end
+end
+
+local function RemovePlayer(PlayerId: number)
+    local Main = PartyComponent:GetFrame()
+    local PlayerObject = Main.Players:FindFirstChild(PlayerId) :: Frame
+
+    if PlayerObject then
+        PlayerObject:Destroy()
     end
 end
 
@@ -243,12 +254,16 @@ function PartyComponent:CreateParty()
     return RequestPartyCreation()
 end
 
-function PartyComponent:AddPlayerToList(Name: string, Team: string)
-    return AddPlayerToList(Name, Team)
+function PartyComponent:AddPlayerToList(ID: number, Team: string)
+    return AddPlayerToList(ID, Team)
 end
 
-function PartyComponent:UpdateTeam(Name: string, Team: string)
-    return UpdatePlayerTeam(Name, Team)
+function PartyComponent:UpdateTeam(ID: number, Team: string)
+    return UpdatePlayerTeam(ID, Team)
+end
+
+function PartyComponent:RemovePlayerFromlist(ID: number)
+    return RemovePlayer(ID)
 end
 
 return PartyComponent :: Types.UIComponent & {

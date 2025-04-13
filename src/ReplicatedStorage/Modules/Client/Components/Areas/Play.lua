@@ -9,14 +9,13 @@ local PlayArea = {
     Connection = nil,
 }
 
-function PlayArea.OnEnter()
+function PlayArea.OnEnter(): ()
     local UIComponent = InterfaceController:GetComponent("Interactions")
 
     UIComponent:SetButton("Create", true)
     UIComponent:SetButton("Join", true)
 
     PlayArea.Connection = UIComponent:WaitForClose(function()
-        print("Do i not run?")
         PlayArea.OnEnter()
     end)
 end

@@ -91,11 +91,13 @@ return {
 		Invite = 8,
 		AcceptInvite = 9,
 		RejectInvite = 10,
+		PlayerJoined = 11,
+		PlayerLeft = 12,
 	},
 
 	FetchRequests = {
-		Agents = 1,
-		Parties = 2,
+		Agents = 105,
+		Parties = 205,
 	},
 
 	NotificationTypes = {
