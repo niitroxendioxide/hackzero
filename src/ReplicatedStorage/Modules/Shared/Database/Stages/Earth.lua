@@ -29,11 +29,11 @@ return {
                     },
 
                     Finished = function(State: Types.EventHandlerState): string
-                        if State.KillEnemies == true then
-                            return "Second"
+                        if State.KillEnemies == 10 then
+                            return "End"
                         end
 
-                        return "Bye"
+                        return "Second"
                     end
                 },
 

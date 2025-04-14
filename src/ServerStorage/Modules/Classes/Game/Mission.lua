@@ -52,6 +52,8 @@ function MissionClass.FinishEvent(self: Types.MissionClass, Types)
 
     if Next_Stage ~= "End" then
         self:BeginEvent(Next_Stage)
+    else
+        print("All players must leave!")
     end
 end
 
@@ -79,6 +81,8 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string?)
         self.__Current_State[Goal] = Default;
     end
 
+    self.__Current_Goals = EventData.Goal
+
     --
     self:SummonEnemyWave(1)
 end
@@ -86,34 +90,44 @@ end
 function MissionClass.SummonEnemyWave(self: Types.MissionClass, WaveNumber: number)
     local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Current_Event)
     local EnemyWaves = EventData.Enemies
+    local NextWaveTime = 0.5
 
     if #EnemyWaves <= 0 or WaveNumber > #EnemyWaves then
         return
     end
 
+    local Total = 0
     local CurrentWave = EnemyWaves[WaveNumber]
     for i = 1, #CurrentWave, 2 do
         local EnemyType = CurrentWave[i]
         local EnemyCount = CurrentWave[i + 1]
+
+        Total += EnemyCount
 
         for i = 1, EnemyCount do
             EnemyService:Spawn(EnemyType)
         end
     end
 
+    if #CurrentWave % 2 ~= 0 then
+        NextWaveTime = CurrentWave[#CurrentWave]
+    end
+
     self.__Current_Wave_Connection = EnemyService.EnemiesCleared:Once(function(...: any): ()
         -- Switch to next wave
         self.__Current_Wave_Connection = nil
 
-        if (#EnemyWaves > WaveNumber + 1) then
+        self:UpdateProgress("KillEnemies", Total)
+
+        if (#EnemyWaves < WaveNumber + 1) then
             return
         end
 
-        self:SummonEnemyWave(WaveNumber + 1)
+        task.delay(NextWaveTime, self.SummonEnemyWave, self, WaveNumber + 1)
     end)
 end
 
-function MissionClass.UpdateProgress(self: Types.MissionClass, GoalType: Types.Goal, Value: any)
+function MissionClass.UpdateProgress(self: Types.MissionClass, GoalType: Types.Stage_Objective, Value: any)
     local Type = typeof(self.__Current_Goals[GoalType])
     if Type == "nil" or Type ~= typeof(Value) then
         return
@@ -124,6 +138,15 @@ function MissionClass.UpdateProgress(self: Types.MissionClass, GoalType: Types.G
     else
         self.__Current_State[GoalType] = Value
     end
+
+    --
+    for Goal, Value in self.__Current_State do
+        if Value ~= self.__Current_Goals[Goal] then
+            return
+        end
+    end
+
+    self:FinishEvent()
 end
 
 function MissionClass.Sync(self: Types.MissionClass): ()

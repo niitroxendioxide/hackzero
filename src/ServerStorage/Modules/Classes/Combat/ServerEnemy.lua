@@ -11,6 +11,7 @@ local Replicator = require(Libraries.Replicator)
 local AgentsLibrary = require(Libraries.Agents)
 
 local Types = require(Shared.Types)
+local Signal = require(Shared.Utility.Signal)
 local EnemyStatus = require(Shared.Classes.Enemy.EnemyStatus)
 local MovementClass = require(Shared.Classes.Enemy.EnemyMovement)
 local EnemyDatabase = require(Shared.Database.Enemies)
@@ -29,6 +30,9 @@ end
 function ServerEnemy.new(At: Vector3, Name: string, Level: number)
 
 	local self = setmetatable({}, ServerEnemy)
+	self.Died = Signal.new()
+
+	--
 	self.__Name = Name or 'Default'
 	self.__Movement = MovementClass.new(At)
 	self.__Level = Level or 1
@@ -39,14 +43,17 @@ function ServerEnemy.new(At: Vector3, Name: string, Level: number)
 	self.__Next = 1
 	self.__Next_Attack = 'Skill 1'
 	self.__Snapfix = os.clock()
-		
-		
+
 	return self
 end
 
 function ServerEnemy:Destroy()
 	self.__Movement:Destroy()
-	
+
+	if self.Died then
+		self.Died:DisconnectAll()
+	end
+
 	if self.__Thread then
 		self.__Thread:Disconnect()
 	end
@@ -54,7 +61,7 @@ end
 
 function ServerEnemy:EnterDazedState()
 	self:Move(Vector3.zero)
-	
+
 	return self.__Status:EnterDazedState()
 end
 
@@ -62,33 +69,33 @@ function ServerEnemy:Attack()
 	local Moveset_Skills = EnemyDatabase:GetAbilities(self.Name)
 	local Moveset = MovesetLibrary:Get(self.Name, true)
 	local Next = Moveset_Skills[math.random(1, #Moveset_Skills)]
-	
+
 	if not Moveset:Verify(self, self.__Next_Attack) then
 		print('cancelled?')
 		self.__Next_Attack = Next
-		
+
 		Next = Moveset_Skills[math.random(1, #Moveset_Skills)]
 	end
-	
+
 	local Split = string.split(self.__Next_Attack, ' ')
 	local Number = tonumber(Split[2], 10)
-	
+
 	Replicator:EnemyUseSkill(self.__EnemyId, Number, 'Begin')
 	Moveset:Begin(self.__Next_Attack, self)
-	
+
 	-- skip
 	self.__Next_Attack = Next
 end
 
 function ServerEnemy:Init(Key: number)
-	if not Key then 
+	if not Key then
 		return warn('Cannot initialize an enemy with an empty id')
 	end
-	
+
 	self.__EnemyId = Key
-	
+
 	self.Name = `"{self.__Name}"-id:{self.__EnemyId}`
-	
+
 	--
 	local NextAttack = os.clock()
 	local Clock = os.clock()
@@ -134,7 +141,7 @@ end
 function ServerEnemy:Stun(Time: number): ()
 	self.__Next = Time + 0.5
 	self.__LastMovement = os.clock()
-	
+
 	--
 	self:Move(Vector3.zero)
 	self:SwitchState('Stunned', Time)
@@ -142,7 +149,7 @@ end
 
 function ServerEnemy:SwitchState(State: string, Time: number)
 	Replicator:SwitchStateEnemy(self.__EnemyId, State, Time)
-	
+
 	return self.__Status:SwitchState(State, Time)
 end
 
@@ -210,10 +217,10 @@ function ServerEnemy:FindRandomAggro()
 			Chosen = Agent
 		end
 	end
-	
+
 	if Chosen then
 		At = Chosen:GetPivot().Position
-		
+
 		self.__Current_Target = Chosen
 		self:Rotate(At)
 	end
@@ -225,18 +232,19 @@ function ServerEnemy:Rotate(Direction: Vector3 | Types.ServerAgentClass)
 	end
 
 	Replicator:RotateEnemy(self.__EnemyId, Direction)
-	
+
 	return self.__Movement:Rotate(Direction)
 end
 
 function ServerEnemy:TakeDamage(number: number)
 	self.__Status:Damage(number)
-	
+
 	if not(self.__Status:IsAlive()) and EnemyLibrary:GetEnemy(self.__EnemyId) == self then
 		local Key = EnemyLibrary:RemoveEnemy(self)
-		
+
 		Replicator:RemoveEnemy(Key)
-		
+		self.Died:Fire()
+
 		return self:Destroy()
 	end
 
@@ -260,7 +268,7 @@ end
 
 function ServerEnemy:ResetAffliction(Type: Types.Element)
 	Replicator:ResetAffliction(self, Type)
-	
+
 	return self.__Status:ResetAffliction(Type)
 end
 

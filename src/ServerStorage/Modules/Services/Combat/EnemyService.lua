@@ -19,6 +19,7 @@ local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local Service = {
 	__Limit = 4,
 	__CurrentEnemies = 0,
+	__EnemyCache = {},
 	EnemiesCleared = {} :: Types.Signal<>,
 }
 
@@ -64,8 +65,12 @@ function Service:Spawn(Type: string)
 	local RandomSpawn = Spawns[math.random(1, #Spawns)]
 
 	local At = Service:__GenerateLocation(RandomSpawn)
-	local Enemy = ServerEnemy.new(At.Position, Type, 60)
+	local Enemy = ServerEnemy.new(At.Position, Type, 1)
 	local Key = Service:__Add(Enemy)
+
+	Enemy.Died:Once(function()
+		Service:__Remove(Enemy)
+	end)
 
 	Enemy:Init(Key)
 
@@ -83,45 +88,56 @@ end
 --
 function Service:__CanSpawn(): boolean
 	--if Service.__CurrentEnemies + 1 > Service.__Limit then return false end
-	
+
 	if Service.__CurrentEnemies <= 255 then return true end
-	
+
 	for key = 0, 255 do
 		if Enemies:GetEnemy(key) == nil then
 			return true
 		end
 	end
-	
+
 	return false
 end
 
 function Service:__Add(Enemy: Types.ServerEnemyClass): ()
 	local EnemyKey = Service.__CurrentEnemies
-	
+
 	if Service.__CurrentEnemies < 255 then
 		Enemies:AddEnemy(EnemyKey, Enemy)
 	else
 		for key = 0, 255 do
 			if Enemies:GetEnemy(EnemyKey) == nil then
 				EnemyKey = key
-				
+
 				Enemies:AddEnemy(EnemyKey, Enemy)
 			end
 		end
 	end
-	
+
 	Service.__CurrentEnemies += 1
-	
+	table.insert(Service.__EnemyCache, Enemy)
+
 	Replicator:AddEnemy(EnemyKey, Enemy)
-	
+
 	return EnemyKey
 end
 
 function Service:__Remove(Enemy: Types.ServerEnemyClass): ()
-	local Key = Enemies:RemoveEnemy(Enemy)
+	local Index = table.find(Service.__EnemyCache, Enemy)
+	if Index then
+		table.remove(Service.__EnemyCache, Index)
+
+		Service.__CurrentEnemies -= 1
+
+		if Service.__CurrentEnemies <= 0 then
+			Service.EnemiesCleared:Fire()
+		end
+	end
+	--[[local Key = Enemies:RemoveEnemy(Enemy)
 	Enemy:Destroy()
 
-	Replicator:RemoveEnemy(Key)
+	Replicator:RemoveEnemy(Key)]]
 end
 
 function Service:__GenerateLocation(SpawnLocation: BasePart)

@@ -414,6 +414,9 @@ export type EnemyClass = {
 }
 
 export type ServerEnemyClass = {
+	Died: Signal<>,
+
+	--
 	__Name: string,
 	__Status: EnemyStatus,
 	__EnemyId: number,
@@ -763,7 +766,7 @@ export type Reward_Type = "Artifact" | "Gold" | "Gems" | "Agent"
 export type Goal = {
 	[Stage_Objective]: number,
 }
-export type EventHandlerState = {Dead: boolean, [string | Stage_Objective]: boolean}
+export type EventHandlerState = {Dead: boolean, [string | Stage_Objective]: any}
 export type Action = "KickPlayer"
 export type Stage_Key_Event = {
 	Actions: {
@@ -824,9 +827,9 @@ export type MissionClass = {
 	__Act: string,
 	__Stage: string,
 	__Current_Time: number,
-	__Current_Goals: {[Goal]: number},
+	__Current_Goals: Goal,
 	__Current_Event: string,
-	__Current_State: {[Goal]: number?, Dead: boolean},
+	__Current_State: {[Stage_Objective]: number?, Dead: boolean},
 	__Current_Wave_Thread: thread?,
 	__Current_Wave_Connection: RBXScriptConnection?,
 
@@ -850,7 +853,7 @@ export type MissionClass = {
 		@param Type : `Goal` the goal type to be updated
 		@param Value : `any` the value of the new goal, incremental in case of numbers.
 	]]
-	UpdateProgress: (self: MissionClass, Type: Goal, Value: any) -> (),
+	UpdateProgress: (self: MissionClass, Type: Stage_Objective, Value: any) -> (),
 }
 
 return {

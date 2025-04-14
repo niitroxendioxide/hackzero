@@ -1,8 +1,8 @@
 return {
-	Display_Name = 'Template Enemy',
+	Display_Name = 'Boss Enemy',
 
 	Appearance = {
-		Height = 3.15
+		Height = 4
 	},
 
 	--
