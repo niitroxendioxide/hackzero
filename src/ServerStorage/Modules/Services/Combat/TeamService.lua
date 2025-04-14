@@ -22,6 +22,7 @@ function Service:Create(Player: Player)
     local Team = TeleportService:GetPlayerTeamFromData(Player)
 
     for index, AgentData in Team do
+        print(index, AgentData)
         local AgentDataClass = DataService:GetAgent(Player, AgentData.Name)
         local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level)
 
@@ -32,6 +33,8 @@ function Service:Create(Player: Player)
             AgentInstance:SetActive(true)
         end
     end
+
+    Player:AddTag("Loaded")
 end
 
 function Service:Sync(Player: Player)

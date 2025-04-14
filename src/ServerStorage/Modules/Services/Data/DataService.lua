@@ -21,7 +21,7 @@ local CharacterDatabase = require(Database.Characters)
 local PlayerAgentDataClass = require(Classes.Data.PlayerAgentData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("Testing0", ProfileTemplate)
+local DataStore = ProfileStore.New("Testing2", ProfileTemplate)
 
 
 --
@@ -198,6 +198,10 @@ end
 function Service:SetAgentClass(Player: Player, AgentClass: Types.PlayerAgentDataClass): ()
     if Service.__Agents[Player] == nil then
         Service.__Agents[Player] = {}
+    end
+
+    if not AgentClass.Name then
+        return
     end
 
     Service.__Agents[Player][AgentClass.Name] = AgentClass

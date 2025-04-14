@@ -187,6 +187,8 @@ end
 
 function ServerEnemy:TrackCurrentTarget()
 	local CurrentTarget = self.__Current_Target
+	if not CurrentTarget then return end
+
 	local At = CurrentTarget:GetPivot().Position
 
 	At = At + (CurrentTarget:GetTotalVelocity() * 1/15)

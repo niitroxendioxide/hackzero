@@ -16,34 +16,34 @@ function EnemyData:Init()
 
 		if Success then
 			EnemyData.__Saved[Module.Name] = table.freeze(Character)
-			
+
 			table.insert(EnemyData.__Ids, Module.Name)
 		else
 			warn('Error on character data for:', Module.Name)
 		end
 	end
-	
+
 	table.sort(EnemyData.__Ids, function(a, b)
 		return a < b
 	end)
-	
+
 	table.freeze(EnemyData.__Ids)
 end
 
 function EnemyData:GetStats(Character: string): Types.CharacterStats
 	local AccessedData = EnemyData:GetEnemyData(Character)
-	
+
 	return AccessedData.Stats
 end
 
 function EnemyData:GetAbilities(Character: string)
 	local Data = EnemyData:GetEnemyData(Character)
 	local Total = {}
-	
+
 	for Skill in Data.Moveset_Data do
 		table.insert(Total, Skill)
 	end
-	
+
 	return Total
 end
 
@@ -55,19 +55,19 @@ end
 
 function EnemyData:GetStatsAtLevel(Character: string, Level: number)
 	local CharacterData = EnemyData:GetEnemyData(Character)
-	
+
 	local Converted = {}
-	
+
 	for Key, Value in CharacterData.Stats do
 		local PerLevel = CharacterData.Level_Stats
-		
+
 		if PerLevel[Key] then
 			Converted[Key] = Value + (PerLevel[Key] * math.max(Level - 1, 0))
 		else
 			Converted[Key] = Value
 		end
-	end	
-	
+	end
+
 	return table.freeze(Converted)
 end
 
@@ -75,8 +75,12 @@ function EnemyData:GetEnemyData(Character: string): Types.CharacterData
 	if EnemyData.__Saved[Character] == nil then
 		return EnemyData.__Saved['Template']
 	end
-	
+
 	return EnemyData.__Saved[Character]
+end
+
+function EnemyData:GetAllEnemyNames()
+	return EnemyData.__Ids
 end
 
 function EnemyData:GetIdForEnemy(Name: string)

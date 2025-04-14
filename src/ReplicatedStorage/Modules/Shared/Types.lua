@@ -758,7 +758,7 @@ export type ButtonContainer<A, B, C, D, E, F, G, H> = {
 }
 
 
-export type Stage_Objective = "KillEnemies" | "TimeSurvive" | "PushLoad"
+export type Stage_Objective = "KillEnemies" | "TimeSurvive" | "PushLoad" | "ReachPlace" | "TalkTo"
 export type Reward_Type = "Artifact" | "Gold" | "Gems" | "Agent"
 export type Goal = {
 	[Stage_Objective]: number,
@@ -810,10 +810,47 @@ export type Stage_Act = {
 }
 
 export type Stage = {
+	Name: string,
+	Map: string,
 
 	Acts: {
 		[string]: Stage_Act,
 	},
+}
+
+export type MissionClass = {
+	Finished: Signal<>,
+
+	__Act: string,
+	__Stage: string,
+	__Current_Time: number,
+	__Current_Goals: {[Goal]: number},
+	__Current_Event: string,
+	__Current_State: {[Goal]: number?, Dead: boolean},
+	__Current_Wave_Thread: thread?,
+	__Current_Wave_Connection: RBXScriptConnection?,
+
+	--
+	FinishEvent: (self: MissionClass) -> (),
+
+	--[[
+		Begin the event associated to the current mission
+		@param Event : `string` the event to be started, passing none will result in it loading the "Begin" event
+	]]
+	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?) -> (),
+	SummonEnemyWave: (self: MissionClass, Wave: number) -> (),
+
+	--[[
+		Sync with all clients the current events and information
+	]]
+	Sync: (self: MissionClass) -> (),
+
+	--[[
+		Update the progress in teh current mission
+		@param Type : `Goal` the goal type to be updated
+		@param Value : `any` the value of the new goal, incremental in case of numbers.
+	]]
+	UpdateProgress: (self: MissionClass, Type: Goal, Value: any) -> (),
 }
 
 return {

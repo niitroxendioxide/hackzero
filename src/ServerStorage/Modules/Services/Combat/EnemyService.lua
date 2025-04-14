@@ -3,12 +3,14 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
+local Database = Shared.Database
 
 local Types = require(Shared.Types)
-local ClockUtil = require(Shared.Utility.Clock)
 local Enemies = require(Shared.Libraries.Enemies)
 local Places = require(Shared.Places)
+local Signal = require(Shared.Utility.Signal)
 
+local EnemiesDatabase = require(Database.Enemies)
 local ServerEnemy = require(ServerStorage.Modules.Classes.Combat.ServerEnemy)
 
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
@@ -17,23 +19,15 @@ local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local Service = {
 	__Limit = 4,
 	__CurrentEnemies = 0,
+	EnemiesCleared = {} :: Types.Signal<>,
 }
-
-local Enemy_Opts = {'Saiyan','Template'}
 
 function Service:Init()
 	if not Places:CanFight() then
 		return;
 	end
 
-	ClockUtil:ThreadLoop(1, function(_: number)
-
-		if Enemies:GetEnemyCount() < Service.__Limit then
-			Service:Spawn(Enemy_Opts[math.random(1, #Enemy_Opts)])
-		end
-
-	end)
-
+	Service.EnemiesCleared = Signal.new();
 end
 
 function Service:LoadEnemies(Player: Player)
@@ -56,6 +50,16 @@ end
 function Service:Spawn(Type: string)
 	if not(Service:__CanSpawn()) then return end
 
+	if not EnemiesDatabase:GetEnemyData(Type) and Type ~= "any" then
+		return
+	end
+
+	if Type == "any" then
+		local EnemyNames = EnemiesDatabase:GetAllEnemyNames()
+
+		Type = EnemyNames[math.random(1, #EnemyNames)]
+	end
+
 	local Spawns = Service:GetSpawns()
 	local RandomSpawn = Spawns[math.random(1, #Spawns)]
 
@@ -65,7 +69,7 @@ function Service:Spawn(Type: string)
 
 	Enemy:Init(Key)
 
-	return 
+	return Enemy
 end
 
 function Service:GetSpawns(): {Instance}

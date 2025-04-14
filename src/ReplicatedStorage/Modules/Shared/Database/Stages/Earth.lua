@@ -4,6 +4,7 @@ local Types = require("../../Types")
 
 --
 return {
+    Name = "Earth",
 
     Acts = {
         Act1 = {
@@ -27,7 +28,7 @@ return {
                         [3] = {"Boss", 1},
                     },
 
-                    Finished = function(State: Types.EventHandlerState)
+                    Finished = function(State: Types.EventHandlerState): string
                         if State.KillEnemies == true then
                             return "Second"
                         end
@@ -38,8 +39,12 @@ return {
 
                 Second = {
                     Objective = "Do something idk",
-                    Goal = {},
+                    Goal = {ReachPlace = ""},
                     Enemies = {},
+
+                    Finished = function(State: Types.EventHandlerState): (string)
+                        return "End"
+                    end
                 },
 
                 Bye = {

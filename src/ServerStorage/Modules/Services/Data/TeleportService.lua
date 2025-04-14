@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
 
@@ -98,9 +99,7 @@ end
 
 --
 function Service:Init()
-    if Places:CanFight() then
-        print("Initialize match here (Call MatchService.lua)")
-    end
+    
 end
 
 function Service:TeleportPlayer()
@@ -149,7 +148,7 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
     return true
 end
 
-function Service:GetPlayerTeamFromData(Player: Player): {string}
+function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: number}}
     local JoinData = Player:GetJoinData()
 
     if not JoinData.TeleportData then
@@ -157,7 +156,16 @@ function Service:GetPlayerTeamFromData(Player: Player): {string}
             Player:Kick("Cannot play match without a set team.")
         end
 
-        return {"Goku", "Asta", "Yuno"}
+        local AgentsToTest = {"Goku", "Asta", "Yuno"}
+        local Converted = {}
+        for _, Name in AgentsToTest do
+            table.insert(Converted, {
+                Name = Name,
+                Level = 60,
+            })
+        end
+
+        return Converted
     end
 
     local PlayersTeleportData = JoinData.TeleportData.Players
@@ -166,6 +174,38 @@ function Service:GetPlayerTeamFromData(Player: Player): {string}
 
     TableUtil:printTable(PlayerData.Team)
     return PlayerData.Team
+end
+
+function Service:GetStageData(): {Stage: string, Act: string, TotalPlayers: number}
+    if #Players:GetPlayers() < 1 then
+        Players.PlayerAdded:Wait()
+    end
+
+    local RandomPlayer = Players:GetPlayers()[1] :: Player
+    local JoinData = RandomPlayer:GetJoinData()
+    local StageData = {}
+
+    if not JoinData.TeleportData then
+        StageData = {
+            Stage = "Earth",
+            Act = "Act1",
+            TotalPlayers = 1,
+        }
+    else
+        local TeleportData = JoinData.TeleportData
+        local SplitStageName = string.split(TeleportData.Stage, "/")
+        local TotalPlayers = 0
+
+        for _, Player in TeleportData.Players do
+            TotalPlayers += 1
+        end
+
+        StageData.Stage = SplitStageName[2]
+        StageData.Act = SplitStageName[3]
+        StageData.TotalPlayers = TotalPlayers
+    end
+
+    return StageData
 end
 
 return Service
