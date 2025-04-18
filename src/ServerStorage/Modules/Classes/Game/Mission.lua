@@ -1,6 +1,7 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
+local RunService = game:GetService("RunService")
 
 --
 local Modules = ServerStorage.Modules
@@ -11,8 +12,9 @@ local Services = Modules.Services
 local Types = require(Shared.Types)
 local Stages = require(Database.Stages)
 local Signal = require(Shared.Utility.Signal)
+local Hitbox = require(Modules.Libraries.Hitbox)
+local EventClass = require(script.Parent.Event)
 
-local EnemyService = require(Services.Combat.EnemyService)
 
 --
 local MissionClass = {}
@@ -22,131 +24,97 @@ function MissionClass.new(Stage: string, Act: string): Types.MissionClass
     local self = setmetatable({}, MissionClass)
     self.Finished = Signal.new()
 
+    self.__Active = false
     self.__Act = Act;
     self.__Stage = Stage;
-    self.__Current_Time = 0;
-    self.__Current_Goals = {};
-    self.__Current_Event = "";
-    self.__Current_State = {};
-    self.__Current_Wave_Thread = nil
-    self.__Current_Wave_Connection = nil
+    self.__Current_Events = {};
+    self.__Current_Active_Triggers = {};
 
     return self
 end
 
 --
-function MissionClass.FinishEvent(self: Types.MissionClass, Types)
-    local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Current_Event)
-
-    local Next_Stage = EventData.Finished(self.__Current_State)
-
-    if self.__Current_Wave_Connection then
-        self.__Current_Wave_Connection:Disconnect()
-        self.__Current_Wave_Connection = nil
+function MissionClass.Begin(self: Types.MissionClass)
+    if self.__Active then
+        return
     end
 
-    if self.__Current_Wave_Thread then
-        task.cancel(self.__Current_Wave_Thread)
-        self.__Current_Wave_Thread = nil
-    end
+    self.__Active = true
 
-    if Next_Stage ~= "End" then
-        self:BeginEvent(Next_Stage)
-    else
-        print("All players must leave!")
-    end
+    self:DetectAreaTriggers()
+    self:BeginEvent("Begin")
 end
 
-function MissionClass.BeginEvent(self: Types.MissionClass, Event: string?)
-    Event = Event or "Begin";
-
+function MissionClass.BeginEvent(self: Types.MissionClass, Event: string)
     local EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
     if EventData == nil then
         return
     end
 
-    self.__Current_Event = Event :: string;
-    self.__Current_Wave_Thread = task.delay(EventData.TimeLimit or 7e25, function()
-        self.__Current_Wave_Thread = nil
-
-        self:FinishEvent()
-    end)
-
-    --
-    print("Currently on event:", Event)
-
-    for Goal, Value in EventData.Goal do
-        local Default = typeof(Value) == "number" and 0 or ''
-
-        self.__Current_State[Goal] = Default;
-    end
-
-    self.__Current_Goals = EventData.Goal
-
-    --
-    self:SummonEnemyWave(1)
-end
-
-function MissionClass.SummonEnemyWave(self: Types.MissionClass, WaveNumber: number)
-    local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Current_Event)
-    local EnemyWaves = EventData.Enemies
-    local NextWaveTime = 0.5
-
-    if #EnemyWaves <= 0 or WaveNumber > #EnemyWaves then
+    if self.__Current_Events[Event] ~= nil then
         return
     end
 
-    local Total = 0
-    local CurrentWave = EnemyWaves[WaveNumber]
-    for i = 1, #CurrentWave, 2 do
-        local EnemyType = CurrentWave[i]
-        local EnemyCount = CurrentWave[i + 1]
+    -- Start event
+    local EventObject = EventClass.new(self.__Stage, self.__Act, Event :: string)
 
-        Total += EnemyCount
+    EventObject.Finished:Once(function(Next_Stage: string)
+        print("Did it finish?")
 
-        for i = 1, EnemyCount do
-            EnemyService:Spawn(EnemyType)
-        end
-    end
+        if Next_Stage == "End" then
+            self.Finished:Fire()
 
-    if #CurrentWave % 2 ~= 0 then
-        NextWaveTime = CurrentWave[#CurrentWave]
-    end
-
-    self.__Current_Wave_Connection = EnemyService.EnemiesCleared:Once(function(...: any): ()
-        -- Switch to next wave
-        self.__Current_Wave_Connection = nil
-
-        self:UpdateProgress("KillEnemies", Total)
-
-        if (#EnemyWaves < WaveNumber + 1) then
+            return
+        elseif Next_Stage == "None" then
             return
         end
 
-        task.delay(NextWaveTime, self.SummonEnemyWave, self, WaveNumber + 1)
+        self:BeginEvent(Next_Stage)
     end)
+
+    EventObject:Start()
+
+    self.__Current_Events[Event] = EventObject
 end
 
-function MissionClass.UpdateProgress(self: Types.MissionClass, GoalType: Types.Stage_Objective, Value: any)
-    local Type = typeof(self.__Current_Goals[GoalType])
-    if Type == "nil" or Type ~= typeof(Value) then
-        return
-    end
+function MissionClass.DetectAreaTriggers(self: Types.MissionClass)
+    local World = workspace:FindFirstChild("World") :: Folder
+    local Map = World:FindFirstChild("Map")
 
-    if Type == "number" then
-        self.__Current_State[GoalType] += Value
-    else
-        self.__Current_State[GoalType] = Value
-    end
+    if Map:FindFirstChild("Triggers") then
+        for _, Area in Map.Triggers:GetChildren() do
+            local Connection; Connection = RunService.Heartbeat:Connect(function()
+                Hitbox:ForAgentsInZone(Area.Size, Area.CFrame, function()
+                    local ReachPlace = false;
+                    for EventName, Event: Types.EventClass in self.__Current_Events do
+                        if Event:HasGoal("ReachPlace") then
+                            Event:UpdateProgress("ReachPlace", Area.Name)
+                            ReachPlace = true
 
-    --
-    for Goal, Value in self.__Current_State do
-        if Value ~= self.__Current_Goals[Goal] then
-            return
+                            Connection:Disconnect()
+                        elseif Event:HasGoal("AllReachPlace") then
+                            ReachPlace = true
+                            Event:UpdateProgress("ReachPlace", Area.Name)
+                        end
+                    end
+
+                    if not ReachPlace then
+                        self:BeginEvent(Area.Name)
+                    end
+                end)
+            end)
+
+            table.insert(self.__Current_Active_Triggers, Connection);
         end
     end
+end
 
-    self:FinishEvent()
+function MissionClass.CleanUpTriggers(self: Types.MissionClass): ()
+    for _, TriggerConnection: RBXScriptConnection in self.__Current_Active_Triggers do
+        TriggerConnection:Disconnect()
+    end
+
+    self.__Current_Active_Triggers = {}
 end
 
 function MissionClass.Sync(self: Types.MissionClass): ()

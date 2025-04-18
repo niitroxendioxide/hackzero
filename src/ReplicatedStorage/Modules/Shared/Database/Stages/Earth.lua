@@ -5,6 +5,7 @@ local Types = require("../../Types")
 --
 return {
     Name = "Earth",
+    Map = "Dragon Ball/West City",
 
     Acts = {
         Act1 = {
@@ -20,6 +21,20 @@ return {
             },
             Guide = {
                 Begin = {
+                    Objective = "Go check out what\'s going on at that one street",
+                    Goal = {ReachPlace = "FirstFightZone"},
+                    Enemies = {},
+
+                    Finished = function(State: Types.EventHandlerState): string
+                        if State.ReachPlace == true then
+                            return "FirstFightZone"
+                        end
+
+                        return "Second"
+                    end
+                },
+
+                FirstFightZone = {
                     Objective = "Beat {objective[KillEnemies]} enemies!",
                     Goal = {KillEnemies = 10},
                     Enemies = {
@@ -28,12 +43,8 @@ return {
                         [3] = {"Boss", 1},
                     },
 
-                    Finished = function(State: Types.EventHandlerState): string
-                        if State.KillEnemies == 10 then
-                            return "End"
-                        end
-
-                        return "Second"
+                    Finished = function(State: Types.EventHandlerState)
+                        return "End"
                     end
                 },
 

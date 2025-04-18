@@ -1,12 +1,18 @@
 --
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local Players = game:GetService("Players")
 
 local Modules = ServerStorage.Modules
+local Shared = ReplicatedStorage.Modules.Shared
 local Classes = Modules.Classes
 local Services = Modules.Services
+local Database = Shared.Database
+local Assets = ReplicatedStorage.Assets
+local World = workspace:WaitForChild("World")
 
 local MissionClass = require(Classes.Game.Mission)
+local StageDatabase = require(Database.Stages)
 local TeleportService = require(Services.Data.TeleportService);
 
 --
@@ -37,10 +43,51 @@ function Service:End()
 end
 
 function Service:Begin(Stage: string, Act: string)
+    local CouldLoadMap = Service:CreateMap(Stage)
+
+    if not CouldLoadMap then
+        TeleportService:ReturnToLobby(Players:GetPlayers())
+
+        return
+    end
+
+    --
     local MissionClass = MissionClass.new(Stage, Act)
 
-    MissionClass:BeginEvent()
+    MissionClass:Begin()
+
+    --
+    MissionClass.Finished:Connect(function()
+        TeleportService:ReturnToLobby(Players:GetPlayers())
+    end)
 end
 
+function Service:CreateMap(Stage: string): boolean
+    local StageInformation = StageDatabase:GetStage(Stage)
+    local Map = Assets:WaitForChild("Maps") :: Folder
+    local Split = string.split(StageInformation.Map, "/")
+
+    for i = 1, #Split do
+        Map = Map:FindFirstChild(Split[i])
+
+        print(Map, Split[1])
+        if Map == nil then
+            return false
+        end
+    end
+
+
+
+    --
+    local NewMap = Map:Clone()
+
+    for _, Object in NewMap:GetChildren() do
+        if Object:IsA("Folder") then
+            Object.Parent = World.Map
+        end
+    end
+
+    return true
+end
 
 return Service

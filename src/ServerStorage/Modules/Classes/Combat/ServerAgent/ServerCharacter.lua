@@ -31,7 +31,7 @@ function ServerCharacterClass.new(Name: string, Height: number): Types.ServerCha
 	self.__Normal = Vector3.yAxis
 	self.__Position = Spawn.Position + Vector3.new(0, self.__Height, 0)
 	self.__Rotation = Vector3.zAxis
-	
+
 	self.__MovementVelocity = Vector3.zero
 	self.__SurfaceVelocity = Vector3.zero
 	self.__LastMovementVelocity = Vector3.zero
@@ -42,7 +42,7 @@ function ServerCharacterClass.new(Name: string, Height: number): Types.ServerCha
 	self.__Active = false
 	self.__MovementAcceleration = 0
 	self.__Linear_Movements = {}
-	
+
 	return self
 end
 
@@ -212,7 +212,7 @@ function ServerCharacterClass:CreateCollider()
 	Collider.Anchored = true
 	Collider.CanCollide = false
 	Collider.Position = self.__Position
-	Collider.Parent = REPLICATE_HITBOX and WorldFolder.Entities.Hitboxes or workspace:FindFirstAncestorOfClass("Camera")
+	Collider.Parent = REPLICATE_HITBOX and WorldFolder.Entities.Hitboxes or workspace:FindFirstChildOfClass("Camera")
 
 	self.__Collider = Collider
 end

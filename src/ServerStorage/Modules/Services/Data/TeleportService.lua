@@ -148,6 +148,30 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
     return true
 end
 
+function Service:ReturnToLobby(Group: {Player}): (boolean, string?)
+    if Service.__Reserving[game.JobId] then
+        return false, "Already teleporting back to lobby"
+    end
+
+    Service.__Reserving[game.JobId] = true
+
+    -- Requests
+    local Id = Places:GetId('Lobby')
+    local Reserved = ReserveServerForPlace(Id)
+    local Success = TeleportPlayerGroupAttempt(Id, Reserved, Group, {})
+
+    print(Reserved, Success, Id, 'Lobby')
+
+    Service.__Reserving[game.JobId] = nil
+
+    if not Success then
+        return false, "Error when teleporting"
+    end
+
+    return true
+end
+
+
 function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: number}}
     local JoinData = Player:GetJoinData()
 

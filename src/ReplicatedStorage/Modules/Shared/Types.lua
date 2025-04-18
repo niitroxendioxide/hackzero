@@ -761,7 +761,7 @@ export type ButtonContainer<A, B, C, D, E, F, G, H> = {
 }
 
 
-export type Stage_Objective = "KillEnemies" | "TimeSurvive" | "PushLoad" | "ReachPlace" | "TalkTo"
+export type Stage_Objective = "KillEnemies" | "TimeSurvive" | "PushLoad" | "ReachPlace" | "TalkTo" | "AllReachPlace"
 export type Reward_Type = "Artifact" | "Gold" | "Gems" | "Agent"
 export type Goal = {
 	[Stage_Objective]: number,
@@ -774,6 +774,8 @@ export type Stage_Key_Event = {
 	},
 	Objective: string,
 	Goal: Goal,
+
+	Active_Triggers: {string},
 
 	Finished: (State: EventHandlerState) -> (string),
 
@@ -824,17 +826,14 @@ export type Stage = {
 export type MissionClass = {
 	Finished: Signal<>,
 
+	__Active: boolean,
 	__Act: string,
 	__Stage: string,
-	__Current_Time: number,
-	__Current_Goals: Goal,
-	__Current_Event: string,
-	__Current_State: {[Stage_Objective]: number?, Dead: boolean},
-	__Current_Wave_Thread: thread?,
-	__Current_Wave_Connection: RBXScriptConnection?,
+	__Current_Active_Triggers: {RBXScriptConnection},
+	__Current_Events: {[string]: EventClass},
 
 	--
-	FinishEvent: (self: MissionClass) -> (),
+	Begin: (self: MissionClass) -> (),
 
 	--[[
 		Begin the event associated to the current mission
@@ -849,11 +848,43 @@ export type MissionClass = {
 	Sync: (self: MissionClass) -> (),
 
 	--[[
+		Sets up the area triggers for each event, only in the scenario where there are any area triggers
+	]]
+	DetectAreaTriggers: (self: MissionClass) -> (),
+	CleanUpTriggers: (self: MissionClass) -> (),
+}
+
+export type EventClass = {
+	Finished: Signal<string>,
+
+	__Event: string,
+	__Stage: string,
+	__Act: string,
+	__Current_Time: number,
+	__Current_Wave_Thread: thread?,
+	__Current_Wave_Connection: RBXScriptConnection?,
+	__Current_Goals: Goal,
+	__Current_Event: string,
+	__Current_State: {[Stage_Objective]: (number | boolean)?, Dead: boolean},
+
+	__Players: {},
+
+	AddPlayer: () -> (),
+
+	Start: (self: EventClass) -> (),
+	SummonEnemyWave: (self: EventClass, Wave: number) -> (),
+	Destroy: (self: EventClass) -> (),
+
+	HasGoal: (self: EventClass, Type: Stage_Objective) -> (boolean),
+
+	--[[
 		Update the progress in teh current mission
 		@param Type : `Goal` the goal type to be updated
 		@param Value : `any` the value of the new goal, incremental in case of numbers.
 	]]
-	UpdateProgress: (self: MissionClass, Type: Stage_Objective, Value: any) -> (),
+	UpdateProgress: (self: EventClass, Type: Stage_Objective, Value: any) -> (),
+
+	GetCorrectedState: (self: EventClass) -> (),
 }
 
 return {
