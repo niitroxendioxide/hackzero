@@ -779,6 +779,12 @@ export type Stage_Key_Event = {
 
 	Finished: (State: EventHandlerState) -> (string),
 
+	-- Teleport all players to an area.
+	Global: boolean?,
+
+	-- Only used if Global is turned on
+	EventPlace: string?,
+
 	Enemies: {
 		[number]: {string | number},
 	},
@@ -839,13 +845,13 @@ export type MissionClass = {
 		Begin the event associated to the current mission
 		@param Event : `string` the event to be started, passing none will result in it loading the "Begin" event
 	]]
-	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?) -> (),
+	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?, Players: {StagePlayer}) -> (),
 	SummonEnemyWave: (self: MissionClass, Wave: number) -> (),
 
 	--[[
 		Sync with all clients the current events and information
 	]]
-	Sync: (self: MissionClass) -> (),
+	Sync: (self: MissionClass, Players: {StagePlayer}, Type: number, ...any) -> (),
 
 	--[[
 		Sets up the area triggers for each event, only in the scenario where there are any area triggers
@@ -857,6 +863,8 @@ export type MissionClass = {
 export type EventClass = {
 	Finished: Signal<string>,
 
+	__Players: {StagePlayer},
+	__Finish_Status: boolean,
 	__Event: string,
 	__Stage: string,
 	__Act: string,
@@ -864,18 +872,16 @@ export type EventClass = {
 	__Current_Wave_Thread: thread?,
 	__Current_Wave_Connection: RBXScriptConnection?,
 	__Current_Goals: Goal,
-	__Current_Event: string,
 	__Current_State: {[Stage_Objective]: (number | boolean)?, Dead: boolean},
 
-	__Players: {},
-
-	AddPlayer: () -> (),
+	AddPlayer: (self: EventClass, Player: StagePlayer) -> (),
 
 	Start: (self: EventClass) -> (),
 	SummonEnemyWave: (self: EventClass, Wave: number) -> (),
 	Destroy: (self: EventClass) -> (),
 
 	HasGoal: (self: EventClass, Type: Stage_Objective) -> (boolean),
+	IsFinished: (self: EventClass) -> (),
 
 	--[[
 		Update the progress in teh current mission
@@ -885,6 +891,16 @@ export type EventClass = {
 	UpdateProgress: (self: EventClass, Type: Stage_Objective, Value: any) -> (),
 
 	GetCorrectedState: (self: EventClass) -> (),
+}
+
+export type StagePlayer = {
+	__Player_Object: Player,
+	__Designated_Id: number,
+	__Team: {ServerAgentClass},
+
+	GetId: (self: StagePlayer) -> number,
+	GetTeam: (self: StagePlayer) -> {ServerAgentClass},
+	GetBase: (self: StagePlayer) -> Player,
 }
 
 return {

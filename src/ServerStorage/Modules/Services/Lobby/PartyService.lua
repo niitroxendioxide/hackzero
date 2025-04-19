@@ -31,7 +31,7 @@ function Service:Init()
     Network.new("Party", "Event")
     Network:On("Party", Service.OnPartyEvent)
 end
-
+    
 function Service:ClearPlayer(Player: Player)
     if Service.__Player_Classes[Player] then
         Service.__Player_Classes[Player] = nil

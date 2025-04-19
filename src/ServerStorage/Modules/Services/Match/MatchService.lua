@@ -11,6 +11,8 @@ local Database = Shared.Database
 local Assets = ReplicatedStorage.Assets
 local World = workspace:WaitForChild("World")
 
+local Network = require(Shared.Network)
+local GameEnum = require(Shared.GameEnum)
 local MissionClass = require(Classes.Game.Mission)
 local StageDatabase = require(Database.Stages)
 local TeleportService = require(Services.Data.TeleportService);
@@ -19,6 +21,8 @@ local TeleportService = require(Services.Data.TeleportService);
 local Service = {}
 
 function Service:Init()
+    Network.new("Match", "Event")
+
     local MatchData = TeleportService:GetStageData()
     local TotalPlayers = MatchData.TotalPlayers
     local LoadedPlayers = 0
@@ -33,6 +37,10 @@ function Service:Init()
         end
 
         task.wait()
+    end
+
+    for _, Player in Players:GetPlayers() do
+        Network:Fire("Match", Player, GameEnum.MatchEvents.SetupStage, MatchData.Stage, MatchData.Act)
     end
 
     Service:Begin(MatchData.Stage, MatchData.Act)

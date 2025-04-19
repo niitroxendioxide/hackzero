@@ -9,6 +9,8 @@ local Database = Shared.Database
 local Types = require(Shared.Types)
 local Stages = require(Database.Stages)
 local Signal = require(Shared.Utility.Signal)
+local Network = require(Shared.Network)
+local GameEnum = require(Shared.GameEnum)
 local EnemyService = require(Modules.Services.Combat.EnemyService)
 
 --
@@ -20,9 +22,11 @@ function EventClass.new(Stage: string, Act: string, Event: string)
     self.Finished = Signal.new()
 
     -- Privates
+    self.__Finish_Status = false
     self.__Stage = Stage
     self.__Act = Act
     self.__Event = Event
+    self.__Players = {};
     self.__Current_Time = 0;
     self.__Current_Goals = {};
     self.__Current_State = {};
@@ -31,6 +35,10 @@ function EventClass.new(Stage: string, Act: string, Event: string)
 end
 
 function EventClass.Start(self: Types.EventClass)
+    if self.__Finish_Status then
+        return
+    end
+
     local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
     if EventData == nil then
         return
@@ -119,6 +127,10 @@ function EventClass.UpdateProgress(self: Types.EventClass, GoalType: Types.Stage
         self.__Current_State[GoalType] = Value
     end
 
+    for _, Player in self.__Players do
+        Network:Fire("Match", Player:GetBase(), GameEnum.MatchEvents.ProgressUpd, self.__Event, GoalType, self.__Current_State[GoalType])
+    end
+
     --
     for Goal, Value in self.__Current_State do
         if Value ~= self.__Current_Goals[Goal] then
@@ -129,6 +141,9 @@ function EventClass.UpdateProgress(self: Types.EventClass, GoalType: Types.Stage
     self:Destroy()
 end
 
+function EventClass.IsFinished(self: Types.EventClass)
+    return self.__Finish_Status
+end
 
 function EventClass.Destroy(self: Types.EventClass)
     if self.__Current_Wave_Connection then
@@ -141,12 +156,30 @@ function EventClass.Destroy(self: Types.EventClass)
         self.__Current_Wave_Thread = nil
     end
 
+    for _, Player in self.__Players do
+        Network:Fire("Match", Player:GetBase(), GameEnum.MatchEvents.EndEvent, self.__Event)
+    end
+
     --
     local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
 
     local Next_Stage = EventData.Finished(self:GetCorrectedState())
 
+    self.__Finish_Status = true
     self.Finished:Fire(Next_Stage)
+end
+
+function EventClass.AddPlayer(self: Types.EventClass, Player: Types.StagePlayer)
+    if self.__Finish_Status then return end
+    for _, OtherPlayer in self.__Players do
+        if OtherPlayer:GetBase() == Player then
+            return
+        end
+    end
+
+    Network:Fire("Match", Player:GetBase(), GameEnum.MatchEvents.BeginEvent, self.__Event)
+
+    table.insert(self.__Players, Player)
 end
 
 function EventClass.GetCorrectedState(self: Types.EventClass)
@@ -159,8 +192,6 @@ function EventClass.GetCorrectedState(self: Types.EventClass)
             State[StateName] = false
         end
     end
-
-    print(State)
 
     return State
 end

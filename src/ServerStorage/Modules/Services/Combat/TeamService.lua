@@ -9,20 +9,22 @@ local Services = Modules.Services
 
 --local Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
 local ServerAgentClass = require(Classes.Combat.ServerAgent)
+local StagePlayerClass = require(Classes.Game.Player)
 
 local DataService = require(Services.Data.DataService)
 local AgentService = require(Services.Combat.AgentService)
 local EnemyService = require(Services.Combat.EnemyService)
 local TeleportService = require(Services.Data.TeleportService)
+local PlayersLibrary = require(Modules.Libraries.Players)
 
 --
 local Service = {}
 
 function Service:Create(Player: Player)
     local Team = TeleportService:GetPlayerTeamFromData(Player)
+    local Agents = {}
 
     for index, AgentData in Team do
-        print(index, AgentData)
         local AgentDataClass = DataService:GetAgent(Player, AgentData.Name)
         local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level)
 
@@ -32,8 +34,15 @@ function Service:Create(Player: Player)
         if index == 1 then
             AgentInstance:SetActive(true)
         end
+
+        table.insert(Agents, AgentInstance)
     end
 
+    --
+    local PlayerClass = StagePlayerClass.new(Player, Agents)
+    PlayersLibrary:Add(Player, PlayerClass)
+
+    --
     Player:AddTag("Loaded")
 end
 

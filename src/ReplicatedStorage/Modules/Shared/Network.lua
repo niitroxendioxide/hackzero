@@ -108,6 +108,8 @@ function Network:Fire(Name: string, ...)
 			return
 		end
 
+		print(Args)
+
 		Event:FireClient(Plr, bufferObject, table.unpack(Args))
 	end
 end

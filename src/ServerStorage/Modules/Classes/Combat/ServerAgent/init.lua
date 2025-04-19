@@ -23,22 +23,18 @@ end
 
 function ServerAgentClass.new(Name: string, Level: number): Types.AgentClass
 	local self = setmetatable({}, ServerAgentClass)
-	
 	self.Name = Name
-	
-	--
+
+	-- Privates
 	local Appearance = CharacterDatabase:GetAppearanceData(Name)
-	
 
 	self.__Tags = {}
 	self.__Level = Level
 	self.__User = -125
 	self.__Active = false
 	self.__Character = CharacterClass.new(Name, Appearance.Height)
-	
 	self.__Status = AgentStatus.new(CharacterDatabase:GetStatsAtLevel(Name, Level))
-	
-	
+
 	return self
 end
 

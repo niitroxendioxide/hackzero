@@ -104,6 +104,13 @@ return {
 		PartyInvite = 1,
 	},
 
+	MatchEvents = {
+		SetupStage = 0,
+		BeginEvent = 1,
+		EndEvent = 2,
+		ProgressUpd = 3,
+	},
+
 	KeyLookup = function(Table: {}, val: number)
 		for Key, Value in Table do
 			if Value == val then

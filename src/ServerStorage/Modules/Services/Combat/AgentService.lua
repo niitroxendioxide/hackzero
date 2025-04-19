@@ -94,7 +94,7 @@ function Service:Move(Player: Player)
 	Replicator:Move(Player)
 end
 
-function Service:PivotTo(Player: Player, Buffer: buffer, _: CFrame)
+function Service:PivotTo(Player: Player, Buffer: buffer, Force: boolean?)
 	local CurrentCharacter = Service:GetCurrentCharacter(Player)
 	local X, Z = buffer.readf32(Buffer, 2), buffer.readf32(Buffer, 6)
 	local Y = buffer.readi16(Buffer, 10) / 100
@@ -102,6 +102,15 @@ function Service:PivotTo(Player: Player, Buffer: buffer, _: CFrame)
 
 	CurrentCharacter:PivotTo(CFrame.lookAlong(Vector, CurrentCharacter:GetPivot().LookVector))
 
+	Replicator:PivotTo(Player, Vector)
+end
+
+function Service:SnapTo(Player: Player, CF: CFrame)
+	local CurrentCharacter = Service:GetCurrentCharacter(Player)
+	local Vector = CF.Position
+
+	CurrentCharacter:PivotTo(CFrame.lookAlong(Vector, CurrentCharacter:GetPivot().LookVector))
+	Replicator:PivotTo(Player, Vector, Player)
 	Replicator:PivotTo(Player, Vector)
 end
 

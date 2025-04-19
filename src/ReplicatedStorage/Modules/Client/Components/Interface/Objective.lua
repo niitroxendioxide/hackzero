@@ -1,0 +1,92 @@
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local Players = game:GetService('Players')
+
+local Player = Players.LocalPlayer
+local Client = ReplicatedStorage.Modules.Client
+local Shared = ReplicatedStorage.Modules.Shared
+local Assets = ReplicatedStorage.Assets.Interface
+
+local Types = require(Shared.Types)
+local Stages = require(Shared.Database.Stages)
+local EventStates = require(Client.States.Events)
+local ComponentClass = require(Client.Classes.Interface)
+
+--
+local State = {
+    Observers = {},
+
+    Stage = "",
+    Act = "",
+}
+local Component = ComponentClass.new(script.Name, 'HUD', {})
+
+function Component:Link(): Instance?
+	local PlayerGui = Player.PlayerGui
+	local HUD = PlayerGui:WaitForChild("PlayerHUD", 10) :: ScreenGui
+	if not HUD then return end
+	local Main = HUD:FindFirstChild("Objective", true)
+
+	return Main;
+end
+
+function Component:Init()
+    --
+end
+
+function Component:CreateEvent(Event: string)
+    if State.Stage == "" or State.Act == "" or State.Observers[Event] then
+        print("invalid")
+        return
+    end
+
+    local EventData = Stages:GetEvent(State.Stage, State.Act, Event)
+    if not EventData then
+        print("no data")
+        return
+    end
+
+    --
+    local Scope = self:GetScope()
+    State.Observers[Event] = {}
+
+    local Frame = self:GetFrame()
+    local Values = EventStates:New(Event, EventData.Goal)
+    local Object = Assets.Combat.Objective.GoalObject:Clone()
+    Object.Label.Text = EventData.Objective
+    Object.Parent = Frame.Box.Goals
+
+    Object:SetAttribute("Event", Event)
+
+    local function updateText()
+        local result = string.gsub(EventData.Objective, "{objective%[(%w+)%]}", function(key)
+            local Value = EventStates:Get(Event, key, false)
+
+            return `{Value}/{EventData.Goal[key]}` or "["..key.." not found]"
+        end)
+
+        Object.Label.Text = result
+    end
+
+    updateText()
+
+    for Name, Value in Values do
+        table.insert(State.Observers[Event], Scope:Observer(Value):onChange(updateText))
+    end
+end
+
+function Component:DeleteEvent(Event: string)
+    local Frame = self:GetFrame()
+
+    for _, Objectives in Frame.Box.Goals:GetChildren() do
+        if Objectives:GetAttribute("Event") == Event then
+            Objectives:Destroy()
+        end
+    end
+end
+
+function Component:SetStage(StageName: string, ActName: string)
+    State.Stage = StageName
+    State.Act = ActName
+end
+
+return Component :: Types.UIComponent

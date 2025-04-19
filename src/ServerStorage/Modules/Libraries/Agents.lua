@@ -12,11 +12,11 @@ function Agents:Add(UserId: number, Agent)
 	if not Agents.__Players[UserId] then
 		Agents.__Players[UserId] = {}
 	end
-	
+
 	if #Agents.__Players[UserId] + 1 > 3 then
 		return warn('Too many characters bro!')
 	end
-	
+
 	table.insert(Agents.__Players[UserId], Agent)
 
 	return;
@@ -26,7 +26,7 @@ function Agents:Remove(UserId: number, Agent)
 	if not Agents.__Players[UserId] then
 		return
 	end
-	
+
 	for key, SavedAgent in Agents.__Players[UserId] do
 		if Agent == SavedAgent or Agent.Name == SavedAgent.Name then
 			table.remove(Agents.__Players[UserId], key)
@@ -36,7 +36,7 @@ end
 
 function Agents:GetActiveAgents()
 	local Active = {}
-	
+
 	for _, PlayerAgents in Agents.__Players do
 		for _, Agent in PlayerAgents do
 			if Agent.__Active then
@@ -45,7 +45,7 @@ function Agents:GetActiveAgents()
 			end
 		end
 	end
-	
+
 	return Active
 end
 

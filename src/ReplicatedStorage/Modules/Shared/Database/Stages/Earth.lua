@@ -24,6 +24,7 @@ return {
                     Objective = "Go check out what\'s going on at that one street",
                     Goal = {ReachPlace = "FirstFightZone"},
                     Enemies = {},
+                    Global = true,
 
                     Finished = function(State: Types.EventHandlerState): string
                         if State.ReachPlace == true then
@@ -42,6 +43,7 @@ return {
                         [2] = {"Template", 4, "Saiyan", 1},
                         [3] = {"Boss", 1},
                     },
+                    Global = true,
 
                     Finished = function(State: Types.EventHandlerState)
                         return "End"
@@ -58,7 +60,7 @@ return {
                     end
                 },
 
-                Bye = {
+                Death = {
                     Actions = {
                         ["KickPlayer"] = "all",
                     }
