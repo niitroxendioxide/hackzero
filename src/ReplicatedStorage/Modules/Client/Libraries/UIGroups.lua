@@ -64,4 +64,8 @@ function InterfaceStates:GetElementClass(Group: string, Name: string): (Element)
     return InterfaceStates.__Groups[Group].Items[Name]
 end
 
+function InterfaceStates:IsActive(Group: string, ElementName: string)
+    return InterfaceStates.__Groups[Group].Active == ElementName
+end
+
 return InterfaceStates

@@ -18,7 +18,9 @@ local StageDatabase = require(Database.Stages)
 local TeleportService = require(Services.Data.TeleportService);
 
 --
-local Service = {}
+local Service = {
+    __Active_Match = nil,
+}
 
 function Service:Init()
     Network.new("Match", "Event")
@@ -44,10 +46,23 @@ function Service:Init()
     end
 
     Service:Begin(MatchData.Stage, MatchData.Act)
+
+    --
+    Network:On("Match", Service.__HandleEvent)
 end
 
 function Service:End()
+    if not Service.__Active_Match or not Service.__Active_Match:IsFinished() then
+        return
+    end
 
+    local List = {"B", "A", "S"}
+    local EndResult = {
+        Status = GameEnum.MatchResults.Victory,
+        Rank = List[math.random(1, #List)],
+    }
+
+    Network:FireForAll("Match", GameEnum.MatchEvents.MatchEnded, EndResult)
 end
 
 function Service:Begin(Stage: string, Act: string)
@@ -62,11 +77,12 @@ function Service:Begin(Stage: string, Act: string)
     --
     local MissionClass = MissionClass.new(Stage, Act)
 
+    Service.__Active_Match = MissionClass;
     MissionClass:Begin()
 
     --
     MissionClass.Finished:Connect(function()
-        TeleportService:ReturnToLobby(Players:GetPlayers())
+        Service:End()
     end)
 end
 
@@ -78,13 +94,10 @@ function Service:CreateMap(Stage: string): boolean
     for i = 1, #Split do
         Map = Map:FindFirstChild(Split[i])
 
-        print(Map, Split[1])
         if Map == nil then
             return false
         end
     end
-
-
 
     --
     local NewMap = Map:Clone()
@@ -96,6 +109,18 @@ function Service:CreateMap(Stage: string): boolean
     end
 
     return true
+end
+
+-- ## Private event
+function Service.__HandleEvent(Player: Player, Type: number)
+    print(GameEnum.KeyLookup(GameEnum.MatchEvents, Type))
+
+    if Type == GameEnum.MatchEvents.RequestMatchLeave then
+        local Result, Message = TeleportService:ReturnToLobby(Players:GetPlayers())
+        if not Result then
+            warn(Message)
+        end
+    end
 end
 
 return Service

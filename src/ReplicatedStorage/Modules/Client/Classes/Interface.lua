@@ -88,6 +88,16 @@ function ComponentClass:Bind()
 	return Object ~= nil
 end
 
+function ComponentClass:Disable()
+	for Key in self do
+		if typeof(Key) == "function" then
+			self[Key] = function() end
+		end
+	end
+
+	setmetatable(self, nil)
+end
+
 function ComponentClass:BindToStateChange(Callback: (State: boolean) -> ())
 	self.__State_Change_Callback = Callback
 end

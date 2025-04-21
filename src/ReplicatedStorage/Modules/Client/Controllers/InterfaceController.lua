@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Types = require(Shared.Types)
+local Inputs = require(Client.Libraries.Inputs)
 
 --
 local Controller = {
@@ -28,6 +29,14 @@ function Controller:Init(): ()
 			end
 		end)
 	end
+
+	Inputs:Bind("TESTING", {
+		Callback = function(State)
+			if State == "Begin" then
+				Controller:GetComponent("EndScreen"):Set()
+			end
+		end
+	})
 end
 
 function Controller:GetComponent(Name: string): Types.UIComponent

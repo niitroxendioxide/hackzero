@@ -9,6 +9,10 @@ return {
 
     Acts = {
         Act1 = {
+            Requisites = {
+                    
+            },
+
             Rewards = {
                 Handler = function(Objectives): Types.Rating
                     if Objectives.Main == true then
@@ -17,7 +21,6 @@ return {
 
                     return "X"
                 end
-
             },
             Guide = {
                 Begin = {

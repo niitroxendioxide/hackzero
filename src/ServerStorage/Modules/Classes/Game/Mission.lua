@@ -40,6 +40,7 @@ function MissionClass.new(Stage: string, Act: string): Types.MissionClass
     local self = setmetatable({}, MissionClass)
     self.Finished = Signal.new()
 
+    self.__Is_Finished = false
     self.__Active = false
     self.__Act = Act;
     self.__Stage = Stage;
@@ -61,13 +62,16 @@ function MissionClass.Begin(self: Types.MissionClass)
     self:BeginEvent("Begin", PlayersLibrary:GetAll())
 end
 
+function MissionClass.IsFinished(self: Types.MissionClass): boolean
+    return self.__Is_Finished  ~= false
+end
+
 function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Players: {Types.StagePlayer})
     local EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
     if EventData == nil then
         return
     end
 
-    print(self.__Current_Events)
     if self.__Current_Events[Event] ~= nil then
         if not self.__Current_Events[Event]:IsFinished() then
             for _, Player in Players do
@@ -105,6 +109,7 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
     EventObject.Finished:Once(function(Next_Stage: string)
         if Next_Stage == "End" then
             self.Finished:Fire()
+            self.__Is_Finished = true
 
             return
         elseif Next_Stage == "None" then

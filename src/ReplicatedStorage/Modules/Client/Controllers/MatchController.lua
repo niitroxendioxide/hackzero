@@ -14,8 +14,6 @@ local Controller = {}
 
 function Controller:Init()
     Network:On("Match", function(Type: number, ...)
-        print(Type, ...)
-
         if Type == GameEnum.MatchEvents.BeginEvent then
             Controller:BeginEvent(...)
         elseif Type == GameEnum.MatchEvents.EndEvent then
@@ -24,6 +22,8 @@ function Controller:Init()
             Controller:SetupStage(...)
         elseif Type == GameEnum.MatchEvents.ProgressUpd then
             Controller:UpdateProgress(...)
+        elseif Type == GameEnum.MatchEvents.MatchEnded then
+            Controller:MatchEnded(...)
         end
     end)
 end
@@ -32,6 +32,15 @@ function Controller:SetupStage(StageName: string, ActName: string)
     local Component = InterfaceController:GetComponent("Objective")
 
     Component:SetStage(StageName, ActName)
+end
+
+function Controller:MatchEnded(ServerData: {})
+    local Component = InterfaceController:GetComponent("EndScreen")
+    local Objective = InterfaceController:GetComponent("Objective")
+
+    Component:ShowData(ServerData)
+    Component:Set(true)
+    Objective:Set(false)
 end
 
 function Controller:UpdateProgress(Ev: string, Key: string, Value: any)

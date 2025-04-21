@@ -515,10 +515,15 @@ export type UIComponent = {
 	Init: (self: UIComponent) -> (),
 	Link: (self: UIComponent) -> (Instance?),
 	Bind: (self: UIComponent) -> (),
-	Set: (self: UIComponent, State: boolean) -> (),
+	Set: (self: UIComponent, State: boolean?) -> (),
 	BindToStateChange: (self: UIComponent, Callback: (State: boolean) -> ()) -> (),
 
 	[string]: (self: UIComponent) -> (any),
+}
+
+export type UIGetSetButton = {
+	GetButton: (self: UIComponent, Name: string) -> {Button: TextButton, UIScale: UIScale},
+	SetButton: (self: UIComponent, Name: string, State: boolean) -> ()
 }
 
 export type Artifact_Substat = "Health%" | "Health" | "Attack" | "Attack%" | "Defense" | "Defense%" | "Crit_Rate" | "Crit_Damage" | "Penetration" | "Affliction_Aptitude"
@@ -808,6 +813,10 @@ Events that happen in that stage, the first one is loaded and then the next one 
 ]]
 export type Rating = "X" | "B" | "A" | "S" | "SSS"
 export type Stage_Act = {
+	Requisites: {
+
+	},
+
 	Rewards: {
 		Handler: (Objectives: {[string]: boolean}) -> (Rating),
 
@@ -835,6 +844,7 @@ export type MissionClass = {
 	__Active: boolean,
 	__Act: string,
 	__Stage: string,
+	__Is_Finished: boolean,
 	__Current_Active_Triggers: {RBXScriptConnection},
 	__Current_Events: {[string]: EventClass},
 
@@ -858,6 +868,8 @@ export type MissionClass = {
 	]]
 	DetectAreaTriggers: (self: MissionClass) -> (),
 	CleanUpTriggers: (self: MissionClass) -> (),
+
+	IsFinished: (self: MissionClass) -> (boolean),
 }
 
 export type EventClass = {

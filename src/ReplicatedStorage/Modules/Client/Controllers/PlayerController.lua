@@ -21,6 +21,7 @@ local CharacterLibrary = require(Client.Libraries.Characters)
 local Replicator = require(Client.Controllers.ReplicationController)
 local GameEnum = require(Shared.GameEnum)
 local Places = require(Shared.Places)
+local UIGroups = require(Client.Libraries.UIGroups)
 
 --
 local INPUT_DIRECTIONS = {
@@ -70,7 +71,10 @@ function Controller:Init(): ()
 			return
 		end
 
-		if not(UserInputService:IsKeyDown(Enum.KeyCode.Tab)) or UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton3) then
+		local Active = UIGroups:IsActive("END", "EndScreen")
+		local HoldingKeys = not(UserInputService:IsKeyDown(Enum.KeyCode.Tab)) or UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton3)
+
+		if HoldingKeys and not(Active) then
 			UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 		else
 			UserInputService.MouseBehavior = Enum.MouseBehavior.Default
@@ -81,7 +85,7 @@ function Controller:Init(): ()
 		workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
 
 		debug.profilebegin('Moving character')
-		if Direction.Magnitude > 0 then
+		if (Direction.Magnitude > 0) then
 			CurrentCharacter:Look(Direction.Unit)
 			CurrentCharacter:Move()
 		else

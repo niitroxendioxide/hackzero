@@ -109,6 +109,13 @@ return {
 		BeginEvent = 1,
 		EndEvent = 2,
 		ProgressUpd = 3,
+		MatchEnded = 4,
+		RequestMatchLeave = 5,
+	},
+
+	MatchResults = {
+		Victory = 1,
+		Loss = 2,
 	},
 
 	KeyLookup = function(Table: {}, val: number)
