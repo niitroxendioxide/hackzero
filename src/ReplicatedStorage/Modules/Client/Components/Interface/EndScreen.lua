@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService('Players')
 
@@ -17,6 +18,8 @@ local EndScreen = ComponentClass.new("EndScreen", "END")
 :: Types.UIComponent & Types.UIGetSetButton
 
 --
+local Disabled = {}
+local HoverThreads = {}
 local ColorInfo = {
     ["B"] = {Color3.fromRGB(30, 188, 255), Color3.fromRGB(21, 115, 255)},
     ["A"] = {Color3.fromRGB(156, 117, 255), Color3.fromRGB(35, 46, 255)},
@@ -47,11 +50,33 @@ local function LightingEffects(State: boolean)
     end
 end
 
+local function AnimatePress(Name: string)
+    local Button = EndScreen:GetButton(Name)
+    Button.UIScale.Scale = 0.75
+
+    local Color = Button.BackgroundColor3
+    Button.BackgroundColor3 = Button.BackgroundColor3:Lerp(Color3.new(1, 1, 1), 0.5)
+    EffectUtil:Tween(Button, {.6, 'Quad'}, {BackgroundColor3 = Color})
+    EffectUtil:Tween(Button.UIScale, {.3, 'Back', 'Out'}, {Scale = 1})
+
+    Disabled[Name] = true
+    task.delay(.6, function()
+        Disabled[Name] = false
+    end)
+end
+
 local function RequestLeaveMatch()
     Network:Fire("Match", GameEnum.MatchEvents.RequestMatchLeave)
 
-    EndScreen:Disable()
+    AnimatePress("Return")
 end
+
+local function RequestAgainMatch()
+    Network:Fire("Match", GameEnum.MatchEvents.RequestMatchRepeat)
+
+    AnimatePress("Again")
+end
+
 
 --
 function EndScreen:Link()
@@ -80,10 +105,58 @@ function EndScreen:GetButton(Name: string): Frame
     return Frame.Main:FindFirstChild(Name.."Button")
 end
 
+function EndScreen:SetHover(Name: string, State: boolean)
+    local Button = EndScreen:GetButton(Name)
+
+    if HoverThreads[Name] then
+        HoverThreads[Name]:Disconnect()
+        Button.Glow.UIGradient.Offset = Vector2.new(-1, 0)
+    end
+
+    if Disabled[Name] then return end
+
+    if not State then
+        EffectUtil:Tween(Button.UIScale, {.2, 'Quad'}, {Scale = 1})
+
+        return
+    end
+
+
+    EffectUtil:Tween(Button.UIScale, {.2, 'Quad'}, {Scale = 0.95})
+
+    local Alpha = -1
+    HoverThreads[Name] = RunService.Heartbeat:Connect(function(delta: number)
+        Alpha += delta * 2
+
+        if Alpha >= 1 then
+            Alpha = -1
+        end
+
+        Button.Glow.UIGradient.Offset = Vector2.new(Alpha, 0)
+    end)
+end
+
 function EndScreen:Init()
     local Leave = EndScreen:GetButton("Return")
 
     Leave.Button.MouseButton1Click:Connect(RequestLeaveMatch)
+    Leave.Button.MouseEnter:Connect(function()
+        EndScreen:SetHover("Return", true)
+    end)
+    Leave.Button.MouseLeave:Connect(function()
+        EndScreen:SetHover("Return", false)
+    end)
+
+
+    --
+    local Again = EndScreen:GetButton("Again")
+    Again.Button.MouseButton1Click:Connect(RequestAgainMatch)
+    Again.Button.MouseEnter:Connect(function()
+        EndScreen:SetHover("Again", true)
+    end)
+    Again.Button.MouseLeave:Connect(function()
+        EndScreen:SetHover("Again", false)
+    end)
 end
 
 function EndScreen:Set(State: boolean)

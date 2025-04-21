@@ -171,6 +171,39 @@ function Service:ReturnToLobby(Group: {Player}): (boolean, string?)
     return true
 end
 
+function Service:RepeatStage(): (boolean, string?)
+    if Service.__Reserving[game.JobId] then
+        return false, "Already teleporting to a place"
+    end
+
+    Service.__Reserving[game.JobId] = true
+
+    -- Requests
+    local Group = Players:GetPlayers()
+    local Data = Group[1]:GetJoinData().TeleportData
+    if not Data then
+        return false, "Invalid data, place is not a mission."
+    end
+
+
+    -- TODO: VERIFY THAT THIS IS IN FACT A REPEATABLE QUEST. DON'T WANT PEOPLE BYPASSING THIS
+
+    --
+    local Id = Places:GetId('Mission')
+    local Reserved = ReserveServerForPlace(Id)
+    local Success = TeleportPlayerGroupAttempt(Id, Reserved, Group, Data)
+
+    print(Reserved, Success, Id, 'Mission')
+
+    Service.__Reserving[game.JobId] = nil
+
+    if not Success then
+        return false, "Error when teleporting"
+    end
+
+    return true
+end
+
 
 function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: number}}
     local JoinData = Player:GetJoinData()

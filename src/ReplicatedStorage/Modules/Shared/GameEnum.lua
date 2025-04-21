@@ -111,6 +111,7 @@ return {
 		ProgressUpd = 3,
 		MatchEnded = 4,
 		RequestMatchLeave = 5,
+		RequestMatchRepeat = 6,
 	},
 
 	MatchResults = {
