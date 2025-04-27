@@ -3,6 +3,7 @@ return {
 	Nickname = 'Son Goku',
 	Element = 'Physical',
 	Role = 'Affliction',
+	Rarity = "Rare",
 	
 	Appearance = {
 		Height = 3.15

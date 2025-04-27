@@ -3,6 +3,7 @@ return {
 	Nickname = 'Meal saving prince',
 	Element = 'Wind',
 	Role = 'Affliction',
+	Rarity = "Rare",
 
 	Appearance = {
 		Height = 3.15

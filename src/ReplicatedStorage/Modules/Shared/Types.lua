@@ -252,7 +252,9 @@ export type CharacterData = {
 	Element: Element,
 	Role: Role,
 	Appearance: CharacterAppearanceData,
-	
+	Rarity: Rarity,
+	NotOnBanner: boolean?,
+
 	Stats: CharacterStats,
 	Level_Stats: {[Stat]: number},
 }

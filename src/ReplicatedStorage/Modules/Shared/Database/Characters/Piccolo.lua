@@ -3,6 +3,7 @@ return {
 	Nickname = 'Piccolo',
 	Element = 'Energy',
 	Role = 'Stun',
+	Rarity = "Rare",
 
 	Appearance = {
 		Height = 3.15
