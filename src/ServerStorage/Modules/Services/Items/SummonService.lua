@@ -9,6 +9,7 @@ local Packages = Modules.Packages
 
 local Banner = require(Packages.Summon.Banner)
 local Network = require(Shared.Network)
+local GameEnum = require(Shared.GameEnum)
 
 --
 local Service = {}
@@ -26,15 +27,32 @@ function Service:SyncBanner(Player: Player)
 end
 
 function Service:SummonFromBanner()
+    local FullCharacters = Banner:GetBanner()
 
+    -- replace later
+    return FullCharacters[math.random(1, #FullCharacters)][1]
 end
 
 -- ## Privates
 --[[
     Handles the server event for the Service
 ]]
-function Service.__ServerEvent(Player: Player, Request: {})
-    print(Request)
+function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: number)
+    if RequestType == GameEnum.SummonRequests.SummonOne then
+        print("have to summon in banner: ", BannerId)
+
+        local Obtained = Service:SummonFromBanner()
+        print("obtained:", Obtained)
+    elseif RequestType == GameEnum.SummonRequests.SummonTen then
+        print("have to summon in banner: ", BannerId)
+
+        local List = {}
+        for i = 1, 10 do
+            table.insert(List, Service:SummonFromBanner())
+        end
+
+        print("Obtained:", List)
+    end
 end
 
 return Service

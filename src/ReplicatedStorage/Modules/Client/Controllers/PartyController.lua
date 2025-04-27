@@ -68,7 +68,6 @@ end
 function Controller:GetPlayerListForParty(Compressed: CompressedParty)
     local List = {}
 
-    print(Compressed)
     for i = 1, #Compressed, 2 do
 
         local Name = Compressed[i]

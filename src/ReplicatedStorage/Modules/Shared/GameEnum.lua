@@ -114,6 +114,11 @@ return {
 		RequestMatchRepeat = 6,
 	},
 
+	SummonRequests = {
+		SummonOne = 1,
+		SummonTen = 2,
+	},
+
 	MatchResults = {
 		Victory = 1,
 		Loss = 2,
