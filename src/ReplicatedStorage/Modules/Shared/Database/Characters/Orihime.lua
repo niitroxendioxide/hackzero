@@ -3,7 +3,7 @@ return {
 	Nickname = 'Template',
 	Element = 'Energy',
 	Role = 'Support',
-	Rarity = "Rare",
+	Rarity = "Legendary",
 
 	Appearance = {
 		Height = 3.15

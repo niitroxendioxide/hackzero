@@ -3,12 +3,12 @@ return {
 	Nickname = 'Son Goku',
 	Element = 'Physical',
 	Role = 'Affliction',
-	Rarity = "Rare",
-	
+	Rarity = "Legendary",
+
 	Appearance = {
 		Height = 3.15
 	},
-	
+
 	--
 	Stats = {
 		Health = 626,
@@ -22,8 +22,8 @@ return {
 		Energy_Regeneration = 0.5,
 		Affliction_Aptitude = 120,
 		Affliction_Facility = 10,
-		
-		
+
+
 		--
 		Walk_Speed = 10,
 		Jog_Speed = 20,
@@ -35,13 +35,13 @@ return {
 		Attack = 6.33,
 		Defense = 9.44,
 	},
-	
+
 	Moveset_Data = {
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = .05,
 				Speed = 1.35,
-				
+
 				Attack_State_Time = {
 					.25,
 					.25,
@@ -50,14 +50,14 @@ return {
 					1,
 				},
 				Animation_Speed = 1.35,
-				
+
 				Walk_Time = 0.133,
 				Forward_Impulse = 10,
-				
+
 				Knockback_Direction = Vector3.new(0, 0, 1),
 				Knockback_Strength = 10,
 				Knockback_Time = 0.2,
-				
+
 				Damage_Mult = {
 					[1] = 36,	
 					[2] = 62,

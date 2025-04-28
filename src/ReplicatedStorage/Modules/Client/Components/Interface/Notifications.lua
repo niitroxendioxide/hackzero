@@ -39,31 +39,51 @@ function Notifications:Add(TypeEnum: number, Data: {[number]: any}): ()
 
     if NewNotification then
         NewNotification = NewNotification:Clone() :: Frame & {UIScale: UIScale}
-        NewNotification.NotifText.Text = `{Data[2]} invited you to their party!`
-        NewNotification.Parent = Notifications:GetFrame().List
 
-        local IsDestroying = false;
-        local function Destroy()
-            if IsDestroying then return end;
-            IsDestroying = true;
+        if TypeEnum == GameEnum.NotificationTypes.PartyInvite then
+            NewNotification.NotifText.Text = `{Data[2]} invited you to their party!`
 
-            NewNotification.JoinButton.Interactable = false;
-            Effects:Tween(NewNotification.UIScale, {.25}, {Scale = 0})
+            local IsDestroying = false;
+            local function Destroy()
+                if IsDestroying then return end;
+                IsDestroying = true;
 
-            Effects:CleanUp(NewNotification, 0.25)
+                NewNotification.JoinButton.Interactable = false;
+                Effects:Tween(NewNotification.UIScale, {.25, 'Quad'}, {Scale = 0})
+
+                Effects:CleanUp(NewNotification, 0.25)
+            end
+
+            NewNotification.QuitButton.MouseButton1Click:Once(function()
+                RejectPartyInvite(Data[1] :: string)
+
+                Destroy()
+            end)
+            NewNotification.JoinButton.MouseButton1Click:Once(function()
+                AcceptPartyInvite(Data[1] :: string)
+                Destroy()
+            end)
+
+            Effects:CleanUp(Destroy, Data[3])
+        elseif TypeEnum == GameEnum.NotificationTypes.ObtainedCharacter then
+            NewNotification.NotifText.Text = `You got: {Data[1]}`
+
+            local IsDestroying = false;
+            local function Destroy()
+                if IsDestroying then return end;
+                IsDestroying = true;
+
+                Effects:Tween(NewNotification.UIScale, {.25, 'Quad'}, {Scale = 0})
+
+                Effects:CleanUp(NewNotification, 0.25)
+            end
+
+            NewNotification.QuitButton.MouseButton1Click:Once(Destroy)
+
+            Effects:CleanUp(Destroy, Data[2] or 3)
         end
 
-        NewNotification.QuitButton.MouseButton1Click:Once(function()
-            RejectPartyInvite(Data[1] :: string)
-
-            Destroy()
-        end)
-        NewNotification.JoinButton.MouseButton1Click:Once(function()
-            AcceptPartyInvite(Data[1] :: string)
-            Destroy()
-        end)
-
-        Effects:CleanUp(Destroy, Data[3])
+        NewNotification.Parent = Notifications:GetFrame().List
     end
 end
 

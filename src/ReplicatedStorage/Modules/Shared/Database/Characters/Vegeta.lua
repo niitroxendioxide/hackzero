@@ -3,7 +3,7 @@ return {
 	Nickname = 'Vegeta',
 	Element = 'Physical',
 	Role = 'Attack',
-	Rarity = "Rare",
+	Rarity = "Mythical",
 
 	Appearance = {
 		Height = 3.15

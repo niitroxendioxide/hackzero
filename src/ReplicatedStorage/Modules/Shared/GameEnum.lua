@@ -102,6 +102,7 @@ return {
 
 	NotificationTypes = {
 		PartyInvite = 1,
+		ObtainedCharacter = 2,
 	},
 
 	MatchEvents = {
@@ -117,6 +118,8 @@ return {
 	SummonRequests = {
 		SummonOne = 1,
 		SummonTen = 2,
+		SummonResultOne = 3,
+		SummonResultTen = 4,
 	},
 
 	MatchResults = {

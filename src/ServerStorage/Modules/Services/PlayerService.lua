@@ -13,6 +13,7 @@ local Notifications = require(Modules.Packages.Notifications)
 local TeamService = require(script.Parent.Combat.TeamService)
 local PartyService = require(script.Parent.Lobby.PartyService)
 local DataService = require(script.Parent.Data.DataService)
+local SummonService = require(script.Parent.Items.SummonService)
 
 local Places = require(Shared.Places)
 
@@ -62,6 +63,9 @@ function Service.PlayerAdded(Player: Player): ()
 	if Places:CanFight() then
 		Service:InitializeCharacters(Player)
 	end
+
+	--
+	SummonService:SyncBanner(Player)
 end
 
 function Service.PlayerRemoving(Player: Player): ()

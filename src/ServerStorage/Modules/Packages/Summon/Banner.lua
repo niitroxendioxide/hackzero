@@ -69,9 +69,10 @@ function System:Init()
             System:GenerateRandomBanner({
                 --'Mythical',
                 --'Legendary',
-                'Rare',
-				'Rare',
-				'Rare',
+				'Mythical',
+                'Legendary',
+				'Legendary',
+				'Legendary'
             })
 
             --print("Update banner", System:GetBanner())

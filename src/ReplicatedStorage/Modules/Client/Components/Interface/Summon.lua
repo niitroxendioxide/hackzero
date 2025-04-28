@@ -5,6 +5,7 @@ local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Assets = ReplicatedStorage.Assets
 local Network = require(Shared.Network)
 local Types = require(Shared.Types)
 local GameEnum = require(Shared.GameEnum)
@@ -43,7 +44,7 @@ end
 function Component:GetButton(Name: string): Frame
     local Frame = self:GetFrame()
 
-    return Frame:FindFirstChild(Name.."Button")
+    return Frame:FindFirstChild("Buttons"):FindFirstChild(Name.."Button")
 end
 
 function Component:Init()
@@ -52,6 +53,24 @@ function Component:Init()
 
 	Summon.Button.MouseButton1Click:Connect(RequestSummonOne)
 	SummonTen.Button.MouseButton1Click:Connect(RequestSummonTen)
+end
+
+function Component:SetBanner(Data: {Main: string, Sub: {string}})
+	local Frame = Component:GetFrame()
+
+	for _, Character in Frame.BannerFrame.OtherCharacters.Scroll:GetChildren() do
+		if Character:IsA("TextLabel") then
+			Character:Destroy()
+		end
+	end
+
+	Frame.BannerFrame.MainCharacter.CharName.Text = Data.Main
+
+	for _, Char in Data.Sub do
+		local SubChar = Assets.Interface.Lobby.Summon.CharName:Clone()
+		SubChar.Text = Char
+		SubChar.Parent = Frame.BannerFrame.OtherCharacters.Scroll
+	end
 end
 
 return Component

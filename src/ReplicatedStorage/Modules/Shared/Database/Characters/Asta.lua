@@ -3,7 +3,7 @@ return {
 	Nickname = 'The flaw of the World',
 	Element = 'Energy',
 	Role = 'Attack',
-	Rarity = "Rare",
+	Rarity = "Legendary",
 
 	Appearance = {
 		Height = 3.15
