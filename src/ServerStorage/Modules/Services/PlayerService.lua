@@ -57,7 +57,7 @@ function Service.PlayerAdded(Player: Player): ()
 
 	-- Initialize data before anything else
 	DataService:AddPlayer(Player)
-	DataService:UnlockAllAgents(Player)
+	--DataService:UnlockAllAgents(Player)
 
 	--
 	if Places:CanFight() then

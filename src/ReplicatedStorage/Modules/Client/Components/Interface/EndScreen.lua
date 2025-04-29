@@ -184,7 +184,7 @@ function EndScreen:Set(State: boolean)
             if Object.Name == "Shadow" then
                 Object.ImageTransparency = 0
                 Object.UIScale.Scale = 0
-                EffectUtil:Tween(Object.UIScale, {.15, 'Back', 'Out'}, {Scale = 1.25})
+                EffectUtil:Tween(Object.UIScale, {.15, 'Back', 'Out'}, {Scale = 1.33})
             end
             EffectUtil:Tween(Object, {.15}, {ImageTransparency = OriginalTransparency})
         end

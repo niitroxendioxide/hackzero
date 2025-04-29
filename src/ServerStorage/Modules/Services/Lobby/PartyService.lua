@@ -288,6 +288,7 @@ function Service:ChangeTeam(Player: Player, Names: {string}): ()
         table.insert(Agents, Agent)
     end
 
+    if not Party then return; end
     Party:SetPlayerTeam(PlayerClass, Agents)
 end
 

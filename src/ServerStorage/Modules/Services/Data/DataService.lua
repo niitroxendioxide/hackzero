@@ -21,7 +21,7 @@ local CharacterDatabase = require(Database.Characters)
 local PlayerAgentDataClass = require(Classes.Data.PlayerAgentData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("Testing2", ProfileTemplate)
+local DataStore = ProfileStore.New("bannertest", ProfileTemplate)
 
 
 --
@@ -64,7 +64,7 @@ function Service:FetchAgents(Player: Player)
     local Agents = Service:GetPlayerAgents(Player)
 
     local Data = {}
-    for _, Agent in Agents do
+    for _, Agent in (Agents or {}) do
         table.insert(Data, Agent:Compress())
     end
 
@@ -166,15 +166,26 @@ end
 function Service:AddAgent(Player: Player, Agent: Types.PlayerAgentDataClass)
     local PlayerData = Service:GetDataFor(Player)
 
-    for AgentName in PlayerData.Agents do
-        if AgentName == Agent.Name then
-            Service:CreateAgentClass(Player, AgentName)
-            return
-        end
+    if Service:HasAgent(Player, Agent.Name) then
+        return Service:CreateAgentClass(Player, Agent.Name)
     end
 
     PlayerData.Agents[Agent.Name] = Agent:ToData()
     Service:SetAgentClass(Player, Agent)
+
+    return
+end
+
+function Service:HasAgent(Player: Player, AgentName: string): (boolean)
+    local PlayerData = Service:GetDataFor(Player)
+
+    for AgentName in PlayerData.Agents do
+        if AgentName == AgentName then
+            return true
+        end
+    end
+
+    return false
 end
 
 function Service:UpdateAgent(Player: Player, Agent: Types.PlayerAgentDataClass)

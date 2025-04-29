@@ -8,12 +8,14 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Modules = ServerStorage.Modules
 local Packages = Modules.Packages
 
+local Places = require(Shared.Places)
 local Banner = require(Packages.Summon.Banner)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
-local Places = require(Shared.Places)
 
-local Notifications = require(Modules.Packages.Notifications)
+local DataService = require(Modules.Services.Data.DataService)
+local Probabilities = require(Shared.Database.Probabilities)
+local PlayerAgentDataClass = require(Modules.Classes.Data.PlayerAgentData)
 
 --
 local Service = {}
@@ -44,10 +46,16 @@ function Service:SyncBanner(Player: Player)
 end
 
 function Service:SummonFromBanner()
-    local FullCharacters = Banner:GetBanner()
+    -- get character
+    local Rarity = Probabilities:GetRollTypeFrom("Summon")
+    local CharacterName = Banner:GetCharacterFromBannerWithRarity(Rarity)
 
+    print("Pulled:", Rarity, CharacterName)
     -- replace later
-    return FullCharacters[math.random(1, #FullCharacters)][1]
+
+    local ObtainedAgentDataClass = PlayerAgentDataClass.new(CharacterName, 1, DateTime.now().UnixTimestampMillis)
+
+    return ObtainedAgentDataClass
 end
 
 -- ## Privates
@@ -55,22 +63,18 @@ end
     Handles the server event for the Service
 ]]
 function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: number)
-    if RequestType == GameEnum.SummonRequests.SummonOne then
-        print("have to summon in banner: ", BannerId)
+    if RequestType == GameEnum.SummonRequests. SummonOne or RequestType == GameEnum.SummonRequests.SummonTen then
+        local Amount = GameEnum.SummonRequests.SummonOne == RequestType and 1 or 10
 
-        local Obtained = Service:SummonFromBanner()
-        print("obtained:", Obtained)
+        for idx = 1, Amount do
+            local NewAgent = Service:SummonFromBanner()
 
-        Notifications:Send(Player, GameEnum.NotificationTypes.ObtainedCharacter, {Obtained})
-    elseif RequestType == GameEnum.SummonRequests.SummonTen then
-        print("have to summon in banner: ", BannerId)
-
-        local List = {}
-        for i = 1, 10 do
-            table.insert(List, Service:SummonFromBanner())
+            --print(NewAgent.Name, NewAgent)
+            DataService:AddAgent(Player, NewAgent)
         end
 
-        print("Obtained:", List)
+        --
+        -- print("Server summoned stuff :3")
     end
 end
 

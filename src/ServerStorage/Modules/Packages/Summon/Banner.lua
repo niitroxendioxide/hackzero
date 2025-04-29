@@ -85,6 +85,23 @@ function System:GetBanner(): {[number]: string}
 	return System.__CurrentBanner
 end
 
+function System:GetCharacterFromBannerWithRarity(Rarity: string): (string?)
+	local Banner = System:GetBanner()
+	local Choices = {}
+
+	for _, Character in Banner do
+		if Character[2] == Rarity then
+			table.insert(Choices, Character[1])
+		end
+	end
+
+	if #Choices == 0 then
+		return;
+	end
+
+	return Choices[math.random(1, #Choices)]
+end
+
 function System:CreatePool()
     for _, Unit in AgentDatabase:GetAllCharacterNames() do
 		local Data = AgentDatabase:GetCharacterData(Unit)
