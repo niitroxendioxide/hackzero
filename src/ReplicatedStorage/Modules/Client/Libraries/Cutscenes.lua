@@ -58,4 +58,11 @@ function CutsceneLibrary:Find(Name: string): Types.CutsceneClass?
     return CutsceneLibrary.__Cache[Name]
 end
 
+-- @ yields
+function CutsceneLibrary:WaitCurrent(): ()
+    if CutsceneLibrary.__Current then
+        CutsceneLibrary.__Current.Completed:Wait()
+    end
+end
+
 return CutsceneLibrary

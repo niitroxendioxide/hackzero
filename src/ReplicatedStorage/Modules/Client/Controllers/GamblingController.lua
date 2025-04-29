@@ -25,8 +25,13 @@ function Controller:Init()
     Network:On("Summon", function(Type: number, Result: {string})
         if Type == GameEnum.SummonRequests.SummonResultOne then
             print("Smth u got bro:", Result)
+            local SummonMenu = InterfaceController:GetComponent("Summon")
+            SummonMenu:Set(false)
 
             Cutscenes:Start("Summon", {Result[1]})
+
+            Cutscenes:WaitCurrent()
+            SummonMenu:Set(true)
         end
     end)
 end

@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --
+local World = workspace:FindFirstChild("World")
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = Client.Classes
@@ -18,7 +19,7 @@ function SummonCutscene.Sequence(self: Types.CutsceneClass, Data: {string})
     print("hello we should show:", CharacterName)
 
     --
-    SummonCutscene:MoveCamera(CFrame.new())
+    SummonCutscene:MoveCamera(World.LobbyCutscenes.SummonRoom.Used.CameraCF.CFrame)
     SummonCutscene:Wait(5)
 
     SummonCutscene:End()
