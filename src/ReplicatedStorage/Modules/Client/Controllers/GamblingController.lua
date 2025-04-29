@@ -3,13 +3,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --
 local Shared = ReplicatedStorage.Modules.Shared
-local _Client = ReplicatedStorage.Modules.Client
+local Client = ReplicatedStorage.Modules.Client
 
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local Places = require(Shared.Places)
 
 local InterfaceController = require(script.Parent.InterfaceController)
+local Cutscenes = require(Client.Libraries.Cutscenes)
 
 --
 local Controller = {}
@@ -21,9 +22,11 @@ function Controller:Init()
 
 
     Network:On("Banner", Controller.__BannerUpdated)
-    Network:On("Summon", function(Type: number, Result: {string} | string)
+    Network:On("Summon", function(Type: number, Result: {string})
         if Type == GameEnum.SummonRequests.SummonResultOne then
             print("Smth u got bro:", Result)
+
+            Cutscenes:Start("Summon", {Result[1]})
         end
     end)
 end

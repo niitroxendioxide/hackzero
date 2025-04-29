@@ -4,6 +4,7 @@ local UserInputService = game:GetService('UserInputService')
 
 local Shared = ReplicatedStorage.Modules.Shared
 local World = require(Shared.World)
+local Effects = require(Shared.Utility.Effects)
 
 --
 local Rad, Clamp = math.rad, math.clamp
@@ -25,6 +26,7 @@ local Camera = {
 	__Zoom = 15,
 	__Subject = nil,
 	__Inited = false,
+	__UsedBy = nil,
 }
 
 function Camera:Init()
@@ -57,7 +59,7 @@ function Camera:SetSubject(Target: Model)
 end
 
 function Camera:Update(delta: number)
-	if not Camera.__Subject then
+	if not(Camera.__Subject) or Camera.__UsedBy then
 		return
 	end
 
@@ -78,6 +80,28 @@ function Camera:Update(delta: number)
 
 	CameraObject.CameraType = Enum.CameraType.Scriptable
 	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * 45)
+end
+
+function Camera:TweenTo(GoalCFrame: CFrame, Info: {number | string}): Tween
+	local CameraObject = workspace.CurrentCamera
+
+	return Effects:Tween(CameraObject, Info, {CFrame = GoalCFrame})
+end
+
+function Camera:GetCurrentUser(): string?
+	return self.__UsedBy
+end
+
+function Camera:MarkUsage(Key: string)
+	if Camera.__UsedBy then
+		return
+	end
+
+	Camera.__UsedBy = Key
+end
+
+function Camera:FreeUsage()
+	Camera.__UsedBy = nil
 end
 
 return Camera

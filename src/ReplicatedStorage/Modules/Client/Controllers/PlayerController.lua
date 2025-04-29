@@ -61,6 +61,16 @@ function Controller:Init(): ()
 				Humanoid.JumpPower = 50
 			end
 
+			--
+			CameraLibrary:SetSubject(Character)
+			CameraLibrary:Update(Delta)
+
+			if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+				UserInputService.MouseBehavior = Enum.MouseBehavior.LockCurrentPosition
+			else
+				UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+			end
+
 			return
 		end
 

@@ -917,6 +917,45 @@ export type StagePlayer = {
 	GetBase: (self: StagePlayer) -> Player,
 }
 
+export type CutsceneClass = {
+	Completed: Signal<>,
+
+	__Cache: {any},
+	__Active: boolean,
+	__Name: string,
+	__Time: number,
+	__Thread: thread?,
+
+	--
+	Sequence: (self: CutsceneClass, Data: {any}) -> (),
+	Play: (self: CutsceneClass, Data: {any}) -> (),
+	CleanUp: (self: CutsceneClass) -> (),
+	MoveCamera: (self: CutsceneClass, To: CFrame, Info: {number | string}?) -> (),
+
+	--[[
+		Wait the given amount of seconds
+		@yields
+	]]
+	Wait: (self: CutsceneClass, Time: number) -> (),
+
+	--[[
+		Will be cleaned up after the cutscene ends
+		@param Item : `any`
+	]]
+	Add: (self: CutsceneClass, Item: any) -> (),
+
+	--[[
+		Remove an item from the clean up queue in case it must persist
+		@param Item : `any`
+	]]
+	Remove: (self: CutsceneClass, Item: any) -> (),
+
+	--[[
+		Finish the cutscene, clean up and then call the `.Completed` event
+	]]
+	End: (self: CutsceneClass) -> ()
+}
+
 return {
 	NOT_IMPLEMENTED_ERROR = function()
 		warn("Method", debug.info(2, "n"), "not implemented. Consider writing a hardcoded value of return")
