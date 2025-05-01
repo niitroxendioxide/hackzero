@@ -41,11 +41,31 @@ function CutsceneClass.MoveCamera(self: Types.CutsceneClass, To: CFrame, Info: {
 
     if Info then
         local CameraTween = Camera:TweenTo(To, Info)
+        self:Add(CameraTween)
 
         return CameraTween
     end
 
     workspace.CurrentCamera.CFrame = To
+
+    return;
+end
+
+function CutsceneClass.SetFOV(self: Types.CutsceneClass, FOV: number, Info: {any})
+    if not(Camera:GetCurrentUser() == self.__Name) then
+        return
+    end
+
+
+    if Info then
+        local Tween = EffectsUtil:Tween(workspace.CurrentCamera, Info, {FieldOfView = FOV})
+
+        self:Add(Tween)
+
+        return Tween;
+    end
+
+    workspace.CurrentCamera.FieldOfView = FOV;
 
     return;
 end
@@ -105,6 +125,9 @@ function CutsceneClass.Remove(self: Types.CutsceneClass, Item: any): ()
 end
 
 function CutsceneClass.End(self: Types.CutsceneClass)
+    self.Completed:Fire()
+
+    --
     self:CleanUp()
     self.__Active = false
 
@@ -113,8 +136,7 @@ function CutsceneClass.End(self: Types.CutsceneClass)
         self.__Thread = nil
     end
 
-    --
-    self.Completed:Fire()
+    self:SetFOV(70)
 end
 
 return CutsceneClass

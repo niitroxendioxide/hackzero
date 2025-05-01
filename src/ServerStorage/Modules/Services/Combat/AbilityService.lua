@@ -70,6 +70,10 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 	end
 end
 
+function Service:PromptAssist()
+	
+end
+
 function Service:GetMoveset(Name: string)
 	return Service.__Movesets[Name] or Service:GetMoveset("Goku")
 end

@@ -25,10 +25,39 @@ function Inputs:Init()
 	LocalPlayer.CharacterAdded:Connect(Inputs.OverrideDefaults)
 	UserInputService.InputBegan:Connect(Inputs.OnEvent)
 	UserInputService.InputEnded:Connect(Inputs.OnEvent)
-	
+
 	if LocalPlayer.Character then
 		Inputs.OverrideDefaults()
 	end
+end
+
+function Inputs:WaitFor(Key: Enum.KeyCode | Enum.UserInputType, MaxTime: number?): boolean
+	local Pressed = false;
+	local LimitTime = MaxTime or 10
+	local Clock = os.clock()
+
+	local Connection; do
+		Connection = UserInputService.InputBegan:Connect(function(InputObject: InputObject, GP: boolean)
+			if GP then return end
+
+			if (InputObject.KeyCode == Key :: Enum.KeyCode) or (InputObject.UserInputType == Key :: Enum.UserInputType) then
+				Connection:Disconnect()
+
+				Pressed = true
+
+				return
+			end
+		end)
+	end
+
+	repeat task.wait()
+	until Pressed or (os.clock() - Clock >= LimitTime);
+
+	if Connection then
+		Connection:Disconnect()
+	end
+
+	return true;
 end
 
 function Inputs.OnEvent(InputObject: InputObject, GameProcessedEvent: boolean)

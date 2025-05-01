@@ -65,17 +65,17 @@ end
 function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: number)
     if RequestType == GameEnum.SummonRequests. SummonOne or RequestType == GameEnum.SummonRequests.SummonTen then
         local Amount = GameEnum.SummonRequests.SummonOne == RequestType and 1 or 10
-        local First;
-
+        local List = {};
         for idx = 1, Amount do
             local NewAgent = Service:SummonFromBanner()
-            First = NewAgent.Name;
 
             --print(NewAgent.Name, NewAgent)
             DataService:AddAgent(Player, NewAgent)
+
+            table.insert(List, {NewAgent.Name})
         end
 
-        Network:Fire("Summon", Player, GameEnum.SummonRequests.SummonResultOne, {First})
+        Network:Fire("Summon", Player, GameEnum.SummonRequests.SummonResult, List)
 
         --
         -- print("Server summoned stuff :3")

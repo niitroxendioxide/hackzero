@@ -118,8 +118,7 @@ return {
 	SummonRequests = {
 		SummonOne = 1,
 		SummonTen = 2,
-		SummonResultOne = 3,
-		SummonResultTen = 4,
+		SummonResult = 3,
 	},
 
 	MatchResults = {

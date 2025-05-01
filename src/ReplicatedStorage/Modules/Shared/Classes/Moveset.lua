@@ -94,6 +94,8 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Beg
 
 		self.__Assigned[Type]:Play(Agent, Type, State)
 		self.__Last_Use[Agent][Type] = os.clock()
+
+		--
 	else
 		warn(`Moveset: "{self.Name} does not have a correct skill module assigned for: "{Type}."`)
 	end

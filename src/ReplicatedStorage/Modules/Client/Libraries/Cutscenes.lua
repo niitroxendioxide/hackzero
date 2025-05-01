@@ -41,7 +41,6 @@ function CutsceneLibrary:Start(Name: string, Data: {any}?): (boolean)
         return false;
     end
 
-    print("Hello?")
     Camera:MarkUsage(Name)
     CutsceneClass:Play(Data)
     CutsceneLibrary.__Current = CutsceneClass
@@ -61,7 +60,8 @@ end
 -- @ yields
 function CutsceneLibrary:WaitCurrent(): ()
     if CutsceneLibrary.__Current then
-        CutsceneLibrary.__Current.Completed:Wait()
+        repeat task.wait()
+        until CutsceneLibrary.__Current == nil
     end
 end
 

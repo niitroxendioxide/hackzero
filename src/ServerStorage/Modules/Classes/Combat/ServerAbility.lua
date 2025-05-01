@@ -27,6 +27,7 @@ function ServerAbilityClass.new(): Types.ServerAbilityClass
 	self.__Cache = {}
 	self.__Cooldown = Signal.new()
 	self.__Signal = Signal.new()
+	self.__Hit = Signal.new()
 	self.__Ability_Data = {}
 
 	return self
@@ -124,7 +125,7 @@ function ServerAbilityClass:Hit(Agent: Types.ServerAgentClass, Enemy: Types.Serv
 
 
 	--
-	local Dealt_Damage, Critical, Affliction, Affliction_Fill, Burst_Damage = DamageLibrary:Deal(Agent, Enemy, Data)
+	local Dealt_Damage, Critical, Affliction, Affliction_Fill, Burst_Damage, Affliction_Triggered = DamageLibrary:Deal(Agent, Enemy, Data)
 	local Dealt_Daze, Is_Dazed = DamageLibrary:Daze(Agent, Enemy, Data.Daze)
 
 	Enemy:Stun(Data.Stun)
@@ -133,28 +134,37 @@ function ServerAbilityClass:Hit(Agent: Types.ServerAgentClass, Enemy: Types.Serv
 	if Enemy:TimeSinceLastPivot() > 0.5 then
 		Enemy:PivotTo(Enemy:GetPivot())
 	end
-	
+
 	if Data.Knockback then
 		local Direction = Data.Knockback[1]
 		local Power = Data.Knockback[2]
 		local Time = Data.Knockback[3]
-		
+
 		Enemy:Knockback(Direction, Power, Time)
 		Replicator:Knockback(Enemy, Direction, Power, Time)
 	end
-	
+
 	if Is_Dazed then
 		Enemy:EnterDazedState()
 		Replicator:EnterDaze(Enemy)
 	end
-	
+
 	if Burst_Damage > 0 then
 		Replicator:DisplayDamage(Enemy, Burst_Damage, false, Data.Affliction, true)
 	end
-	
+
 	Replicator:FillAffliction(Enemy, Data.Affliction, Affliction_Fill)
 	Replicator:DisplayDamage(Enemy, Dealt_Damage, Critical, Affliction)
 	Replicator:DazeEnemy(Enemy, Dealt_Daze)
+
+	--
+	--[[self.__Hit:Fire({
+		Enemy = Enemy,
+		Agent = Agent,
+		Type = Data.Affliction,
+		Damage = Dealt_Damage,
+		Burst = Affliction_Triggered,
+	})]]
 end
 
 

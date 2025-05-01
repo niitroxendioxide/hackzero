@@ -45,8 +45,11 @@ function DamageLibrary:Deal(Agent:Types.ServerAgentClass,Enemy:Types.ServerEnemy
 	local Burst_Damage = 0
 	
 	Enemy:TakeAffliction(Data.Affliction, Filled_Affliction)
+
+	local AfflictionTriggered = false;
 	if Enemy:GetAffliction(Data.Affliction) >= 100 then
 		-- TODO: Fix the res mult to change based on enemy stuff idk
+		AfflictionTriggered = true;
 		Burst_Damage = DamageLibrary:CalculateAfflictionBurst(Attack, Data.Affliction, Defense_Mult, Resistance_Multiplier, Agent, Enemy)
 		Enemy:TakeDamage(Burst_Damage)
 	
@@ -55,7 +58,7 @@ function DamageLibrary:Deal(Agent:Types.ServerAgentClass,Enemy:Types.ServerEnemy
 	
 	Enemy:TakeDamage(Final_Damage)
 	
-	return Final_Damage, Is_Critical, Affliction_Type, Filled_Affliction, Burst_Damage
+	return Final_Damage, Is_Critical, Affliction_Type, Filled_Affliction, Burst_Damage, AfflictionTriggered
 end
 
 

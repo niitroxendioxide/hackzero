@@ -320,7 +320,7 @@ export type ServerAgentClass = {
 export type AgentMovesetAbility = "Basic Attack" | "Special Attack" | "Chain Attack" | "Dodge" | "Dodge Counter" | "Quick Assist" | "Ultimate" | "Passive"
 
 export type MovesetClass = {
-	__Assigned: {[AgentMovesetAbility]: AbilityClass},
+	__Assigned: {[AgentMovesetAbility]: AbilityClass & ServerAbilityClass},
 	
 	--
 	Assign: (self: MovesetClass, Key: string, Ability: AbilityClass) -> (),
@@ -370,6 +370,13 @@ export type AbilityClass = {
 export type ServerAbilityClass = {
 	__Cache: {},
 	__Signal: RBXScriptSignal,
+	__Hit: Signal<{
+		Enemy: ServerEnemyClass,
+		Agent: ServerAgentClass,
+		Type: Element,
+		Damage: number,
+		Burst: boolean,
+	}>,
 
 	PlayAnimation: (self: ServerAbilityClass, Agent: ServerAgentClass, Track: string, Data: {Fade: number, Speed: number, Weight: number}) -> (),
 	CreateHitbox: (self: ServerAbilityClass, Agent: ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: ServerEnemyClass) -> ()) -> (),
@@ -930,7 +937,9 @@ export type CutsceneClass = {
 	Sequence: (self: CutsceneClass, Data: {any}) -> (),
 	Play: (self: CutsceneClass, Data: {any}) -> (),
 	CleanUp: (self: CutsceneClass) -> (),
-	MoveCamera: (self: CutsceneClass, To: CFrame, Info: {number | string}?) -> (),
+	MoveCamera: (self: CutsceneClass, To: CFrame, Info: {number | string}?) -> (Tween?),
+
+	SetFOV: (self: CutsceneClass, FOV: number, Info: {number | string}?) -> (Tween?),
 
 	--[[
 		Wait the given amount of seconds

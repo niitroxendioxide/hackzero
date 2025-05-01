@@ -23,14 +23,15 @@ function Controller:Init()
 
     Network:On("Banner", Controller.__BannerUpdated)
     Network:On("Summon", function(Type: number, Result: {string})
-        if Type == GameEnum.SummonRequests.SummonResultOne then
-            print("Smth u got bro:", Result)
+        if Type == GameEnum.SummonRequests.SummonResult then
             local SummonMenu = InterfaceController:GetComponent("Summon")
             SummonMenu:Set(false)
 
-            Cutscenes:Start("Summon", {Result[1]})
+            for _, Agent in Result do
+                Cutscenes:Start("Summon", {Agent[1]})
+                Cutscenes:WaitCurrent()
+            end
 
-            Cutscenes:WaitCurrent()
             SummonMenu:Set(true)
         end
     end)
