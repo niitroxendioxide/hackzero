@@ -38,7 +38,7 @@ function Characters:Switch(UserId: number, Direction: number)
 	
 	Data.Last_Anim = Data.Last_Anim == 1 and 2 or 1
 	
-	if IsClient and Players.LocalPlayer.UserId == UserId then
+	if IsClient and Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
 		InterfaceStates.Characters:set(Data)
 	end
 	
@@ -67,7 +67,7 @@ function Characters:Add(UserId: number, Character: Types.AgentClass)
 
 	table.insert(Data.List, Character)
 	
-	if IsClient and Players.LocalPlayer.UserId == UserId then
+	if IsClient and Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
 		InterfaceStates.Characters:set(Data)
 	end
 end
@@ -83,7 +83,7 @@ function Characters:Remove(UserId: number, Name: string): any
 		end
 	end
 
-	if IsClient and Players.LocalPlayer.UserId == UserId then
+	if IsClient and Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
 		InterfaceStates.Characters:set(Data)
 	end
 
@@ -142,6 +142,10 @@ function Characters:GetCurrentName(UserId: number): string
 	if not Current then return '' end
 	
 	return Current.Name
+end
+
+function Characters:RemoveAll(UserId: number)
+	Characters.__Player_Data[UserId] = nil
 end
 
 function Characters:GetActiveAgentsHitboxes()

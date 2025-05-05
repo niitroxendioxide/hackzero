@@ -107,7 +107,7 @@ function Inputs.OverrideDefaults()
 	end
 end
 
-function Inputs:Bind(Key: string, Data: Types.KeybindData): (number?, Types.BoundKeybind)
+function Inputs:Bind(Key: string | Enum.KeyCode, Data: Types.KeybindData): (number?, Types.BoundKeybind)
 	--assert(Data, 'Cannot bind key to no action')
 	assert(Data.Callback, 'Cannot bind key to no action')
 	
@@ -133,7 +133,11 @@ function Inputs:GetMovementVector()
 	
 end
 
-function Inputs:GetEnumFromKey(Name: string)
+function Inputs:GetEnumFromKey(Name: string | Enum.KeyCode)
+	if typeof(Name) == "EnumItem" then
+		return Name
+	end
+
 	return Settings.Keybinds.Computer[Name]
 end
 

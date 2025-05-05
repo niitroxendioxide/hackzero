@@ -1,9 +1,10 @@
 return {
-	Display_Name = 'Template Character',
-	Nickname = 'Template',
+	Display_Name = 'Monkey D. Luffy',
+	Nickname = 'Luffy',
 	Element = 'Physical',
 	Role = 'Stun',
 	Rarity = "Legendary",
+	Faction = "Strawhat Pirates",
 
 	Appearance = {
 		Height = 3.15

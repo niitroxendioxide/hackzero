@@ -1,9 +1,10 @@
 return {
 	Display_Name = 'Asta',
-	Nickname = 'The flaw of the World',
+	Nickname = 'The Flaw of The World',
 	Element = 'Energy',
 	Role = 'Attack',
 	Rarity = "Legendary",
+	Faction = "Hage Orphanage",
 
 	Appearance = {
 		Height = 3.15

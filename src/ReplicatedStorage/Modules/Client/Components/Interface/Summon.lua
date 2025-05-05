@@ -12,7 +12,7 @@ local GameEnum = require(Shared.GameEnum)
 local ComponentClass = require(Client.Classes.Interface)
 
 --
-local Component = ComponentClass.new(script.Name, 'Lobby', {}) :: Types.UIComponent & Types.UIGetSetButton
+local Component = ComponentClass.new(script.Name, 'Lobby', {KeyToBind = Enum.KeyCode.J}) :: Types.UIComponent & Types.UIGetSetButton
 
 
 --

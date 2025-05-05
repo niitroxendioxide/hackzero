@@ -18,6 +18,8 @@ local SummonService = require(script.Parent.Items.SummonService)
 local Places = require(Shared.Places)
 
 local Messages = require(Modules.Packages.Messages)
+local LastPlayerId = 0
+local AvailableIds = {}
 
 --
 local Service = {}
@@ -25,6 +27,10 @@ local Service = {}
 function Service:Init(): ()
 	Notifications:Init()
 	Service:SetupStarterPlayer()
+
+	for i = 1, 255 do
+		table.insert(AvailableIds, i)
+	end
 
 	for _, Player in Players:GetPlayers() do
 		task.spawn(Service.PlayerAdded, Player)
@@ -45,7 +51,28 @@ function Service:SetupStarterPlayer(): ()
 	StarterPlayer.UserEmotesEnabled = false;
 end
 
+function Service:AssignId(Player: Player)
+	local Id = AvailableIds[math.random(1, #AvailableIds)]
+	local Index = table.find(AvailableIds, Id)
+
+	if Index then
+		table.remove(AvailableIds, Index)
+	end
+
+	Player:SetAttribute("ReplicationId", Id)
+end
+
+function Service:RemoveId(Player: Player)
+	local PlayerId = Player:GetAttribute("ReplicationId")
+
+	table.insert(AvailableIds, PlayerId)
+end
+
 function Service.PlayerAdded(Player: Player): ()
+	LastPlayerId += 1
+
+	Service:AssignId(Player)
+
 	if not RunService:IsStudio() then
 		Messages:Post({Content = `{Player.Name} has joined the game!`, Title = "Player joined"})
 	end
@@ -70,6 +97,7 @@ end
 
 function Service.PlayerRemoving(Player: Player): ()
 	PartyService:ClearPlayer(Player)
+	Service:RemoveId(Player)
 
 	TeamService:Clear(Player)
 	DataService:RemovePlayer(Player)

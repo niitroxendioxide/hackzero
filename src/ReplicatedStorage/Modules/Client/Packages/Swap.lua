@@ -19,7 +19,7 @@ function Ability:Play(Agent: Types.AgentClass, Key: string)
 	local Direction = Key == 'Swap Back' and -1 or Key == 'Swap Forth' and 1 or 0
 	if Direction == 0 then return end
 	
-	CharacterLibrary:Switch(Players.LocalPlayer.UserId, -1)
+	CharacterLibrary:Switch(Players.LocalPlayer:GetAttribute("ReplicationId"), -1)
 
 	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, -1)
 end

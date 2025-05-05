@@ -37,7 +37,7 @@ function CutsceneLibrary:Start(Name: string, Data: {any}?): (boolean)
         return false;
     end
 
-    if CutsceneLibrary.__Current then
+    if CutsceneLibrary.__Current or (Camera:GetCurrentUser() ~= nil) then
         return false;
     end
 
@@ -57,11 +57,17 @@ function CutsceneLibrary:Find(Name: string): Types.CutsceneClass?
     return CutsceneLibrary.__Cache[Name]
 end
 
+function CutsceneLibrary:IsInCutscene()
+    return CutsceneLibrary.__Current ~= nil
+end
+
 -- @ yields
 function CutsceneLibrary:WaitCurrent(): ()
     if CutsceneLibrary.__Current then
         repeat task.wait()
         until CutsceneLibrary.__Current == nil
+
+        task.wait();
     end
 end
 

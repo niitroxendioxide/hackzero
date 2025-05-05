@@ -69,7 +69,7 @@ function Service:AddAgent(Player: Player, AgentClass: Types.ServerAgentClass, Ta
 
 	--
 	Replicator:AddAgent(Player, AgentClass, Target)
-	AgentLibrary:Add(Player.UserId, AgentClass)
+	AgentLibrary:Add( Player:GetAttribute("ReplicationId") :: number, AgentClass)
 end
 
 function Service:RemoveAgent(Player: Player, Name: string)
@@ -77,7 +77,7 @@ function Service:RemoveAgent(Player: Player, Name: string)
 
 	for key, Agent in Data.Characters do
 		if Agent.Name == Name then
-			AgentLibrary:Remove(Player.UserId, Agent)
+			AgentLibrary:Remove( Player:GetAttribute("ReplicationId") :: number, Agent)
 			table.remove(Data.Characters, key)
 		end
 	end

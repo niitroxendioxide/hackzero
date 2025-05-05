@@ -4,6 +4,7 @@ return {
 	Element = 'Wind',
 	Role = 'Affliction',
 	Rarity = "Mythical",
+	Faction = "Hage Orphanage",
 
 	Appearance = {
 		Height = 3.15

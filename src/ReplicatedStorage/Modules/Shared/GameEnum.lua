@@ -30,6 +30,9 @@ return {
 		ResetAffliction = 55,
 		DazeEnemy = 56,
 		EnterDaze = 57,
+
+		--
+		ClearPlayerData = 150,
 	},
 
 

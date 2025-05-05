@@ -249,11 +249,14 @@ export type EnemyStats = {
 
 export type CharacterData = {
 	Display_Name: string,
+	Nickname: string,
 	Element: Element,
 	Role: Role,
-	Appearance: CharacterAppearanceData,
 	Rarity: Rarity,
+	Faction: string,
 	NotOnBanner: boolean?,
+
+	Appearance: CharacterAppearanceData,
 
 	Stats: CharacterStats,
 	Level_Stats: {[Stat]: number},
@@ -516,10 +519,12 @@ export type UIComponent = {
 	__Group: string,
 	__Scope: Fusion.Scope,
 	__Main_Frame: CanvasGroup | Frame,
+	__Bound_To_Key: Enum.KeyCode,
 
 	GetScope: (self: UIComponent) -> (Fusion.Scope & {Value: Fusion.Value<any, any>, Observer: Fusion.Observer}),
 	GetFrame: (self: UIComponent) -> CanvasGroup | Frame,
 	Peek: (self: UIComponent, Value: Fusion.Value<any, any>) -> (any),
+	CheckAvailable: (self: UIComponent) -> (boolean),
 
 	Init: (self: UIComponent) -> (),
 	Link: (self: UIComponent) -> (Instance?),
@@ -641,6 +646,20 @@ export type AgentDataClass = {
 	Skin: string,
 }
 
+export type ClientAgentData = {
+	Name: string,
+	Level: number,
+	Experience: number,
+	Weapon: {
+		Level: number,
+		Name: string,
+	},
+
+	Artifacts: {
+		
+	},
+}
+
 export type PartyPlayerTeam = {[number]: AgentDataClass}
 export type PartyState = typeof(_GameEnum.PartyStates.Idle)
 export type PartyPlayer = {
@@ -753,6 +772,7 @@ export type ClientAreaClass = {
 export type PlayerAgentDataClass = {
 	Name: string,
 	Level: number,
+	Experience: number,
 
 	ObtainmentDate: number,
 	Skins: {},

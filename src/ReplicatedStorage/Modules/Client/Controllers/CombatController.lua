@@ -29,9 +29,10 @@ function Controller:Init()
 		Inputs:Bind(Key, {
 			Release = true,
 			Callback = function(State: 'Begin' | 'End')
-				local UserId = Players.LocalPlayer.UserId
+				local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")
 				local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
 				local CurrentAgent = Characters:GetCurrent(UserId)
+
 				if CurrentAgent == nil then
 					print("Input rejected. Character is null")
 					return

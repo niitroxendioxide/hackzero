@@ -15,6 +15,7 @@ PlayerAgentDataClass.__index = PlayerAgentDataClass;
 function PlayerAgentDataClass.new(Name: string, Level: number, Date: number)
     local self = setmetatable({}, PlayerAgentDataClass)
     self.Name = Name
+    self.Experience = 0
     self.Level = Level
     self.Weapon = {}
     self.Artifacts = {}
@@ -68,15 +69,17 @@ function PlayerAgentDataClass.ToData(self: Types.PlayerAgentDataClass): Types.Pl
         Level = self.Level,
         Obtained = self.ObtainmentDate,
         Skins = self.Skins,
+        Experience = self.Experience,
     })
 end
 
 function PlayerAgentDataClass.Compress(self: Types.PlayerAgentDataClass)
-    local DataBuffer = buffer.create(4)
+    local DataBuffer = buffer.create(6)
     buffer.writeu8(DataBuffer, 0, CharactersDatabase:GetIdForCharacter(self.Name))
     buffer.writeu8(DataBuffer, 1, self.Level)
     buffer.writeu8(DataBuffer, 2, WeaponsDatabase:GetIdForWeapon(self.Weapon.Name) or 0)
     buffer.writeu8(DataBuffer, 3, self.Weapon.Level or 1)
+    buffer.writeu16(DataBuffer, 4, self.Experience)
 
     return {DataBuffer, self.Artifacts}
 end

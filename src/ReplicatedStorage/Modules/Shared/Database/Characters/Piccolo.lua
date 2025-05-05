@@ -4,6 +4,7 @@ return {
 	Element = 'Energy',
 	Role = 'Stun',
 	Rarity = "Legendary",
+	Faction = "Z Warriors",
 
 	Appearance = {
 		Height = 3.15

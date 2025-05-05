@@ -8,6 +8,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Types = require(Shared.Types)
 local Fusion = require(Client.Libraries.Fusion)
 local UIGroups = require(Client.Libraries.UIGroups)
+local Inputs = require(Client.Libraries.Inputs)
 
 --
 export type Meter = Frame & {Main: ImageLabel & {UIGradient: UIGradient}, Background: ImageLabel}
@@ -23,15 +24,23 @@ ComponentClass.__type = "GUIComponent"
 
 ComponentClass.Fusion = Fusion :: Fusion.Fusion;
 
-function ComponentClass.new(Name: string, Group: string): Types.UIComponent
+function ComponentClass.new(Name: string, Group: string, Data: {KeyToBind: Enum.KeyCode?}): Types.UIComponent
+	Data = Data or {};
+
 	local self = setmetatable({}, ComponentClass)
 	self.__Name = Name
 	self.__Group = Group
 	self.__Scope = Fusion.scoped({Value = Fusion.Value, Spring = Fusion.Spring, Observer = Fusion.Observer, peek = Fusion.peek})
 	self.__Main_Frame = nil
+	self.__UI_State = false
 	self.__State_Change_Callback = nil
+	self.__Bound_To_Key = Data.KeyToBind
 
 	return self
+end
+
+function ComponentClass:CheckAvailable(): boolean
+	return true;
 end
 
 function ComponentClass:Init()
@@ -66,15 +75,16 @@ function ComponentClass:Set(Visible: boolean?)
 		self.__Main_Frame.Visible = Visible
 	end
 
+	self.__UI_State = self.__Main_Frame.Visible
+
 	if Visible == true then
 		UIGroups:SetActiveElement(self.__Group, self.__Name)
 	elseif Visible == false and UIGroups:GetActiveElementName(self.__Group) == self.__Name then
 		UIGroups:SetActiveElement(self.__Group, nil)
 	end
 
-
 	if self.__State_Change_Callback ~= nil and typeof(self.__State_Change_Callback) == 'function' then
-		self.__State_Change_Callback(Visible)
+		self.__State_Change_Callback(self.__UI_State)
 	end
 end
 
@@ -84,6 +94,16 @@ function ComponentClass:Bind()
 	self.__Main_Frame = Object
 
 	UIGroups:Add(self.__Group, self)
+
+	if self.__Bound_To_Key ~= nil and self.__Bound_To_Key ~= Enum.KeyCode.Unknown then
+		Inputs:Bind(self.__Bound_To_Key, {Callback = function()
+			if self.__UI_State == false and self:CheckAvailable() then
+				self:Set(true)
+			else
+				self:Set(false)
+			end
+		end})
+	end
 
 	return Object ~= nil
 end

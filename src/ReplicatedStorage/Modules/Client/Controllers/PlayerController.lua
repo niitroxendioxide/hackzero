@@ -74,7 +74,7 @@ function Controller:Init(): ()
 			return
 		end
 
-		local CurrentCharacter = CharacterLibrary:GetCurrent(Player.UserId)
+		local CurrentCharacter = CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId"))
 		local Direction = Controller:GetCurrentMovementDirection()
 
 		if CurrentCharacter == nil then
@@ -121,10 +121,10 @@ end
 function Controller:AddAgent(Name: string)
 	local NewCharacter = AgentClass.new(Name)
 
-	NewCharacter:Init(Player.UserId)
+	NewCharacter:Init(Player:GetAttribute("ReplicationId"))
 	NewCharacter:SetVisible(false)
 
-	CharacterLibrary:Add(Player.UserId, NewCharacter)
+	CharacterLibrary:Add(Player:GetAttribute("ReplicationId"), NewCharacter)
 end
 
 function Controller:GetCurrentMovementDirection(): Vector3
@@ -133,7 +133,7 @@ end
 
 function Controller:ForCharacters(Callback: (Character: Types.CharacterClass) -> ())
 
-	for _, Character in CharacterLibrary:GetCharacters(Player.UserId) do
+	for _, Character in CharacterLibrary:GetCharacters(Player:GetAttribute("ReplicationId")) do
 		Callback(Character)
 	end
 
@@ -178,7 +178,7 @@ function Controller:SetupKeybinds()
 		Release = false,
 		Callback = function(_: 'Begin' | 'End')
 			local CanRun = true
-			if not (CharacterLibrary:GetCurrent(Player.UserId) :: Types.AgentClass):GetKey('Jog') then
+			if not (CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId")) :: Types.AgentClass):GetKey('Jog') then
 				CanRun = false
 				Replicator:Replicate(GameEnum.Replication.KeySwitch, GameEnum.Agent_Keys.Jog, true)
 			end
@@ -205,7 +205,7 @@ function Controller:SetupKeybinds()
 	Inputs:Bind('TESTING', {
 		Release = false,
 		Callback = function(_: 'Begin' | 'End')
-			(CharacterLibrary:GetCurrent(Player.UserId) :: Types.AgentClass):SwitchState('Attacking', .5)
+			(CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId")) :: Types.AgentClass):SwitchState('Attacking', .5)
 		end,
 	})
 end

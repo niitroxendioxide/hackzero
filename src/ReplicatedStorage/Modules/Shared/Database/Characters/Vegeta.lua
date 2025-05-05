@@ -4,6 +4,7 @@ return {
 	Element = 'Physical',
 	Role = 'Attack',
 	Rarity = "Mythical",
+	Faction = "Z Warriors",
 
 	Appearance = {
 		Height = 3.15

@@ -6,6 +6,7 @@ local Network = require(Shared.Network)
 local AgentDatabase = require(Shared.Database.Characters)
 local WeaponDatabase = require(Shared.Database.Weapons)
 local GameEnum = require(Shared.GameEnum)
+local LocalData = require(script.Parent.LocalData)
 
 local Fetcher = {
     __Requests_Queued = {},
@@ -41,6 +42,8 @@ function Fetcher:FetchAgents(): {any}
         })
     end
 
+    LocalData:SetAgents(TranslatedData :: {})
+
     return TranslatedData
 end
 
@@ -66,7 +69,7 @@ function Fetcher:SendRequest(Type: number, Event: string?)
     local Request = {Type, {}, false};
 
     table.insert(Fetcher.__Requests_Queued, Request);
-    
+
     Network:Fire(Event or "DataFetchRequest", Type);
     repeat
         task.wait()

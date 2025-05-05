@@ -92,14 +92,14 @@ end
 
 function Controller:DamageAgent(Buffer: buffer)
 	local Agent = buffer.readu8(Buffer, 1)
-	local PlayerId = buffer.readi32(Buffer, 2)
-	local Damage = buffer.readf32(Buffer, 6)
+	local PlayerId = buffer.readu8(Buffer, 2)
+	local Damage = buffer.readf32(Buffer, 3)
 	
 	local ActiveAgent = Characters:GetCharacters(PlayerId)[Agent]
 	
 	ActiveAgent:TakeDamage(Damage)
 	
-	if ActiveAgent == Characters:GetCurrent(PlayerId) and PlayerId == Players.LocalPlayer.UserId then
+	if ActiveAgent == Characters:GetCurrent(PlayerId) and PlayerId == Players.LocalPlayer:GetAttribute("ReplicationId") then
 		local Health = ActiveAgent:GetHealth()
 		
 		InterfaceStates.Health:set(Health)

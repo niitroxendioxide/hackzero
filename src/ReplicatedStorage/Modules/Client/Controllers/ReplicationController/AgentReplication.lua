@@ -17,7 +17,7 @@ local Controller = {}
 
 function Controller:AddAgent(Buffer: buffer, At: CFrame)
 	local CharacterId = buffer.readu8(Buffer, 1)
-	local UserId = buffer.readi32(Buffer, 2)
+	local UserId = buffer.readu8(Buffer, 2)
 	local CharacterName = CharacterDatabase:GetCharacterFromId(CharacterId)
 
 	if CharacterLibrary:HasCharacter(UserId, CharacterName) then
@@ -46,7 +46,7 @@ end
 
 function Controller:RemoveAgent(Buffer: buffer)
 	local CharacterId = buffer.readu8(Buffer, 1)
-	local UserId = buffer.readi32(Buffer, 2)
+	local UserId = buffer.readu8(Buffer, 2)
 	local Character = CharacterDatabase:GetCharacterFromId(CharacterId)
 
 	local CharInsance = CharacterLibrary:Remove(UserId, Character)
@@ -58,10 +58,10 @@ end
 
 function Controller:Rotate(Buffer: buffer)
 	local Angle = math.rad(buffer.readi16(Buffer, 1) / 180)
-	local X, Z = math.sin(Angle), math.cos(Angle) 
+	local X, Z = math.sin(Angle), math.cos(Angle)
 	local Rebuilt = Vector3.new(X, 0, Z)
-	
-	local UserId = buffer.readi32(Buffer, 3)
+
+	local UserId = buffer.readu8(Buffer, 3)
 
 	local Character = CharacterLibrary:GetCurrent(UserId)
 
@@ -69,9 +69,9 @@ function Controller:Rotate(Buffer: buffer)
 end
 
 function Controller:PivotTo(Buffer: buffer)
-	local UserId = buffer.readi32(Buffer, 1)
-	local X, Z = buffer.readf32(Buffer, 5), buffer.readf32(Buffer, 9)
-	local Y = buffer.readi16(Buffer, 13) / 100
+	local UserId = buffer.readu8(Buffer, 1)
+	local X, Z = buffer.readf32(Buffer, 2), buffer.readf32(Buffer, 6)
+	local Y = buffer.readi16(Buffer, 10) / 100
 	local Vector = Vector3.new(X, Y, Z)
 
 	local Character = CharacterLibrary:GetCurrent(UserId)
@@ -81,7 +81,7 @@ end
 
 function Controller:KeySwitch(Buffer: buffer, Value: boolean)
 	local Key = GameEnum.KeyLookup(GameEnum.Agent_Keys, buffer.readu8(Buffer, 1))
-	local UserId = buffer.readi32(Buffer, 2)
+	local UserId = buffer.readu8(Buffer, 2)
 
 	local Characters = CharacterLibrary:GetCharacters(UserId)
 
@@ -93,12 +93,11 @@ function Controller:KeySwitch(Buffer: buffer, Value: boolean)
 		else
 			Character:Stop()
 		end
-	end	
-
+	end
 end
 
 function Controller:Move(Buffer: buffer)
-	local UserId = buffer.readi32(Buffer, 1)
+	local UserId = buffer.readu8(Buffer, 1)
 
 	local Character = CharacterLibrary:GetCurrent(UserId)
 
@@ -106,15 +105,21 @@ function Controller:Move(Buffer: buffer)
 end
 
 function Controller:Stop(Buffer: buffer)
-	local UserId = buffer.readi32(Buffer, 1)
+	local UserId = buffer.readu8(Buffer, 1)
 
 	for _, Character in CharacterLibrary:GetCharacters(UserId) do
 		Character:Stop()
 	end
 end
 
+function Controller:ClearPlayerData(Buffer: buffer)
+	local Id = buffer.readu8(Buffer, 1)
+
+	CharacterLibrary:RemoveAll(Id)
+end
+
 function Controller:SyncVelocities(Buffer: buffer, V, LM, SV, MV)
-	local UserId = buffer.readi32(Buffer, 1)
+	local UserId = buffer.readu8(Buffer, 1)
 
 	local CurrentCharacter = CharacterLibrary:GetCurrent(UserId)
 	CurrentCharacter.__Controller.__Velocity = LM
@@ -124,8 +129,8 @@ function Controller:SyncVelocities(Buffer: buffer, V, LM, SV, MV)
 end
 
 function Controller:CharacterSwitch(Buffer: buffer)
-	local UserId = buffer.readi32(Buffer, 2)
 	local Direction = buffer.readi8(Buffer, 1)
+	local UserId = buffer.readu8(Buffer, 2)
 
 	local Previous = CharacterLibrary:GetCurrent(UserId)
 	local Moving = Previous:IsMoving()

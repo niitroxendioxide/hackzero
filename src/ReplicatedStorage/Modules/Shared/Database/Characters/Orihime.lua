@@ -4,6 +4,7 @@ return {
 	Element = 'Energy',
 	Role = 'Support',
 	Rarity = "Legendary",
+	Faction = "Karakura Town",
 
 	Appearance = {
 		Height = 3.15

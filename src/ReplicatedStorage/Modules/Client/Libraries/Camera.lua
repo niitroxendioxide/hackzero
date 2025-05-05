@@ -78,12 +78,19 @@ function Camera:Update(delta: number)
 		CameraCFrame = CFrame.lookAlong(Cast.Position, CameraRotation.LookVector)
 	end
 
+	CameraObject.FieldOfView = 70
 	CameraObject.CameraType = Enum.CameraType.Scriptable
 	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * 45)
 end
 
-function Camera:TweenTo(GoalCFrame: CFrame, Info: {number | string}): Tween
+function Camera:TweenTo(GoalCFrame: CFrame, Info: {number | string}?): Tween?
 	local CameraObject = workspace.CurrentCamera
+
+	if Info == nil then
+		CameraObject.CFrame = GoalCFrame
+
+		return;
+	end
 
 	return Effects:Tween(CameraObject, Info, {CFrame = GoalCFrame})
 end

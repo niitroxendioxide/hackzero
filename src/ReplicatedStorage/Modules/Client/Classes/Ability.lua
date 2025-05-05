@@ -90,7 +90,7 @@ function AbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: V
 	Hitbox:ForAgentsInZone(CharactersLib, Size, Enemy:GetPivot() * CFrame.new(Offset), function(Agent, ...)
 		if Agent:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER) then
 			Agent:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
-			if Agent.PlayerId == Players.LocalPlayer.UserId then
+			if Agent.PlayerId == Players.LocalPlayer:GetAttribute("ReplicationId") then
 				Effects:Play('Dodge', 1)
 				return
 			end
@@ -191,7 +191,7 @@ end
 
 function AbilityClass:Connect(Agent: Types.AgentClass)
 	local User = Players.LocalPlayer
-	local Id = User.UserId
+	local Id = User:GetAttribute("ReplicationId")
 
 	if Id == Agent.PlayerId then
 		local EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position)

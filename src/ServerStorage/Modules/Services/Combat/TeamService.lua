@@ -16,6 +16,7 @@ local AgentService = require(Services.Combat.AgentService)
 local EnemyService = require(Services.Combat.EnemyService)
 local TeleportService = require(Services.Data.TeleportService)
 local PlayersLibrary = require(Modules.Libraries.Players)
+local Replicator = require(Modules.Libraries.Replicator)
 
 --
 local Service = {}
@@ -28,7 +29,7 @@ function Service:Create(Player: Player)
         local AgentDataClass = DataService:GetAgent(Player, AgentData.Name)
         local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level)
 
-        AgentInstance:Init(Player.UserId)
+        AgentInstance:Init( Player:GetAttribute("ReplicationId") :: number)
         AgentService:AddAgent(Player, AgentInstance)
 
         if index == 1 then
@@ -60,6 +61,8 @@ function Service:Clear(Player: Player): ()
     for _, Character in AgentService:GetCharacters(Player) do
 		AgentService:RemoveAgent(Player, Character.Name)
 	end
+
+    Replicator:ClearPlayerData(Player)
 end
 
 return Service

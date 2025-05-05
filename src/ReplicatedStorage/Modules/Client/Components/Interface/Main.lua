@@ -67,10 +67,10 @@ function Component:Init()
 	}
 
 	local function UpdateCharacters()
-		local Characters = CharacterLibrary:GetCharacters(Player.UserId)
+		local Characters = CharacterLibrary:GetCharacters(Player:GetAttribute("ReplicationId") :: number)
 		if Characters == nil then return end
 		
-		local CurrentActiveCharacter, Active = CharacterLibrary:GetCurrent(Player.UserId)
+		local CurrentActiveCharacter, Active = CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId") :: number)
 		if not Active then return end
 		
 		local Next = Active + 1 > 3 and 1 or Active + 1
