@@ -41,7 +41,7 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 
 		local SkillId = buffer.readu8(ClientBuffer, 1)
 		local EnemyId = buffer.readu8(ClientBuffer, 2)
-		local ActiveAgent, AgentId = AgentLibrary:GetCurrentActive( Player:GetAttribute("ReplicationId") :: number)
+		local ActiveAgent, AgentId = AgentLibrary:GetCurrentActive(Player.UserId)
 		local Moveset = Service:GetMoveset(ActiveAgent.Name)
 		local Skill = GameEnum.KeyLookup(GameEnum.Skills, SkillId)
 		local Enemy = Enemies:GetEnemy(EnemyId)
@@ -58,7 +58,7 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 		if Skill ~= 'Dodge' then
 			ActiveAgent:Look(LookAt)
 		elseif Skill == 'Dodge' then
-			for _, Character in AgentLibrary:GetAll( Player:GetAttribute("ReplicationId") :: number) do
+			for _, Character in AgentLibrary:GetAll(Player.UserId) do
 				Character:SetKey('Sprint', true)
 				Character:SetKey('Jog', true)
 			end
