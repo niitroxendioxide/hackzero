@@ -27,6 +27,7 @@ local Camera = {
 	__Subject = nil,
 	__Inited = false,
 	__UsedBy = nil,
+	__Target_Part = "Head",
 }
 
 function Camera:Init()
@@ -58,6 +59,10 @@ function Camera:SetSubject(Target: Model)
 	self.__Subject = Target
 end
 
+function Camera:SetTargetPart(TargetPart: string)
+	self.__Target_Part = TargetPart
+end
+
 function Camera:Update(delta: number)
 	if not(Camera.__Subject) or Camera.__UsedBy then
 		return
@@ -67,7 +72,7 @@ function Camera:Update(delta: number)
 
 	local CameraObject = workspace.CurrentCamera
 	local CameraRotation = CFrame.Angles(0, -Camera.__Rotation.X, 0) * CFrame.Angles(-Camera.__Rotation.Y, 0, 0)
-	local CameraPosition = Model:FindFirstChild('Head').Position + Settings.Offset
+	local CameraPosition = Model:FindFirstChild(self.__Target_Part).Position + Settings.Offset
 
 	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * 14)
 

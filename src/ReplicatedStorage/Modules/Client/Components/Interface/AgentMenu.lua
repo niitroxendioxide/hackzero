@@ -6,15 +6,18 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
-local World = workspace:FindFirstChild("World")
 local Assets = ReplicatedStorage.Assets
+local World = workspace:FindFirstChild("World")
+
+
 local Types = require(Shared.Types)
-local _GameEnum = require(Shared.GameEnum)
-local CharacterDatabase = require(Database.Characters)
-local ComponentClass = require(Client.Classes.Interface)
+local Camera = require(Client.Libraries.Camera)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Cutscenes = require(Client.Libraries.Cutscenes)
-local Camera = require(Client.Libraries.Camera)
+local _GameEnum = require(Shared.GameEnum)
+local EffectUtil = require(Shared.Utility.Effects)
+local ComponentClass = require(Client.Classes.Interface)
+local CharacterDatabase = require(Database.Characters)
 
 --
 local RoomLocations = World:FindFirstChild("LobbyCutscenes")
@@ -24,9 +27,12 @@ end
 
 --
 local Component = ComponentClass.new(script.Name, 'Lobby', {KeyToBind = Enum.KeyCode.C}) :: Types.UIComponent
+local Scope = Component:GetScope()
+
 local States = {
     __Current_Model = nil,
     __Current_Agent = nil,
+    __Current_Tab = Scope:Value(""),
 }
 
 --
@@ -64,7 +70,8 @@ local function CreateAgentIcons(): ()
         local AgentIcon = Assets.Interface.Agents.AgentIcon:Clone()
 
         AgentIcon.Btn.MouseButton1Click:Connect(function()
-            Component:SetInfo(Agent)
+            print("Hola hermano!")
+            Component:SelectAgent(Agent)
         end)
 
         AgentIcon.AgentName.Text = AgentName
@@ -73,7 +80,7 @@ local function CreateAgentIcons(): ()
         LastAgent = Agent;
     end
 
-    Component:SetInfo(LastAgent)
+    Component:SelectAgent(LastAgent)
 end
 
 --
@@ -88,6 +95,7 @@ end
 
 function Component:Init()
     --
+    local MainFrame = Component:GetFrame()
 
     --
     Component:BindToStateChange(function(State: boolean)
@@ -96,13 +104,56 @@ function Component:Init()
 
             CreateAgentIcons()
 
+            States.__Current_Tab:set("Stats")
+
             --
         else
+            States.__Current_Agent = nil
             Camera:FreeUsage()
+        end
+    end)
+
+    for _, Button in MainFrame.Tabs:GetChildren() do
+        if not Button:FindFirstChild("Btn") then continue end
+
+        Button.Btn.MouseButton1Click:Connect(function()
+            States.__Current_Tab:set(Button.Name)
+        end)
+    end
+
+    Scope:Observer(States.__Current_Tab):onChange(function()
+        local Tabs = MainFrame:FindFirstChild("Tabs")
+        local CurrentTab = Component:Peek(States.__Current_Tab)
+
+        for _, Tab in Tabs:GetChildren() do
+            if not Tab:IsA("Frame") then continue end
+
+            if Tab.Name == CurrentTab then
+                EffectUtil:Tween(Tab.UIScale, {.25, 'Back', 'Out'}, {Scale = 1.25})
+            else
+                EffectUtil:Tween(Tab.UIScale, {.25}, {Scale = 1})
+            end
+        end
+
+        local Frame = MainFrame:FindFirstChild(CurrentTab)
+
+        if Frame then
+            Frame.Visible = true
+
+            Component:SelectAgent(States.__Current_Agent)
+
+            local StringTabs = {"Items", "Stats", "Skills"}
+            for _, SubFrame in MainFrame:GetChildren() do
+                if table.find(StringTabs, SubFrame.Name) and SubFrame ~= Frame then
+                    SubFrame.Visible = false
+                end
+            end
         end
     end)
 end
 
+
+--
 function Component:CheckAvailable(): boolean
     if Cutscenes:IsInCutscene() then
         return false
@@ -111,17 +162,81 @@ function Component:CheckAvailable(): boolean
     return true
 end
 
-function Component:SetInfo(AgentData: Types.ClientAgentData)
-    States.__Current_Agent = AgentData.Name
+function Component:SelectAgent(AgentData: Types.ClientAgentData)
+    if States.__Current_Agent == nil then
+        Camera:TweenTo(RoomLocations.StatsTab.CFrame)
+    end
 
+    States.__Current_Agent = AgentData
+
+    SwitchModel(AgentData.Name)
+
+    --
+    local CurrentTab = Component:Peek(States.__Current_Tab)
+
+    if CurrentTab == "Items" then
+        Component:ShowArtifacts(AgentData)
+    elseif CurrentTab == "Stats" then
+        Component:ShowStats(AgentData)
+    end
+end
+
+function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local ItemsFolder = ItemsFrame.Artifacts.Items
+
+    ItemsFrame.Artifacts.UIScale.Scale = 0
+
+    EffectUtil:Tween(ItemsFrame.Artifacts.UIScale, {.3, 'Cubic', 'Out'}, {Scale = 1})
+
+    local SlotsFrames = {}
+    for i = 1, 6 do
+        local Slot = ItemsFolder:FindFirstChild("Slot"..i)
+        if Slot then
+            SlotsFrames[i] = Slot
+            Slot.UIScale.Scale = 0
+
+            task.delay(i * 0.05, function()
+                EffectUtil:Tween(Slot.UIScale, {.25, 'Back'}, {Scale = 1})
+            end)
+
+            continue
+        end
+
+        local Angle = math.pi / 3 * i + (math.pi/6)
+        local Cos = math.cos(Angle)
+        local Sin = math.sin(Angle)
+
+        local NewSlot = Assets.Interface.Agents.Items.ArtifactSlot:Clone()
+        NewSlot.Item.Level.Text = "Lvl. "..math.random(1, 99);
+        NewSlot.Name = "Slot"..i
+        NewSlot.Position = UDim2.fromScale(Cos * .5 + .5, Sin * 0.5 + .5)
+        NewSlot.Parent = ItemsFolder
+
+        SlotsFrames[i] = NewSlot
+
+        --
+        NewSlot.UIScale.Scale = 0
+
+        task.delay(i * 0.05, function()
+            EffectUtil:Tween(NewSlot.UIScale, {.25, 'Back'}, {Scale = 1})
+        end)
+    end
+
+    --
+    Camera:TweenTo(RoomLocations.ArtifactsTab.CFrame, {.6, 'Cubic'})
+end
+
+
+--
+function Component:ShowStats(AgentData: Types.ClientAgentData)
     --
     local Frame = self:GetFrame()
     local AgentStats = CharacterDatabase:GetStatsAtLevel(AgentData.Name, AgentData.Level)
     local AgentInfo = CharacterDatabase:GetCharacterData(AgentData.Name)
 
-    SwitchModel(AgentData.Name)
-
-    Camera:TweenTo(RoomLocations.StatsTab.CFrame)
+    Camera:TweenTo(RoomLocations.StatsTab.CFrame, {.6, 'Cubic'})
 
     --
     for _, Obj in Frame.Stats.ValuesArea.Holder:GetChildren() do

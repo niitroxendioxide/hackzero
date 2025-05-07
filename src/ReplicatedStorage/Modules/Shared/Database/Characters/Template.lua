@@ -4,6 +4,8 @@ return {
 	Element = 'Physical',
 	Role = 'Attack',
 	Rarity = "Legendary",
+	Faction = "Testing",
+	NotOnBanner = true,
 
 	Appearance = {
 		Height = 3.15

@@ -41,6 +41,8 @@ function Controller:Init(): ()
 	local FightEnabled = Places:CanFight()
 	if FightEnabled then
 		Controller:SetupKeybinds();
+	else
+		CameraLibrary:SetTargetPart("HumanoidRootPart")
 	end
 
 	RunService:BindToRenderStep('PlayerControllerMainLoop', Enum.RenderPriority.Camera.Value, function(Delta: number)
