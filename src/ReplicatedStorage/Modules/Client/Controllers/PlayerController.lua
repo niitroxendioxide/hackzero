@@ -123,7 +123,7 @@ end
 function Controller:AddAgent(Name: string)
 	local NewCharacter = AgentClass.new(Name)
 
-	NewCharacter:Init(Player:GetAttribute("ReplicationId"))
+	NewCharacter:Init(Player)
 	NewCharacter:SetVisible(false)
 
 	CharacterLibrary:Add(Player:GetAttribute("ReplicationId"), NewCharacter)

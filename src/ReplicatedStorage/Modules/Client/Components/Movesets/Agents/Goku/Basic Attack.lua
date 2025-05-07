@@ -13,21 +13,20 @@ local Ability = AbilityClass.new(true)
 function Ability:Play(Agent: Types.AgentClass)
 	Ability:Increase(Agent, 'Count', {Limit = 5})
 	local M1_Count = Ability:Get(Agent, 'Count')
-	
+
 	if Ability:Get(Agent, 'M1_Track') then
 		Ability:Get(Agent, 'M1_Track'):Stop(0.125)
 	end
-	
-	
+
+
 	--
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
 	Ability:Begin(Agent, {
 		{0, function(_: Types.Sequence)
 			Agent:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
-			
+
 			local Track = Ability:PlayAnimation(Agent, 'Goku.Abilities.M1.'..Ability:Get(Agent, 'Count'), {
-				Speed = Ability:FromData('Animation_Speed'), 
-				Fade = .1, 
+				Fade = .1,
 				Active_Time = Attack_Time + .25,
 			})
 			Ability:Save(Agent, 'M1_Track', Track)

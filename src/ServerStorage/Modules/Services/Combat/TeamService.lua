@@ -29,7 +29,7 @@ function Service:Create(Player: Player)
         local AgentDataClass = DataService:GetAgent(Player, AgentData.Name)
         local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level)
 
-        AgentInstance:Init( Player:GetAttribute("ReplicationId") :: number)
+        AgentInstance:Init(Player)
         AgentService:AddAgent(Player, AgentInstance)
 
         if index == 1 then

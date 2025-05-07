@@ -11,19 +11,22 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.ServerEnemyClass)
-	--
-	local Attack_Time = Ability:FromData('Attack_State_Time')
+function Ability:Play(Caster: Types.ServerAgentClass, ...)
+	print(...)
 
+	--
 	Ability:Begin(Caster, {
 		{0, function(_: Types.Sequence)
-			Caster:SwitchState('Attacking', Attack_Time)
+			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time'))
 		end,},
 
-		{.5, function()
-			Ability:CreateHitbox(Caster, Vector3.zAxis* -30, Vector3.new(2.25, 2.25, 60), function(Target: Types.ServerAgentClass)
-				print("hello?", Target)
-				Target:TakeDamage(5)
+		{.2, function()
+			Caster:Walk(.133)
+		end,},
+
+		{.35, function()
+			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.ServerEnemyClass)
+
 			end)
 		end,},
 	})

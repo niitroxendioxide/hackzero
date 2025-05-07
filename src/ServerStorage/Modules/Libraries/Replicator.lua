@@ -225,6 +225,17 @@ function Replicator:ClearPlayerData(Player: Player)
 	Network:FireForAll("Replicate", Object)
 end
 
+function Replicator:UpdateCurrentEnergy(Player: Player, Energy: number)
+	local Object = buffer.create(3)
+
+	--
+	buffer.writeu8(Object, 0, GameEnum.Replication.UpdateEnergy)
+	--buffer.writeu8(Object, 1, Player:GetAttribute("ReplicationId") :: number)
+	buffer.writeu16(Object, 1, math.floor(Energy * 600))
+
+	Network:Fire("Replicate", Player, Object)
+end
+
 function Replicator:DisplayDamage(Enemy: Types.ServerEnemyClass, Damage: number, Critical: boolean?, Affliction: string, Burst: boolean?)
 	local Object = buffer.create(9)
 	buffer.writeu8(Object, 0, GameEnum.Replication.DisplayDamage)

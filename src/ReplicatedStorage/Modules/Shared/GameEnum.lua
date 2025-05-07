@@ -11,6 +11,7 @@ return {
 		PivotTo = 7,
 		StateSwitch = 10,
 		KeySwitch = 11,
+		UpdateEnergy = 14,
 
 		-- Enemy
 		AddEnemy = 15,

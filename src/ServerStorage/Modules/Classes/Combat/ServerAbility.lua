@@ -128,6 +128,14 @@ function ServerAbilityClass:Hit(Agent: Types.ServerAgentClass, Enemy: Types.Serv
 	local Dealt_Damage, Critical, Affliction, Affliction_Fill, Burst_Damage, Affliction_Triggered = DamageLibrary:Deal(Agent, Enemy, Data)
 	local Dealt_Daze, Is_Dazed = DamageLibrary:Daze(Agent, Enemy, Data.Daze)
 
+	--
+	local EnergyAmount = (Dealt_Damage / Enemy.__Status:GetStat("Max_Health")) / 1.25
+	if not Data.DontChargeEnergy then
+		Agent:GiveEnergy(EnergyAmount)
+	end
+
+	--
+
 	Enemy:Stun(Data.Stun)
 	Enemy:Rotate(AgentPivot.Position)
 
@@ -158,13 +166,13 @@ function ServerAbilityClass:Hit(Agent: Types.ServerAgentClass, Enemy: Types.Serv
 	Replicator:DazeEnemy(Enemy, Dealt_Daze)
 
 	--
-	--[[self.__Hit:Fire({
+	self.__Hit:Fire({
 		Enemy = Enemy,
 		Agent = Agent,
 		Type = Data.Affliction,
 		Damage = Dealt_Damage,
 		Burst = Affliction_Triggered,
-	})]]
+	})
 end
 
 
@@ -172,20 +180,24 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 	if Key == 'Knockback' then
 		return {self:FromData('Knockback_Direction'), self:FromData('Knockback_Strength'), self:FromData('Knockback_Time')}
 	end
-	
+
 	local Base = self.__Ability_Data.Base
-	local Upgrade = self.__Ability_Data.Upgrades
-	
+	local Upgrade = self.__Ability_Data.Upgrades or {}
+
 	local Level = math.max((GivenLevel or 1) - 1, 0)
 	local Value = Base[Key] or 0
 	local Upgraded_Value = Upgrade[Key]
-	
+
 	if typeof(Value) == 'table' then
 		local Added = Upgraded_Value ~= nil and Upgrade[Key][Sub_Key] or 0
-		
+
 		return Value[Sub_Key] + Added * Level
 	end
-	
+
+	if Key == "Speed" and Value == nil then
+		Value = 1
+	end
+
 	return Value
 end
 

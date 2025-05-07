@@ -132,7 +132,7 @@ export type StatesClass = {
 	GetKey: (self: StatesClass, Key: string) -> boolean,
 	SetKey: (self: StatesClass, Key: string, State: boolean) -> (),
 
-	GetSpeed: (self: StatesClass) -> number,
+	GetSpeed: (self: StatesClass, boolean) -> number,
 	GetStats: (self: StatesClass) -> CharacterStats,
 	GetLastChangeTime: (self: StatesClass) -> number,
 
@@ -149,6 +149,8 @@ export type GenericClass = {
 	AddTag: (self: GenericClass, Tag: string, Time: number) -> (),
 	RemoveTag: (self: GenericClass, Tag: string) -> (),
 	HasTag: (self: GenericClass, Tag: string) -> (boolean),
+
+	GetModel: (self: GenericClass) -> Model,
 }
 
 export type AgentClass =  {
@@ -167,6 +169,11 @@ export type AgentClass =  {
 	GetModel: (self: AgentClass) -> Rig,
 	PivotTo: (self: AgentClass) -> CFrame,
 	IsMoving: (self: AgentClass) -> boolean,
+
+	--[[
+		Walk forward for the specified time
+		@param Time the time to walk for
+	]]
 	Walk: (self: AgentClass, Time: number) -> (),
 	ApplyImpulse: (self: AgentClass, Impulse: Vector3) -> (),
 
@@ -186,6 +193,12 @@ export type AgentClass =  {
 	GetEffect: (self: AgentClass, Name: string) -> StateEffect,
 
 	GetAnimator: (self: AgentClass) -> AnimatorController,
+
+	--[[
+		Change the state of the agent to the specified one, this limits/allows specific methods
+		@param State The state to switch to, i. e. "Attacking", "Idle", "Stun";
+		@param Time The time to remain in that state
+	]]
 	SwitchState: (self: AgentClass, State: State, Time: number) -> (),
 
 	TakeDamage: (self: AgentClass, Amount: number) -> (),
@@ -209,6 +222,11 @@ export type AgentStatusClass = {
 	Damage: (self: AgentStatusClass, Amount: number) -> (),
 	Heal: (self: AgentStatusClass, Amount: number) -> (),
 	GetHealth: (self: AgentStatusClass) -> (number, number),
+	GetEnergy: (self: AgentStatusClass) -> (number),
+
+	SetEnergy: (self: AgentStatusClass, Energy: number) -> (),
+	UseEnergy: (self: AgentStatusClass, EnergyUsed: number) -> (),
+	GiveEnergy: (self: AgentStatusClass, EnergyGiven: number) -> (),
 
 	AddEffect: (self: AgentStatusClass, AgentStatusEffect) -> (),
 	GetEffect: (self: AgentStatusClass, AgentStatusEffect) -> (),
@@ -280,6 +298,8 @@ export type ServerCharacterClass = {
 	
 	GetPivot: (self: ServerCharacterClass) -> CFrame,
 	PivotTo: (self: ServerCharacterClass, Pivot: CFrame) -> (),
+
+	AddLinearMovement: (self: ServerCharacterClass, Direction: Vector3, Time: number) -> (),
 }
 
 export type ServerAgentClass = {
@@ -287,6 +307,11 @@ export type ServerAgentClass = {
 
 	__Level: number,
 	__User: number,
+	__Main_Thread: thread,
+	__Player_Assigned: Player,
+	__Status: AgentStatusClass,
+	__Active: boolean,
+	__Character: ServerCharacterClass,
 
 	GetId: (self: ServerAgentClass) -> (number),
 	Init: (self: ServerAgentClass) -> (),
@@ -297,6 +322,11 @@ export type ServerAgentClass = {
 	ApplyImpulse: (self: ServerAgentClass, Velocity: Vector3) -> (),
 	SetKey: (self: ServerAgentClass, Key: string, Value: any) -> (),
 	GetKey: (self: ServerAgentClass, Velocity: Vector3) -> (),
+
+	--[[
+		Walk forward for the specified time
+		@param Time the time to walk for
+	]]
 	Walk: (self: ServerAgentClass, Time: number) -> (),
 
 	GetHitbox: (self: ServerAgentClass) -> (BasePart),
@@ -304,11 +334,19 @@ export type ServerAgentClass = {
 	GetStat: (self: ServerAgentClass, Stat: Stat) -> number,
 	GetState: (self: ServerAgentClass) -> (),
 	GetMultBonus: (self: ServerAgentClass, Type: Element | AgentMovesetAbility) -> (number),
+
+	--[[
+		Change the state of the agent to the specified one, this limits/allows specific methods
+		@param State The state to switch to, i. e. "Attacking", "Idle", "Stun";
+		@param Time The time to remain in that state
+	]]
 	SwitchState: (self: ServerAgentClass, State: string, Time: number) -> (),
 
 	TakeDamage: (self: ServerAgentClass, Amount: number) -> (),
 	Heal: (self: ServerAgentClass, Amount: number) -> (),
 	GetHealth: (self: ServerAgentClass) -> (number, number),
+
+	GiveEnergy: (self: ServerAgentClass, Energy: number) -> (),
 
 	GetPivot: (self: ServerAgentClass) -> CFrame,
 	PivotTo: (self: ServerAgentClass, Pivot: CFrame) -> (),
@@ -356,7 +394,24 @@ export type AbilityClass = {
 	__Signal: RBXScriptSignal,
 	__Cooldown: any,
 
-	PlayAnimation: (self: AbilityClass, Agent: AgentClass, Track: string, Data: {Fade: number, Speed: number, Weight: number}) -> (),
+	--[[
+		Play an animation using any character controller, example:
+
+		```lua
+			local Path = "Characters.Goku.Abilities.Special.Default"
+			Ability:PlayAnimation(CasterAgent, Path, {Fade = 0.15, Speed = 1.125})
+		```
+
+		@param Agent The agent to play an animation for
+		@param Track The path to the animation track, i.e "Characters.Goku.Abilities.M1.1"; Starts from the Assets.Animations directory
+		@param Data The properties of the track, FadeIn, Speed and Weight (all numbers, by default: 0, 1, 1)
+	]]
+	PlayAnimation: (self: AbilityClass, Agent: AgentClass, Track: string, Data: {
+		Fade: number?,
+		Speed: number?,
+		Weight: number?,
+		Active_Time: number?,
+	}) -> (),
 	CreateHitbox: (self: AbilityClass, Agent: AgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: EnemyClass) -> ()) -> (),
 
 	Save: (self: AbilityClass, Agent: AgentClass, Key: string, Value: any) -> (),
@@ -366,9 +421,17 @@ export type AbilityClass = {
 	Play: (self: AbilityClass, Agent: AgentClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
 	Begin: (self: AbilityClass, Agent: AgentClass, SequenceFrames: SequenceFrames) -> (),
 
-	FromData: (self: AbilityClass, Key: string) -> (any),
+	--[[
+		Gets a value from the ability data
+		@param Key The key to get from the ability data
+
+		@return The value of the given key, can also be nil
+	]]
+	FromData: (self: AbilityClass, Key: AbilityDataKey) -> (any),
 	SetData: (self: AbilityClass, Data: {}) -> (),
 }
+
+export type AbilityDataKey = "Attack_State_Time" | "Speed"  | string
 
 export type ServerAbilityClass = {
 	__Cache: {},
@@ -381,7 +444,6 @@ export type ServerAbilityClass = {
 		Burst: boolean,
 	}>,
 
-	PlayAnimation: (self: ServerAbilityClass, Agent: ServerAgentClass, Track: string, Data: {Fade: number, Speed: number, Weight: number}) -> (),
 	CreateHitbox: (self: ServerAbilityClass, Agent: ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: ServerEnemyClass) -> ()) -> (),
 
 	Save: (self: ServerAbilityClass, Agent: ServerAgentClass, Key: string, Value: any) -> (),
@@ -393,7 +455,7 @@ export type ServerAbilityClass = {
 	
 	Hit: (self: ServerAbilityClass, Agent: ServerAgentClass, Enemy: ServerEnemyClass, Hit: HitEnemyData) -> (number),
 	
-	FromData: (self: ServerAbilityClass, Key: string) -> (any),
+	FromData: (self: ServerAbilityClass, Key: AbilityDataKey) -> (any),
 	SetData: (self: ServerAbilityClass, Data: {}) -> (),
 }
 
@@ -484,7 +546,7 @@ export type EnemyStatus = {
 	IsKnocked: (self: EnemyStatus) -> (boolean),
 	SwitchState: (self: EnemyStatus, State: State) -> (),
 
-	GetStat: (self: EnemyStatus) -> (number),
+	GetStat: (self: EnemyStatus, Stat: Stat) -> (number),
 	GetDamageTakenMultiplier: (self: EnemyStatus) -> (number),
 	GetResistanceMultiplier: (self: EnemyStatus) -> (number),
 	GetElementResistances: (self: EnemyStatus, Element: Element) -> (number, number),
@@ -504,6 +566,7 @@ export type HitEnemyData = {
 	Affliction: Element,
 	Attack_Type: AgentMovesetAbility,
 	Affliction_Buildup: number?,
+	DontChargeEnergy: boolean,
 
 	Knockback: {number | number | number}?,
 }

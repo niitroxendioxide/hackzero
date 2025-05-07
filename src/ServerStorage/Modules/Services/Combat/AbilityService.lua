@@ -4,15 +4,14 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Types = require(Shared.Types)
 local Network = require(Shared.Network)
-local GameEnum = require(Shared.GameEnum)
 local Enemies = require(Shared.Libraries.Enemies)
+local GameEnum = require(Shared.GameEnum)
 
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local AgentLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local MovesetLibrary = require(ServerStorage.Modules.Libraries.Movesets)
-
-local Components = ServerStorage.Modules.Components
 
 --
 local Service = {
@@ -21,14 +20,6 @@ local Service = {
 
 function Service:Init()
 	MovesetLibrary:Init()
-
-	for _, Moveset in Components.Movesets:GetChildren() do
-		local Success, Required = pcall(require, Moveset)
-
-		if Success and typeof(Required) == 'table' then
-			Service.__Movesets[Moveset.Name] = Required
-		end
-	end
 
 	Network.new("Ability", "Event")
 	Network:On('Ability', Service.ReplicateEvent)
@@ -41,7 +32,8 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 
 		local SkillId = buffer.readu8(ClientBuffer, 1)
 		local EnemyId = buffer.readu8(ClientBuffer, 2)
-		local ActiveAgent, AgentId = AgentLibrary:GetCurrentActive(Player.UserId)
+		local ActiveAgent, AgentId = AgentLibrary:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
+
 		local Moveset = Service:GetMoveset(ActiveAgent.Name)
 		local Skill = GameEnum.KeyLookup(GameEnum.Skills, SkillId)
 		local Enemy = Enemies:GetEnemy(EnemyId)
@@ -70,12 +62,14 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 	end
 end
 
-function Service:PromptAssist()
+function Service:PromptAssist(Agent: Types.ServerAgentClass)
+	--
 	
+
 end
 
 function Service:GetMoveset(Name: string)
-	return Service.__Movesets[Name] or Service:GetMoveset("Goku")
+	return MovesetLibrary:Get(Name) or Service:GetMoveset("Goku")
 end
 
 return Service

@@ -15,7 +15,7 @@ local Places = require(Shared.Places)
 
 --
 local Controller = {
-	__Abilities = {"Basic_Attack", "Dodge", "Swap_Forth", "Swap_Back", "Ultimate"},
+	__Abilities = {"Basic_Attack", "Dodge", "Swap_Forth", "Swap_Back", "Ultimate", "Special"},
 }
 
 function Controller:Init()
@@ -37,6 +37,8 @@ function Controller:Init()
 					print("Input rejected. Character is null")
 					return
 				end
+
+
 
 				--print("Pre-ability", State, Key, CharacterMoveset)
 				if State == 'Begin' then

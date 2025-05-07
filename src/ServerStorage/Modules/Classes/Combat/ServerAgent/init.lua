@@ -21,7 +21,7 @@ ServerAgentClass.__tostring = function()
 end
 
 
-function ServerAgentClass.new(Name: string, Level: number): Types.AgentClass
+function ServerAgentClass.new(Name: string, Level: number): Types.ServerAgentClass
 	local self = setmetatable({}, ServerAgentClass)
 	self.Name = Name
 
@@ -62,21 +62,31 @@ function ServerAgentClass:GetMultBonus(Name: string)
 	return self.__Status:GetMultBonus(Name)
 end
 
-function ServerAgentClass:Init(Key: number)
-	assert(typeof(Key) == 'number', 'Cannot initialize character with nil key')
-	
-	self.__User = Key
-	
+function ServerAgentClass.Init(self: Types.ServerAgentClass, Player: Player)
+	assert(typeof(Player:GetAttribute("ReplicationId")) == 'number', 'Cannot initialize character with nil key')
+
+	self.__User = Player:GetAttribute("ReplicationId") :: number
+	self.__Player_Assigned = Player
+
+	--
+	local ReplicationClock = os.clock()
+
 	self.__Main_Thread = RunService.Heartbeat:Connect(function(Delta: number)
 		self.__Status:Update(Delta)
+
+		--
+		if self.__Active and (os.clock() - ReplicationClock) > 1/3 then
+			ReplicationClock = os.clock()
+			Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self.__Status:GetEnergy())
+		end
 	end)
 
-	
 	return self.__Character:Init()
 end
 
-function ServerAgentClass:SetActive(State: boolean)
+function ServerAgentClass.SetActive(self: Types.ServerAgentClass, State: boolean)
 	self.__Active = State
+	Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self.__Status:GetEnergy())
 end
 
 function ServerAgentClass:IsMoving()
@@ -99,10 +109,10 @@ function ServerAgentClass:Look(...)
 	return self:Rotate(...)
 end
 
-function ServerAgentClass:Walk(Time: number)
+function ServerAgentClass.Walk(self: Types.ServerAgentClass, Time: number)
 	local Speed = self.__Character.States:GetSpeed(true)
 	local Direction = self:GetPivot().LookVector * Speed
-	
+
 	return self.__Character:AddLinearMovement(Direction, Time)
 end
 
@@ -141,7 +151,7 @@ end
 -- # Interacting
 function ServerAgentClass:TakeDamage(Amount: number)
 	Replicator:DamageAgent(self, Amount)
-	
+
 	return self.__Status:Damage(Amount)
 end
 
@@ -151,6 +161,10 @@ end
 
 function ServerAgentClass:GetHealth(): (number, number)
 	return self.__Status:GetHealth()
+end
+
+function ServerAgentClass:GiveEnergy(Amount: number): ()
+	return self.__Status:GiveEnergy(Amount)
 end
 
 

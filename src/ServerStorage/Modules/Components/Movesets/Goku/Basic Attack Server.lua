@@ -18,11 +18,11 @@ function Ability:Play(Caster: Types.ServerAgentClass)
 	--
 	Ability:Begin(Caster, {
 		{0, function(_: Types.Sequence)
-			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time', M1_Count) / (Ability:FromData('Speed') or 1))
+			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time', M1_Count) / Ability:FromData('Speed'))
 		end,},
 
 		{.15, function()
-			Caster:Walk(.133)
+			Caster:Walk(Ability:FromData("Walk_Time"))
 		end,},
 
 		{.17, function()
@@ -37,7 +37,7 @@ function Ability:Play(Caster: Types.ServerAgentClass)
 				})
 			end)
 		end,},
-		
+
 		{.767, function()
 			if M1_Count < 5 then return end
 

@@ -60,23 +60,23 @@ return {
 				Knockback_Time = 0.2,
 
 				Damage_Mult = {
-					[1] = 36,	
+					[1] = 36,
 					[2] = 62,
 					[3] = 83,
 					[4] = 163,
 					[5] = 98,
 					[6] = 291,
 				},
-				
+
 				Daze_Mult = {
-					[1] = 17,	
+					[1] = 17,
 					[2] = 22.5,
 					[3] = 25,
 					[4] = 32,
 					[5] = 22,
 					[6] = 27,
 				},
-				
+
 				Affliction_Buildup = {
 					[1] = 89,
 					[2] = 102,
@@ -99,18 +99,18 @@ return {
 				},
 			}
 		},
-		
-		['EX Special'] = {
+
+		['Special'] = {
 			Base = {
 				Cooldown = 1,
 				Speed = 1,
-				
+
 				Required_Energy = 60,
 
 				Attack_State_Time = 0.5,
 				Animation_Speed = 1,
 			},
-			
+
 		},
 	}
 }

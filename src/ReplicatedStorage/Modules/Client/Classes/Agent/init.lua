@@ -72,15 +72,15 @@ function AgentClass:GetEnergy()
 	return self.__Status:GetEnergy()
 end
 
-function AgentClass:GiveEnergy(Amount: number)
-	self.__Status:GiveEnergy(Amount)
+function AgentClass:SetEnergy(Amount: number)
+	self.__Status:SetEnergy(Amount)
 end
 
 function AgentClass:BlockRotation(Time: number)
 	if self.__Look_Marked_Thread then
 		task.cancel(self.__Look_Marked_Thread)
 	end
-	
+
 	self.__Look_Marked = true
 	self.__Look_Marked_Thread = task.delay(Time, function()
 		self.__Look_Marked = false
@@ -91,11 +91,11 @@ function AgentClass:Look(Vector, Instant, Bypass)
 	if not Bypass and (self:GetState() ~= 'Idle' or (self.__Character.__States:GetLastChangeTime() < .1) and self:GetState() ~= 'Dashing') then
 		return
 	end
-	
-	if self.__Look_Marked then 
-		return 
+
+	if self.__Look_Marked then
+		return
 	end
-	
+
 	return self.__Character:Look(Vector, Instant)
 end
 

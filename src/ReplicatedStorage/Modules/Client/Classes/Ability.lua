@@ -62,6 +62,8 @@ end
 function AbilityClass:PlayAnimation(Agent: Types.AgentClass, Track: string, Data: Types.AnimationDataOptions)
 	Data = Data or {}
 
+	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed') or 1)
+
 	--
 	local Type = tostring(Agent) == 'AgentClass' and 'Characters.' or 'Enemies.'
 	local TrackObject = AnimLibrary:GetAnim(Type..Track)
@@ -115,10 +117,6 @@ function AbilityClass:CreateEnemyHitbox(Agent: Types.AgentClass, Offset: Vector3
 
 		--
 		task.spawn(Event, Enemy)
-
-		--
-		--local AgentPivot = Agent:GetPivot()
-		Agent:GiveEnergy(10)
 	end
 end
 
@@ -209,15 +207,15 @@ function AbilityClass:Effect(Name: string, ...)
 	return Effects:Play(Name, ...)
 end
 
-function AbilityClass:FromData(Key: string, Sub_Key: number, Level: number?): ()
+function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?): ()
 	if Key == 'Knockback' then
 		return {self:FromData('Knockback_Direction'), self:FromData('Knockback_Strength'), self:FromData('Knockback_Time')}
 	end
 
 	local Base = self.__Ability_Data.Base
-	local Upgrade = self.__Ability_Data.Upgrades
+	local Upgrade = self.__Ability_Data.Upgrades or {}
 
-	Level = math.max((Level or 1) - 1, 0)
+	local Level = math.max((GivenLevel or 1) - 1, 0)
 	local Value = Base[Key] or 0
 	local Upgraded_Value = Upgrade[Key]
 
@@ -225,6 +223,10 @@ function AbilityClass:FromData(Key: string, Sub_Key: number, Level: number?): ()
 		local Added = Upgraded_Value ~= nil and Upgrade[Key][Sub_Key] or 0
 
 		return Value[Sub_Key] + Added * Level
+	end
+
+	if Key == "Speed" and Value == nil then
+		Value = 1
 	end
 
 	return Value

@@ -9,7 +9,7 @@ local AgentClass = require(Client.Classes.Agent)
 local GameEnum = require(Shared.GameEnum)
 
 --local BufferUtil = require(Shared.Utility.Buffer)
---local InterfaceStates = require(Client.Packages.InterfaceStates)
+local InterfaceStates = require(Client.Packages.InterfaceStates)
 local CharacterDatabase = require(Shared.Database.Characters)
 
 --
@@ -145,6 +145,12 @@ function Controller:CharacterSwitch(Buffer: buffer)
 		Current:Look(Previous:GetRotation())
 		Current:Move()
 	end
+end
+
+function Controller:UpdateEnergy(Buffer: buffer)
+	local Energy = math.round(buffer.readu16(Buffer, 1) / 600)
+
+	InterfaceStates.Energy:set(Energy)
 end
 
 return Controller
