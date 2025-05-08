@@ -47,6 +47,10 @@ function ServerEnemy.new(At: Vector3, Name: string, Level: number)
 	return self
 end
 
+function ServerEnemy:GetEnergy(): number
+	return 0
+end
+
 function ServerEnemy:Destroy()
 	self.__Movement:Destroy()
 

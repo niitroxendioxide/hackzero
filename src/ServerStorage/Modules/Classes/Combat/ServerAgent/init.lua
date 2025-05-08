@@ -38,6 +38,10 @@ function ServerAgentClass.new(Name: string, Level: number): Types.ServerAgentCla
 	return self
 end
 
+function ServerAgentClass:GetEnergy(): number
+	return self.__Status:GetEnergy()
+end
+
 function ServerAgentClass:GetId(): number
 	return self.__User
 end

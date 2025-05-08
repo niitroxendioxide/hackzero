@@ -12,7 +12,7 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Agent: Types.AgentClass)
 	--
-	
+	print("bro hotspot pls")
 end
 
 return Ability

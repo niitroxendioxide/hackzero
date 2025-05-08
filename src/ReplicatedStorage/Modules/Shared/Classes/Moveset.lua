@@ -58,8 +58,14 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Beg
 		self.__Last_Use[Agent] = {}
 	end
 
-
 	local Info = self:GetInfoForSkill(Type)
+
+	--
+	if Type == "Special" and Agent:GetEnergy() >= Info.Base.Required_Energy then
+		Type = "EX Special"
+	end
+
+	--
 	local CooldownKey = self.Name..Type..Agent.Name..Agent:GetId()
 
 	if typeof(self.__Assigned[Type]) == 'table' and self.__Assigned[Type].Play then

@@ -61,6 +61,10 @@ function EnemyClass:TakeDamage(number: number)
 	self.__Health:set(Health)
 end
 
+function EnemyClass:GetEnergy(): number
+	return 0
+end
+
 function EnemyClass:TakeDaze(number: number)
 	self.__Status:Daze(number)
 

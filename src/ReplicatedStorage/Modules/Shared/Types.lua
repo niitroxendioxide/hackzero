@@ -145,6 +145,7 @@ export type GenericClass = {
 
 	BlockRotation: (self: GenericClass, Time: number) -> (),
 	GetId: (self: GenericClass) -> (number),
+	GetEnergy: (self: GenericClass) -> (number),
 
 	AddTag: (self: GenericClass, Tag: string, Time: number) -> (),
 	RemoveTag: (self: GenericClass, Tag: string) -> (),
