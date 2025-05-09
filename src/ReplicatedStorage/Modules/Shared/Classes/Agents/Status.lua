@@ -41,6 +41,8 @@ function StatusClass:SetMaxHealth(Amount: number)
 end
 
 function StatusClass:Damage(Amount: number)
+	print(Amount)
+	print(debug.info(2, 'sl'))
 	assert(typeof(Amount) == 'number' and Amount > 0, 'Cannot take negative damage')
 
 	self.__Health = math.clamp(self.__Health - Amount, 0, self.__Max_Health)
@@ -66,7 +68,7 @@ function StatusClass:SetEnergy(EnergyValue: number)
 end
 
 function StatusClass:UseEnergy(EnergyRemoved: number)
-	self:SetEnergy(self:GetEnergy() + EnergyRemoved)
+	self:SetEnergy(self:GetEnergy() - EnergyRemoved)
 end
 
 function StatusClass:GetStat(n)

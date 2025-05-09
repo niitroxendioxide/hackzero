@@ -29,46 +29,67 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 	local Type = buffer.readu8(ClientBuffer, 0)
 
 	if Type == GameEnum.Replication.UseSkill then
-
 		local SkillId = buffer.readu8(ClientBuffer, 1)
 		local EnemyId = buffer.readu8(ClientBuffer, 2)
-		local ActiveAgent, AgentId = AgentLibrary:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
 
-		local Moveset = Service:GetMoveset(ActiveAgent.Name)
-		local Skill = GameEnum.KeyLookup(GameEnum.Skills, SkillId)
-		local Enemy = Enemies:GetEnemy(EnemyId)
-		local XZ = Vector3.new(1, 0, 1)
+		local Result = Service:PlaySkill(Player, SkillId, EnemyId)
 
-		--
-
-		--
-		local LookAt = ActiveAgent:GetPivot().LookVector
-		if Enemy then
-			LookAt = CFrame.lookAt(ActiveAgent:GetPivot().Position * XZ, Enemy:GetPivot().Position * XZ).LookVector
+		if not Result then
+			-- cancel here
+			print("Cancel the current move!")
 		end
-
-		if Skill ~= 'Dodge' then
-			ActiveAgent:Look(LookAt)
-		elseif Skill == 'Dodge' then
-			for _, Character in AgentLibrary:GetAll(Player.UserId) do
-				Character:SetKey('Sprint', true)
-				Character:SetKey('Jog', true)
-			end
-		end
-
-		Moveset:Begin(Skill, ActiveAgent)
-
-		Replicator:UseSkill(Player, SkillId, AgentId, EnemyId)
 	end
+
+	return;
 end
 
 function Service:PromptAssist(Agent: Types.ServerAgentClass)
 	--
-	
 
 end
 
-function Service:GetMoveset(Name: string)
+function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number)
+	local ActiveAgent, AgentId = AgentLibrary:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
+
+	local Moveset = Service:GetMoveset(ActiveAgent.Name)
+	local Skill = GameEnum.KeyLookup(GameEnum.Skills, SkillId)
+	local Enemy = Enemies:GetEnemy(EnemyId)
+	local XZ = Vector3.new(1, 0, 1)
+
+	--
+	local LookAt = ActiveAgent:GetPivot().LookVector
+	if Enemy then
+		LookAt = CFrame.lookAt(ActiveAgent:GetPivot().Position * XZ, Enemy:GetPivot().Position * XZ).LookVector
+	end
+
+	-- Skill behavior
+	if Skill ~= 'Dodge' then
+		ActiveAgent:Look(LookAt)
+
+		if Skill == "EX_Special" then
+			local Info = Moveset:GetInfoForSkill("Special")
+
+			if ActiveAgent:GetEnergy() < Info.Base.Required_Energy then
+				return false;
+			end
+
+			ActiveAgent:UseEnergy(Info.Base.Required_Energy)
+		end
+	elseif Skill == 'Dodge' then
+		for _, Character in AgentLibrary:GetAll(Player.UserId) do
+			Character:SetKey('Sprint', true)
+			Character:SetKey('Jog', true)
+		end
+	end
+
+	Moveset:Begin(Skill, ActiveAgent)
+
+	Replicator:UseSkill(Player, SkillId, AgentId, EnemyId)
+
+	return true;
+end
+
+function Service:GetMoveset(Name: string): Types.MovesetClass
 	return MovesetLibrary:Get(Name) or Service:GetMoveset("Goku")
 end
 

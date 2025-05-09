@@ -112,5 +112,23 @@ return {
 			},
 
 		},
+
+		['EX Special'] = {
+			Base = {
+				Speed = 1,
+				Attack_State_Time = 0.65,
+				Animation_Speed = 1,
+
+				Damage_Mult = 248,
+				Daze_Mult = 19,
+				Affliction_Buildup = 1.5,
+
+			},
+
+			Upgrades = {
+				Damage_Mult = 27,
+				Daze_Mult = 1,
+			}
+		}
 	}
 }

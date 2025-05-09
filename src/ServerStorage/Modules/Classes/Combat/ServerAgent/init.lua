@@ -54,10 +54,6 @@ function ServerAgentClass:GetTotalVelocity()
 	return self.__Character:GetTotalVelocity()
 end
 
-function ServerAgentClass:GetEnergy()
-	return self.__Status:GetEnergy()
-end
-
 function ServerAgentClass:GetStat(Name: Types.Stat): number
 	return self.__Status:GetStat(Name)
 end
@@ -171,6 +167,12 @@ function ServerAgentClass:GiveEnergy(Amount: number): ()
 	return self.__Status:GiveEnergy(Amount)
 end
 
+function ServerAgentClass:UseEnergy(Amount: number): ()
+	print("use", Amount)
+	self.__Status:UseEnergy(Amount)
+
+	Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self.__Status:GetEnergy())
+end
 
 function ServerAgentClass:AddTag(Tag: string, Time: number)
 	if self.__Tags[Tag] then

@@ -11,11 +11,11 @@ local AnimationLibrary = {}
 function AnimationLibrary:GetAnim(Directory: string)
 	local Split = string.split(Directory, '.')
 	local Object = Animations
-	
-	for i = 1, #Split -1 do
+
+	for i = 1, #Split - 1 do
 		Object = Object[Split[i]]
 	end
-	
+
 	return Object[Split[#Split]]
 end
 
