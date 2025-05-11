@@ -36,7 +36,7 @@ function CharacterData:GetStats(Character: string): Types.CharacterStats
 	return AccessedData.Stats
 end
 
-function CharacterData:GetMovesetData(Character: string): Types.CharacterStats
+function CharacterData:GetMovesetData(Character: string): Types.MovesetInfo
 	local AccessedData = CharacterData:GetCharacterData(Character)
 
 	return AccessedData.Moveset_Data

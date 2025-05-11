@@ -95,10 +95,19 @@ function Characters:GetCurrent(UserId: number): (Types.AgentClass?, number?)
 	if not Data then
 		return nil, nil;
 	end
-	
+
 	local CurrentActive = Data.Active
-	
+
 	return Data.List[CurrentActive], CurrentActive
+end
+
+function Characters:GetAgent(UserId: number, Id: number): Types.AgentClass?
+	local Data = Characters.__Player_Data[UserId]
+	if not Data then
+		return;
+	end
+
+	return Data.List[Id]
 end
 
 function Characters:HasCharacter(UserId: number, Name: string): boolean

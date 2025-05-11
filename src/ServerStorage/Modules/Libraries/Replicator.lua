@@ -225,13 +225,16 @@ function Replicator:ClearPlayerData(Player: Player)
 	Network:FireForAll("Replicate", Object)
 end
 
-function Replicator:UpdateCurrentEnergy(Player: Player, Energy: number)
-	local Object = buffer.create(3)
+function Replicator:UpdateCurrentEnergy(Player: Player, Agent: Types.ServerAgentClass)
+	local Object = buffer.create(4)
+	local Energy = Agent.__Status:GetEnergy()
+
+	local Id = Agents:GetIdForPlayer(Player:GetAttribute("ReplicationId") :: number, Agent) :: number
 
 	--
 	buffer.writeu8(Object, 0, GameEnum.Replication.UpdateEnergy)
-	--buffer.writeu8(Object, 1, Player:GetAttribute("ReplicationId") :: number)
-	buffer.writeu16(Object, 1, math.floor(Energy * 600))
+	buffer.writeu8(Object, 1, Id)
+	buffer.writeu16(Object, 2, math.floor(Energy * 600))
 
 	Network:Fire("Replicate", Player, Object)
 end

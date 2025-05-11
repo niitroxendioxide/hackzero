@@ -1,5 +1,6 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
@@ -11,6 +12,7 @@ local GameEnum = require(Shared.GameEnum)
 --local BufferUtil = require(Shared.Utility.Buffer)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
 local CharacterDatabase = require(Shared.Database.Characters)
+local Types = require(Shared.Types)
 
 --
 local Controller = {}
@@ -148,9 +150,12 @@ function Controller:CharacterSwitch(Buffer: buffer)
 end
 
 function Controller:UpdateEnergy(Buffer: buffer)
-	local Energy = math.round(buffer.readu16(Buffer, 1) / 600)
+	local Energy = math.round(buffer.readu16(Buffer, 2) / 600)
+	local AgentId = buffer.readu8(Buffer, 1)
+	local Agent = CharacterLibrary:GetAgent(Players.LocalPlayer:GetAttribute("ReplicationId"), AgentId)
 
-	InterfaceStates.Energy:set(Energy)
+	Agent:SetEnergy(Energy)
+	InterfaceStates.Energy[AgentId]:set(Energy)
 end
 
 return Controller

@@ -75,9 +75,9 @@ function ServerAgentClass.Init(self: Types.ServerAgentClass, Player: Player)
 		self.__Status:Update(Delta)
 
 		--
-		if self.__Active and (os.clock() - ReplicationClock) > 1/3 then
+		if (os.clock() - ReplicationClock) > 1/(2.5) then
 			ReplicationClock = os.clock()
-			Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self.__Status:GetEnergy())
+			Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self)
 		end
 	end)
 
@@ -86,7 +86,7 @@ end
 
 function ServerAgentClass.SetActive(self: Types.ServerAgentClass, State: boolean)
 	self.__Active = State
-	Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self.__Status:GetEnergy())
+	Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self)
 end
 
 function ServerAgentClass:IsMoving()
@@ -168,10 +168,10 @@ function ServerAgentClass:GiveEnergy(Amount: number): ()
 end
 
 function ServerAgentClass:UseEnergy(Amount: number): ()
-	print("use", Amount)
 	self.__Status:UseEnergy(Amount)
+	print("use energy:", Amount)
 
-	Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self.__Status:GetEnergy())
+	Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self)
 end
 
 function ServerAgentClass:AddTag(Tag: string, Time: number)

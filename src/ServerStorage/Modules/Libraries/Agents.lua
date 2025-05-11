@@ -73,6 +73,16 @@ function Agents:GetAll(UserId: number): {Types.AgentClass | Types.ServerAgentCla
 	return Agents.__Players[UserId]
 end
 
+function Agents:GetIdForPlayer(UserId: number, AgentParameter: Types.ServerAgentClass): (number)
+	for Id, UserAgent in Agents:GetAll(UserId) do
+		if UserAgent == AgentParameter then
+			return Id;
+		end
+	end
+
+	return 1;
+end
+
 function Agents:GetCurrentActive(UserId: number): (Types.AgentClass?, number?)
 	if not Agents.__Players[UserId]  then
 		return;

@@ -62,6 +62,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Beg
 
 	--
 	if Type == "Special" and Agent:GetEnergy() >= Info.Base.Required_Energy then
+		print("use ex special", Agent:GetEnergy())
 		Type = "EX Special"
 	end
 

@@ -19,6 +19,8 @@ local TeleportService = require(Services.Data.TeleportService);
 
 --
 local Service = {
+    __Current_Stage = "",
+    __Current_Act = "",
     __Active_Match = nil,
 }
 
@@ -56,6 +58,11 @@ function Service:End()
         return
     end
 
+    ---
+    local Handler = StageDatabase:GetAct(Service.__Current_Stage, Service.__Current_Act)
+
+
+    ---
     local List = {"B", "A", "S"}
     local EndResult = {
         Status = GameEnum.MatchResults.Victory,
@@ -71,12 +78,14 @@ function Service:Begin(Stage: string, Act: string)
     if not CouldLoadMap then
         TeleportService:ReturnToLobby(Players:GetPlayers())
 
-        return
+        returnr
     end
 
     --
     local MissionClass = MissionClass.new(Stage, Act)
 
+    Service.__Current_Stage = Stage
+    Service.__Current_Act = Act
     Service.__Active_Match = MissionClass;
     MissionClass:Begin()
 

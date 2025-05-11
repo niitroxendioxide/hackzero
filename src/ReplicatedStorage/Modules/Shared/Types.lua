@@ -188,6 +188,7 @@ export type AgentClass =  {
 
 	GiveEnergy: (self: AgentClass, Amount: number) -> (),
 	SetVisible: (self: AgentClass, State: boolean?) -> (),
+	SetEnergy: (self: AgentClass, Energy: number) -> (),
 
 	AddEffect: (self: AgentClass, Name: string, Value: number, Time: number?) -> StateEffect,
 	AddTrackToState: (self: AgentClass, State: string, Track: AnimationTrack, DisableTime: number) -> (),
@@ -374,6 +375,30 @@ export type MovesetClass = {
 	SetAbilityInformation: (self: MovesetClass, Data: {}) -> (),
 }
 
+export type Mults = "Daze_Mult" | "Damage_Mult" | "Affliction_Buildup"
+export type AbilityDataKey = "Attack_State_Time" | "Speed" | "Animation_Speed" | "Attack_State_Time" | "Required_Energy" | Mults | string
+export type AbilityInfo = {
+	Base: {
+		[AbilityDataKey | Mults | string]: number | {[number]: number},
+	},
+
+	Upgrades: {
+		[Mults | string]: number | {[number]: number}
+	}
+}
+
+export type SkillNames = "EX Special" | "Basic Attack" | "Special" | "Dodge" | "Quick Assist"
+export type MovesetInfo = {
+	["EX Special"]: AbilityInfo,
+	["Basic Attack"]: AbilityInfo,
+	["Special"]: AbilityInfo,
+	["Dodge"]: AbilityInfo,
+	["Quick Assist"]: AbilityInfo,
+	["Dodge Counter"]: AbilityInfo,
+	["Ultimate"]: AbilityInfo,
+	["Chain Attack"]: AbilityInfo,
+}
+
 export type SequenceFrames = {{number | (self: Sequence) -> ()}}
 export type Sequence = {
 	__cache: {[any]: any},
@@ -431,8 +456,6 @@ export type AbilityClass = {
 	FromData: (self: AbilityClass, Key: AbilityDataKey) -> (any),
 	SetData: (self: AbilityClass, Data: {}) -> (),
 }
-
-export type AbilityDataKey = "Attack_State_Time" | "Speed"  | string
 
 export type ServerAbilityClass = {
 	__Cache: {},

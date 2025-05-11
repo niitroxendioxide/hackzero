@@ -5,18 +5,38 @@ local Players = game:GetService('Players')
 
 local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
+local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
 local ComponentClass = require(Client.Classes.Interface)
 local Fusion = require(Client.Libraries.Fusion)
 local CharacterLibrary = require(Client.Libraries.Characters)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
+local CharacterDatabase = require(Shared.Database.Characters)
+
+-- STATICS
+local FULL_COLOR = Color3.fromRGB(51, 211, 255);
+local NOT_COLOR = Color3.fromRGB(134, 148, 152);
 
 --
 local peek = Fusion.peek
 local Component = ComponentClass.new(script.Name, 'HUD', {
 })
 
+--
+local function ReplicationId(): number
+	return Player:GetAttribute("ReplicationId") :: number
+end
+
+local function GetEnergyNeededById(Id: number): number
+	--local Agent = CharacterLibrary:GetAgent(ReplicationId(), Id) :: Types.AgentClass
+	local CharacterInfo = CharacterDatabase:GetMovesetData('Goku') -- Agent.Name
+
+	return CharacterInfo.Special.Base['Required_Energy'] :: number
+end
+
+
+--
 function Component:Link(): Instance?
 	local PlayerGui = Player.PlayerGui
 	local HUD = PlayerGui:WaitForChild("PlayerHUD", 10) :: ScreenGui
@@ -33,7 +53,11 @@ function Component:Init()
 	--
 	local Color = Scope:Value(Color3.fromRGB(104, 133, 152))
 
-	local EnergySpring = Scope:Spring(InterfaceStates.Energy, 15, .8)
+	local EnergySprings = {
+		Scope:Spring(InterfaceStates.Energy[1], 15, .8),
+		Scope:Spring(InterfaceStates.Energy[2], 15, .8),
+		Scope:Spring(InterfaceStates.Energy[3], 15, .8),
+	}
 	local HealthSpring = Scope:Spring(InterfaceStates.Health, 30, .8)
 	local ColorSpring = Scope:Spring(Color, 25, .8)
 
@@ -67,15 +91,15 @@ function Component:Init()
 	}
 
 	local function UpdateCharacters()
-		local Characters = CharacterLibrary:GetCharacters(Player:GetAttribute("ReplicationId") :: number)
+		local Characters = CharacterLibrary:GetCharacters(ReplicationId())
 		if Characters == nil then return end
-		
-		local CurrentActiveCharacter, Active = CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId") :: number)
+
+		local CurrentActiveCharacter, Active = CharacterLibrary:GetCurrent(ReplicationId())
 		if not Active then return end
-		
+
 		local Next = Active + 1 > 3 and 1 or Active + 1
 		local Prev = Active - 1 < 1 and 3 or Active - 1
-		
+
 		Icon_Positions[Active]:set(Active_Pos)
 		Icon_Positions[Next]:set(Next_Pos)
 		Icon_Positions[Prev]:set(Previous_Pos)
@@ -115,43 +139,54 @@ function Component:Init()
 	end
 
 	-- Changes
-	Scope:Observer(InterfaceStates.Energy):onChange(function() 
-		local Value = Fusion.peek(InterfaceStates.Energy)
-		
-		if Value > 60 then
-			Color:set(Color3.fromRGB(51, 211, 255))
-		else
-			Color:set(Color3.fromRGB(104, 133, 152))
-		end
-	end)
-	
 	Scope:Observer(InterfaceStates.Characters):onChange(UpdateCharacters)
-	
+
 	UpdateCharacters()
-	
+
 	--
 	table.insert(Scope, RunService.Heartbeat:Connect(function(_: number)
-		local EnergySize = math.clamp(peek(EnergySpring) / 100, 0, 1)
+		local _, CurrentId = CharacterLibrary:GetCurrent(ReplicationId())
+		local CurrentEnergySpring = EnergySprings[CurrentId :: number]
+
+		if not CurrentEnergySpring then
+			return;
+		end
+
+		local EnergySize = math.clamp(peek(CurrentEnergySpring) / 100, 0, 1)
 		local HealthSize = math.clamp(peek(HealthSpring) / peek(InterfaceStates.Max_Health), 0, 1)
-		
+
 		--
-		
-		Info.EnergyPercent.Text = math.floor(peek(InterfaceStates.Energy)).."%"
+		if peek(CurrentEnergySpring) > GetEnergyNeededById(CurrentId :: number) then
+			Color:set(FULL_COLOR)
+		else
+			Color:set(NOT_COLOR)
+		end
+
+		Info.EnergyPercent.Text = math.floor(peek(InterfaceStates.Energy[CurrentId])).."%"
 		Info.HealthCount.Text = math.floor(peek(InterfaceStates.Health)).."/"..math.floor(peek(InterfaceStates.Max_Health))
-		
+
 		local EnergyMain = Meters.Energy.Main
 		local HealthMain = Meters.Health.Main
-		
+
 		EnergyMain.ImageColor3 = peek(ColorSpring)
 		EnergyMain.UIGradient.Offset = Vector2.new(-0.8 + EnergySize, 0)
 		HealthMain.UIGradient.Offset = Vector2.new(math.min(-0.8 + HealthSize, 0.2), 0)
-		
+
 		--
-		for Index = 1, 3 do 
+		for Index = 1, 3 do
 			local Spring_Value = Icon_Springs[Index]
 			local Icon_Object = Icons[tostring(Index)]
+			local Energy_Size = peek(InterfaceStates.Energy[Index])
+			local Icon_Scale = peek(Icon_Springs[Index + 3])
 
-			Icon_Object.IconScale.Scale = peek(Icon_Springs[Index + 3])
+
+			--
+			local TransparencyMod = (Icon_Scale - 0.6) / 0.4
+
+			Icon_Object.Info.GroupTransparency = TransparencyMod
+			Icon_Object.Info.Meters.Energy.Fill.Size = UDim2.fromScale(Energy_Size / 100, 1)
+			Icon_Object.Info.Meters.Energy.Fill.BackgroundColor3 = (Energy_Size >= GetEnergyNeededById(Index)) and FULL_COLOR or NOT_COLOR
+			Icon_Object.IconScale.Scale = Icon_Scale
 			Icon_Object.Position = peek(Spring_Value)
 		end
 	end))
