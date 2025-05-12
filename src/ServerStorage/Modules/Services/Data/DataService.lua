@@ -19,15 +19,16 @@ local ProfileTemplate = require(Database.Data.ProfileTemplate)
 local CharacterDatabase = require(Database.Characters)
 
 local PlayerAgentDataClass = require(Classes.Data.PlayerAgentData)
+local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("agentdatatest", ProfileTemplate)
-
+local DataStore = ProfileStore.New("artifacttest3", ProfileTemplate)
 
 --
 local Service = {
     __Profiles = {} :: {[Player]: typeof(ProfileStore:StartSessionAsync())},
     __Agents = {},
+    __Artifacts = {},
 }
 
 local function RecursiveSearch(Data: {}, Key: string): ({}, string)
@@ -47,8 +48,10 @@ local function RecursiveSearch(Data: {}, Key: string): ({}, string)
 end
 
 function Service:Init()
-
+    Network.new('ItemData', 'Event')
     Network.new("DataFetchRequest", "Event")
+
+    -- Binding
     Network:On("DataFetchRequest", function(Player: Player, Type: string)
         local _PlayerData = Service:GetDataFor(Player)
 
@@ -56,6 +59,12 @@ function Service:Init()
             local Agents = Service:FetchAgents(Player)
 
             Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Agents, Agents)
+        end
+    end)
+
+    Network:On("ItemData", function(Player: Player, Type: number)
+        if Type == GameEnum.ItemDataEvent.GetAllArtifacts then
+            Service:UpdatePlayerArtifacts(Player)
         end
     end)
 end
@@ -69,6 +78,27 @@ function Service:FetchAgents(Player: Player)
     end
 
     return Data
+end
+
+function Service:FetchArtifacts(Player: Player)
+    local Artifacts = Service:GetArtifacts(Player)
+    local Data = {}
+
+    print(Artifacts)
+
+    for _, Artifact in Artifacts do
+        local CompressedObject = Artifact:Compress()
+
+        table.insert(Data, CompressedObject)
+    end
+
+    return Data
+end
+
+function Service:UpdatePlayerArtifacts(Player: Player): ()
+    local Artifacts = Service:FetchArtifacts(Player)
+
+    Network:Fire("ItemData", Player, GameEnum.ItemDataEvent.GetAllArtifacts, Artifacts)
 end
 
 function Service:AddPlayer(Player: Player)
@@ -101,6 +131,7 @@ function Service:AddPlayer(Player: Player)
             Service.__Profiles[Player] = RetrievedProfile
 
             Service:SetupAgents(Player)
+            Service:SetupArtifacts(Player)
         else
         -- The player has left before the profile session started
             RetrievedProfile:EndSession()
@@ -208,6 +239,15 @@ function Service:SetupAgents(Player: Player)
     end
 end
 
+function Service:SetupArtifacts(Player: Player): ()
+    local PlayerData = Service:GetDataFor(Player)
+
+    for Id, Artifact in PlayerData.Items.Artifacts do
+        local Class = PlayerArtifactDataClass.new(Artifact)
+        Service:AddArtifact(Player, Class)
+    end
+end
+
 function Service:SetAgentClass(Player: Player, AgentClass: Types.PlayerAgentDataClass): ()
     if Service.__Agents[Player] == nil then
         Service.__Agents[Player] = {}
@@ -264,6 +304,31 @@ function Service:SavePlayerAgentData(Player: Player)
     for _, Agent: Types.PlayerAgentDataClass in (Service.__Agents[Player] or {}) do
         Service:UpdateAgent(Player, Agent)
     end
+end
+
+function Service:AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass): ()
+    local PlayerData = Service:GetDataFor(Player)
+    local ArtifactData = Artifact:ToData()
+
+    if Service.__Artifacts[Player] == nil then
+        Service.__Artifacts[Player] = {}
+    end
+
+    PlayerData.Items.Artifacts[Artifact.__Id] = ArtifactData
+    Service.__Artifacts[Player][Artifact.__Id] = Artifact
+end
+
+function Service:GetArtifacts(Player: Player, Filter: ((Artifact: Types.PlayerArtifactDataClass) -> (boolean))?): {Types.PlayerArtifactDataClass}
+    local Artifacts = {}
+
+    if Filter == nil then
+        return Service.__Artifacts[Player]
+    end
+
+    warn("[DataService 301]: FILTER NOT IMPLEMENTED")
+
+    --
+    return Artifacts
 end
 
 function Service:UnlockAllAgents(Player: Player)

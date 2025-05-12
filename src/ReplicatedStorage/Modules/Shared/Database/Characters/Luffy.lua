@@ -3,7 +3,7 @@ return {
 	Nickname = 'Luffy',
 	Element = 'Physical',
 	Role = 'Stun',
-	Rarity = "Legendary",
+	Tier = "Legendary",
 	Faction = "Strawhat Pirates",
 
 	Appearance = {

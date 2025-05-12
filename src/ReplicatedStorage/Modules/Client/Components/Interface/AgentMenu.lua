@@ -14,6 +14,7 @@ local Types = require(Shared.Types)
 local Camera = require(Client.Libraries.Camera)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Cutscenes = require(Client.Libraries.Cutscenes)
+local LocalData = require(Client.Libraries.LocalData)
 local _GameEnum = require(Shared.GameEnum)
 local EffectUtil = require(Shared.Utility.Effects)
 local ComponentClass = require(Client.Classes.Interface)
@@ -33,6 +34,8 @@ local States = {
     __Current_Model = nil,
     __Current_Agent = nil,
     __Current_Tab = Scope:Value(""),
+    __Current_Selected_Item = '',
+    __Current_Selected_Item_Object = nil,
 }
 
 --
@@ -181,6 +184,87 @@ function Component:SelectAgent(AgentData: Types.ClientAgentData)
     end
 end
 
+function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local Holder = ItemsFrame.List.List :: ScrollingFrame
+
+    for _, ExistingItem in Holder:GetChildren() do
+        if not ExistingItem:IsA("Frame") then continue end
+        if ExistingItem.Id.Value == Artifact.Id then return end
+    end
+
+    local NewObject = Assets.Interface.Agents.Items.ListItemArtifact:Clone()
+    NewObject.Id.Value = Artifact.Id
+    NewObject.Used.Visible = Artifact.Equipped ~= nil
+    NewObject.Button.MouseButton1Click:Connect(function()
+        if States.__Current_Selected_Item_Object ~= NewObject and States.__Current_Selected_Item_Object ~= nil then
+            States.__Current_Selected_Item_Object.Selected.Visible = false
+            States.__Current_Selected_Item_Object.UsedSelected.Visible = false
+        elseif States.__Current_Selected_Item_Object == NewObject then
+            States.__Current_Selected_Item = ''
+            States.__Current_Selected_Item_Object = nil
+
+            NewObject.Selected.Visible = false
+            NewObject.UsedSelected.Visible = false
+
+            Component:ShowArtifactInfo(nil)
+            return
+        end
+
+        States.__Current_Selected_Item = Artifact.Id
+        States.__Current_Selected_Item_Object = NewObject
+
+        if not NewObject.Used.Visible then
+            NewObject.Selected.Visible = true
+            NewObject.UsedSelected.Visible = false
+        else
+            NewObject.Selected.Visible = false
+            NewObject.UsedSelected.Visible = true
+        end
+
+        --
+        Component:ShowArtifactInfo(Artifact)
+    end)
+
+    NewObject.Parent = Holder
+end
+
+function Component:RemoveArtifact(Id: string)
+    -- not implemented
+    warn("Not implemented yet!")
+end
+
+function Component:ShowArtifactInfo(Artifact: Types.PlayerArtifactData?)
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local DataFrame = ItemsFrame.Data
+
+    for _, SubStat in DataFrame.SubStatList:GetChildren() do
+        if SubStat:IsA("Frame") then
+            SubStat:Destroy()
+        end
+    end
+
+    if Artifact == nil then
+        DataFrame.Visible = false;
+
+        return
+    end
+
+    DataFrame.Visible = true;
+
+    DataFrame.ArtifactName.Text = Artifact.Name
+    DataFrame.Level.Text = `Level: {Artifact.Level}`
+
+    for StatName, StatValue in Artifact.Stats.Sub_Stats do
+        local NewAsset = Assets.Interface.Agents.Items.ArtifactSubStat:Clone()
+        NewAsset.SubName.Text = StatName
+        NewAsset.Value.Text = StatValue
+        NewAsset.Parent = DataFrame.SubStatList
+    end
+end
+
 function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
@@ -190,6 +274,12 @@ function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
 
     EffectUtil:Tween(ItemsFrame.Artifacts.UIScale, {.3, 'Cubic', 'Out'}, {Scale = 1})
 
+    --
+    for _, Artifact in LocalData:GetArtifacts() do
+        Component:AddArtifact(Artifact)
+    end
+
+    --
     local SlotsFrames = {}
     for i = 1, 6 do
         local Slot = ItemsFolder:FindFirstChild("Slot"..i)

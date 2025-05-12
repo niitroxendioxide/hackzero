@@ -15,6 +15,8 @@ local PartyService = require(script.Parent.Lobby.PartyService)
 local DataService = require(script.Parent.Data.DataService)
 local SummonService = require(script.Parent.Items.SummonService)
 
+local PlayerArtifactDataClass = require(script.Parent.Parent.Classes.Data.PlayerArtifactData)
+
 local Places = require(Shared.Places)
 
 local Messages = require(Modules.Packages.Messages)
@@ -91,7 +93,14 @@ function Service.PlayerAdded(Player: Player): ()
 		Service:InitializeCharacters(Player)
 	end
 
+	for i = 1, 1 do
+		local NewArtifact = PlayerArtifactDataClass.randomize('Wristband', 'Rare', 15)
+
+		DataService:AddArtifact(Player, NewArtifact)
+	end
+
 	--
+	DataService:UpdatePlayerArtifacts(Player)
 	SummonService:SyncBanner(Player)
 end
 

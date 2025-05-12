@@ -3,7 +3,7 @@ return {
 	Nickname = 'Meal saving prince',
 	Element = 'Wind',
 	Role = 'Affliction',
-	Rarity = "Mythical",
+	Tier = "Mythical",
 	Faction = "Hage Orphanage",
 
 	Appearance = {

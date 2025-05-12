@@ -3,7 +3,7 @@ return {
 	Nickname = 'Template',
 	Element = 'Energy',
 	Role = 'Support',
-	Rarity = "Legendary",
+	Tier = "Legendary",
 	Faction = "Karakura Town",
 
 	Appearance = {

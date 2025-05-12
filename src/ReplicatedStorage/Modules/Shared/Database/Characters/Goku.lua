@@ -3,7 +3,7 @@ return {
 	Nickname = 'Son Goku',
 	Element = 'Physical',
 	Role = 'Affliction',
-	Rarity = "Legendary",
+	Tier = "Legendary",
 	Faction = "Z Warriors",
 
 	Appearance = {

@@ -15,6 +15,10 @@ return {
     Agents = {},
     Achievements = {},
     Titles = {},
-    Items = {},
+    Items = {
+        Artifacts = {},
+        Progress = {},
+        Event = {},
+    },
     Warnings = {},
 }

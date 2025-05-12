@@ -3,7 +3,7 @@ return {
 	Nickname = 'The Flaw of The World',
 	Element = 'Energy',
 	Role = 'Attack',
-	Rarity = "Legendary",
+	Tier = "Legendary",
 	Faction = "Hage Orphanage",
 
 	Appearance = {

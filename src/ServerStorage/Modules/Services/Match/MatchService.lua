@@ -78,7 +78,7 @@ function Service:Begin(Stage: string, Act: string)
     if not CouldLoadMap then
         TeleportService:ReturnToLobby(Players:GetPlayers())
 
-        returnr
+        return
     end
 
     --
@@ -97,6 +97,8 @@ end
 
 function Service:CreateMap(Stage: string): boolean
     local StageInformation = StageDatabase:GetStage(Stage)
+
+    print(StageInformation, Stage)
     local Map = Assets:WaitForChild("Maps") :: Folder
     local Split = string.split(StageInformation.Map, "/")
 

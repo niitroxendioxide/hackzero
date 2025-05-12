@@ -3,7 +3,7 @@ return {
 	Nickname = 'Vegeta',
 	Element = 'Physical',
 	Role = 'Attack',
-	Rarity = "Mythical",
+	Tier = "Mythical",
 	Faction = "Z Warriors",
 
 	Appearance = {

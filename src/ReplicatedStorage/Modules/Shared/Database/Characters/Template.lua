@@ -3,7 +3,7 @@ return {
 	Nickname = 'Template',
 	Element = 'Physical',
 	Role = 'Attack',
-	Rarity = "Legendary",
+	Tier = "Legendary",
 	Faction = "Testing",
 	NotOnBanner = true,
 

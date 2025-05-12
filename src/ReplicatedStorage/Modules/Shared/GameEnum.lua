@@ -130,6 +130,47 @@ return {
 		Loss = 2,
 	},
 
+	ItemDataEvent = {
+		GetAllArtifacts = 1,
+		UpdateArtifact = 2,
+	},
+
+	SubStats = {
+		["Health%"] = 1,
+		["Health"] = 2,
+		["Attack"] = 3,
+		["Attack%"] = 4,
+		["Defense"] = 5,
+		["Defense%"] = 6,
+		["Crit_Rate"] = 7,
+		["Crit_Damage"] = 8,
+		["Penetration"] = 9,
+		["Affliction_Aptitude"] = 10,
+	},
+
+	MainStats = {
+		["Attack%"] = 1,
+		["Health%"] = 2,
+		["Defense%"] = 3,
+		["Crit_Rate"] = 4,
+		["Crit_Damage"] = 5,
+		["Pen_Ratio"] = 6,
+		["Affliction_Aptitude"] = 3,
+	},
+
+	MainStatsAllowed = {
+		Slot1 = {
+
+		},
+	},
+
+	Tiers = {
+		["Mythical"] = 1,
+		["Legendary"] = 2,
+		["Rare"] = 3,
+		["Common"] = 4,
+	},
+
 	KeyLookup = function(Table: {}, val: number)
 		for Key, Value in Table do
 			if Value == val then
@@ -144,5 +185,14 @@ return {
 		local Table = self[TableName]
 
 		return self.KeyLookup(Table, Value)
+	end,
+
+	Random = function(self: {[string]: any}, Key: "Tiers" | "SubStats" | "Boost_Effects")
+		local keys = {}
+		for key in self[Key] do
+			table.insert(keys, key)
+		end
+
+		return keys[math.random(1, #keys)]
 	end
 }

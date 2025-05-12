@@ -3,7 +3,7 @@ return {
 	Nickname = 'Piccolo',
 	Element = 'Energy',
 	Role = 'Stun',
-	Rarity = "Legendary",
+	Tier = "Legendary",
 	Faction = "Z Warriors",
 
 	Appearance = {

@@ -41,4 +41,12 @@ function Artifacts:Verify(Name: string): boolean
 	return Artifacts:GetArtifactData(Name) ~= nil
 end
 
+function Artifacts:GetIdFor(Name: string): number?
+	return table.find(Artifacts.__Ids, Name)
+end
+
+function Artifacts:GetFromId(Id: number): string
+	return Artifacts.__Ids[Id]
+end
+
 return Artifacts

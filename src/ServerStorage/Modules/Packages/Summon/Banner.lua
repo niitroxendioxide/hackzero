@@ -105,7 +105,7 @@ end
 function System:CreatePool()
     for _, Unit in AgentDatabase:GetAllCharacterNames() do
 		local Data = AgentDatabase:GetCharacterData(Unit)
-        local Rarity = Data.Rarity
+        local Rarity = Data.Tier
 
 		if Data.NotOnBanner then continue end
 

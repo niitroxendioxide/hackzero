@@ -21,5 +21,18 @@ return {
 		[3] = 3480,
 		[4] = 900,
 		[5] = 6300,
-	}
+	},
+
+	SubStatIncreases = {
+		["Health%"] = {3, 2, 1},
+		["Health"] = {112, 79, 39},
+		["Attack"] = {26, 18, 11},
+		["Attack%"] = {3, 2 ,1},
+		["Defense"] = {20, 12, 8},
+		["Defense%"] = {5, 3, 1},
+		["Crit_Rate"] = {2.4, 1.6, .8},
+		["Crit_Damage"] = {5, 3, 1},
+		["Penetration"] = {9, 6, 3},
+		["Affliction_Aptitude"] = {9, 6, 3},
+	},
 }

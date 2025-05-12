@@ -4,7 +4,7 @@ local Types = require(ReplicatedStorage.Modules.Shared.Types)
 
 --
 local LocalData = {
-    __Cache = {}
+    __Cache = {},
 }
 
 function LocalData:SetAgents(Data: {Types.ClientAgentData}): ()
@@ -15,6 +15,14 @@ end
 
 function LocalData:GetAgents(): {Types.ClientAgentData}
     return LocalData.__Cache["Agents"]
+end
+
+function LocalData:GetArtifacts()
+    return LocalData.__Cache['Artifacts']
+end
+
+function LocalData:SetArtifacts(Data: {Types.PlayerArtifactData})
+    LocalData.__Cache['Artifacts'] = table.freeze(Data)
 end
 
 return LocalData

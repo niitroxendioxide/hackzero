@@ -6,7 +6,7 @@ local _GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 -- [[ Other ]]
 
 --// B rank, A rank, S rank
-export type Rarity = 'Rare' | 'Legendary' | 'Mythical'
+export type Tier = 'Rare' | 'Legendary' | 'Mythical' | 'Common'
 
 -- [[ Character Controlling ]]
 export type Rig = Model & {
@@ -272,7 +272,7 @@ export type CharacterData = {
 	Nickname: string,
 	Element: Element,
 	Role: Role,
-	Rarity: Rarity,
+	Tier: Tier,
 	Faction: string,
 	NotOnBanner: boolean?,
 
@@ -649,10 +649,44 @@ export type Artifact_Data = {
 	}
 }
 
+
+export type PlayerArtifactData = {
+	Id: string,
+	Name: string,
+	Level: number,
+	Tier: string,
+	Slot: number,
+
+	Stats: {
+		Main_Stat: MainStat,
+		Sub_Stats: Substats,
+	},
+
+	Equipped: string?,
+}
+
+export type PlayerArtifactDataClass = {
+	__Id: string,
+	__Tier: string,
+	__Name: string,
+	__Level: number,
+	__Slot: number,
+	__Equipped: string?,
+
+	__Stats: {
+		Main_Stat: MainStat,
+		Sub_Stats: Substats,
+	},
+
+	GetMainStat: (self: PlayerArtifactDataClass) -> (string, number),
+	Compress: (self: PlayerArtifactDataClass) -> ({string | buffer}),
+	ToData: (self: PlayerArtifactDataClass) -> (PlayerArtifactData),
+}
+
 export type Weapon_Data = {
 	Name: string,
 	Role_Needed: Role,
-	Rarity: Rarity,
+	Tier: Tier,
 
 	ModelName: string,
 	Passive_Description: string,
@@ -681,27 +715,27 @@ export type Substats = {
 	[Artifact_Substat]: number,
 }
 export type Hit_Process_State = "Before" | "After"
-export type Artifact_Class = {
+export type AgentArtifactClass = {
 	Name: string,
 	Slot: number,
 	Level: number,
-	Rarity: Rarity,
 
 	--
-	Main_Stat: {Stat | number},
-	Stats: Substats,
+	Main_Stat: MainStat,
+	Sub_Stats: Substats,
 
 	-- #Privates
+	__Cache: {},
 	__Events: {},
 	__Count: number,
 
 	--
-	Extend: (self: Artifact_Class, Slot: number, Level: number, Mainstat: {Stat | number}, Substats: Substats) -> Artifact_Class,
+	Extend: (self: AgentArtifactClass, Slot: number, Level: number, MainStat: MainStat, SubStat: Substats) -> AgentArtifactClass,
 
-	GetPieceCount: (self: Artifact_Class) -> (number),
+	GetPieceCount: (self: AgentArtifactClass) -> (number),
 
-	OnEffectProcess: (self: Artifact_Class, Event: (Effect: Element, Data: Process_Event_Data) -> ()) -> (),
-	OnHitProcess: (self: Artifact_Class, State: Hit_Process_State, Event: (Data: Process_Event_Data) -> (number, number)) -> (),
+	OnEffectProcess: (self: AgentArtifactClass, Event: (Effect: Element, Data: Process_Event_Data) -> ()) -> (),
+	OnHitProcess: (self: AgentArtifactClass, State: Hit_Process_State, Event: (Data: Process_Event_Data) -> (number, number)) -> (),
 }
 
 export type AnimationDataOptions =  {Name: string?, Fade: number?, Speed: number?, Weight: number?, Priority: Enum.AnimationPriority?, Active_Time: number?}
@@ -800,7 +834,7 @@ export type PartyClass = {
 	Destroy: (self: PartyClass) -> (),
 }
 
-export type MainStat = {Stat | number}
+export type MainStat = {[Stat]: number}
 export type PlayerAgentData = {
 	Name: string,
 	Level: number,
@@ -833,7 +867,11 @@ export type PlayerProfileData = {
 	},
     Achievements: {},
     Titles: {},
-    Items: {},
+    Items: {
+		Artifacts: {},
+		Progress: {},
+		Event: {},
+	},
     Warnings: {},
 }
 
