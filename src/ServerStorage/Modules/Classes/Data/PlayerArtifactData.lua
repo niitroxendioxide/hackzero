@@ -34,11 +34,12 @@ function PlayerArtifactDataClass.randomize(Name: string, Tier: string, Level: nu
 
     --
     local Slot = GivenSlot or Generator:NextInteger(1, 6)
-    local ArtifactLevel = math.clamp(math.floor(Generator:NextNumber(0.85, 1.1)) * Level, 1, 99)
+    local ArtifactLevel = math.clamp(math.floor(Generator:NextNumber(0.75, 1.25) * Level), 1, 99)
     local SubStatAmount = (5 - GameEnum.Tiers[Tier]) - Generator:NextInteger(0, 1)
     local TotalBoosts = math.ceil((ArtifactLevel / 15) * 5)
 
     local SubStats = {}
+    local StatKeys = {}
     for idx = 1, SubStatAmount do
         local RandomStat = GameEnum:Random('SubStats')
         if SubStats[RandomStat] then
@@ -50,9 +51,16 @@ function PlayerArtifactDataClass.randomize(Name: string, Tier: string, Level: nu
         local RandomValue = math.ceil((ArtifactLevel / 20) * 2)
 
         SubStats[RandomStat] = RandomValue
+        table.insert(StatKeys, RandomStat)
     end
 
     --
+    while TotalBoosts > 0 do
+        local RandomStat = StatKeys[Generator:NextInteger(1, #StatKeys)]
+
+        TotalBoosts -= 1;
+        SubStats[RandomStat] += 1
+    end
 
     --
     return PlayerArtifactDataClass.new({

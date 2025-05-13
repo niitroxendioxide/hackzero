@@ -21,13 +21,14 @@ local ComponentClass = require(Client.Classes.Interface)
 local CharacterDatabase = require(Database.Characters)
 
 --
+export type FilterFunction = (Artifact: Frame & {Slot: NumberValue, Type: StringValue}) -> (boolean)
 local RoomLocations = World:FindFirstChild("LobbyCutscenes")
 if RoomLocations then
     RoomLocations = RoomLocations:FindFirstChild("AgentsRoom").Used
 end
 
 --
-local Component = ComponentClass.new(script.Name, 'Lobby', {KeyToBind = Enum.KeyCode.C}) :: Types.UIComponent
+local Component = ComponentClass.new(script.Name, 'Lobby', {KeyToBind = Enum.KeyCode.C}) :: Types.UIComponent & {FilterArtifacts: (self: Types.UIComponent, FilterFunction) -> ()}
 local Scope = Component:GetScope()
 
 local States = {
@@ -36,6 +37,7 @@ local States = {
     __Current_Tab = Scope:Value(""),
     __Current_Selected_Item = '',
     __Current_Selected_Item_Object = nil,
+    __Current_Slot_Picked = 0,
 }
 
 --
@@ -66,6 +68,12 @@ local function CreateAgentIcons(): ()
 
     --
     local AgentsTable = Fetcher:FetchAgents()
+    if #AgentsTable <= 0 then
+        Component:Set(false)
+
+        return
+    end
+
     local LastAgent;
 
     for _, Agent in AgentsTable do
@@ -73,7 +81,6 @@ local function CreateAgentIcons(): ()
         local AgentIcon = Assets.Interface.Agents.AgentIcon:Clone()
 
         AgentIcon.Btn.MouseButton1Click:Connect(function()
-            print("Hola hermano!")
             Component:SelectAgent(Agent)
         end)
 
@@ -195,7 +202,10 @@ function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
     end
 
     local NewObject = Assets.Interface.Agents.Items.ListItemArtifact:Clone()
+    NewObject.Name = Artifact.Id
     NewObject.Id.Value = Artifact.Id
+    NewObject.Slot.Value = Artifact.Slot
+    NewObject.Type.Value = Artifact.Name
     NewObject.Used.Visible = Artifact.Equipped ~= nil
     NewObject.Button.MouseButton1Click:Connect(function()
         if States.__Current_Selected_Item_Object ~= NewObject and States.__Current_Selected_Item_Object ~= nil then
@@ -257,9 +267,13 @@ function Component:ShowArtifactInfo(Artifact: Types.PlayerArtifactData?)
     DataFrame.ArtifactName.Text = Artifact.Name
     DataFrame.Level.Text = `Level: {Artifact.Level}`
 
+    local MainStatName = next(Artifact.Stats.Main_Stat)
+    DataFrame.MainStat.MainName.Text = string.gsub(MainStatName, '_', ' ')
+    DataFrame.MainStat.Value.Text = tostring(Artifact.Stats.Main_Stat[MainStatName])..(if MainStatName:find('%%') then '%' else '')
+
     for StatName, StatValue in Artifact.Stats.Sub_Stats do
         local NewAsset = Assets.Interface.Agents.Items.ArtifactSubStat:Clone()
-        NewAsset.SubName.Text = StatName
+        NewAsset.SubName.Text = string.gsub(StatName, '_', " ")
         NewAsset.Value.Text = StatValue
         NewAsset.Parent = DataFrame.SubStatList
     end
@@ -278,6 +292,19 @@ function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
     for _, Artifact in LocalData:GetArtifacts() do
         Component:AddArtifact(Artifact)
     end
+
+    Component:SelectArtifactSlot(0)
+
+    --
+    task.spawn(function()
+        local Angle = math.random(0, 360);
+        while ItemsFrame.Visible do
+            local Delta = task.wait()
+            Angle += Delta * 35
+
+            ItemsFrame.Artifacts.RingDecor.Img.Rotation = Angle
+        end
+    end)
 
     --
     local SlotsFrames = {}
@@ -306,16 +333,121 @@ function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
 
         SlotsFrames[i] = NewSlot
 
+        local SelectButton = NewSlot.Select :: TextButton
+        local Tween: Tween;
+
+        SelectButton.MouseButton1Click:Connect(function()
+            NewSlot.UIScale.Scale = .85
+            Tween = EffectUtil:Tween(NewSlot.UIScale, {.3, 'Back'}, {Scale = 1.1})
+
+            if States.__Current_Slot_Picked == i then
+                Component:SelectArtifactSlot(0)
+
+                return
+            end
+
+            Component:SelectArtifactSlot(i)
+        end)
+
+        SelectButton.MouseEnter:Connect(function()
+            if Tween then
+                Tween:Cancel()
+                Tween:Destroy()
+            end
+
+            Tween = EffectUtil:Tween(NewSlot.UIScale, {.25, 'Quad'}, {Scale = 1.1})
+        end)
+
+        SelectButton.MouseLeave:Connect(function()
+            if Tween then
+                Tween:Cancel()
+                Tween:Destroy()
+            end
+
+            EffectUtil:Tween(NewSlot.UIScale, {.25, 'Quad'}, {Scale = 1})
+        end)
+
         --
         NewSlot.UIScale.Scale = 0
 
         task.delay(i * 0.05, function()
             EffectUtil:Tween(NewSlot.UIScale, {.25, 'Back'}, {Scale = 1})
         end)
+
+        -- Connect functionality
     end
 
     --
     Camera:TweenTo(RoomLocations.ArtifactsTab.CFrame, {.6, 'Cubic'})
+end
+
+function Component:FilterArtifacts(Filter: FilterFunction): ()
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local ItemsList = ItemsFrame.List.List
+
+    for _, Artifact in ItemsList:GetChildren() do
+        if not Artifact:IsA('Frame') then continue end
+        Artifact.Visible = Filter(Artifact)
+    end
+
+    if typeof(States.__Current_Selected_Item_Object) ~= nil and States.__Current_Selected_Item_Object.Visible == false then
+        Component:ShowArtifactInfo(nil)
+    end
+end
+
+function Component:SelectArtifactSlot(SlotId: number?)
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local ItemsList = ItemsFrame.List
+
+    local OldSlot = ItemsFrame.Artifacts.Items:FindFirstChild('Slot'..States.__Current_Slot_Picked)
+    if OldSlot then
+        OldSlot.Outline.Visible = false
+    end
+
+    if not(typeof(SlotId) == 'number') or (SlotId < 1) or (SlotId > 6) then
+        ItemsList.Visible = false
+        States.__Current_Slot_Picked = 0
+
+        return;
+    end
+
+    local NewSlot = ItemsFrame.Artifacts.Items:FindFirstChild('Slot'..SlotId)
+    NewSlot.Outline.Visible = true
+
+    States.__Current_Slot_Picked = SlotId
+    ItemsList.Visible = true
+
+    --
+    Component:FilterArtifacts(function(ArtifactFrame)
+        return ArtifactFrame.Slot.Value == SlotId
+    end)
+end
+
+function Component:UpdateSlotInfo(SlotId: number, Artifact: Types.PlayerArtifactData): ()
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local Artifacts = ItemsFrame.Artifacts
+
+    local SlotFrame = Artifacts.Items:FindFirstChild('Slot'..SlotId)
+
+    if Artifact == nil then
+        for _, Object in SlotFrame.Item:GetChildren() do
+            Object.Visible = false
+        end
+
+        SlotFrame.Plus.Visible = true
+    else
+        for _, Object in SlotFrame.Item:GetChildren() do
+            Object.Visible = true
+        end
+
+        SlotFrame.Item.Tier.Text = Artifact.Tier
+        SlotFrame.Item.Level.Text = Artifact.Level
+
+        SlotFrame.Plus.Visible = false
+    end
 end
 
 

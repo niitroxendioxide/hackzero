@@ -22,7 +22,7 @@ local PlayerAgentDataClass = require(Classes.Data.PlayerAgentData)
 local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("artifacttest3", ProfileTemplate)
+local DataStore = ProfileStore.New("artifacttest4", ProfileTemplate)
 
 --
 local Service = {

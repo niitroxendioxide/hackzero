@@ -135,6 +135,13 @@ return {
 		UpdateArtifact = 2,
 	},
 
+	AgentEvent = {
+		UpdateArtifactSlot = 1,
+		UpdateWeapon = 2,
+		LevelAgent = 3,
+		EvolveAgent = 4,
+	},
+
 	SubStats = {
 		["Health%"] = 1,
 		["Health"] = 2,
