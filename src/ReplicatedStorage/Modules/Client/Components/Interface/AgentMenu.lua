@@ -392,6 +392,10 @@ function Component:FilterArtifacts(Filter: FilterFunction): ()
     end
 
     if typeof(States.__Current_Selected_Item_Object) ~= nil and States.__Current_Selected_Item_Object.Visible == false then
+        States.__Current_Selected_Item_Object.Selected.Visible = false
+        States.__Current_Selected_Item_Object.UsedSelected.Visible = false
+        States.__Current_Selected_Item_Object = nil
+        States.__Current_Selected_Item = ''
         Component:ShowArtifactInfo(nil)
     end
 end
