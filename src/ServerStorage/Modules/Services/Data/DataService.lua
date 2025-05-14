@@ -84,7 +84,7 @@ function Service:FetchArtifacts(Player: Player)
     local Artifacts = Service:GetArtifacts(Player)
     local Data = {}
 
-    print(Artifacts)
+    --print(Artifacts)
 
     for _, Artifact in Artifacts do
         local CompressedObject = Artifact:Compress()
@@ -243,7 +243,12 @@ function Service:SetupArtifacts(Player: Player): ()
     local PlayerData = Service:GetDataFor(Player)
 
     for Id, Artifact in PlayerData.Items.Artifacts do
-        local Class = PlayerArtifactDataClass.new(Artifact)
+        local Agent = Artifact.__Equipped
+        if Agent then
+            Agent = Service:GetAgent(Player, Agent)
+        end
+
+        local Class = PlayerArtifactDataClass.new(Artifact, Agent)
         Service:AddArtifact(Player, Class)
     end
 end
@@ -318,14 +323,28 @@ function Service:AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataC
     Service.__Artifacts[Player][Artifact.__Id] = Artifact
 end
 
-function Service:GetArtifacts(Player: Player, Filter: ((Artifact: Types.PlayerArtifactDataClass) -> (boolean))?): {Types.PlayerArtifactDataClass}
+--[[
+    Returns a list if the amount of items is >1, else it returns a singular one.
+
+    @param Player The player whose artifacts need to be accessed
+    @param Filter The filter used to get specific artifacts
+]]
+function Service:GetArtifacts<T>(Player: Player, Filter: ((Artifact: Types.PlayerArtifactDataClass) -> (boolean))?): {Types.PlayerArtifactDataClass}
     local Artifacts = {}
 
     if Filter == nil then
         return Service.__Artifacts[Player]
     end
 
-    warn("[DataService 301]: FILTER NOT IMPLEMENTED")
+    for _, Artifact in Service.__Artifacts[Player] do
+        if Filter(Artifact) then
+            table.insert(Artifacts, Artifact)
+        end
+    end
+
+    if #Artifacts == 1 then
+        return Artifacts[1]
+    end
 
     --
     return Artifacts

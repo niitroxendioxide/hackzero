@@ -142,6 +142,11 @@ return {
 		EvolveAgent = 4,
 	},
 
+	ArtifactEvent = {
+		Add = 1,
+		Remove = 2,
+	},
+
 	SubStats = {
 		["Health%"] = 1,
 		["Health"] = 2,
@@ -194,7 +199,7 @@ return {
 		return self.KeyLookup(Table, Value)
 	end,
 
-	Random = function(self: {[string]: any}, Key: "Tiers" | "SubStats" | "Boost_Effects")
+	Random = function(self: {[string]: any}, Key: "Tiers" | "SubStats" | "Boost_Effects" | 'MainStats')
 		local keys = {}
 		for key in self[Key] do
 			table.insert(keys, key)

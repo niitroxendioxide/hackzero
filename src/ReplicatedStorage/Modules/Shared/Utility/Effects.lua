@@ -49,6 +49,8 @@ function EffectUtil:CleanUp(Object: any, Time: number)
 			Object:Disconnect()
 		elseif typeOf == 'function' then
 			Object()
+		elseif typeOf == 'thread' and (coroutine.running() ~= Object) then
+			task.cancel(Object)
 		end
 	end)
 end

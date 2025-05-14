@@ -654,7 +654,7 @@ export type PlayerArtifactData = {
 	Id: string,
 	Name: string,
 	Level: number,
-	Tier: string,
+	Tier: number | string,
 	Slot: number,
 
 	Stats: {
@@ -671,7 +671,7 @@ export type PlayerArtifactDataClass = {
 	__Name: string,
 	__Level: number,
 	__Slot: number,
-	__Equipped: string?,
+	__Equipped: PlayerAgentDataClass?,
 
 	__Stats: {
 		Main_Stat: MainStat,
@@ -681,6 +681,9 @@ export type PlayerArtifactDataClass = {
 	GetMainStat: (self: PlayerArtifactDataClass) -> (string, number),
 	Compress: (self: PlayerArtifactDataClass) -> ({string | buffer}),
 	ToData: (self: PlayerArtifactDataClass) -> (PlayerArtifactData),
+
+	IsEquipped: (self: PlayerArtifactDataClass) -> (boolean),
+	EquipTo: (self: PlayerArtifactDataClass, Agent: PlayerAgentDataClass?) -> (PlayerAgentDataClass?),
 }
 
 export type Weapon_Data = {
@@ -905,9 +908,10 @@ export type PlayerAgentDataClass = {
 	Weapon: WeaponDataClass,
 
 	Artifacts: {
-		[number]: ArtifactDataClass,
+		[number]: string,
 	},
 
+	EquipArtifactToSlot: (self: PlayerAgentDataClass, SlotId: number, Artifact: PlayerArtifactDataClass?) -> (),
 	SetWeapon: (self: PlayerAgentDataClass, WeaponName: string, Level: number) -> (),
 	SetArtifacts: (self: PlayerAgentDataClass, Artifacts: {ArtifactDataClass}) -> (),
 	ToData: (self: PlayerAgentDataClass) -> (PlayerAgentData),

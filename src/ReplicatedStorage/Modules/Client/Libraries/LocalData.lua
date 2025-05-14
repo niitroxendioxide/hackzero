@@ -22,7 +22,17 @@ function LocalData:GetArtifacts()
 end
 
 function LocalData:SetArtifacts(Data: {Types.PlayerArtifactData})
-    LocalData.__Cache['Artifacts'] = table.freeze(Data)
+    LocalData.__Cache['Artifacts'] = Data
+end
+
+function LocalData:EditArtifact(Artifact: Types.PlayerArtifactData): ()
+    for key, SavedArtifact in LocalData.__Cache['Artifacts'] do
+        if SavedArtifact.Id == Artifact.Id then
+            LocalData.__Cache['Artifacts'][key] = Artifact
+
+            return
+        end
+    end
 end
 
 return LocalData

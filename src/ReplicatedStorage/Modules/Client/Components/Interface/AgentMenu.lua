@@ -13,9 +13,10 @@ local World = workspace:FindFirstChild("World")
 local Types = require(Shared.Types)
 local Camera = require(Client.Libraries.Camera)
 local Fetcher = require(Client.Libraries.Fetcher)
+local Network = require(Shared.Network)
+local GameEnum = require(Shared.GameEnum)
 local Cutscenes = require(Client.Libraries.Cutscenes)
 local LocalData = require(Client.Libraries.LocalData)
-local _GameEnum = require(Shared.GameEnum)
 local EffectUtil = require(Shared.Utility.Effects)
 local ComponentClass = require(Client.Classes.Interface)
 local CharacterDatabase = require(Database.Characters)
@@ -93,6 +94,16 @@ local function CreateAgentIcons(): ()
     Component:SelectAgent(LastAgent)
 end
 
+local function RequestChangeArtifact()
+    local SelectedArtifact = States.__Current_Selected_Item
+    local SelectedAgent = States.__Current_Agent.Name
+
+    Network:Fire('UpdateAgent', GameEnum.AgentEvent.UpdateArtifactSlot, {
+        SelectedAgent,
+        SelectedArtifact
+    })
+end
+
 --
 function Component:Link(): Instance?
 	local PlayerGui = Player.PlayerGui
@@ -160,6 +171,11 @@ function Component:Init()
             end
         end
     end)
+
+    local ItemsFrame =  MainFrame.Items
+    local DataFrame = ItemsFrame.Data
+
+    DataFrame.Equip.Button.MouseButton1Click:Connect(RequestChangeArtifact)
 end
 
 
@@ -190,6 +206,10 @@ function Component:SelectAgent(AgentData: Types.ClientAgentData)
         Component:ShowStats(AgentData)
     end
 end
+
+--
+-- [[ ARTIFACTS & SLOT ]] --
+--
 
 function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
     local MainFrame = Component:GetFrame()
@@ -391,7 +411,7 @@ function Component:FilterArtifacts(Filter: FilterFunction): ()
         Artifact.Visible = Filter(Artifact)
     end
 
-    if typeof(States.__Current_Selected_Item_Object) ~= nil and States.__Current_Selected_Item_Object.Visible == false then
+    if typeof(States.__Current_Selected_Item_Object) ~= 'nil' and States.__Current_Selected_Item_Object.Visible == false then
         States.__Current_Selected_Item_Object.Selected.Visible = false
         States.__Current_Selected_Item_Object.UsedSelected.Visible = false
         States.__Current_Selected_Item_Object = nil
@@ -429,10 +449,14 @@ function Component:SelectArtifactSlot(SlotId: number?)
     end)
 end
 
-function Component:UpdateSlotInfo(SlotId: number, Artifact: Types.PlayerArtifactData): ()
+function Component:UpdateSlotInfo(Agent: string, SlotId: number, Artifact: Types.PlayerArtifactData): ()
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
     local Artifacts = ItemsFrame.Artifacts
+
+    if (States.__Current_Agent ~= nil) and (States.__Current_Agent.Name ~= Agent) then
+        return
+    end
 
     local SlotFrame = Artifacts.Items:FindFirstChild('Slot'..SlotId)
 
@@ -447,15 +471,31 @@ function Component:UpdateSlotInfo(SlotId: number, Artifact: Types.PlayerArtifact
             Object.Visible = true
         end
 
-        SlotFrame.Item.Tier.Text = Artifact.Tier
-        SlotFrame.Item.Level.Text = Artifact.Level
+        local TierLetters = {"S", "A", "B", "C"}
+        SlotFrame.Item.Tier.Text = TierLetters[Artifact.Tier :: number]
+        SlotFrame.Item.Level.Text = `Lvl. {Artifact.Level}`
 
         SlotFrame.Plus.Visible = false
     end
 end
 
+function Component:UpdateArtifact(Artifact: Types.PlayerArtifactData): ()
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local ItemsList = ItemsFrame.List.List
+
+    print(Artifact.Id)
+
+    local ItemObj = ItemsList:FindFirstChild(Artifact.Id)
+    if ItemObj then
+        ItemObj.Used.Visible = Artifact.Equipped ~= nil
+    end
+end
 
 --
+-- [[ AGENT STATS ]] --
+--
+
 function Component:ShowStats(AgentData: Types.ClientAgentData)
     --
     local Frame = self:GetFrame()

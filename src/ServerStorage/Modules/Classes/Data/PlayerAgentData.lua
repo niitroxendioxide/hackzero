@@ -43,27 +43,40 @@ function PlayerAgentDataClass.SetWeapon(self: Types.PlayerAgentDataClass, Name: 
     }
 end
 
-function PlayerAgentDataClass.SetArtifacts(self: Types.PlayerAgentDataClass, Artifacts: {Types.ArtifactDataClass}): ()
-    for key, Artifact in Artifacts do
-        if Artifact.Slot > 6 or Artifact.Slot < 1 then
-            warn("Invalid artifact set given. Artifact:", key, "slot is invalid {", Artifact.Slot, "}")
+function PlayerAgentDataClass.SetArtifacts(self: Types.PlayerAgentDataClass, Artifacts: {string}): ()
+    local Saved = {}
+    for k, Artifact in Artifacts do
+        local Slot = tonumber(k)
+        if Slot > 6 or Slot < 1 then
+            warn("Invalid artifact set given. Artifact:", Artifact, "slot is invalid {", Slot, "}")
             return
         end
 
-        if not ArtifactsDatabase:Verify(Artifact.Name) then
-            warn("Invalid artifact name")
-
-            return
-        end
+        Saved[k] = Artifact
     end
 
-    self.Artifacts = Artifacts;
+    self.Artifacts = Saved;
+end
+
+function PlayerAgentDataClass.EquipArtifactToSlot(self: Types.PlayerAgentDataClass, SlotId: number, Artifact: Types.PlayerArtifactDataClass?): ()
+    if Artifact then
+        self.Artifacts[SlotId] = Artifact.__Id
+    else
+        self.Artifacts[SlotId] = nil
+    end
 end
 
 function PlayerAgentDataClass.ToData(self: Types.PlayerAgentDataClass): Types.PlayerAgentData
     return table.freeze({
         Weapon = self.Weapon,
-        Artifacts = self.Artifacts,
+        Artifacts = {
+            [1] = self.Artifacts[1],
+            [2] = self.Artifacts[2],
+            [3] = self.Artifacts[3],
+            [4] = self.Artifacts[4],
+            [5] = self.Artifacts[5],
+            [6] = self.Artifacts[6],
+        },
 
         Name = self.Name,
         Level = self.Level,

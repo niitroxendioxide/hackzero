@@ -93,7 +93,7 @@ function Service.PlayerAdded(Player: Player): ()
 		Service:InitializeCharacters(Player)
 	end
 
-	for i = 1, 5 do
+	for i = 1, 1 do
 		local NewArtifact = PlayerArtifactDataClass.randomize('Wristband', 'Rare', math.random(15, 35))
 
 		DataService:AddArtifact(Player, NewArtifact)

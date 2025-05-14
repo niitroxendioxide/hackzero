@@ -15,10 +15,13 @@ local CharacterDatabase = require(Database.Characters)
 local PlayerArtifactDataClass = {}
 PlayerArtifactDataClass.__index = PlayerArtifactDataClass;
 
-function PlayerArtifactDataClass.new(ArtifactData: Types.PlayerArtifactData): ()
+function PlayerArtifactDataClass.new(ArtifactData: Types.PlayerArtifactData, AgentEquipped: Types.PlayerAgentDataClass?): ()
     local self = setmetatable({}, PlayerArtifactDataClass)
 
-    self.__Equipped_Data = ArtifactData.Equipped
+    -- Requires another parameter
+    self.__Equipped = AgentEquipped
+
+    --
     self.__Id = ArtifactData.Id
     self.__Name = ArtifactData.Name
     self.__Level = ArtifactData.Level
@@ -63,12 +66,15 @@ function PlayerArtifactDataClass.randomize(Name: string, Tier: string, Level: nu
     end
 
     --
+    local MainStat = GameEnum:Random('MainStats')
+
+    --
     return PlayerArtifactDataClass.new({
         Id = HttpService:GenerateGUID(false),
         Name = Name,
         Slot = Slot,
         Stats = {
-            Main_Stat = {["Attack%"] = 30} :: Types.MainStat,
+            Main_Stat = {[MainStat] = 30} :: Types.MainStat,
             Sub_Stats = SubStats :: Types.Substats,
         },
         Level = ArtifactLevel,
@@ -89,7 +95,7 @@ function PlayerArtifactDataClass.Compress(self: Types.PlayerArtifactDataClass): 
     buffer.writeu8(BufferObj, 1, self.__Level)
     buffer.writeu8(BufferObj, 2, self.__Slot)
     buffer.writeu8(BufferObj, 3, GameEnum.Tiers[self.__Tier])
-    buffer.writeu8(BufferObj, 4, CharacterDatabase:GetIdForCharacter(self.__Equipped :: string) or 0)
+    buffer.writeu8(BufferObj, 4, self.__Equipped and CharacterDatabase:GetIdForCharacter(self.__Equipped.Name :: string) or 0)
 
     local MainStatName, MainStatValue = self:GetMainStat()
     buffer.writeu8(BufferObj, 5, GameEnum.MainStats[MainStatName])
@@ -108,6 +114,28 @@ function PlayerArtifactDataClass.Compress(self: Types.PlayerArtifactDataClass): 
     return {self.__Id, BufferObj}
 end
 
+function PlayerArtifactDataClass.IsEquipped(self: Types.PlayerArtifactDataClass): boolean
+    return self.__Equipped ~= nil
+end
+
+function PlayerArtifactDataClass.EquipTo(self: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
+    local Unequipped = self.__Equipped
+    if self.__Equipped then
+        self.__Equipped:EquipArtifactToSlot(self.__Slot, nil)
+
+        if self.__Equipped == Agent then
+            self.__Equipped = nil
+            return self.__Equipped
+        end
+    end
+
+    Agent:EquipArtifactToSlot(self.__Slot, self)
+
+    self.__Equipped = Agent
+
+    return Unequipped;
+end
+
 function PlayerArtifactDataClass.ToData(self: Types.PlayerArtifactDataClass): Types.PlayerArtifactData
     return {
         Id = self.__Id,
@@ -116,7 +144,7 @@ function PlayerArtifactDataClass.ToData(self: Types.PlayerArtifactDataClass): Ty
         Tier = self.__Tier,
         Slot = self.__Slot,
         Stats = self.__Stats,
-        Equipped = self.__Equipped,
+        Equipped = self.__Equipped ~= nil and self.__Equipped.Name or nil,
     }
 end
 
