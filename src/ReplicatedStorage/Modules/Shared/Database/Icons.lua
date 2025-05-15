@@ -5,8 +5,6 @@ local White = Color3.new(1, 1, 1)
 local RGB = Color3.fromRGB
 
 return {
-	
-	
 	Elements = {
 		Ice = PREFIX .. 108516110153642,
 		Fire = PREFIX .. 116710794714652,

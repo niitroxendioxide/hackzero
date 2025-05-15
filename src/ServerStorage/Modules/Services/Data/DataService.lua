@@ -22,7 +22,7 @@ local PlayerAgentDataClass = require(Classes.Data.PlayerAgentData)
 local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("artifacttest4", ProfileTemplate)
+local DataStore = ProfileStore.New("AgentArtifacts2", ProfileTemplate)
 
 --
 local Service = {
@@ -82,6 +82,7 @@ end
 
 function Service:FetchArtifacts(Player: Player)
     local Artifacts = Service:GetArtifacts(Player)
+    if not Artifacts then return end
     local Data = {}
 
     --print(Artifacts)
@@ -97,6 +98,7 @@ end
 
 function Service:UpdatePlayerArtifacts(Player: Player): ()
     local Artifacts = Service:FetchArtifacts(Player)
+    if not Artifacts then return end
 
     Network:Fire("ItemData", Player, GameEnum.ItemDataEvent.GetAllArtifacts, Artifacts)
 end
@@ -141,7 +143,15 @@ function Service:AddPlayer(Player: Player)
     end
 end
 
-function Service:RemovePlayer(Player: Player)
+function Service:RemovePlayer(Player: Player): ()
+
+    -- Save the latest info about the agents
+    local Data = Service:GetDataFor(Player)
+    for Name in Data.Agents do
+        Service:UpdateAgent(Player, Service:GetAgent(Player, Name))
+    end
+
+    --
     local SavedProfile = Service.__Profiles[Player]
     if SavedProfile ~= nil then
         SavedProfile:EndSession()
@@ -203,8 +213,6 @@ function Service:AddAgent(Player: Player, Agent: Types.PlayerAgentDataClass)
 
     PlayerData.Agents[Agent.Name] = Agent:ToData()
     Service:SetAgentClass(Player, Agent)
-
-    print(PlayerData.Agents)
 
     return
 end
@@ -329,7 +337,7 @@ end
     @param Player The player whose artifacts need to be accessed
     @param Filter The filter used to get specific artifacts
 ]]
-function Service:GetArtifacts<T>(Player: Player, Filter: ((Artifact: Types.PlayerArtifactDataClass) -> (boolean))?): {Types.PlayerArtifactDataClass}
+function Service:GetArtifacts<T>(Player: Player, Filter: ((Artifact: Types.PlayerArtifactDataClass) -> (boolean))?, First: boolean?): {Types.PlayerArtifactDataClass}
     local Artifacts = {}
 
     if Filter == nil then
@@ -337,6 +345,10 @@ function Service:GetArtifacts<T>(Player: Player, Filter: ((Artifact: Types.Playe
     end
 
     for _, Artifact in Service.__Artifacts[Player] do
+        if (#Artifacts == 1 and First) then
+            break
+        end
+
         if Filter(Artifact) then
             table.insert(Artifacts, Artifact)
         end

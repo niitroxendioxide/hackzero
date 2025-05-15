@@ -119,21 +119,29 @@ function PlayerArtifactDataClass.IsEquipped(self: Types.PlayerArtifactDataClass)
 end
 
 function PlayerArtifactDataClass.EquipTo(self: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
+    if Agent == nil then
+        self.__Equipped = nil
+
+        return;
+    end
+
+    --
     local Unequipped = self.__Equipped
     if self.__Equipped then
         self.__Equipped:EquipArtifactToSlot(self.__Slot, nil)
 
         if self.__Equipped == Agent then
             self.__Equipped = nil
-            return self.__Equipped
+
+            return Agent
         end
     end
 
-    Agent:EquipArtifactToSlot(self.__Slot, self)
+    local PreviousOne = Agent:EquipArtifactToSlot(self.__Slot, self)
 
     self.__Equipped = Agent
 
-    return Unequipped;
+    return Unequipped, PreviousOne;
 end
 
 function PlayerArtifactDataClass.ToData(self: Types.PlayerArtifactDataClass): Types.PlayerArtifactData

@@ -75,17 +75,25 @@ function Controller:UpdateArtifactState(Payload: {number | {}})
     local Type = Payload[1]
     local Artifact = BufferTableToArtifact(Payload[2] :: {})
     local Agent = Payload[3]
+    local AgentArtifacts = Payload[4]
 
     LocalData:EditArtifact(Artifact)
     UI:UpdateArtifact(Artifact)
 
+    if Type == GameEnum.ArtifactEvent.Update then
+        return
+    end
+
+    LocalData:EditAgentArtifacts(Agent, AgentArtifacts)
+
+    --
     if Type == GameEnum.ArtifactEvent.Remove then
         UI:UpdateSlotInfo(Agent, Artifact.Slot, nil)
 
         return
     end
 
-    UI:UpdateSlotInfo(Agent, Artifact.Slot, Artifact)
+    UI:UpdateSlotInfo(Agent, Artifact.Slot, Artifact.Id)
 end
 
 function Controller:ConvertArtifacts(Payload: {})

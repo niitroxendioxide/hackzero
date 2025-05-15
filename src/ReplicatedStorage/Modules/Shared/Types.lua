@@ -683,7 +683,7 @@ export type PlayerArtifactDataClass = {
 	ToData: (self: PlayerArtifactDataClass) -> (PlayerArtifactData),
 
 	IsEquipped: (self: PlayerArtifactDataClass) -> (boolean),
-	EquipTo: (self: PlayerArtifactDataClass, Agent: PlayerAgentDataClass?) -> (PlayerAgentDataClass?),
+	EquipTo: (self: PlayerArtifactDataClass, Agent: PlayerAgentDataClass?) -> (PlayerAgentDataClass?, string?),
 }
 
 export type Weapon_Data = {
@@ -911,7 +911,7 @@ export type PlayerAgentDataClass = {
 		[number]: string,
 	},
 
-	EquipArtifactToSlot: (self: PlayerAgentDataClass, SlotId: number, Artifact: PlayerArtifactDataClass?) -> (),
+	EquipArtifactToSlot: (self: PlayerAgentDataClass, SlotId: number, Artifact: PlayerArtifactDataClass?) -> (string?),
 	SetWeapon: (self: PlayerAgentDataClass, WeaponName: string, Level: number) -> (),
 	SetArtifacts: (self: PlayerAgentDataClass, Artifacts: {ArtifactDataClass}) -> (),
 	ToData: (self: PlayerAgentDataClass) -> (PlayerAgentData),

@@ -67,7 +67,8 @@ local function CreateAgentIcons(): ()
         end
     end
 
-    --
+    -- This saves a local copy of the agents on client which will later be used by others, this isn't the only script that
+    -- calls fetcher, but this makes sure it exists
     local AgentsTable = Fetcher:FetchAgents()
     if #AgentsTable <= 0 then
         Component:Set(false)
@@ -82,7 +83,9 @@ local function CreateAgentIcons(): ()
         local AgentIcon = Assets.Interface.Agents.AgentIcon:Clone()
 
         AgentIcon.Btn.MouseButton1Click:Connect(function()
-            Component:SelectAgent(Agent)
+            local ClientData = LocalData:GetAgent(AgentName)
+
+            Component:SelectAgent(ClientData)
         end)
 
         AgentIcon.AgentName.Text = AgentName
@@ -202,6 +205,13 @@ function Component:SelectAgent(AgentData: Types.ClientAgentData)
 
     if CurrentTab == "Items" then
         Component:ShowArtifacts(AgentData)
+
+        --
+        for i = 1, 6 do
+            local ArtifactData = AgentData.Artifacts[i]
+
+            Component:UpdateSlotInfo(States.__Current_Agent.Name, i, ArtifactData)
+        end
     elseif CurrentTab == "Stats" then
         Component:ShowStats(AgentData)
     end
@@ -210,6 +220,38 @@ end
 --
 -- [[ ARTIFACTS & SLOT ]] --
 --
+
+local function SelectArtifact(NewObject: Frame & {Selected: Frame, UsedSelected: Frame, Used: Frame}, Artifact)
+    if States.__Current_Selected_Item_Object ~= NewObject and States.__Current_Selected_Item_Object ~= nil then
+        States.__Current_Selected_Item_Object.Selected.Visible = false
+        States.__Current_Selected_Item_Object.UsedSelected.Visible = false
+    elseif States.__Current_Selected_Item_Object == NewObject then
+        States.__Current_Selected_Item = ''
+        States.__Current_Selected_Item_Object = nil
+
+        if NewObject then
+            NewObject.Selected.Visible = false
+            NewObject.UsedSelected.Visible = false
+        end
+
+        Component:ShowArtifactInfo(nil)
+        return
+    end
+
+    States.__Current_Selected_Item = Artifact.Id
+    States.__Current_Selected_Item_Object = NewObject
+
+    if not NewObject.Used.Visible then
+        NewObject.Selected.Visible = true
+        NewObject.UsedSelected.Visible = false
+    else
+        NewObject.Selected.Visible = false
+        NewObject.UsedSelected.Visible = true
+    end
+
+    --
+    Component:ShowArtifactInfo(Artifact)
+end
 
 function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
     local MainFrame = Component:GetFrame()
@@ -228,33 +270,7 @@ function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
     NewObject.Type.Value = Artifact.Name
     NewObject.Used.Visible = Artifact.Equipped ~= nil
     NewObject.Button.MouseButton1Click:Connect(function()
-        if States.__Current_Selected_Item_Object ~= NewObject and States.__Current_Selected_Item_Object ~= nil then
-            States.__Current_Selected_Item_Object.Selected.Visible = false
-            States.__Current_Selected_Item_Object.UsedSelected.Visible = false
-        elseif States.__Current_Selected_Item_Object == NewObject then
-            States.__Current_Selected_Item = ''
-            States.__Current_Selected_Item_Object = nil
-
-            NewObject.Selected.Visible = false
-            NewObject.UsedSelected.Visible = false
-
-            Component:ShowArtifactInfo(nil)
-            return
-        end
-
-        States.__Current_Selected_Item = Artifact.Id
-        States.__Current_Selected_Item_Object = NewObject
-
-        if not NewObject.Used.Visible then
-            NewObject.Selected.Visible = true
-            NewObject.UsedSelected.Visible = false
-        else
-            NewObject.Selected.Visible = false
-            NewObject.UsedSelected.Visible = true
-        end
-
-        --
-        Component:ShowArtifactInfo(Artifact)
+        SelectArtifact(NewObject, Artifact)
     end)
 
     NewObject.Parent = Holder
@@ -341,7 +357,7 @@ function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
             continue
         end
 
-        local Angle = math.pi / 3 * i + (math.pi/6)
+        local Angle = -math.pi / 3 * i - (math.pi/3)
         local Cos = math.cos(Angle)
         local Sin = math.sin(Angle)
 
@@ -349,6 +365,7 @@ function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
         NewSlot.Item.Level.Text = "Lvl. "..math.random(1, 99);
         NewSlot.Name = "Slot"..i
         NewSlot.Position = UDim2.fromScale(Cos * .5 + .5, Sin * 0.5 + .5)
+        NewSlot.SlotNum.Text = tostring(i)
         NewSlot.Parent = ItemsFolder
 
         SlotsFrames[i] = NewSlot
@@ -432,7 +449,10 @@ function Component:SelectArtifactSlot(SlotId: number?)
 
     if not(typeof(SlotId) == 'number') or (SlotId < 1) or (SlotId > 6) then
         ItemsList.Visible = false
+        ItemsFrame.Data.Visible = false
         States.__Current_Slot_Picked = 0
+
+        SelectArtifact(States.__Current_Selected_Item_Object, nil)
 
         return;
     end
@@ -449,24 +469,27 @@ function Component:SelectArtifactSlot(SlotId: number?)
     end)
 end
 
-function Component:UpdateSlotInfo(Agent: string, SlotId: number, Artifact: Types.PlayerArtifactData): ()
+function Component:UpdateSlotInfo(Agent: string, SlotId: number, ArtifactId: string?): ()
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
     local Artifacts = ItemsFrame.Artifacts
 
-    if (States.__Current_Agent ~= nil) and (States.__Current_Agent.Name ~= Agent) then
+    if (States.__Current_Agent == nil) or (States.__Current_Agent.Name ~= Agent) then
+        print(States.__Current_Agent, Agent)
         return
     end
 
     local SlotFrame = Artifacts.Items:FindFirstChild('Slot'..SlotId)
 
-    if Artifact == nil then
+    if ArtifactId == nil then
         for _, Object in SlotFrame.Item:GetChildren() do
             Object.Visible = false
         end
 
-        SlotFrame.Plus.Visible = true
+        SlotFrame.SlotNum.Visible = true
     else
+        local Artifact = LocalData:GetArtifactById(ArtifactId)
+
         for _, Object in SlotFrame.Item:GetChildren() do
             Object.Visible = true
         end
@@ -475,7 +498,7 @@ function Component:UpdateSlotInfo(Agent: string, SlotId: number, Artifact: Types
         SlotFrame.Item.Tier.Text = TierLetters[Artifact.Tier :: number]
         SlotFrame.Item.Level.Text = `Lvl. {Artifact.Level}`
 
-        SlotFrame.Plus.Visible = false
+        SlotFrame.SlotNum.Visible = false
     end
 end
 
@@ -484,11 +507,16 @@ function Component:UpdateArtifact(Artifact: Types.PlayerArtifactData): ()
     local ItemsFrame =  MainFrame.Items
     local ItemsList = ItemsFrame.List.List
 
-    print(Artifact.Id)
+    --print(Artifact.Id)
 
     local ItemObj = ItemsList:FindFirstChild(Artifact.Id)
     if ItemObj then
         ItemObj.Used.Visible = Artifact.Equipped ~= nil
+
+        if ItemObj.Selected.Visible and ItemObj.Used.Visible then
+            ItemObj.Selected.Visible = false
+            ItemObj.UsedSelected.Visible = true
+        end
     end
 end
 

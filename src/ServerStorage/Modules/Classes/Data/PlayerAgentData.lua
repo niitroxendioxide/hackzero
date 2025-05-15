@@ -52,7 +52,7 @@ function PlayerAgentDataClass.SetArtifacts(self: Types.PlayerAgentDataClass, Art
             return
         end
 
-        Saved[k] = Artifact
+        Saved[Slot] = Artifact
     end
 
     self.Artifacts = Saved;
@@ -60,9 +60,15 @@ end
 
 function PlayerAgentDataClass.EquipArtifactToSlot(self: Types.PlayerAgentDataClass, SlotId: number, Artifact: Types.PlayerArtifactDataClass?): ()
     if Artifact then
+        local Previous = self.Artifacts[SlotId]
         self.Artifacts[SlotId] = Artifact.__Id
+
+        return Previous;
     else
+        local Previous = self.Artifacts[SlotId]
         self.Artifacts[SlotId] = nil
+
+        return Previous
     end
 end
 

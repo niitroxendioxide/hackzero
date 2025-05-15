@@ -11,6 +11,25 @@ local Types = require(Shared.Types)
 
 local DataService = require(Services.Data.DataService)
 
+--
+local function AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
+    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
+        GameEnum.ArtifactEvent.Add, Artifact:Compress(), Agent.Name, Agent.Artifacts
+    })
+end
+
+local function RemoveArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
+    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
+        GameEnum.ArtifactEvent.Remove, Artifact:Compress(), Agent.Name, Agent.Artifacts
+    })
+end
+
+local function UpdateArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass): ()
+    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
+        GameEnum.ArtifactEvent.Update, Artifact:Compress(),
+    })
+end
+
 --[[
     Handles setting up the builds & using the data from the player artifacts & more
 ]]
@@ -22,8 +41,6 @@ function Service:Init()
 end
 
 function Service.__HandleEvent(Player: Player, Type: number, Request: {})
-    print(Type, Request)
-
     if Type == GameEnum.AgentEvent.UpdateArtifactSlot then
         Service:SetAgentArtifactSlot(Player, Request[1], Request[2])
     end
@@ -32,30 +49,30 @@ end
 function Service:SetAgentArtifactSlot(Player: Player, AgentName: string, ArtifactId: string)
     local Artifact = DataService:GetArtifacts(Player, function(Artifact)
         return Artifact.__Id == ArtifactId
-    end) :: Types.PlayerArtifactDataClass
+    end, true) :: Types.PlayerArtifactDataClass
 
     local Agent = DataService:GetAgent(Player, AgentName)
 
-    local UnequippedAgent, ReplacedSlot = Artifact:EquipTo(Agent)
-    warn("ADD REPLACED SLOT FUNCTIONALITY !! :(")
-    print(Artifact.__Id)
+    local UnequippedAgent, ReplacedSlotId = Artifact:EquipTo(Agent)
 
-    --
-    local Compressed = Artifact:Compress()
-    if UnequippedAgent ~= Agent then
-        Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
-            GameEnum.ArtifactEvent.Add, Compressed, Agent.Name
-        })
+    if UnequippedAgent == Agent then
+        RemoveArtifact(Player, Artifact, Agent)
+    else
+        AddArtifact(Player, Artifact, Agent)
+
+        if UnequippedAgent then
+            RemoveArtifact(Player, Artifact, UnequippedAgent)
+        end
     end
 
-    if UnequippedAgent then
-        Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
-            GameEnum.ArtifactEvent.Remove, Compressed, UnequippedAgent.Name,
-        })
-    end
+    if ReplacedSlotId then
+        local OldArtifact = DataService:GetArtifacts(Player, function(QueryArtifact)
+            return QueryArtifact.__Id == ReplacedSlotId
+        end, true) :: Types.PlayerArtifactDataClass
 
-    if ReplacedSlot then
-        warn("YOU MUST SHOW THE REPLACED SLOT ")
+        OldArtifact:EquipTo(nil)
+
+        UpdateArtifact(Player, OldArtifact)
     end
 end
 
