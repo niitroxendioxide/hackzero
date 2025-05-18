@@ -35,10 +35,10 @@ export type AppearanceController = {
 	__Model: Rig,
 	__TransparencyValues: {[BasePart]: number},
 	__Trove: {},
-	
+
 	SetVisible: (self: AppearanceController, State: boolean) -> (),
 	JoinTo: (self: AppearanceController, BasePart: BasePart) -> (),
-	
+
 	Destroy: (self: AppearanceController) -> (),
 }
 
@@ -47,7 +47,7 @@ export type AnimatorController = {
 	__Tracks: {[string]: AnimationTrack},
 	__Directory: string,
 	__IsMoving: boolean,
-	
+
 	Init: (self: AnimatorController) -> (),
 	Play: (self: AnimatorController, Track: string) -> (),
 	GetTrack: (self: AnimatorController, Track: string) -> AnimationTrack,
@@ -64,19 +64,19 @@ export type PhysicsController = {
 	__Velocity: Vector3,
 	__MovementVelocity: Vector3,
 	__Moving: boolean,
-	
+
 	__Collider: BasePart,
-	
-	
+
+
 	Run: (self: PhysicsController) -> (),
 	Pause: (self: PhysicsController) -> (),
-	
+
 	CreateCollider: (self: PhysicsController) -> (),
 	GetCollider: (self: PhysicsController) -> BasePart,
-	
+
 	PivotTo: (self: PhysicsController, PivotCFrame: CFrame) -> (),
 	GetPivot: (self: PhysicsController) -> CFrame,
-	
+
 	Rotate: (self: PhysicsController, Direction: Vector3) -> (),
 	SetMovementVelocity: (self: PhysicsController, Velocity: Vector3) -> (),
 	StopMovement: (self: PhysicsController) -> (),
@@ -86,30 +86,30 @@ export type PhysicsController = {
 
 export type CharacterClass = {
 	Name: string,
-	
+
 	__Controller: PhysicsController,
 	__Appearance: AppearanceController,
 	__Animator: AnimatorController,
 	__States: StatesClass,
-	
+
 	Init: (self: CharacterClass) -> (),
 	Move: (self: CharacterClass) -> (),
 	Stop: (self: CharacterClass) -> (),
 	Look: (self: CharacterClass) -> (),
 	Knock: (self: CharacterClass) -> (),
-	
+
 	GetPivot: (self: CharacterClass) -> CFrame,
 	GetModel: (self: CharacterClass) -> Rig,
 	PivotTo: (self: CharacterClass) -> CFrame,
 	IsMoving: (self: CharacterClass) -> boolean,
 	GetMovementSpeed: (self: CharacterClass) -> number,
-	
+
 	SetKey: (self: CharacterClass, Key: string, State: boolean) -> (),
 	GetKey: (self: CharacterClass, Key: string) -> boolean,
-	
+
 	GetState: (self: CharacterClass) -> State,
 	SetVisible: (self: CharacterClass, State: boolean?) -> (),
-	
+
 	AddEffect: (self: StatesClass, Name: string, Value: number, Time: number?) -> StateEffect,
 	GetEffect: (self: StatesClass, Name: string) -> StateEffect,
 }
@@ -117,7 +117,7 @@ export type CharacterClass = {
 export type StateEffect = {
 	Name: string,
 	Value: number,
-	
+
 	Time: number,
 	Started: number,
 }
@@ -234,7 +234,7 @@ export type AgentStatusClass = {
 	GetEffect: (self: AgentStatusClass, AgentStatusEffect) -> (),
 
 	GetArtifactBonus: (self: AgentStatusClass, Type: string) -> (number),
-	GetWeaponBonus: (self: AgentStatusClass, Type: string) -> (),
+	GetDriveBonus: (self: AgentStatusClass, Type: string) -> (),
 	GetMultBonus: (self: AgentStatusClass, Name: string) -> (),
 }
 
@@ -261,9 +261,9 @@ export type Element = 'Physical' | 'Energy' | 'Fire' | 'Ice' | 'Electric' | 'Win
 export type CharacterStats = {[Stat]: number, Jog_Speed: number, Sprint_Speed: number, Walk_Speed: number}
 
 export type EnemyStats = {
-	[Stat]: number, 
-	Weakness: {[number]: Element}, 
-	Strength: {[number]: Element}, 
+	[Stat]: number,
+	Weakness: {[number]: Element},
+	Strength: {[number]: Element},
 	Movement_Speed: number
 }
 
@@ -291,13 +291,13 @@ export type CharacterAppearanceData = {
 export type ServerCharacterClass = {
 	Name: string,
 	States: StatesClass,
-	
+
 	Init: (self: ServerCharacterClass) -> (),
-	
+
 	Stop: (self: ServerCharacterClass) -> (),
 	Move: (self: ServerCharacterClass) -> (),
 	Rotate: (self: ServerCharacterClass) -> (),
-	
+
 	GetPivot: (self: ServerCharacterClass) -> CFrame,
 	PivotTo: (self: ServerCharacterClass, Pivot: CFrame) -> (),
 
@@ -364,13 +364,13 @@ export type AgentMovesetAbility = "Basic Attack" | "Special Attack" | "Chain Att
 
 export type MovesetClass = {
 	__Assigned: {[AgentMovesetAbility]: AbilityClass & ServerAbilityClass},
-	
+
 	--
 	Assign: (self: MovesetClass, Key: string, Ability: AbilityClass) -> (),
 	Verify: (self: MovesetClass, Agent: AgentClass, Type: string) -> boolean,
-	
+
 	Begin: (self: MovesetClass, Key: AgentMovesetAbility, Agent: AgentClass) -> (),
-	
+
 	GetInfoForSkill: (self: MovesetClass, Name: string) -> {},
 	SetAbilityInformation: (self: MovesetClass, Data: {}) -> (),
 }
@@ -476,9 +476,9 @@ export type ServerAbilityClass = {
 
 	Play: (self: ServerAbilityClass, Agent: ServerAgentClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
 	Begin: (self: ServerAbilityClass, Agent: ServerAgentClass, SequenceFrames: SequenceFrames) -> (),
-	
+
 	Hit: (self: ServerAbilityClass, Agent: ServerAgentClass, Enemy: ServerEnemyClass, Hit: HitEnemyData) -> (number),
-	
+
 	FromData: (self: ServerAbilityClass, Key: AbilityDataKey) -> (any),
 	SetData: (self: ServerAbilityClass, Data: {}) -> (),
 }
@@ -550,7 +550,7 @@ export type ServerEnemyClass = {
 
 export type EnemyStatus = {
 	EnteredDazeState: RBXScriptSignal,
-	
+
 	__State: State,
 	__Level: number,
 	__Stats: EnemyStats,
@@ -686,21 +686,22 @@ export type PlayerArtifactDataClass = {
 	EquipTo: (self: PlayerArtifactDataClass, Agent: PlayerAgentDataClass?) -> (PlayerAgentDataClass?, string?),
 }
 
-export type Weapon_Data = {
+export type Drive_Data = {
 	Name: string,
 	Role_Needed: Role,
 	Tier: Tier,
 
+	IconId: number,
 	ModelName: string,
 	Passive_Description: string,
 
 	Main_Stat: {
 		StatName: Stat,
 		Base: number,
-		UpgradePerAscension: number,
+		UpgradePerLevel: number,
 	},
 
-	Sub_Stat: {
+	Advanced_Stat: {
 		StatName: Stat,
 		Base: number,
 		UpgradePerAscension: number,
@@ -746,45 +747,18 @@ export type EffectAnyData = {[string]: (Instance | any)}
 export type GamePlace = "Lobby" | "Mission" | "AFK" | "Raid"
 
 
-export type ArtifactDataClass = {
-	Name: string,
-	Slot: number,
-	Level: number,
-
-	Main_Stat: MainStat,
-	Substats: Substats,
-}
-export type WeaponDataClass = {
-	Name: string,
-	Level: number,
-}
-export type AgentDataClass = {
-	Name: string,
-	Level: number,
-
-	Items: {
-		Weapon: WeaponDataClass,
-		Artifacts: {ArtifactDataClass},
-	},
-
-	Skin: string,
-}
-
 export type ClientAgentData = {
 	Name: string,
 	Level: number,
 	Experience: number,
-	Weapon: {
-		Level: number,
-		Name: string,
-	},
+	Drive: string,
 
 	Artifacts: {
-		
+		[number]: string,
 	},
 }
 
-export type PartyPlayerTeam = {[number]: AgentDataClass}
+export type PartyPlayerTeam = {[number]: PlayerAgentData}
 export type PartyState = typeof(_GameEnum.PartyStates.Idle)
 export type PartyPlayer = {
 	PlayerObject: Player,
@@ -845,11 +819,21 @@ export type PlayerAgentData = {
 	Obtained: number,
 	Skins: {},
 
-	Weapon: WeaponDataClass,
+	Drive: PlayerDriveData,
 
 	Artifacts: {
-		[number]: ArtifactDataClass,
+		[number]: string,
 	}
+}
+
+export type SkinToken = {
+	Name: string,
+	Amount: number,
+}
+
+export type CharacterToken = {
+	Name: string,
+	Amount: number,
 }
 
 export type PlayerProfileData = {
@@ -871,9 +855,12 @@ export type PlayerProfileData = {
     Achievements: {},
     Titles: {},
     Items: {
-		Artifacts: {},
+		Drives: {PlayerDriveData},
+		Artifacts: {PlayerArtifactData},
 		Progress: {},
 		Event: {},
+		Skins: {},
+		Tokens: {CharacterToken | SkinToken},
 	},
     Warnings: {},
 }
@@ -905,15 +892,15 @@ export type PlayerAgentDataClass = {
 	ObtainmentDate: number,
 	Skins: {},
 
-	Weapon: WeaponDataClass,
+	Drive: string,
 
 	Artifacts: {
 		[number]: string,
 	},
 
 	EquipArtifactToSlot: (self: PlayerAgentDataClass, SlotId: number, Artifact: PlayerArtifactDataClass?) -> (string?),
-	SetWeapon: (self: PlayerAgentDataClass, WeaponName: string, Level: number) -> (),
-	SetArtifacts: (self: PlayerAgentDataClass, Artifacts: {ArtifactDataClass}) -> (),
+	SetDrive: (self: PlayerAgentDataClass, Drive: string?) -> (string?),
+	SetArtifacts: (self: PlayerAgentDataClass, Artifacts: {string}) -> (),
 	ToData: (self: PlayerAgentDataClass) -> (PlayerAgentData),
 	Compress: (self: PlayerAgentDataClass) -> ({}),
 }
@@ -1114,6 +1101,35 @@ export type CutsceneClass = {
 	End: (self: CutsceneClass) -> ()
 }
 
+--
+export type PlayerDriveData = {
+	Id: string,
+	Name: string,
+
+	Level: number,
+	Trait: string?,
+	Equipped: string?,
+	Experience: number,
+}
+
+export type PlayerDriveDataClass = {
+	__Id: string,
+	__Name: string,
+
+	__Level: number,
+	__Experience: number,
+	__Trait: number,
+	__Equipped: PlayerAgentDataClass?,
+
+	Compress: (self: PlayerDriveDataClass) -> ({string | buffer}),
+	ToData: (self: PlayerDriveDataClass) -> (PlayerDriveData),
+
+	EquipTo: (self: PlayerDriveDataClass, Agent: PlayerAgentDataClass) -> (string?, string?),
+	IsEquipped: (self: PlayerDriveDataClass) -> (boolean),
+}
+
+
+--
 return {
 	NOT_IMPLEMENTED_ERROR = function()
 		warn("Method", debug.info(2, "n"), "not implemented. Consider writing a hardcoded value of return")

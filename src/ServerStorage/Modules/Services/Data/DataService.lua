@@ -19,16 +19,18 @@ local ProfileTemplate = require(Database.Data.ProfileTemplate)
 local CharacterDatabase = require(Database.Characters)
 
 local PlayerAgentDataClass = require(Classes.Data.PlayerAgentData)
+local PlayerDriveDataClass = require(Classes.Data.PlayerDriveData)
 local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("AgentArtifacts2", ProfileTemplate)
+local DataStore = ProfileStore.New("pleaseworkforonce", ProfileTemplate)
 
 --
 local Service = {
     __Profiles = {} :: {[Player]: typeof(ProfileStore:StartSessionAsync())},
     __Agents = {},
     __Artifacts = {},
+    __Drives = {}
 }
 
 local function RecursiveSearch(Data: {}, Key: string): ({}, string)
@@ -96,12 +98,39 @@ function Service:FetchArtifacts(Player: Player)
     return Data
 end
 
+function Service:FetchDrives(Player: Player)
+    local Drives = Service:GetDrives(Player)
+    if not Drives then return end
+    local Data = {}
+
+    for _, Drive in Drives do
+        local CompressedObject = Drive:Compress()
+
+        table.insert(Data, CompressedObject)
+    end
+
+    return Data
+end
+
 function Service:UpdatePlayerArtifacts(Player: Player): ()
     local Artifacts = Service:FetchArtifacts(Player)
     if not Artifacts then return end
 
     Network:Fire("ItemData", Player, GameEnum.ItemDataEvent.GetAllArtifacts, Artifacts)
 end
+
+function Service:UpdatePlayerDrives(Player: Player): ()
+    local Drives = Service:FetchDrives(Player)
+    if not Drives then return end
+
+    Network:Fire("ItemData", Player, GameEnum.ItemDataEvent.GetAllDrives, Drives)
+end
+
+function Service:SyncPlayerItems(Player: Player)
+    Service:UpdatePlayerArtifacts(Player)
+    Service:UpdatePlayerDrives(Player)
+end
+
 
 function Service:AddPlayer(Player: Player)
     local RetrievedProfile = DataStore:StartSessionAsync(`{Player.UserId}`, {
@@ -117,7 +146,7 @@ function Service:AddPlayer(Player: Player)
         RetrievedProfile:Reconcile()
 
         local Thread = Clock:ThreadLoop(300, function()
-            Service:SavePlayerAgentData(Player)
+            Service:SavePlayerData(Player)
         end)
 
         RetrievedProfile.OnSessionEnd:Connect(function()
@@ -134,6 +163,7 @@ function Service:AddPlayer(Player: Player)
 
             Service:SetupAgents(Player)
             Service:SetupArtifacts(Player)
+            Service:SetupDrives(Player)
         else
         -- The player has left before the profile session started
             RetrievedProfile:EndSession()
@@ -146,10 +176,7 @@ end
 function Service:RemovePlayer(Player: Player): ()
 
     -- Save the latest info about the agents
-    local Data = Service:GetDataFor(Player)
-    for Name in Data.Agents do
-        Service:UpdateAgent(Player, Service:GetAgent(Player, Name))
-    end
+    Service:SavePlayerData(Player)
 
     --
     local SavedProfile = Service.__Profiles[Player]
@@ -237,6 +264,7 @@ function Service:UpdateAgent(Player: Player, Agent: Types.PlayerAgentDataClass)
     end
 
     PlayerData.Agents[Agent.Name] = Agent:ToData()
+    print(PlayerData.Agents[Agent.Name])
 end
 
 function Service:SetupAgents(Player: Player)
@@ -251,7 +279,8 @@ function Service:SetupArtifacts(Player: Player): ()
     local PlayerData = Service:GetDataFor(Player)
 
     for Id, Artifact in PlayerData.Items.Artifacts do
-        local Agent = Artifact.__Equipped
+        local Agent = Artifact.Equipped
+
         if Agent then
             Agent = Service:GetAgent(Player, Agent)
         end
@@ -285,8 +314,8 @@ function Service:CreateAgentClass(Player: Player, Name: string)
         local Now = DateTime.now().UnixTimestamp
         local ClassObject = PlayerAgentDataClass.new(Name, AgentData.Level or 1, AgentData.Obtained or Now)
 
-        if (AgentData.Weapon and AgentData.Weapon.Name ~= nil) then
-            ClassObject:SetWeapon(AgentData.Weapon.Name, AgentData.Weapon.Level)
+        if AgentData.Drive then
+            ClassObject:SetDrive(AgentData.Drive)
         end
 
         if AgentData.Artifacts then
@@ -313,9 +342,13 @@ function Service:GetPlayerAgents(Player: Player): {[string]: Types.PlayerAgentDa
     return Service.__Agents[Player]
 end
 
-function Service:SavePlayerAgentData(Player: Player)
+function Service:SavePlayerData(Player: Player)
     for _, Agent: Types.PlayerAgentDataClass in (Service.__Agents[Player] or {}) do
         Service:UpdateAgent(Player, Agent)
+    end
+
+    for _, Drive: Types.PlayerDriveDataClass in (Service.__Drives[Player] or {}) do
+        Service:AddDrive(Player, Drive)
     end
 end
 
@@ -362,6 +395,62 @@ function Service:GetArtifacts<T>(Player: Player, Filter: ((Artifact: Types.Playe
     return Artifacts
 end
 
+---
+function Service:GetDrives<T>(Player: Player, Filter: ((Drive: Types.PlayerDriveDataClass) -> (boolean))?, First: boolean?): T | {Types.PlayerDriveDataClass}
+    local Drives = {}
+    if not Service.__Drives[Player] then
+        return Drives;
+    end
+
+    if Filter == nil then
+        return Service.__Drives[Player]
+    end
+
+    for _, Drive in Service.__Drives[Player] do
+        if (#Drives == 1 and First) then
+            break
+        end
+
+        if Filter(Drive) then
+            table.insert(Drives, Drive)
+        end
+    end
+
+    if #Drives == 1 then
+        return Drives[1]
+    end
+
+    return Drives
+end
+
+function Service:AddDrive(Player: Player, Drive: Types.PlayerDriveDataClass)
+    local PlayerData = Service:GetDataFor(Player)
+
+    if Service.__Drives[Player] == nil then
+        Service.__Drives[Player] = {}
+    end
+
+    Service.__Drives[Player][Drive.__Id] = Drive
+    PlayerData.Items.Drives[Drive.__Id] = Drive:ToData()
+end
+
+function Service:SetupDrives(Player: Player)
+    local PlayerData = Service:GetDataFor(Player)
+
+    for _, DriveData in PlayerData.Items.Drives do
+        local Agent = DriveData.Equipped
+        if Agent then
+            Agent = Service:GetAgent(Player, Agent)
+        end
+
+        local Drive = PlayerDriveDataClass.new(DriveData, Agent)
+
+        Service:AddDrive(Player, Drive)
+    end
+end
+
+
+---
 function Service:UnlockAllAgents(Player: Player)
     local Characters = CharacterDatabase:GetAllCharacterNames()
 	for _, CharacterName in Characters do

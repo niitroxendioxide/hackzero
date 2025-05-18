@@ -5,8 +5,6 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local Types = require(Shared.Types)
-local WeaponsDatabase = require(Database.Weapons)
-local ArtifactsDatabase = require(Database.Artifacts)
 local CharactersDatabase = require(Database.Characters)
 
 local PlayerAgentDataClass = {}
@@ -17,7 +15,7 @@ function PlayerAgentDataClass.new(Name: string, Level: number, Date: number)
     self.Name = Name
     self.Experience = 0
     self.Level = Level
-    self.Weapon = {}
+    self.Drive = nil
     self.Artifacts = {}
     self.Skins = {}
     self.ObtainmentDate = Date
@@ -25,22 +23,12 @@ function PlayerAgentDataClass.new(Name: string, Level: number, Date: number)
     return self
 end
 
-function PlayerAgentDataClass.SetWeapon(self: Types.PlayerAgentDataClass, Name: string, Level: number)
-    if Level <= 0 or Level > 60 then
-        warn("Level given is off limits")
+function PlayerAgentDataClass.SetDrive(self: Types.PlayerAgentDataClass, DriveId: string): string
+    local Previous = self.Drive
 
-        return
-    end
+    self.Drive = DriveId
 
-    if not WeaponsDatabase:Verify(Name) then
-        warn("Invalid weapon passed.", Name, "not found in database")
-        return
-    end
-
-    self.Weapon = {
-        Name = Name,
-        Level = Level,
-    }
+    return Previous;
 end
 
 function PlayerAgentDataClass.SetArtifacts(self: Types.PlayerAgentDataClass, Artifacts: {string}): ()
@@ -74,7 +62,7 @@ end
 
 function PlayerAgentDataClass.ToData(self: Types.PlayerAgentDataClass): Types.PlayerAgentData
     return table.freeze({
-        Weapon = self.Weapon,
+        Drive = self.Drive,
         Artifacts = {
             [1] = self.Artifacts[1],
             [2] = self.Artifacts[2],
@@ -93,14 +81,14 @@ function PlayerAgentDataClass.ToData(self: Types.PlayerAgentDataClass): Types.Pl
 end
 
 function PlayerAgentDataClass.Compress(self: Types.PlayerAgentDataClass)
-    local DataBuffer = buffer.create(6)
-    buffer.writeu8(DataBuffer, 0, CharactersDatabase:GetIdForCharacter(self.Name))
-    buffer.writeu8(DataBuffer, 1, self.Level)
-    buffer.writeu8(DataBuffer, 2, WeaponsDatabase:GetIdForWeapon(self.Weapon.Name) or 0)
-    buffer.writeu8(DataBuffer, 3, self.Weapon.Level or 1)
-    buffer.writeu16(DataBuffer, 4, self.Experience)
+    local Id = CharactersDatabase:GetIdForCharacter(self.Name)
 
-    return {DataBuffer, self.Artifacts}
+    local DataBuffer = buffer.create(4)
+    buffer.writeu8(DataBuffer, 0, Id)
+    buffer.writeu8(DataBuffer, 1, self.Level)
+    buffer.writeu16(DataBuffer, 2, self.Experience)
+
+    return {DataBuffer, self.Artifacts, self.Drive}
 end
 
 return PlayerAgentDataClass

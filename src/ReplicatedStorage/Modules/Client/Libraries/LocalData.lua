@@ -27,10 +27,18 @@ function LocalData:GetAgent(Name: string): Types.ClientAgentData?
     return
 end
 
-function LocalData:EditAgentArtifacts(AgentName: string, Artifacts: {})
+function LocalData:EditAgentArtifacts(AgentName: string, Artifacts: {}): ()
     for _, Agent in LocalData.__Cache["Agents"] do
         if Agent.Name == AgentName then
             Agent.Artifacts = Artifacts
+        end
+    end
+end
+
+function LocalData:EditAgentDrive(AgentName: string, Drive: Types.PlayerDriveData): ()
+    for _, Agent in LocalData.__Cache["Agents"] do
+        if Agent.Name == AgentName then
+            Agent.Drive = Drive.Id
         end
     end
 end
@@ -58,6 +66,35 @@ function LocalData:EditArtifact(Artifact: Types.PlayerArtifactData): ()
     for key, SavedArtifact in LocalData.__Cache['Artifacts'] do
         if SavedArtifact.Id == Artifact.Id then
             LocalData.__Cache['Artifacts'][key] = Artifact
+
+            return
+        end
+    end
+end
+
+--
+function LocalData:GetDrives()
+    return LocalData.__Cache['Drives'] or {}
+end
+
+function LocalData:SetDrives(Data: {Types.PlayerDriveData})
+    LocalData.__Cache['Drives'] = Data
+end
+
+function LocalData:GetDriveById(Id: string): Types.PlayerDriveData?
+    for _, Artifact in LocalData.__Cache['Drives'] do
+        if Artifact.Id == Id then
+            return Artifact
+        end
+    end
+
+    return
+end
+
+function LocalData:EditDrive(Artifact: Types.PlayerDriveData): ()
+    for key, SavedArtifact in LocalData.__Cache['Drives'] do
+        if SavedArtifact.Id == Artifact.Id then
+            LocalData.__Cache['Drives'][key] = Artifact
 
             return
         end

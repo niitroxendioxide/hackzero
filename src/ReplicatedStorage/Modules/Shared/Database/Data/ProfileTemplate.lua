@@ -16,9 +16,13 @@ return {
     Achievements = {},
     Titles = {},
     Items = {
+        Weapons = {},
         Artifacts = {},
         Progress = {},
         Event = {},
+        Drives = {},
+        Skins = {},
+        Tokens = {},
     },
     Warnings = {},
 }

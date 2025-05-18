@@ -15,11 +15,14 @@ local Camera = require(Client.Libraries.Camera)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
+local UIGroups = require(Client.Libraries.UIGroups)
 local Cutscenes = require(Client.Libraries.Cutscenes)
+local UIEffects = require(Client.Utility.UIEffects)
 local LocalData = require(Client.Libraries.LocalData)
 local EffectUtil = require(Shared.Utility.Effects)
 local ComponentClass = require(Client.Classes.Interface)
 local CharacterDatabase = require(Database.Characters)
+local DrivesDatabase = require(Database.Drives)
 
 --
 export type FilterFunction = (Artifact: Frame & {Slot: NumberValue, Type: StringValue}) -> (boolean)
@@ -39,6 +42,8 @@ local States = {
     __Current_Selected_Item = '',
     __Current_Selected_Item_Object = nil,
     __Current_Slot_Picked = 0,
+    __Current_Item_Filter = "Artifacts",
+    __Current_Drive_Selected = nil,
 }
 
 --
@@ -107,6 +112,16 @@ local function RequestChangeArtifact()
     })
 end
 
+local function RequestChangeDrive()
+    local SelectedDrive = States.__Current_Drive_Selected
+    local SelectedAgent = States.__Current_Agent.Name
+
+    Network:Fire('UpdateAgent', GameEnum.AgentEvent.UpdateDrive, {
+        SelectedAgent,
+        SelectedDrive
+    })
+end
+
 --
 function Component:Link(): Instance?
 	local PlayerGui = Player.PlayerGui
@@ -122,8 +137,22 @@ function Component:Init()
     local MainFrame = Component:GetFrame()
 
     --
+    local ReturnHolder: Frame & {Btn: TextButton, UIStroke: UIStroke, UIScale: UIScale} = MainFrame.Return
+    local ReturnButton: TextButton = ReturnHolder.Btn
     Component:BindToStateChange(function(State: boolean)
         if State then
+            for _, DiffTabs in MainFrame:GetChildren() do
+                if DiffTabs.Name ~= 'Agents' and DiffTabs.Name ~= 'TabButtons' then
+                    DiffTabs.Visible = false
+                end
+            end
+
+            UIEffects:Transition('Agents', .75)
+
+            --
+            MainFrame.Agents.Visible = true
+            MainFrame.TabButtons.Visible = true
+            ReturnHolder.Visible = true
             Camera:MarkUsage("AgentMenu")
 
             CreateAgentIcons()
@@ -132,12 +161,43 @@ function Component:Init()
 
             --
         else
+            for _, DiffTabs in MainFrame:GetChildren() do
+                if DiffTabs.Name ~= 'Agents' and DiffTabs.Name ~= 'TabButtons' then
+                    DiffTabs.Visible = false
+                end
+            end
+
             States.__Current_Agent = nil
+
+            MainFrame.Agents.Visible = false
+            MainFrame.TabButtons.Visible = false
+            ReturnHolder.Visible = false
+
+            local LobbyMain = UIGroups:GetElementClass('Lobby', 'MainMenu')
+            LobbyMain:Set(true)
+
+            --
             Camera:FreeUsage()
+
+            States.__Current_Tab:set("None")
         end
     end)
 
-    for _, Button in MainFrame.Tabs:GetChildren() do
+    ReturnButton.MouseButton1Click:Connect(function()
+        Component:Set(false)
+    end)
+
+    ReturnButton.MouseEnter:Connect(function()
+        ReturnHolder.UIStroke.Color = Color3.new(1, 1, 1)
+        EffectUtil:Tween(ReturnHolder.UIScale, {.25}, {Scale = 1.1})
+    end)
+
+    ReturnButton.MouseLeave:Connect(function()
+        ReturnHolder.UIStroke.Color = Color3.new()
+        EffectUtil:Tween(ReturnHolder.UIScale, {.25}, {Scale = 1})
+    end)
+
+    for _, Button in MainFrame.TabButtons:GetChildren() do
         if not Button:FindFirstChild("Btn") then continue end
 
         Button.Btn.MouseButton1Click:Connect(function()
@@ -146,10 +206,10 @@ function Component:Init()
     end
 
     Scope:Observer(States.__Current_Tab):onChange(function()
-        local Tabs = MainFrame:FindFirstChild("Tabs")
+        local TabButtons = MainFrame:FindFirstChild("TabButtons")
         local CurrentTab = Component:Peek(States.__Current_Tab)
 
-        for _, Tab in Tabs:GetChildren() do
+        for _, Tab in TabButtons:GetChildren() do
             if not Tab:IsA("Frame") then continue end
 
             if Tab.Name == CurrentTab then
@@ -175,10 +235,47 @@ function Component:Init()
         end
     end)
 
-    local ItemsFrame =  MainFrame.Items
-    local DataFrame = ItemsFrame.Data
 
-    DataFrame.Equip.Button.MouseButton1Click:Connect(RequestChangeArtifact)
+    --
+    local ItemsFrame =  MainFrame.Items
+    local ItemDataFrame = ItemsFrame.ItemData
+    local DriveDataFrame = ItemsFrame.DriveData
+
+    DriveDataFrame.Equip.Button.MouseButton1Click:Connect(RequestChangeDrive)
+    ItemDataFrame.Equip.Button.MouseButton1Click:Connect(RequestChangeArtifact)
+
+    local DriveSelectBtn: TextButton = ItemsFrame.Build.Drive.Select
+    local DriveUiScale: UIScale = ItemsFrame.Build.Drive.Design.UIScale
+    local Tween: Tween? = nil
+    --
+    DriveSelectBtn.MouseButton1Click:Connect(function()
+        DriveUiScale.Scale = .85
+        Tween = EffectUtil:Tween(DriveUiScale, {.3, 'Back'}, {Scale = 1.1})
+
+        if States.__Current_Item_Filter == "Drives" then
+            Component:SetItemList(nil)
+        else
+            Component:SetItemList("Drives")
+        end
+    end)
+
+    DriveSelectBtn.MouseEnter:Connect(function()
+        if Tween then
+            Tween:Cancel()
+            Tween:Destroy()
+        end
+
+        Tween = EffectUtil:Tween(DriveUiScale, {.25, 'Quad'}, {Scale = 1.1})
+    end)
+
+    DriveSelectBtn.MouseLeave:Connect(function()
+        if Tween then
+            Tween:Cancel()
+            Tween:Destroy()
+        end
+
+        Tween = EffectUtil:Tween(DriveUiScale, {.25, 'Quad'}, {Scale = 1})
+    end)
 end
 
 
@@ -212,16 +309,33 @@ function Component:SelectAgent(AgentData: Types.ClientAgentData)
 
             Component:UpdateSlotInfo(States.__Current_Agent.Name, i, ArtifactData)
         end
+
+        --
+        local Drive = LocalData:GetDriveById(AgentData.Drive)
+
+        Component:UpdateDriveInfo(AgentData.Name, Drive)
     elseif CurrentTab == "Stats" then
         Component:ShowStats(AgentData)
+    elseif CurrentTab == "None" then
+
     end
 end
 
 --
 -- [[ ARTIFACTS & SLOT ]] --
 --
+local SelectedArtifactThread: thread = nil;
+local SelectedDriveThread: thread = nil;
 
-local function SelectArtifact(NewObject: Frame & {Selected: Frame, UsedSelected: Frame, Used: Frame}, Artifact)
+local function SelectArtifact(NewObject: Frame & {Selected: Frame & {UIStroke: UIStroke}, UsedSelected: Frame & {UIStroke: UIStroke}, Used: Frame}, Artifact)
+    if SelectedArtifactThread then
+        task.cancel(SelectedArtifactThread)
+    end
+
+    if SelectedDriveThread then
+        task.cancel(SelectedDriveThread)
+    end
+
     if States.__Current_Selected_Item_Object ~= NewObject and States.__Current_Selected_Item_Object ~= nil then
         States.__Current_Selected_Item_Object.Selected.Visible = false
         States.__Current_Selected_Item_Object.UsedSelected.Visible = false
@@ -249,14 +363,91 @@ local function SelectArtifact(NewObject: Frame & {Selected: Frame, UsedSelected:
         NewObject.UsedSelected.Visible = true
     end
 
+    SelectedArtifactThread = task.spawn(function()
+        local Angle = 0
+
+        while true do
+            local Delta = task.wait()
+            Angle += Delta * 400
+
+            local Thickness = 2 + math.cos(math.rad(Angle)) * 1
+            NewObject.Selected.UIStroke.Thickness = Thickness
+            NewObject.UsedSelected.UIStroke.Thickness = Thickness
+        end
+    end)
+
     --
     Component:ShowArtifactInfo(Artifact)
+end
+
+local function SelectDrive(Drive: Types.PlayerDriveData)
+    if SelectedDriveThread then
+        task.cancel(SelectedDriveThread)
+    end
+
+    if SelectedArtifactThread then
+        task.cancel(SelectedArtifactThread)
+    end
+
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local Holder = ItemsFrame.List.DrivesList :: ScrollingFrame
+
+    if States.__Current_Drive_Selected == Drive.Id then
+        States.__Current_Drive_Selected = nil
+
+        Component:ShowDriveInfo(nil)
+
+        for _, DriveFrame in Holder:GetChildren() do
+            if DriveFrame:IsA("Frame") and DriveFrame.Id.Value == Drive.Id then
+                DriveFrame.Selected.Visible = false
+                DriveFrame.UsedSelected.Visible = false
+            end
+        end
+
+        return
+    elseif States.__Current_Drive_Selected ~= nil and States.__Current_Drive_Selected ~= Drive.Id then
+        local PrevId = States.__Current_Drive_Selected
+
+        for _, DriveFrame in Holder:GetChildren() do
+            if DriveFrame:IsA("Frame") and DriveFrame.Id.Value == PrevId then
+                DriveFrame.Selected.Visible = false
+                DriveFrame.UsedSelected.Visible = false
+            end
+        end
+    end
+
+    for _, DriveFrame in Holder:GetChildren() do
+        if DriveFrame:IsA("Frame") and DriveFrame.Id.Value == Drive.Id then
+            DriveFrame.Selected.Visible = true
+
+            if DriveFrame.Used.Visible then
+                DriveFrame.UsedSelected.Visible = true
+            end
+
+            SelectedDriveThread = task.spawn(function()
+                local Angle = 0
+
+                while true do
+                    local Delta = task.wait()
+                    Angle += Delta * 400
+
+                    local Thickness = math.max(2 + math.cos(math.rad(Angle)) * 1.75, 1)
+                    DriveFrame.Selected.UIStroke.Thickness = Thickness
+                    DriveFrame.UsedSelected.UIStroke.Thickness = Thickness
+                end
+            end)
+        end
+    end
+
+    States.__Current_Drive_Selected = Drive.Id
+    Component:ShowDriveInfo(Drive.Id)
 end
 
 function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
-    local Holder = ItemsFrame.List.List :: ScrollingFrame
+    local Holder = ItemsFrame.List.ArtifactsList :: ScrollingFrame
 
     for _, ExistingItem in Holder:GetChildren() do
         if not ExistingItem:IsA("Frame") then continue end
@@ -276,15 +467,39 @@ function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
     NewObject.Parent = Holder
 end
 
-function Component:RemoveArtifact(Id: string)
-    -- not implemented
-    warn("Not implemented yet!")
+function Component:AddDrive(Drive: Types.PlayerDriveData)
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local Holder = ItemsFrame.List.DrivesList :: ScrollingFrame
+
+    for _, ExistingItem in Holder:GetChildren() do
+        if not ExistingItem:IsA("Frame") then continue end
+        if ExistingItem.Id.Value == Drive.Id then return end
+    end
+
+    --[[]]
+    local DriveData = DrivesDatabase:GetDriveData(Drive.Name)
+
+    local NewObject = Assets.Interface.Agents.Items.ListItemDrive:Clone();
+    NewObject.Name = Drive.Id
+    NewObject.ItemIcon.Image = "rbxassetid://" .. DriveData.IconId
+    NewObject.Role.Value = DriveData.Role_Needed
+    NewObject.Id.Value = Drive.Id
+    NewObject.Used.Visible = Drive.Equipped ~= nil
+    NewObject.Visible = true
+
+    NewObject.Button.MouseButton1Click:Connect(function()
+        SelectDrive(Drive)
+    end)
+
+    NewObject.Parent = Holder
 end
+
 
 function Component:ShowArtifactInfo(Artifact: Types.PlayerArtifactData?)
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
-    local DataFrame = ItemsFrame.Data
+    local DataFrame = ItemsFrame.ItemData
 
     for _, SubStat in DataFrame.SubStatList:GetChildren() do
         if SubStat:IsA("Frame") then
@@ -297,6 +512,8 @@ function Component:ShowArtifactInfo(Artifact: Types.PlayerArtifactData?)
 
         return
     end
+
+    Component:ShowDriveInfo(nil)
 
     DataFrame.Visible = true;
 
@@ -315,20 +532,55 @@ function Component:ShowArtifactInfo(Artifact: Types.PlayerArtifactData?)
     end
 end
 
+function Component:ShowDriveInfo(DriveId: string?)
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local DataFrame = ItemsFrame.DriveData
+
+    if DriveId == nil then
+        DataFrame.Visible = false;
+
+        return
+    end
+
+    Component:ShowArtifactInfo(nil)
+
+    DataFrame.Visible = true;
+
+    local Drive = LocalData:GetDriveById(DriveId)
+    local DriveData = DrivesDatabase:GetDriveData(Drive.Name)
+
+    DataFrame.ArtifactName.Text = DriveData.Name
+    DataFrame.Level.Text = Drive.Level < 60 and `<b>Lvl.</b> {Drive.Level} / 60` or 'MAX.'
+
+    local NextLevelExp = 100
+    local Level = Drive.Level
+    local Ascensions = Drive.Level // 10
+
+    local MainStatValue = DriveData.Main_Stat.Base + (Level * DriveData.Main_Stat.UpgradePerLevel)
+    DataFrame.MainStat.MainName.Text = string.gsub(DriveData.Main_Stat.StatName, '_', ' ')
+    DataFrame.MainStat.Value.Text = tostring(MainStatValue)..(if DriveData.Main_Stat.StatName:find('%%') then '%' else '')
+
+    local SubStatValue = DriveData.Advanced_Stat.Base + (Ascensions * DriveData.Advanced_Stat.UpgradePerAscension)
+    DataFrame.SubStat.SubName.Text = string.gsub(DriveData.Advanced_Stat.StatName, '_', ' ')
+    DataFrame.SubStat.Value.Text = tostring(SubStatValue)..(if DriveData.Advanced_Stat.StatName:find('%%') then '%' else '')
+
+    --
+    DataFrame.Exp.Fill.Size = UDim2.fromScale(math.clamp(Drive.Experience / NextLevelExp, 0, 1), 1)
+    DataFrame.PassiveDesc.Text = DriveData.Passive_Description;
+end
+
+
 function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
-    local ItemsFolder = ItemsFrame.Artifacts.Items
+    local ItemsFolder = ItemsFrame.Build.Items
 
-    ItemsFrame.Artifacts.UIScale.Scale = 0
+    ItemsFrame.Build.UIScale.Scale = 0
 
-    EffectUtil:Tween(ItemsFrame.Artifacts.UIScale, {.3, 'Cubic', 'Out'}, {Scale = 1})
+    EffectUtil:Tween(ItemsFrame.Build.UIScale, {.3, 'Cubic', 'Out'}, {Scale = 1})
 
     --
-    for _, Artifact in LocalData:GetArtifacts() do
-        Component:AddArtifact(Artifact)
-    end
-
     Component:SelectArtifactSlot(0)
 
     --
@@ -338,7 +590,7 @@ function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
             local Delta = task.wait()
             Angle += Delta * 35
 
-            ItemsFrame.Artifacts.RingDecor.Img.Rotation = Angle
+            ItemsFrame.Build.RingDecor.Img.Rotation = Angle
         end
     end)
 
@@ -421,7 +673,7 @@ end
 function Component:FilterArtifacts(Filter: FilterFunction): ()
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
-    local ItemsList = ItemsFrame.List.List
+    local ItemsList = ItemsFrame.List.ArtifactsList
 
     for _, Artifact in ItemsList:GetChildren() do
         if not Artifact:IsA('Frame') then continue end
@@ -437,19 +689,58 @@ function Component:FilterArtifacts(Filter: FilterFunction): ()
     end
 end
 
-function Component:SelectArtifactSlot(SlotId: number?)
+function Component:SetItemList(Type: string)
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
     local ItemsList = ItemsFrame.List
 
-    local OldSlot = ItemsFrame.Artifacts.Items:FindFirstChild('Slot'..States.__Current_Slot_Picked)
+    if Type == nil then
+        States.__Current_Item_Filter = nil
+        ItemsList.Visible = false
+
+        return
+    end
+
+    States.__Current_Item_Filter = Type
+
+    --
+    ItemsList.Visible = true
+    ItemsList.TypeLabel.Text = Type;
+
+    for _, List in ItemsList:GetChildren() do
+        if List:IsA("ScrollingFrame") and List.Name:match("List") then
+            List.Visible = List.Name:match(Type)
+        end
+    end
+
+    if Type == "Drives" then
+        for _, Drive in LocalData:GetDrives() do
+            Component:AddDrive(Drive)
+        end
+    elseif Type == "Artifacts" then
+        for _, Artifact in LocalData:GetArtifacts() do
+            Component:AddArtifact(Artifact)
+        end
+    else
+        ItemsList.TypeLabel.Text = "?";
+    end
+end
+
+function Component:SelectArtifactSlot(SlotId: number?)
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+
+    Component:SetItemList("Artifacts")
+
+    local OldSlot = ItemsFrame.Build.Items:FindFirstChild('Slot'..States.__Current_Slot_Picked)
     if OldSlot then
         OldSlot.Outline.Visible = false
     end
 
     if not(typeof(SlotId) == 'number') or (SlotId < 1) or (SlotId > 6) then
-        ItemsList.Visible = false
-        ItemsFrame.Data.Visible = false
+        ItemsFrame.ItemData.Visible = false
+        ItemsFrame.DriveData.Visible = false
+        Component:SetItemList(nil)
         States.__Current_Slot_Picked = 0
 
         SelectArtifact(States.__Current_Selected_Item_Object, nil)
@@ -457,11 +748,10 @@ function Component:SelectArtifactSlot(SlotId: number?)
         return;
     end
 
-    local NewSlot = ItemsFrame.Artifacts.Items:FindFirstChild('Slot'..SlotId)
+    local NewSlot = ItemsFrame.Build.Items:FindFirstChild('Slot'..SlotId)
     NewSlot.Outline.Visible = true
 
     States.__Current_Slot_Picked = SlotId
-    ItemsList.Visible = true
 
     --
     Component:FilterArtifacts(function(ArtifactFrame)
@@ -472,7 +762,7 @@ end
 function Component:UpdateSlotInfo(Agent: string, SlotId: number, ArtifactId: string?): ()
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
-    local Artifacts = ItemsFrame.Artifacts
+    local Artifacts = ItemsFrame.Build
 
     if (States.__Current_Agent == nil) or (States.__Current_Agent.Name ~= Agent) then
         print(States.__Current_Agent, Agent)
@@ -502,16 +792,60 @@ function Component:UpdateSlotInfo(Agent: string, SlotId: number, ArtifactId: str
     end
 end
 
+function Component:UpdateDriveInfo(Agent: string, Drive: Types.PlayerDriveData)
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local DriveFrame = ItemsFrame.Build.Drive
+
+    if (States.__Current_Agent == nil) or (States.__Current_Agent.Name ~= Agent) then
+        return
+    end
+
+    if Drive == nil then
+        DriveFrame.Design.Full.Visible = false
+        DriveFrame.Design.Empty.Visible = true
+
+        return
+    end
+
+    DriveFrame.Design.Empty.Visible = false
+    DriveFrame.Design.Full.Visible = true
+
+    local DriveData = DrivesDatabase:GetDriveData(Drive.Name)
+
+    -- TODO: Also add image changing :sob:
+    DriveFrame.Design.Full.Icon.Image = "rbxassetid://" .. (DriveData.IconId or 0)
+    DriveFrame.Design.Full.Level.Text = `Lvl. {Drive.Level}`
+end
+
 function Component:UpdateArtifact(Artifact: Types.PlayerArtifactData): ()
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
-    local ItemsList = ItemsFrame.List.List
+    local ItemsList = ItemsFrame.List.ArtifactsList
 
     --print(Artifact.Id)
 
     local ItemObj = ItemsList:FindFirstChild(Artifact.Id)
     if ItemObj then
         ItemObj.Used.Visible = Artifact.Equipped ~= nil
+
+        if ItemObj.Selected.Visible and ItemObj.Used.Visible then
+            ItemObj.Selected.Visible = false
+            ItemObj.UsedSelected.Visible = true
+        end
+    end
+end
+
+function Component:UpdateDrive(Drive: Types.PlayerDriveData): ()
+    local MainFrame = Component:GetFrame()
+    local ItemsFrame =  MainFrame.Items
+    local ItemsList = ItemsFrame.List.DrivesList
+
+    --print(Artifact.Id)
+
+    local ItemObj = ItemsList:FindFirstChild(Drive.Id)
+    if ItemObj then
+        ItemObj.Used.Visible = Drive.Equipped ~= nil
 
         if ItemObj.Selected.Visible and ItemObj.Used.Visible then
             ItemObj.Selected.Visible = false

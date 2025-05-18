@@ -51,7 +51,7 @@ function InterfaceStates:SetActiveElement(Group: string, Item: string?)
     if InterfaceStates:GetActiveElement(Group) then
         local Element = InterfaceStates:GetActiveElement(Group)
         InterfaceStates.__Groups[Group].Active = nil
-        Element:Set(false)
+        Element:Set(false, true)
     end
 
     InterfaceStates.__Groups[Group].Active = Item
@@ -59,7 +59,9 @@ end
 
 export type Element = Types.UIComponent & {[string]: () -> ()}
 function InterfaceStates:GetElementClass(Group: string, Name: string): (Element)
-    if not InterfaceStates.__Groups[Group] then return {} :: Element end
+    if not InterfaceStates.__Groups[Group] then
+        return {} :: Element
+    end
 
     return InterfaceStates.__Groups[Group].Items[Name]
 end

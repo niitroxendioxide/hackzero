@@ -133,16 +133,18 @@ return {
 	ItemDataEvent = {
 		GetAllArtifacts = 1,
 		UpdateArtifact = 2,
+		GetAllDrives = 3,
+		UpdateDrive = 4,
 	},
 
 	AgentEvent = {
 		UpdateArtifactSlot = 1,
-		UpdateWeapon = 2,
+		UpdateDrive = 2,
 		LevelAgent = 3,
 		EvolveAgent = 4,
 	},
 
-	ArtifactEvent = {
+	ChangeEvents = {
 		Add = 1,
 		Remove = 2,
 		Update = 3,

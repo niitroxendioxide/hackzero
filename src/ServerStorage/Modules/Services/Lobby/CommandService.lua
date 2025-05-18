@@ -21,6 +21,8 @@ function Service:Init()
     end
 
     --
+
+    --
     local CommandFolder = TextChatService:FindFirstChild("Commands") :: Folder
 
     for _, CommandInstance in CommandFolder:GetChildren() :: {TextChatCommand} do
@@ -37,7 +39,6 @@ function Service:ExecuteCommand(Name: string, ...)
     local Id = string.gsub(Name, 'Command', '')
     local Command = Service.__Modules[Id]
 
-    print(Id)
     if not Command then
         return
     end

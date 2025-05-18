@@ -67,7 +67,7 @@ function ComponentClass:Link(): Instance?
 	return GUIObject;
 end
 
-function ComponentClass:Set(Visible: boolean?)
+function ComponentClass:Set(Visible: boolean?, Raw: boolean)
 
 	if Visible == nil then
 		self.__Main_Frame.Visible = not self.__Main_Frame.Visible
@@ -83,7 +83,7 @@ function ComponentClass:Set(Visible: boolean?)
 		UIGroups:SetActiveElement(self.__Group, nil)
 	end
 
-	if self.__State_Change_Callback ~= nil and typeof(self.__State_Change_Callback) == 'function' then
+	if (self.__State_Change_Callback ~= nil and typeof(self.__State_Change_Callback) == 'function') and not Raw then
 		self.__State_Change_Callback(self.__UI_State)
 	end
 end

@@ -4,7 +4,7 @@ local Players = game:GetService("Players")
 local Shared = ReplicatedStorage.Modules.Shared
 local Network = require(Shared.Network)
 local AgentDatabase = require(Shared.Database.Characters)
-local WeaponDatabase = require(Shared.Database.Weapons)
+local DriveDatabase = require(Shared.Database.Drives)
 local GameEnum = require(Shared.GameEnum)
 local LocalData = require(script.Parent.LocalData)
 
@@ -30,14 +30,12 @@ function Fetcher:FetchAgents(): {any}
     for _, AgentData in Data do
         local Buffer = AgentData[1]
         local Artifacts = AgentData[2]
+        local DriveId = AgentData[3]
 
         table.insert(TranslatedData, {
             Name = AgentDatabase:GetCharacterFromId(buffer.readu8(Buffer, 0)),
             Level = buffer.readu8(Buffer, 1),
-            Weapon = {
-                Name = WeaponDatabase:GetWeaponFromId(buffer.readu8(Buffer, 2)),
-                Level = buffer.readu8(Buffer, 3)
-            },
+            Drive = DriveId,
             Artifacts = Artifacts,
         })
     end

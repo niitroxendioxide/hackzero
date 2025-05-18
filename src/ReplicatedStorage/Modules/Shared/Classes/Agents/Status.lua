@@ -87,7 +87,7 @@ function StatusClass:GetArtifactBonus(_Type: string)
 	return 1
 end
 
-function StatusClass:GetWeaponBonus(_Type: string)
+function StatusClass:GetDriveBonus(_Type: string)
 	return 1
 end
 

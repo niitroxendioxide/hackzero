@@ -11,24 +11,44 @@ local Types = require(Shared.Types)
 
 local DataService = require(Services.Data.DataService)
 
---
+-- Artifacts
 local function AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
     Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
-        GameEnum.ArtifactEvent.Add, Artifact:Compress(), Agent.Name, Agent.Artifacts
+        GameEnum.ChangeEvents.Add, Artifact:Compress(), Agent.Name, Agent.Artifacts
     })
 end
 
 local function RemoveArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
     Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
-        GameEnum.ArtifactEvent.Remove, Artifact:Compress(), Agent.Name, Agent.Artifacts
+        GameEnum.ChangeEvents.Remove, Artifact:Compress(), Agent.Name, Agent.Artifacts
     })
 end
 
 local function UpdateArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass): ()
     Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
-        GameEnum.ArtifactEvent.Update, Artifact:Compress(),
+        GameEnum.ChangeEvents.Update, Artifact:Compress(),
     })
 end
+
+--
+local function AddDrive(Player: Player, Drive: Types.PlayerDriveDataClass, Agent: Types.PlayerAgentDataClass): ()
+    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateDrive, {
+        GameEnum.ChangeEvents.Add, Drive:Compress(), Agent.Name,
+    })
+end
+
+local function RemoveDrive(Player: Player, Drive: Types.PlayerDriveDataClass, Agent: Types.PlayerAgentDataClass): ()
+    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateDrive, {
+        GameEnum.ChangeEvents.Remove, Drive:Compress(), Agent.Name
+    })
+end
+
+local function UpdateDrive(Player: Player, Drive: Types.PlayerDriveDataClass): ()
+    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateDrive, {
+        GameEnum.ChangeEvents.Update, Drive:Compress(),
+    })
+end
+
 
 --[[
     Handles setting up the builds & using the data from the player artifacts & more
@@ -43,6 +63,8 @@ end
 function Service.__HandleEvent(Player: Player, Type: number, Request: {})
     if Type == GameEnum.AgentEvent.UpdateArtifactSlot then
         Service:SetAgentArtifactSlot(Player, Request[1], Request[2])
+    elseif Type == GameEnum.AgentEvent.UpdateDrive then
+        Service:SetAgentDrive(Player, Request[1], Request[2])
     end
 end
 
@@ -76,8 +98,34 @@ function Service:SetAgentArtifactSlot(Player: Player, AgentName: string, Artifac
     end
 end
 
-function Service:SetAgentWeapon(Player: Player, Agent: string, Weapon: string)
-    return Types.NOT_IMPLEMENTED_ERROR()
+function Service:SetAgentDrive(Player: Player, AgentName: string, DriveId: string)
+    local Drive = DataService:GetDrives(Player, function(QueryDrive)
+        return QueryDrive.__Id == DriveId
+    end, true) :: Types.PlayerDriveDataClass
+
+    local Agent = DataService:GetAgent(Player, AgentName)
+
+    local UnequippedAgent, ReplacedDriveId = Drive:EquipTo(Agent)
+
+    if UnequippedAgent == Agent then
+        RemoveDrive(Player, Drive, Agent)
+    else
+        AddDrive(Player, Drive, Agent)
+
+        if UnequippedAgent then
+            RemoveDrive(Player, Drive, UnequippedAgent)
+        end
+    end
+
+    if ReplacedDriveId then
+        local OldDrive = DataService:GetDrives(Player, function(QueryDrive)
+            return QueryDrive.__Id == ReplacedDriveId
+        end, true) :: Types.PlayerDriveDataClass
+
+        OldDrive:EquipTo(nil)
+
+        UpdateDrive(Player, OldDrive)
+    end
 end
 
 

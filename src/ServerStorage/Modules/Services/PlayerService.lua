@@ -12,10 +12,9 @@ local Assets = ReplicatedStorage:WaitForChild("Assets")
 local Notifications = require(Modules.Packages.Notifications)
 local TeamService = require(script.Parent.Combat.TeamService)
 local PartyService = require(script.Parent.Lobby.PartyService)
+local ChatService = require(script.Parent.Lobby.ChatService)
 local DataService = require(script.Parent.Data.DataService)
 local SummonService = require(script.Parent.Items.SummonService)
-
-local PlayerArtifactDataClass = require(script.Parent.Parent.Classes.Data.PlayerArtifactData)
 
 local Places = require(Shared.Places)
 
@@ -94,7 +93,8 @@ function Service.PlayerAdded(Player: Player): ()
 	end
 
 	--
-	DataService:UpdatePlayerArtifacts(Player)
+	ChatService:SetupChannels(Player)
+	DataService:SyncPlayerItems(Player)
 	SummonService:SyncBanner(Player)
 end
 
