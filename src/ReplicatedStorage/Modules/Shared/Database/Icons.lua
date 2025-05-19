@@ -5,6 +5,17 @@ local White = Color3.new(1, 1, 1)
 local RGB = Color3.fromRGB
 
 return {
+	Currency = {
+		['Money'] = 105549712478275,
+		['Gems'] = 94639843447517,
+	},
+
+	Buttons = {
+		['Inventory'] = 93968693751727,
+    	['Agents'] = 126819722091537,
+    	['Settings'] = 134273057855463,
+	},
+
 	Elements = {
 		Ice = PREFIX .. 108516110153642,
 		Fire = PREFIX .. 116710794714652,

@@ -15,17 +15,7 @@ local ComponentClass = require(Client.Classes.Interface)
 local EffectUtil = require(Shared.Utility.Effects)
 local Inputs = require(Client.Libraries.Inputs)
 local LocalData = require(Client.Libraries.LocalData)
-
-local Icons = {
-    ['Inventory'] = 93968693751727,
-    ['Agents'] = 126819722091537,
-    ['Settings'] = 134273057855463,
-}
-
-local CurrencyIcons = {
-    ['Money'] = 105549712478275,
-    ['Gems'] = 94639843447517,
-}
+local IconDatabase = require(Shared.Database.Icons)
 
 --
 local Component = ComponentClass.new("MainMenu", 'Lobby') :: Types.UIComponent & Types.UIGetSetButton
@@ -55,7 +45,7 @@ local function ToggleTab(State: boolean)
         EffectUtil:Tween(MenuBlur, {.3, 'Back'}, {Size = 16})
         EffectUtil:Tween(MenuCorr, {.225}, {
             Saturation = -1.3,
-            Contrast = -2,
+            Contrast = 0.25,
             Brightness = -0.05
         })
 
@@ -102,7 +92,7 @@ end
 function Component:CreateTabButton(Name: string)
     local MainFrame = Component:GetFrame()
     local Tab = MainFrame.MainButtonTab
-    local Id = Icons[Name]
+    local Id = IconDatabase.Buttons[Name]
 
     local ButtonObj = Assets.Interface.Lobby.Main.MenuButton:Clone()
     ButtonObj.TabName.Text = Name
@@ -194,7 +184,7 @@ function Component:ShowCurrency(Name: string)
     local NewObject = Assets.Interface.Lobby.Main.Currency:Clone()
     NewObject.Name = Name
     NewObject.CurrencyVal.Text = Amount
-    NewObject.Icon.Image = 'rbxassetid://' .. (CurrencyIcons[Name] or 0)
+    NewObject.Icon.Image = 'rbxassetid://' .. (IconDatabase.Currency[Name] or 0)
     NewObject.Parent = CurrencyFrame.List
 
     NewObject.Button.MouseButton1Click:Connect(function()

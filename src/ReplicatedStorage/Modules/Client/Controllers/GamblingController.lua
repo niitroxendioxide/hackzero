@@ -16,7 +16,7 @@ local Cutscenes = require(Client.Libraries.Cutscenes)
 local Controller = {}
 
 function Controller:Init()
-    if Places:CanFight() then
+    if not Places:IsInPlace("Lobby") then
         return
     end
 

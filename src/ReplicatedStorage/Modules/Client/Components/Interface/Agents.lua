@@ -777,6 +777,8 @@ function Component:SetItemList(Type: string)
     States.__Current_Item_Filter = Type
 
     --
+    ItemsFrame.DriveData.Visible = false
+    ItemsFrame.ItemData.Visible = false
     ItemsList.Visible = true
     ItemsList.TypeLabel.Text = Type;
 

@@ -4,15 +4,11 @@ local Players = game:GetService('Players')
 local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
-local Database = Shared.Database
 
 local Assets = ReplicatedStorage.Assets
-local World = workspace:FindFirstChild("World")
 
 local Types = require(Shared.Types)
-local GameEnum = require(Shared.GameEnum)
 local LocalData = require(Client.Libraries.LocalData)
-local EffectUtil = require(Shared.Utility.Effects)
 local ComponentClass = require(Client.Classes.Interface)
 
 local Component = ComponentClass.new("Feeding", "Feeding")
@@ -103,5 +99,5 @@ function Component:ShowAgentFeeding(AgentName: string)
     end
 end
 
-return Component
+return Component :: Types.UIComponent
 

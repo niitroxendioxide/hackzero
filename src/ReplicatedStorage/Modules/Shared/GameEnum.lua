@@ -187,6 +187,11 @@ return {
 		["Common"] = 4,
 	},
 
+	AFKEvent = {
+		GiveCurrency = 1,
+		GiveItem = 2,
+	},
+
 	KeyLookup = function(Table: {}, val: number)
 		for Key, Value in Table do
 			if Value == val then
