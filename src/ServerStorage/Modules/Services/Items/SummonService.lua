@@ -12,6 +12,7 @@ local Places = require(Shared.Places)
 local Banner = require(Packages.Summon.Banner)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
+local Statics = require(Shared.Database.Statics)
 
 local DataService = require(Modules.Services.Data.DataService)
 local Probabilities = require(Shared.Database.Probabilities)
@@ -50,7 +51,6 @@ function Service:SummonFromBanner()
     local Rarity = Probabilities:GetRollTypeFrom("Summon")
     local CharacterName = Banner:GetCharacterFromBannerWithRarity(Rarity)
 
-    print("Pulled:", Rarity, CharacterName)
     -- replace later
 
     local ObtainedAgentDataClass = PlayerAgentDataClass.new(CharacterName, 1, DateTime.now().UnixTimestampMillis)
@@ -65,6 +65,16 @@ end
 function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: number)
     if RequestType == GameEnum.SummonRequests. SummonOne or RequestType == GameEnum.SummonRequests.SummonTen then
         local Amount = GameEnum.SummonRequests.SummonOne == RequestType and 1 or 10
+
+        local GemRequirement = Amount * Statics.SummonCost
+        local PlayerGems = DataService:Get(Player, "Gems")
+        local HasEnough = PlayerGems >= GemRequirement
+        if not HasEnough then
+            return
+        end
+
+        DataService:Set(Player, "Gems", PlayerGems - GemRequirement)
+
         local List = {};
         for idx = 1, Amount do
             local NewAgent = Service:SummonFromBanner()

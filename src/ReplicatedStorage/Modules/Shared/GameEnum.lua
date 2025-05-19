@@ -135,6 +135,7 @@ return {
 		UpdateArtifact = 2,
 		GetAllDrives = 3,
 		UpdateDrive = 4,
+		GetCurrencies = 5,
 	},
 
 	AgentEvent = {

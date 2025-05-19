@@ -23,6 +23,7 @@ local EffectUtil = require(Shared.Utility.Effects)
 local ComponentClass = require(Client.Classes.Interface)
 local CharacterDatabase = require(Database.Characters)
 local DrivesDatabase = require(Database.Drives)
+local ArtifactDatabase = require(Database.Artifacts)
 
 --
 export type FilterFunction = (Artifact: Frame & {Slot: NumberValue, Type: StringValue}) -> (boolean)
@@ -38,6 +39,7 @@ local Scope = Component:GetScope()
 local States = {
     __Current_Model = nil,
     __Current_Agent = nil,
+    __Last_Tab = "",
     __Current_Tab = Scope:Value(""),
     __Current_Selected_Item = '',
     __Current_Selected_Item_Object = nil,
@@ -85,16 +87,31 @@ local function CreateAgentIcons(): ()
 
     for _, Agent in AgentsTable do
         local AgentName = Agent.Name
-        local AgentIcon = Assets.Interface.Agents.AgentIcon:Clone()
+        local AgentObj = Assets.Interface.Agents.AgentObj:Clone()
 
-        AgentIcon.Btn.MouseButton1Click:Connect(function()
+        AgentObj.Btn.MouseButton1Click:Connect(function()
             local ClientData = LocalData:GetAgent(AgentName)
+            local Element = UIGroups:GetElementClass("Feeding", "Feeding")
+
+            if Element:IsActive("Agent") then
+                return
+            end
 
             Component:SelectAgent(ClientData)
         end)
 
-        AgentIcon.AgentName.Text = AgentName
-        AgentIcon.Parent = Frame.Agents.Holder
+        AgentObj.Btn.MouseEnter:Connect(function()
+            AgentObj.Design.UIStroke.Transparency = 0
+            AgentObj.Design.UIStroke.Thickness = 2
+        end)
+
+        AgentObj.Btn.MouseLeave:Connect(function()
+            AgentObj.Design.UIStroke.Transparency = .75
+            AgentObj.Design.UIStroke.Thickness = 1
+        end)
+
+        AgentObj.Design.AgentName.Text = AgentName
+        AgentObj.Parent = Frame.Agents.Holder
 
         LastAgent = Agent;
     end
@@ -201,6 +218,12 @@ function Component:Init()
         if not Button:FindFirstChild("Btn") then continue end
 
         Button.Btn.MouseButton1Click:Connect(function()
+            local Element = UIGroups:GetElementClass("Feeding", "Feeding")
+
+            if Element:IsActive("Agent") then
+                return
+            end
+
             States.__Current_Tab:set(Button.Name)
         end)
     end
@@ -221,8 +244,10 @@ function Component:Init()
 
         local Frame = MainFrame:FindFirstChild(CurrentTab)
 
-        if Frame then
-            Frame.Visible = true
+        if Frame or CurrentTab == 'None' then
+            if CurrentTab ~= 'None' then
+                Frame.Visible = true
+            end
 
             Component:SelectAgent(States.__Current_Agent)
 
@@ -235,6 +260,18 @@ function Component:Init()
         end
     end)
 
+
+    --
+    local StatsFrame = MainFrame.Stats
+    local AgentUpgrade = StatsFrame.AgentData.Upgrade
+    AgentUpgrade.Button.MouseButton1Click:Connect(function()
+        local Element = UIGroups:GetElementClass("Feeding", "Feeding")
+        if not States.__Current_Agent then
+            return
+        end
+
+        Element:ShowAgentFeeding(States.__Current_Agent.Name)
+    end)
 
     --
     local ItemsFrame =  MainFrame.Items
@@ -293,12 +330,17 @@ function Component:SelectAgent(AgentData: Types.ClientAgentData)
         Camera:TweenTo(RoomLocations.StatsTab.CFrame)
     end
 
+    local CurrentTab = Component:Peek(States.__Current_Tab)
+    if (States.__Last_Tab == CurrentTab) and (States.__Current_Agent ~= nil and States.__Current_Agent.Name == AgentData.Name) then
+        return
+    end
+
+    local MainFrame = Component:GetFrame()
+
+    States.__Last_Tab = CurrentTab
     States.__Current_Agent = AgentData
 
     SwitchModel(AgentData.Name)
-
-    --
-    local CurrentTab = Component:Peek(States.__Current_Tab)
 
     if CurrentTab == "Items" then
         Component:ShowArtifacts(AgentData)
@@ -317,7 +359,9 @@ function Component:SelectAgent(AgentData: Types.ClientAgentData)
     elseif CurrentTab == "Stats" then
         Component:ShowStats(AgentData)
     elseif CurrentTab == "None" then
-
+        print("none?!")
+        MainFrame.Stats.Visible = false
+        MainFrame.Items.Visible = false
     end
 end
 
@@ -377,7 +421,7 @@ local function SelectArtifact(NewObject: Frame & {Selected: Frame & {UIStroke: U
     end)
 
     --
-    Component:ShowArtifactInfo(Artifact)
+    Component:ShowArtifactInfo(Artifact.Id)
 end
 
 local function SelectDrive(Drive: Types.PlayerDriveData)
@@ -495,8 +539,19 @@ function Component:AddDrive(Drive: Types.PlayerDriveData)
     NewObject.Parent = Holder
 end
 
+function Component:RefreshArtifactInfo(ArtifactId: string)
+    if States.__Current_Selected_Item == ArtifactId then
+        Component:ShowArtifactInfo(ArtifactId)
+    end
+end
 
-function Component:ShowArtifactInfo(Artifact: Types.PlayerArtifactData?)
+function Component:RefreshDriveInfo(DriveId: string)
+    if States.__Current_Drive_Selected == DriveId then
+        Component:ShowDriveInfo(DriveId)
+    end
+end 
+
+function Component:ShowArtifactInfo(ArtifactId: string?)
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
     local DataFrame = ItemsFrame.ItemData
@@ -507,11 +562,13 @@ function Component:ShowArtifactInfo(Artifact: Types.PlayerArtifactData?)
         end
     end
 
-    if Artifact == nil then
+    if ArtifactId == nil then
         DataFrame.Visible = false;
 
         return
     end
+
+    local Artifact = LocalData:GetArtifactById(ArtifactId)
 
     Component:ShowDriveInfo(nil)
 
@@ -519,6 +576,16 @@ function Component:ShowArtifactInfo(Artifact: Types.PlayerArtifactData?)
 
     DataFrame.ArtifactName.Text = Artifact.Name
     DataFrame.Level.Text = `Level: {Artifact.Level}`
+
+    DataFrame.EquippedData.Visible = Artifact.Equipped ~= nil
+    DataFrame.Equip.Label.Text = Artifact.Equipped and 'Switch' or 'Equip'
+    if (States.__Current_Agent ~= nil) and Artifact.Equipped == States.__Current_Agent.Name then
+        DataFrame.Equip.Label.Text = "Unequip"
+    end
+
+    if Artifact.Equipped then
+        DataFrame.EquippedData.Text = `Equipped on: <b>{Artifact.Equipped}</b>`
+    end
 
     local MainStatName = next(Artifact.Stats.Main_Stat)
     DataFrame.MainStat.MainName.Text = string.gsub(MainStatName, '_', ' ')
@@ -564,6 +631,12 @@ function Component:ShowDriveInfo(DriveId: string?)
     local SubStatValue = DriveData.Advanced_Stat.Base + (Ascensions * DriveData.Advanced_Stat.UpgradePerAscension)
     DataFrame.SubStat.SubName.Text = string.gsub(DriveData.Advanced_Stat.StatName, '_', ' ')
     DataFrame.SubStat.Value.Text = tostring(SubStatValue)..(if DriveData.Advanced_Stat.StatName:find('%%') then '%' else '')
+
+    DataFrame.EquippedData.Visible = Drive.Equipped ~= nil
+    DataFrame.Equip.Label.Text = Drive.Equipped and 'Unequip' or 'Equip'
+    if Drive.Equipped then
+        DataFrame.EquippedData.Text = `Equipped on: <b>{Drive.Equipped}</b>`
+    end
 
     --
     DataFrame.Exp.Fill.Size = UDim2.fromScale(math.clamp(Drive.Experience / NextLevelExp, 0, 1), 1)
@@ -857,6 +930,102 @@ end
 --
 -- [[ AGENT STATS ]] --
 --
+local function CalculateAgentStatBuffs(AgentData: Types.ClientAgentData)
+    local AgentStats = CharacterDatabase:GetStatsAtLevel(AgentData.Name, AgentData.Level)
+    local StatBuffs = {}
+
+    for _, ArtifactId in AgentData.Artifacts do
+        local ArtifactObject = LocalData:GetArtifactById(ArtifactId)
+        local Data = ArtifactDatabase:GetArtifactData(ArtifactObject.Name)
+
+        local MainStatName = next(ArtifactObject.Stats.Main_Stat)
+        local MainStatValue = ArtifactObject.Stats.Main_Stat[MainStatName]
+
+        local SlotCount = 0
+        for _, OtherItemId in AgentData.Artifacts do
+            if OtherItemId == ArtifactId then continue end
+
+            local OtherItem = LocalData:GetArtifactById(OtherItemId)
+            if OtherItem.Name == ArtifactObject.Name then
+                SlotCount += 1
+            end
+        end
+
+        if SlotCount >= 2 then
+            for StatName, StatValue in Data.Piece_Effects.Two_Piece do
+                if StatBuffs[StatName] == nil then
+                    StatBuffs[StatName] = 0
+                end
+
+                StatBuffs[StatName] += StatValue
+            end
+
+            if SlotCount >= 4 then
+                for StatName, StatValue in Data.Piece_Effects.Two_Piece do
+                    if StatBuffs[StatName] == nil then
+                        StatBuffs[StatName] = 0
+                    end
+
+                    StatBuffs[StatName] += StatValue
+                end
+            end
+        end
+
+        if StatBuffs[MainStatName] == nil then
+            StatBuffs[MainStatName] = 0
+        end
+
+        StatBuffs[MainStatName] += MainStatValue
+
+        --
+        for SubName, SubValue in ArtifactObject.Stats.Sub_Stats do
+            if StatBuffs[SubName] == nil then
+                StatBuffs[SubName] = 0
+            end
+
+            StatBuffs[SubName] += SubValue
+        end
+    end
+
+    local AgentDrive = AgentData.Drive ~= nil and LocalData:GetDriveById(AgentData.Drive)
+    if AgentDrive then
+        local Level = AgentDrive.Level
+        local DriveData = DrivesDatabase:GetDriveData(AgentDrive.Name)
+        local MainStatName = DriveData.Main_Stat.StatName
+        local MainStatValue = DriveData.Main_Stat.Base + (DriveData.Main_Stat.UpgradePerLevel) * Level
+
+        if StatBuffs[MainStatName] == nil then
+            StatBuffs[MainStatName] = 0
+        end
+
+        StatBuffs[MainStatName] += MainStatValue
+
+        local SubStatName = DriveData.Advanced_Stat.StatName
+        local SubStatValue = DriveData.Advanced_Stat.Base + (DriveData.Advanced_Stat.UpgradePerAscension) * (Level // 10)
+
+        if StatBuffs[SubStatName] == nil then
+            StatBuffs[SubStatName] = 0
+        end
+
+        StatBuffs[SubStatName] += SubStatValue
+    end
+
+    for StatBuffName, StatBuffValue in StatBuffs do
+        if string.match(StatBuffName, "%%") then
+            local StatRaw = string.gsub(StatBuffName, "%%", "")
+
+            local AddedPercentBoost = AgentStats[StatRaw] * (StatBuffValue / 100)
+            if not StatBuffs[StatRaw] then
+                StatBuffs[StatRaw] = 0
+            end
+
+            StatBuffs[StatRaw] += AddedPercentBoost
+            StatBuffs[StatBuffName] = nil
+        end
+    end
+
+    return StatBuffs
+end
 
 function Component:ShowStats(AgentData: Types.ClientAgentData)
     --
@@ -873,13 +1042,21 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
         Obj:Destroy()
     end
 
+    local StatBuffs = CalculateAgentStatBuffs(AgentData)
+
+    local AddPercent = {"Critical_Damage", "Critical_Rate", "Pen_Ratio"}
     local Ignored = {"Penetration", "Jog_Speed", "Walk_Speed", "Sprint_Speed"}
     for Stat, Value in AgentStats do
         if table.find(Ignored, Stat) then continue end
 
+        local ShownValue = Value
+        if StatBuffs[Stat] then
+            ShownValue += StatBuffs[Stat]
+        end
+
         local NewFrame = Assets.Interface.Agents.Stats.Stat:Clone()
         NewFrame.StatName.Text = string.gsub(Stat, "_", " ")
-        NewFrame.StatValue.Text = Value
+        NewFrame.StatValue.Text = ShownValue .. (table.find(AddPercent, Stat) and '%' or '')
         NewFrame.Parent = Frame.Stats.ValuesArea.Holder
     end
 

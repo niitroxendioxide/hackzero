@@ -19,7 +19,7 @@ return {
 		Critical_Damage = 10,
 		Penetration = 0,
 		Pen_Ratio = 0,
-		Daze = 240,
+		Daze = 95,
 		Energy_Regeneration = 0.5,
 		Affliction_Aptitude = 120,
 		Affliction_Facility = 10,

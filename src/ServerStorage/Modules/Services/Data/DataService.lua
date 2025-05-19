@@ -26,6 +26,7 @@ local ProfileStore = require(Packages.Data.ProfileStore)
 local DataStore = ProfileStore.New("pleaseworkforonce", ProfileTemplate)
 
 --
+local ReplicatedKeys = {"Gems", "Money"}
 local Service = {
     __Profiles = {} :: {[Player]: typeof(ProfileStore:StartSessionAsync())},
     __Agents = {},
@@ -67,6 +68,10 @@ function Service:Init()
     Network:On("ItemData", function(Player: Player, Type: number)
         if Type == GameEnum.ItemDataEvent.GetAllArtifacts then
             Service:UpdatePlayerArtifacts(Player)
+        elseif Type == GameEnum.ItemDataEvent.GetAllDrives then
+            Service:UpdatePlayerDrives(Player)
+        elseif Type == GameEnum.ItemDataEvent.GetCurrencies then
+            --
         end
     end)
 end
@@ -127,8 +132,15 @@ function Service:UpdatePlayerDrives(Player: Player): ()
 end
 
 function Service:SyncPlayerItems(Player: Player)
+    local Data = Service:GetDataFor(Player)
+
     Service:UpdatePlayerArtifacts(Player)
     Service:UpdatePlayerDrives(Player)
+
+    Network:Fire('ItemData', Player, GameEnum.ItemDataEvent.GetCurrencies, {
+        ['Money'] = Data.Money,
+        ['Gems'] = Data.Gems,
+    })
 end
 
 
@@ -202,11 +214,22 @@ function Service:Set(Player: Player, GivenKey: string, Value: any)
     local Data = Service:GetDataFor(Player)
     local Dir, Key = RecursiveSearch(Data, GivenKey)
 
-    if typeof(Value) ~= Dir[Key] then
+    if typeof(Value) ~= typeof(Dir[Key]) then
         return warn("Invalid type given for key:", GivenKey, `value expected: {typeof(Dir[Key])}, given: {typeof(Value)}`)
     end
 
     Dir[Key] = Value
+
+    --
+
+    if table.find(ReplicatedKeys, Key) then
+        Network:Fire('ItemData', Player, GameEnum.ItemDataEvent.GetCurrencies, {
+            ['Money'] = Data.Money,
+            ['Gems'] = Data.Gems,
+        })
+    end
+
+    --
 
     return;
 end
@@ -264,7 +287,6 @@ function Service:UpdateAgent(Player: Player, Agent: Types.PlayerAgentDataClass)
     end
 
     PlayerData.Agents[Agent.Name] = Agent:ToData()
-    print(PlayerData.Agents[Agent.Name])
 end
 
 function Service:SetupAgents(Player: Player)
@@ -349,6 +371,10 @@ function Service:SavePlayerData(Player: Player)
 
     for _, Drive: Types.PlayerDriveDataClass in (Service.__Drives[Player] or {}) do
         Service:AddDrive(Player, Drive)
+    end
+
+    for _, Artifact: Types.PlayerArtifactDataClass in (Service.__Artifacts[Player] or {}) do
+        Service:AddArtifact(Player, Artifact)
     end
 end
 

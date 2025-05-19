@@ -24,6 +24,9 @@ function Service:Init()
 
     --
     local CommandFolder = TextChatService:FindFirstChild("Commands") :: Folder
+    if not CommandFolder then
+        return
+    end
 
     for _, CommandInstance in CommandFolder:GetChildren() :: {TextChatCommand} do
         CommandInstance.Triggered:Connect(function(Caster: TextSource, Message: string)

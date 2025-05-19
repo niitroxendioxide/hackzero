@@ -73,6 +73,31 @@ function LocalData:EditArtifact(Artifact: Types.PlayerArtifactData): ()
 end
 
 --
+function LocalData:GetItemById(IdGiven: string): ((Types.PlayerArtifactData | Types.PlayerDriveData)?, ('Drive' | 'Artifact')?)
+    for _, Item in LocalData:GetArtifacts() do
+        if Item.Id == IdGiven then
+            return Item, 'Artifact'
+        end
+    end
+
+    for _, Item in LocalData:GetDrives() do
+        if Item.Id == IdGiven then
+            return Item, 'Drive'
+        end
+    end
+
+    return;
+end
+--
+function LocalData:SetCurrencies(Payload: {}): ()
+    LocalData.__Cache['Currencies'] = Payload
+end
+
+function LocalData:GetCurrencies(): {Money: number, Gems: number}
+    return LocalData.__Cache['Currencies']
+end
+
+--
 function LocalData:GetDrives()
     return LocalData.__Cache['Drives'] or {}
 end

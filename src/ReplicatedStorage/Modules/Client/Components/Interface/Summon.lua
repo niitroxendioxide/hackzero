@@ -10,10 +10,13 @@ local Network = require(Shared.Network)
 local Types = require(Shared.Types)
 local GameEnum = require(Shared.GameEnum)
 local ComponentClass = require(Client.Classes.Interface)
+local UIGroups = require(Client.Libraries.UIGroups)
 
 --
 local Component = ComponentClass.new(script.Name, 'Lobby', {KeyToBind = Enum.KeyCode.J}) :: Types.UIComponent & Types.UIGetSetButton
-
+local States = {
+	MainModel = nil,
+}
 
 --
 local function RequestSummonOne()
@@ -53,6 +56,14 @@ function Component:Init()
 
 	Summon.Button.MouseButton1Click:Connect(RequestSummonOne)
 	SummonTen.Button.MouseButton1Click:Connect(RequestSummonTen)
+
+	Component:BindToStateChange(function(State: boolean)
+		if not State then
+			local LobbyMain = UIGroups:GetElementClass("Lobby", "MainMenu")
+
+			LobbyMain:Set(true, true)
+		end
+	end)
 end
 
 function Component:SetBanner(Data: {Main: string, Sub: {string}})
@@ -64,13 +75,40 @@ function Component:SetBanner(Data: {Main: string, Sub: {string}})
 		end
 	end
 
-	Frame.BannerFrame.MainCharacter.CharName.Text = Data.Main
+	local AgentsFolder = Assets.Characters.Agents
+	local MainCharFrame = Frame.BannerFrame.MainCharacter
+	MainCharFrame.CharName.Text = Data.Main
 
+	local CharacterModel = AgentsFolder:FindFirstChild(Data.Main)
+	if CharacterModel then
+		if States.MainModel then
+			States.MainModel:Destroy()
+		end
+
+		local NewCamera = Instance.new("Camera")
+		local ClonedCharacter = CharacterModel:Clone()
+		ClonedCharacter.Parent = MainCharFrame.Viewport.WorldModel
+		ClonedCharacter:PivotTo(CFrame.new())
+
+		NewCamera.FieldOfView = 5
+		NewCamera.CFrame = ClonedCharacter:GetPivot() * CFrame.new(0, 0, -85) * CFrame.Angles(0, math.pi, 0)
+		MainCharFrame.Viewport.CurrentCamera = NewCamera
+
+		States.MainModel = ClonedCharacter
+	end
+
+	--
 	for _, Char in Data.Sub do
 		local SubChar = Assets.Interface.Lobby.Summon.CharName:Clone()
 		SubChar.Text = Char
 		SubChar.Parent = Frame.BannerFrame.OtherCharacters.Scroll
 	end
+end
+
+function Component:SetVisibility(state: boolean)
+	local MainFrame = Component:GetFrame()
+
+	MainFrame.Visible = state
 end
 
 return Component

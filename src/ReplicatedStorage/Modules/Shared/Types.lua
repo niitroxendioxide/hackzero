@@ -840,6 +840,9 @@ export type PlayerProfileData = {
 	Level: number,
     Experience: number,
 
+	Gems: number,
+	Money: number,
+
     Stats: {
         TotalDamage: number,
         TotalDaze: number,

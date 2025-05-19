@@ -76,8 +76,13 @@ function SummonCutscene.Sequence(self: Types.CutsceneClass, Data: {string})
     local Off = CFrame.new(Rng:NextNumber(-8, 8), Rng:NextNumber(-3, 3), Rng:NextNumber(-4, 4))
 
     SummonCutscene:MoveCamera(CFrame.lookAt((Base * Off).Position, Spawn.Position), {.65, 'Quad', 'Out'})
-    --SummonCutscene:Wait(5)
+    local ActiveTime = os.clock()
     Inputs:WaitFor(Enum.UserInputType.MouseButton1)
+
+    if os.clock() - ActiveTime < .65 then
+        repeat task.wait()
+        until os.clock() - ActiveTime >= 0.65
+    end
 
     SummonCutscene:End()
 end

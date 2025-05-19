@@ -14,11 +14,17 @@ local UIEffects = require(Client.Utility.UIEffects)
 local ComponentClass = require(Client.Classes.Interface)
 local EffectUtil = require(Shared.Utility.Effects)
 local Inputs = require(Client.Libraries.Inputs)
+local LocalData = require(Client.Libraries.LocalData)
 
 local Icons = {
     ['Inventory'] = 93968693751727,
     ['Agents'] = 126819722091537,
     ['Settings'] = 134273057855463,
+}
+
+local CurrencyIcons = {
+    ['Money'] = 105549712478275,
+    ['Gems'] = 94639843447517,
 }
 
 --
@@ -172,6 +178,38 @@ function Component:CreateTabButton(Name: string)
     end)
 end
 
+function Component:ShowCurrency(Name: string)
+    --
+    local Currencies = LocalData:GetCurrencies() or {}
+    local Amount = Currencies[Name] or 0
+    local MainFrame = Component:GetFrame()
+    local CurrencyFrame = MainFrame.Currencies
+
+    local OldFrame = CurrencyFrame.List:FindFirstChild(Name)
+    if OldFrame then
+        OldFrame.CurrencyVal.Text = tostring(Amount)
+        return
+    end
+
+    local NewObject = Assets.Interface.Lobby.Main.Currency:Clone()
+    NewObject.Name = Name
+    NewObject.CurrencyVal.Text = Amount
+    NewObject.Icon.Image = 'rbxassetid://' .. (CurrencyIcons[Name] or 0)
+    NewObject.Parent = CurrencyFrame.List
+
+    NewObject.Button.MouseButton1Click:Connect(function()
+        print("gotta buy", Name)
+    end)
+
+    NewObject.Button.MouseEnter:Connect(function()
+        EffectUtil:Tween(NewObject.Buy.UIScale, {.25, 'Cubic'}, {Scale = 1})
+    end)
+
+    NewObject.Button.MouseLeave:Connect(function()
+        EffectUtil:Tween(NewObject.Buy.UIScale, {.25, 'Cubic'}, {Scale = 0})
+    end)
+end
+
 function Component:Init(): ()
     local MainFrame = Component:GetFrame()
     local MainTab = MainFrame.MainButtonTab
@@ -185,6 +223,10 @@ function Component:Init(): ()
         Component:CreateTabButton(ButtonName)
     end
 
+    for _, ButtonName in {'Money', 'Gems'} do
+        Component:ShowCurrency(ButtonName)
+    end
+
     Component:BindToStateChange(function(State: boolean)
         if State then
             UIEffects:Transition("Lobby", .75)
@@ -195,16 +237,45 @@ function Component:Init(): ()
 
     Component:Set(true)
 
-    --
+    -- Menu btn
     local Menu = Component:GetButton("Menu")
     Menu.Button.MouseButton1Click:Connect(function()
         ToggleTab(not States.Active)
     end)
 
     Menu.Button.MouseEnter:Connect(function()
+        Menu.UIStroke.Color = Color3.new(1, 1, 1)
 
+        EffectUtil:Tween(Menu.Icon.UIScale, {.2}, {Scale = 1.1})
     end)
 
+    Menu.Button.MouseLeave:Connect(function()
+        Menu.UIStroke.Color = Color3.new()
+
+        EffectUtil:Tween(Menu.Icon.UIScale, {.2}, {Scale = 1})
+    end)
+
+    --
+    local Agents = Component:GetButton("Agents")
+    Agents.Button.MouseButton1Click:Connect(function()
+        local Element = UIGroups:GetElementClass("Lobby", 'Agents')
+        if not Element then return end
+
+        ToggleTab(false)
+        Element:Set(true)
+    end)
+
+    Agents.Button.MouseEnter:Connect(function()
+        Agents.UIStroke.Color = Color3.new(1, 1, 1)
+
+        EffectUtil:Tween(Agents.Icon.UIScale, {.2}, {Scale = 1.1})
+    end)
+
+    Agents.Button.MouseLeave:Connect(function()
+        Agents.UIStroke.Color = Color3.new()
+
+        EffectUtil:Tween(Agents.Icon.UIScale, {.2}, {Scale = 1})
+    end)
 
     --
     local ReturnHolder = MainTab.Return
@@ -243,8 +314,10 @@ function Component:Init(): ()
 
         ReturnHolder.UIStroke.Thickness = 1
         ReturnHolder.UIStroke.Color = Color3.new()
-        EffectUtil:Tween(ReturnHolder.UIScale, {.25}, {Scale = 1})
+        EffectUtil:Tween(ReturnHolder.UIScale, {.25, 'Cubic'}, {Scale = 1})
     end)
+
+    --
 
     --
     Inputs:Bind(Enum.KeyCode.M, {

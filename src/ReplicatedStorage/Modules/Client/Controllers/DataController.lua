@@ -83,6 +83,8 @@ function Controller:Init()
             Controller:ConvertArtifacts(Payload)
         elseif Type == GameEnum.ItemDataEvent.GetAllDrives then
             Controller:ConvertDrives(Payload)
+        elseif Type == GameEnum.ItemDataEvent.GetCurrencies then
+            Controller:ShowCurrencies(Payload)
         end
     end)
 
@@ -104,6 +106,7 @@ function Controller:UpdateArtifactState(Payload: {number | {}})
 
     LocalData:EditArtifact(Artifact)
     UI:UpdateArtifact(Artifact)
+    UI:RefreshArtifactInfo(Artifact.Id)
 
     if Type == GameEnum.ChangeEvents.Update then
         return
@@ -130,6 +133,7 @@ function Controller:UpdateDriveState(Payload: {number | {}})
 
     LocalData:EditDrive(Drive)
     UI:UpdateDrive(Drive)
+    UI:RefreshDriveInfo(Drive.Id)
 
     if Type == GameEnum.ChangeEvents.Update then
         return
@@ -172,6 +176,19 @@ function Controller:ConvertDrives(Payload: {})
     end
 
     LocalData:SetDrives(AllDrives)
+end
+
+function Controller:ShowCurrencies(Payload: {[string]: number})
+    local UIComponent = InterfaceController:GetComponent("LobbyMain")
+
+    LocalData:SetCurrencies(Payload)
+
+    if not UIComponent then
+        return
+    end
+
+    UIComponent:ShowCurrency('Money', Payload.Money)
+    UIComponent:ShowCurrency('Gems', Payload.Gems)
 end
 
 return Controller

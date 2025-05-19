@@ -25,14 +25,14 @@ function Controller:Init()
     Network:On("Summon", function(Type: number, Result: {string})
         if Type == GameEnum.SummonRequests.SummonResult then
             local SummonMenu = InterfaceController:GetComponent("Summon")
-            SummonMenu:Set(false)
+            SummonMenu:SetVisibility(false)
 
             for _, Agent in Result do
                 Cutscenes:Start("Summon", {Agent[1]})
                 Cutscenes:WaitCurrent()
             end
 
-            SummonMenu:Set(true)
+            SummonMenu:SetVisibility(true)
         end
     end)
 end

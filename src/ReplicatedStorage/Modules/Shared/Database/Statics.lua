@@ -5,6 +5,9 @@ return {
 	Max_Character_Level = 60,
 	Max_Team_Size = 5,
 
+	-- Summoning
+	SummonCost = 160,
+
 	--
 	Daze_Length_Level_Multiplier = 0.01416666666,
 	Drive_Trait_Chance = 25,
