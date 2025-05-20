@@ -1,3 +1,4 @@
+--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
@@ -16,16 +17,16 @@ function Util:Transition(Label: string, Time: number)
         return
     end
 
-    local TransitionFrame = EffectsHUD:FindFirstChild("TransitionFrame")
+    local TransitionFrame = EffectsHUD:FindFirstChild("TransitionFrame") :: Frame
     if not TransitionFrame then
         return
     end
 
     TransitionFrame.Visible = true
 
-    local BackgroundFrame = TransitionFrame:FindFirstChild("Frame")
-    local LabelObj = TransitionFrame:FindFirstChild("Label")
-    local OtherLabel = TransitionFrame:FindFirstChild("LabelName")
+    local BackgroundFrame = TransitionFrame:FindFirstChild("Frame") :: Frame
+    local LabelObj = TransitionFrame:FindFirstChild("Label") :: TextLabel
+    local OtherLabel = TransitionFrame:FindFirstChild("LabelName") :: TextLabel
 
     LabelObj.Text = Label
 
@@ -49,6 +50,46 @@ function Util:Transition(Label: string, Time: number)
     end)
 
     task.wait(.225)
+end
+
+function Util:AnimateReturnButton(Button: Frame, Callback: (...any) -> ()): ()
+    local ReturnHolder = Button :: Frame & {Btn: TextButton, UIStroke: UIStroke, UIScale: UIScale}
+    local Btn = ReturnHolder.Btn
+    local Thread: thread = nil
+    Btn.MouseButton1Click:Connect(Callback)
+
+
+    Btn.MouseEnter:Connect(function()
+        if Thread then
+            task.cancel(Thread)
+        end
+
+        Thread = task.spawn(function()
+            local Angle = 0
+
+            while true do
+                local Delta = task.wait()
+
+                Angle += Delta * 360
+
+                ReturnHolder.UIStroke.Thickness = 2 + math.sin(math.rad(Angle))
+            end
+        end)
+
+        ReturnHolder.UIStroke.Color = Color3.new(1,1,1)
+        EffectsUtil:Tween(ReturnHolder.UIScale, {.2}, {Scale = 1.1})
+    end)
+
+    Btn.MouseLeave:Connect(function()
+        if Thread then
+            task.cancel(Thread)
+        end
+
+        ReturnHolder.UIStroke.Thickness = 1
+        ReturnHolder.UIStroke.Color = Color3.new()
+        EffectsUtil:Tween(ReturnHolder.UIScale, {.25, 'Cubic'}, {Scale = 1})
+    end)
+
 end
 
 return Util

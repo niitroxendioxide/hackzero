@@ -262,7 +262,7 @@ function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: n
             Player:Kick("Cannot play match without a set team.")
         end
 
-        local AgentsToTest = {"Goku", "Asta", "Vegeta"}
+        local AgentsToTest = {"Goku", "Trunks", "Vegeta"}
         local Converted = {}
         for _, Name in AgentsToTest do
             table.insert(Converted, {

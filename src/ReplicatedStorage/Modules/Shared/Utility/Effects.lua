@@ -9,17 +9,17 @@ local World = require(script.Parent.Parent.World)
 local Effects_Folder = workspace:WaitForChild('World'):WaitForChild('Effects')
 
 export type TweenGoals = {
-	Size: Vector3?,
+	Size: (Vector3 | UDim2)?,
 	CFrame: CFrame?,
-	Position: Vector3?,
+	Position: (Vector3 | UDim2)?,
 	Orientation: Vector3?,
 	Transparency: number?,
 	Brightness: number?,
 	Range: number?,
-	[string]: number,
+	[string]: number?,
 }
 
-function EffectUtil:Tween(Object: Instance, Info: {}, Goals: TweenGoals)
+function EffectUtil:Tween(Object: Instance, Info: {number | string}, Goals: TweenGoals)
 	--
 	local Time, Ease, Direction = Info[1] :: number, (Info[2] or 'Linear') :: string, (Info[3] or 'Out') :: string;
 	local NewInfo = typeof(Info) == 'TweenInfo' and Info or TweenInfo.new(

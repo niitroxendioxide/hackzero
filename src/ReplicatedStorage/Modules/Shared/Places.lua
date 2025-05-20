@@ -30,6 +30,15 @@ function Service:CanFight(): boolean
     local PlaceId = game.PlaceId
 
     return (PlaceId == WorldData.Mission or PlaceId == WorldData.Raid);
+end 
+
+function Service:GetAllPlaces(): ()
+    local Keys = {}
+    for PlaceName in WorldData do
+        table.insert(PlaceName, Keys)
+    end
+
+    return Keys
 end
 
 return Service

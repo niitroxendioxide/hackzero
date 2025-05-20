@@ -209,7 +209,7 @@ function Component:Init(): ()
     MainTab.UserIdLabel.Text = Player.UserId
 
     --
-    for _, ButtonName in {'Inventory', 'Agents', 'Settings'} do
+    for _, ButtonName in {'Inventory', 'Agents', 'Settings', 'Map'} do
         Component:CreateTabButton(ButtonName)
     end
 
@@ -268,43 +268,8 @@ function Component:Init(): ()
     end)
 
     --
-    local ReturnHolder = MainTab.Return
-    local Btn: TextButton = ReturnHolder.Btn
-    local Thread: thread = nil
-    Btn.MouseButton1Click:Connect(function()
+    UIEffects:AnimateReturnButton(MainTab.Return, function()
         ToggleTab(false)
-    end)
-
-
-    Btn.MouseEnter:Connect(function()
-        if Thread then
-            task.cancel(Thread)
-        end
-
-        Thread = task.spawn(function()
-            local Angle = 0
-
-            while true do
-                local Delta = task.wait()
-
-                Angle += Delta * 360
-
-                ReturnHolder.UIStroke.Thickness = 2 + math.sin(math.rad(Angle))
-            end
-        end)
-
-        ReturnHolder.UIStroke.Color = Color3.new(1,1,1)
-        EffectUtil:Tween(ReturnHolder.UIScale, {.2}, {Scale = 1.1})
-    end)
-
-    Btn.MouseLeave:Connect(function()
-        if Thread then
-            task.cancel(Thread)
-        end
-
-        ReturnHolder.UIStroke.Thickness = 1
-        ReturnHolder.UIStroke.Color = Color3.new()
-        EffectUtil:Tween(ReturnHolder.UIScale, {.25, 'Cubic'}, {Scale = 1})
     end)
 
     --

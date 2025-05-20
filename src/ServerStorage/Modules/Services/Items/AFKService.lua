@@ -26,20 +26,28 @@ local Service = {
 }
 
 function Service:Init()
+    Network.new('AFKEvent', 'Event')
+
+    Network:On("AFKEvent", function(Player: Player, Type: number)
+        if Type == 1 then
+            local Success = TeleportService:TeleportPlayer(Player, 'Lobby')
+
+            if Success then
+                print("Teleported back!")
+            end
+        elseif Type == 2 then
+            local Success = TeleportService:TeleportPlayer(Player, 'AFK')
+
+            if Success then
+                print("Teleported to AFK place!")
+            end
+        end
+    end)
+
+    -- Prevent it from loading AFK place functions !
     if not Places:IsInPlace("AFK") then
         return
     end
-
-    --
-    Network.new('AFKEvent', 'Event')
-
-    Network:On("AFKEvent", function(Player: Player)
-        local Success = TeleportService:TeleportPlayer(Player, 'Lobby')
-
-        if Success then
-            print("Teleported back!")
-        end
-    end)
 
     --
     RunService.Heartbeat:Connect(function(Delta: number): ()

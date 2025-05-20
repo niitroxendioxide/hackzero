@@ -47,11 +47,11 @@ function MovesetClass:Assign(Type: string, Ability: Types.AbilityClass)
 	end)
 end
 
-function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Begin' | 'End')
+function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Begin' | 'End'): boolean
 	Type = Type:gsub('_', ' ')
 
 	if not self.__Assigned[Type] then
-		return
+		return false
 	end
 
 	if not self.__Last_Use[Agent] then
@@ -71,10 +71,10 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Beg
 
 	if typeof(self.__Assigned[Type]) == 'table' and self.__Assigned[Type].Play then
 		if not self:Verify(Agent, Type) then
-			return
+			return false
 		end
 
-		if Cooldown:IsOn(CooldownKey) then return end
+		if Cooldown:IsOn(CooldownKey) then return false end
 
 		Cooldown:Add(CooldownKey, Info.Base.Cooldown)
 
@@ -104,9 +104,12 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Beg
 		self.__Last_Use[Agent][Type] = os.clock()
 
 		--
+		return true;
 	else
 		warn(`Moveset: "{self.Name} does not have a correct skill module assigned for: "{Type}."`)
 	end
+
+	return false;
 end
 
 

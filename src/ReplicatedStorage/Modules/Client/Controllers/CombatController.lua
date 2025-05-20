@@ -9,6 +9,7 @@ local Inputs = require(Client.Libraries.Inputs)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
 local Places = require(Shared.Places)
+local InterfaceController = require(Client.Controllers.InterfaceController)
 --local Replicator = require(Client.Libraries.Replicator)
 
 --local GameEnum = require(Shared.GameEnum)
@@ -29,32 +30,45 @@ function Controller:Init()
 		Inputs:Bind(Key, {
 			Release = true,
 			Callback = function(State: 'Begin' | 'End')
-				local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")
-				local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
-				local CurrentAgent = Characters:GetCurrent(UserId)
-
-				if CurrentAgent == nil then
-					print("Input rejected. Character is null")
-					return
-				end
-
-
-
-				--print("Pre-ability", State, Key, CharacterMoveset)
-				if State == 'Begin' then
-					CharacterMoveset:Begin(Key, CurrentAgent)
-				else
-					CharacterMoveset:Release(Key, CurrentAgent)
-				end
-
-				if Key == 'Dodge' then
-					for _, Character in Characters:GetCharacters(UserId) do
-						Character:SetKey('Sprint', true)
-						Character:SetKey('Jog', true)
-					end
-				end
+				Controller:HandleInput(Key, State)
 			end,
 		})
+	end
+end
+
+function Controller:HandleInput(Key: string, State: string)
+	local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")
+	local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
+	local CurrentAgent = Characters:GetCurrent(UserId)
+
+	if CurrentAgent == nil then
+		return
+	end
+
+	--print("Pre-ability", State, Key, CharacterMoveset)
+	local Success;
+	if State == 'Begin' then
+		Success = CharacterMoveset:Begin(Key, CurrentAgent)
+	else
+		Success = CharacterMoveset:Release(Key, CurrentAgent)
+	end
+
+	--
+	if Success then
+		local SkillInfo = CharacterMoveset:GetInfoForSkill(Key)
+
+		if SkillInfo.Base and SkillInfo.Base.Cooldown then
+			local Moveset = InterfaceController:GetComponent("Moveset")
+
+			Moveset:PlayCooldown(Key, SkillInfo.Base.Cooldown)
+		end
+	end
+
+	if Key == 'Dodge' then
+		for _, Character in Characters:GetCharacters(UserId) do
+			Character:SetKey('Sprint', true)
+			Character:SetKey('Jog', true)
+		end
 	end
 end
 

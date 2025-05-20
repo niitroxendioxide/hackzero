@@ -614,12 +614,22 @@ export type UIComponent = {
 	CheckAvailable: (self: UIComponent) -> (boolean),
 
 	Init: (self: UIComponent) -> (),
+
+	--[[
+		Link the component to an existing UI/ScreenGUI; whatever preference you have.
+	]]
 	Link: (self: UIComponent) -> (Instance?),
 	Bind: (self: UIComponent) -> (),
-	Set: (self: UIComponent, State: boolean?) -> (),
+
+	--[[
+		Sets the state of the component
+		@param State Whether its active or not
+		@param Raw Call the method ignoring the callback or not
+	]]
+	Set: (self: UIComponent, State: boolean?, Raw: boolean?) -> (),
 	BindToStateChange: (self: UIComponent, Callback: (State: boolean) -> ()) -> (),
 
-	[string]: (self: UIComponent) -> (any),
+	[string]: (self: UIComponent, ...any) -> () | any?,
 }
 
 export type UIGetSetButton = {

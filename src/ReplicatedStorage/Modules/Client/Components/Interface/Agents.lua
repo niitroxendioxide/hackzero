@@ -336,6 +336,9 @@ function Component:SelectAgent(AgentData: Types.ClientAgentData)
     end
 
     local MainFrame = Component:GetFrame()
+    if not AgentData then
+        return
+    end
 
     States.__Last_Tab = CurrentTab
     States.__Current_Agent = AgentData

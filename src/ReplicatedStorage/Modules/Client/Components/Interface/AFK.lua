@@ -22,7 +22,7 @@ local function ToHMS(Seconds: number)
 end
 
 local function RequestTeleportBack()
-    Network:Fire("AFKEvent")
+    Network:Fire("AFKEvent", 1)
 end
 
 
