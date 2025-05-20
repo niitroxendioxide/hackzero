@@ -48,6 +48,47 @@ function ReserveServerForPlace(PlaceId: number): number?
     return Code;
 end
 
+
+--[[
+    Teleport a specific player to a place
+
+--]]
+function TeleportIndividualPlayer(PlaceId: number, Player: Player, Data: {}?): boolean
+    local CurrentAttempts = MAX_TELEPORT_ATTEMPTS
+
+    if Service.__Queue[Player] then
+        return false
+    end
+
+    Service.__Queue[Player] = true
+
+    repeat
+        local Success, Error = pcall(function()
+            TeleportService:Teleport(PlaceId, Player, Data)
+        end)
+
+        if not Success then
+            CurrentAttempts -= 1
+            warn("Error when teleporting players", Error)
+        else
+            break
+        end
+
+        task.wait(.25)
+    until CurrentAttempts <= 0 or Success
+
+    if CurrentAttempts <= 0 then
+        warn("Teleport failed")
+
+        return false
+    end
+
+    --
+    Service.__Queue[Player] = false
+
+    return true;
+end
+
 --[[
 Teleport a group of people
 @param PlaceId The place Id of the world to telepor them to
@@ -102,8 +143,18 @@ function Service:Init()
     
 end
 
-function Service:TeleportPlayer()
-    return Types.NOT_IMPLEMENTED_ERROR()
+function Service:TeleportPlayer(Player: Player, Place: string): (boolean, string)
+    local PlaceId = Places:GetId(Place)
+    if not PlaceId then
+        return false, "Invalid place id"
+    end
+
+    local Success = TeleportIndividualPlayer(PlaceId, Player, {})
+    if not Success then
+        return false, "Error teleporting player"
+    end
+
+    return true, ''
 end
 
 function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {}): (boolean, string?)
@@ -136,8 +187,6 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
     local Id = Places:GetId(Stage)
     local Reserved = ReserveServerForPlace(Id)
     local Success = TeleportPlayerGroupAttempt(Id, Reserved, Party:GetRawPlayers(), TeleportData)
-
-    print(Reserved, Success, Id, Stage)
 
     Service.__Reserving[Party.Code] = nil
 

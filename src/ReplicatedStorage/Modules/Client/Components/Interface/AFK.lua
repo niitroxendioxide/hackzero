@@ -11,7 +11,7 @@ local Assets = ReplicatedStorage.Assets
 local World = workspace:FindFirstChild("World")
 
 local Types = require(Shared.Types)
-local GameEnum = require(Shared.GameEnum)
+local Network = require(Shared.Network)
 local EffectUtil = require(Shared.Utility.Effects)
 local IconDatabase = require(Database.Icons)
 local ComponentClass = require(Client.Classes.Interface)
@@ -19,6 +19,10 @@ local ComponentClass = require(Client.Classes.Interface)
 --
 local function ToHMS(Seconds: number)
 	return string.format("%02i:%02i:%02i", Seconds/60^2, Seconds/60%60, Seconds%60)
+end
+
+local function RequestTeleportBack()
+    Network:Fire("AFKEvent")
 end
 
 
@@ -45,6 +49,9 @@ function Component:Init()
 
         MainFrame.Data.TimeCounter.Text = `Time Active: {ToHMS(SecondsCounted)}`
     end))
+
+    --
+    MainFrame.Data.ReturnBtn.Btn.MouseButton1Click:Connect(RequestTeleportBack)
 end
 
 function Component:ShowCurrency(Type: string, Value: number)
@@ -61,6 +68,7 @@ function Component:ShowCurrency(Type: string, Value: number)
     --
     ItemObj = Assets.Interface.AFK.Currency:Clone()
     ItemObj.Design.Icon.Image = 'rbxassetid://' .. (IconDatabase.Currency[Type] or 0)
+    ItemObj.Design.CurrencyVal.Text = tostring(Value)
     ItemObj.Name = Type
     ItemObj.Parent = CurrencyList
 end

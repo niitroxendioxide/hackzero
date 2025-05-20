@@ -9,6 +9,19 @@ return {
 	SummonCost = 160,
 
 	--
+	AFK_Rewards = {
+		Currency = {
+			Gems = 2,
+			Money = 25,
+		},
+	},
+
+	AFK_Times = {
+		Gems = 30,
+		Money = 5,
+	},
+
+	--
 	Daze_Length_Level_Multiplier = 0.01416666666,
 	Drive_Trait_Chance = 25,
 

@@ -15,6 +15,7 @@ local Controller = {
 function Controller:Init()
     Network:On("AFKEvent", function(Type: number, Payload: {})
         if Type == GameEnum.AFKEvent.GiveCurrency then
+            print("hey!")
             Controller:UpdateCurrency(Payload[1], Payload[2])
         end
     end)
