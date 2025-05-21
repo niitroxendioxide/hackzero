@@ -7,7 +7,6 @@ local World = workspace:FindFirstChild("World")
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Assets = ReplicatedStorage.Assets.Characters
 local Classes = Client.Classes
 
 local Types = require(Shared.Types)
