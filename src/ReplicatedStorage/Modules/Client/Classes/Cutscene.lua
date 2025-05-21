@@ -1,14 +1,18 @@
---
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
 --
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
+local Assets = ReplicatedStorage:FindFirstChild("Assets")
 
 local Camera = require(Client.Libraries.Camera)
 local Signal = require(Shared.Utility.Signal)
 local Types = require(Shared.Types)
 local EffectsUtil = require(Shared.Utility.Effects)
+local AnimLib = require(Client.Libraries.Animation)
+local CharactersLib = require(Client.Libraries.Characters)
 
 --
 local CutsceneClass = {}
@@ -23,15 +27,60 @@ function CutsceneClass.new(Name: string, Time: number): Types.CutsceneClass
     self.__Time = Time or 10
     self.__Active = false
     self.__Cache = {}
+    self.__Objects = {}
     self.__Thread = nil;
 
     return self
+end
+
+function CutsceneClass.GetPlayerEnvironment(self: Types.CutsceneClass): {}
+    local Current = CharactersLib:GetCurrent(Players.LocalPlayer:GetAttribute("ReplicationId"))
+
+    return {
+        Model = Current:GetModel(),
+        CFrame = Current:GetPivot(),
+        AgentName = Current.Name
+    }
 end
 
 --
 function CutsceneClass.Sequence(self: Types.CutsceneClass, Data: {}): ()
     print("Cutscene sequence", self.__Name, "began!")
     -- empty method!
+end
+
+function CutsceneClass.AnimateCamera(self: Types.CutsceneClass, At: CFrame, Animation: string): (AnimationTrack)?
+    local Rig = Assets.Characters:FindFirstChild('CameraRig');
+    if not(Rig) or not(Camera:GetCurrentUser() == self.__Name) then
+        return;
+    end
+
+    local RenderStepKey = self.__Name .. "CameraRenderer"
+    RunService:UnbindFromRenderStep(RenderStepKey)
+
+    local NewCameraRig = self.__Objects.CameraRig or Rig:Clone()
+    self.__Objects.CameraRig = NewCameraRig
+    self.__Objects.CameraRig:PivotTo(At)
+    self.__Objects.CameraRig.Parent = (workspace:FindFirstChild("World") :: Folder):FindFirstChild("Effects")
+
+    local AnimObject = AnimLib:GetAnim('Cutscenes.'..Animation)
+    local Track = AnimLib:Play(self.__Objects.CameraRig, AnimObject)
+
+    RunService:BindToRenderStep(RenderStepKey, Enum.RenderPriority.Camera.Value, function(delta: number)
+        if Camera:GetCurrentUser() ~= self.__Name then
+            RunService:UnbindFromRenderStep(RenderStepKey)
+
+            return
+        end
+
+        workspace.CurrentCamera.CFrame = NewCameraRig.CameraReference.CFrame
+    end)
+
+    Track.Stopped:Once(function()
+        Track:Destroy()
+    end)
+
+    return Track;
 end
 
 function CutsceneClass.MoveCamera(self: Types.CutsceneClass, To: CFrame, Info: {any}): Tween?
@@ -107,13 +156,13 @@ function CutsceneClass.Add(self: Types.CutsceneClass, Item: any): ()
     table.insert(self.__Cache, Item)
 end
 
-function CutsceneClass:Wait(Time: number)
+function CutsceneClass.Wait(self: Types.CutsceneClass, Time: number)
     local Counter = 0;
 
     repeat
         local Delta = task.wait()
         Counter += Delta
-    until Counter >= Time
+    until (Counter >= Time) or (Counter >= self.__Time)
 end
 
 function CutsceneClass.Remove(self: Types.CutsceneClass, Item: any): ()
@@ -131,7 +180,7 @@ function CutsceneClass.End(self: Types.CutsceneClass)
     self:CleanUp()
     self.__Active = false
 
-    if self.__Thread then
+    if self.__Thread ~= nil and self.__Thread ~= coroutine.running() then
         task.cancel(self.__Thread)
         self.__Thread = nil
     end

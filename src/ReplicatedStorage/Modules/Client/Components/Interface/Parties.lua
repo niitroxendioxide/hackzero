@@ -98,7 +98,12 @@ function PartyComponent:Init(): ()
 
     Frame.QuitButton.MouseButton1Click:Connect(function()
         PartyComponent:Set(false)
-        UIGroups:GetElementClass("Lobby", "Interactions"):FireLeaveSignal()
+        local Interactions = UIGroups:GetElementClass("Lobby", "Interactions")
+        if not Interactions or not Interactions.FireLeaveSignal then
+            return
+        end
+
+        Interactions:FireLeaveSignal()
     end)
 
 

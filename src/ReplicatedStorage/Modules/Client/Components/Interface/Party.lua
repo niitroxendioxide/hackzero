@@ -43,7 +43,13 @@ local function RequestPartyLeave(): ()
     States.Team:set({});
     PartyComponent:Set(false)
     Network:Fire("Party", GameEnum.PartyManaging.Leave)
-    UIGroups:GetElementClass("Lobby", "Interactions"):FireLeaveSignal()
+
+    local Interactions = UIGroups:GetElementClass("Lobby", "Interactions")
+    if not Interactions then
+        return
+    end
+
+    Interactions:FireLeaveSignal()
 end
 
 local function RequestPartyTeamUpdate(): ()

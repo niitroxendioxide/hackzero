@@ -30,6 +30,13 @@ local Camera = {
 	__Target_Part = "Head",
 }
 
+function Camera:RotateTo(GivenCFrame: CFrame)
+	local Yaw, Pitch = GivenCFrame:ToOrientation()
+
+	Camera.__Position = GivenCFrame.Position
+	Camera.__Rotation = Vector2.new(Yaw, Pitch)
+end
+
 function Camera:Init()
 	if Camera.__Inited then
 		return

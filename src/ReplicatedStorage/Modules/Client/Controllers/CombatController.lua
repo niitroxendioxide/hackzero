@@ -9,6 +9,7 @@ local Inputs = require(Client.Libraries.Inputs)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
 local Places = require(Shared.Places)
+local Network = require(Shared.Network)
 local InterfaceController = require(Client.Controllers.InterfaceController)
 --local Replicator = require(Client.Libraries.Replicator)
 
@@ -17,6 +18,7 @@ local InterfaceController = require(Client.Controllers.InterfaceController)
 --
 local Controller = {
 	__Abilities = {"Basic_Attack", "Dodge", "Swap_Forth", "Swap_Back", "Ultimate", "Special"},
+	__State = false,
 }
 
 function Controller:Init()
@@ -26,6 +28,9 @@ function Controller:Init()
 
 	Movesets:Init()
 
+	--
+
+	--
 	for _, Key in Controller.__Abilities do
 		Inputs:Bind(Key, {
 			Release = true,
@@ -36,16 +41,26 @@ function Controller:Init()
 	end
 end
 
+function Controller:SetCombatState(State: boolean, Key: number?)
+	Controller.__State = State
+end
+
+function Controller:GetCurrentCharacter()
+	local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")
+	local CurrentAgent = Characters:GetCurrent(UserId)
+
+	return CurrentAgent
+end
+
 function Controller:HandleInput(Key: string, State: string)
 	local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")
 	local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
 	local CurrentAgent = Characters:GetCurrent(UserId)
 
-	if CurrentAgent == nil then
+	if (CurrentAgent == nil) or not(Controller.__State) then
 		return
 	end
 
-	--print("Pre-ability", State, Key, CharacterMoveset)
 	local Success;
 	if State == 'Begin' then
 		Success = CharacterMoveset:Begin(Key, CurrentAgent)
@@ -56,6 +71,11 @@ function Controller:HandleInput(Key: string, State: string)
 	--
 	if Success then
 		local SkillInfo = CharacterMoveset:GetInfoForSkill(Key)
+
+		if string.match(Key, 'Swap') then
+			SkillInfo = {Base = {Cooldown = .25}}
+			Key = "Swap_Forth"
+		end
 
 		if SkillInfo.Base and SkillInfo.Base.Cooldown then
 			local Moveset = InterfaceController:GetComponent("Moveset")

@@ -8,7 +8,10 @@ local GameEnum = require(Shared.GameEnum)
 
 --
 local EventStates = require(Client.States.Events)
+local Cutscenes = require(Client.Libraries.Cutscenes)
 local InterfaceController = require(script.Parent.InterfaceController)
+local CombatController = require(script.Parent.CombatController)
+local Camera = require(Client.Libraries.Camera)
 
 local Controller = {}
 
@@ -24,6 +27,8 @@ function Controller:Init()
             Controller:UpdateProgress(...)
         elseif Type == GameEnum.MatchEvents.MatchEnded then
             Controller:MatchEnded(...)
+        elseif Type == GameEnum.MatchEvents.MatchBegin then
+            Controller:BeginMatch(...)
         end
     end)
 end
@@ -32,6 +37,17 @@ function Controller:SetupStage(StageName: string, ActName: string)
     local Component = InterfaceController:GetComponent("Objective")
 
     Component:SetStage(StageName, ActName)
+end
+
+function Controller:BeginMatch(Payload: {})
+    Cutscenes:Start("Entrance")
+    Cutscenes:WaitCurrent()
+
+    Camera:RotateTo(CombatController:GetCurrentCharacter():GetPivot() * CFrame.new(0, 1, 2))
+
+    CombatController:SetCombatState(true)
+
+    Network:Fire('Match', GameEnum.MatchEvents.MarkClientLoaded)
 end
 
 function Controller:MatchEnded(ServerData: {})

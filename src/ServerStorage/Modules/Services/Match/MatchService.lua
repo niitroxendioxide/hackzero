@@ -22,6 +22,8 @@ local Service = {
     __Current_Stage = "",
     __Current_Act = "",
     __Active_Match = nil,
+    __Total_Players = 0,
+    __All_Loaded = false,
 }
 
 function Service:Init()
@@ -30,6 +32,8 @@ function Service:Init()
     local MatchData = TeleportService:GetStageData()
     local TotalPlayers = MatchData.TotalPlayers
     local LoadedPlayers = 0
+
+    Service.__Total_Players = TotalPlayers
 
     while LoadedPlayers < TotalPlayers do
         LoadedPlayers = 0
@@ -48,6 +52,8 @@ function Service:Init()
     end
 
     Service:Begin(MatchData.Stage, MatchData.Act)
+
+    --
 
     --
     Network:On("Match", Service.__HandleEvent)
@@ -87,7 +93,10 @@ function Service:Begin(Stage: string, Act: string)
     Service.__Current_Stage = Stage
     Service.__Current_Act = Act
     Service.__Active_Match = MissionClass;
+
     MissionClass:Begin()
+
+    Network:FireForAll("Match", GameEnum.MatchEvents.MatchBegin)
 
     --
     MissionClass.Finished:Connect(function()
@@ -136,6 +145,8 @@ function Service.__HandleEvent(Player: Player, Type: number)
         if not Result then
             warn(Message)
         end
+    elseif Type == GameEnum.MatchEvents.MarkClientLoaded then
+        Player:AddTag("MapLoaded")
     end
 end
 

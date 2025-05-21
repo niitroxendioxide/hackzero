@@ -115,8 +115,10 @@ return {
 		EndEvent = 2,
 		ProgressUpd = 3,
 		MatchEnded = 4,
-		RequestMatchLeave = 5,
-		RequestMatchRepeat = 6,
+		MatchBegin = 5,
+		RequestMatchLeave = 6,
+		RequestMatchRepeat = 7,
+		MarkClientLoaded = 8,
 	},
 
 	SummonRequests = {

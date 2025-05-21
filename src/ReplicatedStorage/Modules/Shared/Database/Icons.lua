@@ -5,6 +5,8 @@ local White = Color3.new(1, 1, 1)
 local RGB = Color3.fromRGB
 
 return {
+	PREFIX = PREFIX,
+
 	Currency = {
 		['Money'] = 105549712478275,
 		['Gems'] = 94639843447517,
@@ -20,8 +22,8 @@ return {
 	Skills = {
 		Ultimates = {},
 		['Basic_Attack'] = 84976350806139,
-		['Icon'] = 90333531186937,
-		['Switch'] = 76619175136377,
+		['Swap_Forth'] = 76619175136377,
+		['Dodge'] = 90333531186937,
 	},
 
 	Elements = {

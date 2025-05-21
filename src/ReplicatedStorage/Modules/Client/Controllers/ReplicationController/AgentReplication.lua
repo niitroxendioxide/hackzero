@@ -13,6 +13,7 @@ local GameEnum = require(Shared.GameEnum)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
 local CharacterDatabase = require(Shared.Database.Characters)
 local Types = require(Shared.Types)
+local CamLib = require(Client.Libraries.Camera)
 
 --
 local Controller = {}
@@ -39,6 +40,10 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 
 	if At then
 		CharacterInstance:PivotTo(At)
+	end
+
+	if UserId == Players.LocalPlayer:GetAttribute("ReplicationId") then
+		
 	end
 
 	if CharacterLibrary:GetCurrent(UserId) ~= CharacterInstance then

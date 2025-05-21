@@ -45,12 +45,17 @@ end
 
 function AnimationLibrary:Load(Character: Model, Track: Animation)
 	local Animator = AnimationLibrary:GetAnimator(Character)
+	print(typeof(Character))
 	local LoadedTrack = Animator:LoadAnimation(Track)
 
 	return LoadedTrack
 end
 
 function AnimationLibrary:Play(Character: Model, TrackName: Animation, ...)
+	if not TrackName then
+		return
+	end
+
 	local Track = AnimationLibrary:Load(Character, TrackName)
 	Track:Play(...)
 
@@ -63,19 +68,19 @@ end
 
 function AnimationLibrary:GetTracks(Character: Model): {AnimationTrack}
 	local Animator = AnimationLibrary:GetAnimator(Character)
-	
+
 	return Animator:GetPlayingAnimationTracks()
 end
 
 function AnimationLibrary:GetAnimator(Character: Model): Animator
 	local Humanoid = Character:FindFirstChild('Humanoid') :: Humanoid
 	local Animator = Humanoid:FindFirstChild('Animator') :: Animator
-	
+
 	if Animator == nil then
 		Animator = Instance.new('Animator')
 		Animator.Parent = Humanoid
 	end
-	
+
 	return Animator
 end
 
