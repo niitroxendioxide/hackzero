@@ -125,10 +125,6 @@ function AbilityClass:Save(Agent: Types.AgentClass, Key: string, Value: any)
 		self.__Cache[Agent] = {}
 	end
 
-	if typeof(self.__Cache[Agent][Key]) ~= 'nil' and typeof(self.__Cache[Agent][Key]) ~= typeof(Value) then
-		warn(`Given value for key "{Key}" is a type value than previous value ({Value} {typeof(Value)})`)
-	end
-
 	self.__Cache[Agent][Key] = Value
 end
 
@@ -137,7 +133,7 @@ function AbilityClass:Get(Agent: Types.AgentClass, Key: string)
 		self.__Cache[Agent] = {}
 	end
 
-	return self.__Cache[Agent][Key] 
+	return self.__Cache[Agent][Key]
 end
 
 function AbilityClass:Increase(Agent: Types.AgentClass, Key: string, Data: {Rate: number?, Limit: number?})

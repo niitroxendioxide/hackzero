@@ -20,4 +20,6 @@ return function(...: any): ()
     Effects:CleanUp(function() end, 0.5)
 
     print('Packed args:', Args, 'Random value:', RandomEnumValue)
+
+
 end

@@ -47,7 +47,7 @@ function MovesetClass:Assign(Type: string, Ability: Types.AbilityClass)
 	end)
 end
 
-function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Begin' | 'End'): boolean
+function MovesetClass:Begin(Type: string, Agent: Types.GenericClass): boolean
 	Type = Type:gsub('_', ' ')
 
 	if not self.__Assigned[Type] then
@@ -62,7 +62,6 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Beg
 
 	--
 	if Type == "Special" and Agent:GetEnergy() >= Info.Base.Required_Energy then
-		print("use ex special", Agent:GetEnergy())
 		Type = "EX Special"
 	end
 
@@ -81,9 +80,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Beg
 		--local LastUse = self.__Last_Use[Agent][Type] or os.clock()
 
 		--
-		if self.__Assigned[Type].Holdable then
-			self.__Assigned[Type].__Held = true
-		end
+		self.__Assigned[Type].__Held = true
 
 		if RunService:IsClient() then
 			if not Type:match('Swap') then
@@ -100,7 +97,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Beg
 			Agent:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, .5)
 		end
 
-		self.__Assigned[Type]:Play(Agent, Type, State)
+		self.__Assigned[Type]:Play(Agent, Type, 'Begin')
 		self.__Last_Use[Agent][Type] = os.clock()
 
 		--
@@ -113,15 +110,32 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, State: 'Beg
 end
 
 
-function MovesetClass:Release(Type: string, _Agent: Types.AgentClass)
+function MovesetClass:Release(Type: string, Caster: Types.AgentClass)
 	Type = Type:gsub('_', ' ')
-	
-	if typeof(self.__Assigned[Type]) == 'table' and self.__Assigned[Type].__Holdable then
-		
-		--print(`{Type} last used with agent: {Agent.Name} on:`.. os.clock() - LastUse)
 
+	local Info = self:GetInfoForSkill(Type)
+	if typeof(self.__Assigned[Type]) == 'table' then
+		if not Info.Base.Release then
+			print(Type, 'release')
+			return false;
+		end
+
+		if Type == 'Special' and self.__Assigned['EX Special'].__Held then
+			Type = "EX Special"
+		end
+
+		--print(`{Type} last used with agent: {Agent.Name} on:`.. os.clock() - LastUse)
 		self.__Assigned[Type].__Held = false
+		self.__Assigned[Type]:Play(Caster, Type, 'End')
+		self.__Last_Use[Caster][Type] = os.clock()
+
+
+		return true;
+	else
+		warn(`Moveset: "{self.Name} does not have a correct skill module assigned for: "{Type}."`)
 	end
+
+	return false;
 end
 
 function MovesetClass:Verify(Agent: Types.AgentClass, Type: string)

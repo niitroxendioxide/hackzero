@@ -22,6 +22,7 @@ local Replicator = require(Client.Controllers.ReplicationController)
 local GameEnum = require(Shared.GameEnum)
 local Places = require(Shared.Places)
 local UIGroups = require(Client.Libraries.UIGroups)
+local NavStates = require(Client.States.Navigation)
 
 --
 local INPUT_DIRECTIONS = {
@@ -53,7 +54,7 @@ function Controller:Init(): ()
 			local Humanoid = Character:FindFirstChild("Humanoid") :: Humanoid
 			if not Humanoid then return end
 
-			local MovementBlocked = Player:HasTag("InParty")
+			local MovementBlocked = Player:HasTag("InParty") or NavStates:Get('Movement_Locked')
 
 			if MovementBlocked then
 				Humanoid.WalkSpeed = 0
@@ -97,6 +98,13 @@ function Controller:Init(): ()
 		workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
 
 		debug.profilebegin('Moving character')
+		local CharacterState = CurrentCharacter:GetState()
+		if CharacterState == "Attacking" then
+			CameraLibrary:ChangePartTrackingType(2)
+		else
+			CameraLibrary:ChangePartTrackingType(1)
+		end
+
 		if (Direction.Magnitude > 0) then
 			CurrentCharacter:Look(Direction.Unit)
 			CurrentCharacter:Move()

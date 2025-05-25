@@ -13,6 +13,7 @@ local Controller = {
 }
 
 function Controller:Init(): ()
+    
     Controller:RequireModules()
 
     AreaFolder = (workspace:WaitForChild("World"):WaitForChild("Zones", 15) :: Folder)
@@ -30,7 +31,9 @@ function Controller:Init(): ()
 end
 
 function Controller.UpdateAreas()
+    print("bro")
     for _, Area in AreaFolder:GetChildren() do
+        print(Area)
         if Controller.__Cached[Area.Name] and Controller.__AreaCache[Area.Name] == nil then
             local Module = Controller.__Cached[Area.Name]
             local NewArea = AreaClass.new(Area)

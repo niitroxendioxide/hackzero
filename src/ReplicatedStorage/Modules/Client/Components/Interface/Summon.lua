@@ -11,6 +11,7 @@ local Types = require(Shared.Types)
 local GameEnum = require(Shared.GameEnum)
 local ComponentClass = require(Client.Classes.Interface)
 local UIGroups = require(Client.Libraries.UIGroups)
+local NavStates = require(Client.States.Navigation)
 
 --
 local Component = ComponentClass.new(script.Name, 'Lobby', {KeyToBind = Enum.KeyCode.J}) :: Types.UIComponent & Types.UIGetSetButton

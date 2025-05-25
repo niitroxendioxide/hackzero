@@ -288,4 +288,8 @@ function Component:Init(): ()
     })
 end
 
+function Component:IsMenuOpen()
+    return States.Active
+end
+
 return Component

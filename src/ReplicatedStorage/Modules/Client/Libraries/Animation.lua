@@ -45,7 +45,6 @@ end
 
 function AnimationLibrary:Load(Character: Model, Track: Animation)
 	local Animator = AnimationLibrary:GetAnimator(Character)
-	print(typeof(Character))
 	local LoadedTrack = Animator:LoadAnimation(Track)
 
 	return LoadedTrack

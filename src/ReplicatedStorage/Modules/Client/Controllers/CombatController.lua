@@ -61,6 +61,7 @@ function Controller:HandleInput(Key: string, State: string)
 		return
 	end
 
+	
 	local Success;
 	if State == 'Begin' then
 		Success = CharacterMoveset:Begin(Key, CurrentAgent)

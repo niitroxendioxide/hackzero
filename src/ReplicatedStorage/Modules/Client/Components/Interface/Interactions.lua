@@ -22,7 +22,9 @@ function Interactions:Link()
 end
 
 function Interactions:SetButton(Button: string, State: boolean)
-    if UIGroups:GetActiveElementName( "Lobby") ~= nil then
+    local Lobby = UIGroups:GetActiveElementName("Lobby")
+    local Element = UIGroups:GetElementClass('Lobby', Lobby)
+    if Lobby ~= nil and ((Lobby ~= 'MainMenu') or (Element.IsMenuOpen ~= nil and Element:IsMenuOpen())) then
         State = false;
     end
 

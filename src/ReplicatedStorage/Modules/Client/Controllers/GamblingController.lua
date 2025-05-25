@@ -11,6 +11,7 @@ local Places = require(Shared.Places)
 
 local InterfaceController = require(script.Parent.InterfaceController)
 local Cutscenes = require(Client.Libraries.Cutscenes)
+local NavStates = require(Client.States.Navigation)
 
 --
 local Controller = {}
@@ -26,12 +27,14 @@ function Controller:Init()
         if Type == GameEnum.SummonRequests.SummonResult then
             local SummonMenu = InterfaceController:GetComponent("Summon")
             SummonMenu:SetVisibility(false)
+            NavStates:Set('Movement_Locked', true)
 
             for _, Agent in Result do
                 Cutscenes:Start("Summon", {Agent[1]})
                 Cutscenes:WaitCurrent()
             end
 
+            NavStates:Set('Movement_Locked', false)
             SummonMenu:SetVisibility(true)
         end
     end)

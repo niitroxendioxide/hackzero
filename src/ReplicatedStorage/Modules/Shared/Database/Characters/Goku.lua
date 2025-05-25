@@ -104,6 +104,7 @@ return {
 			Base = {
 				Cooldown = 1,
 				Speed = 1,
+				Release = true,
 
 				Required_Energy = 60,
 
@@ -122,7 +123,6 @@ return {
 				Damage_Mult = 248,
 				Daze_Mult = 19,
 				Affliction_Buildup = 1.5,
-
 			},
 
 			Upgrades = {

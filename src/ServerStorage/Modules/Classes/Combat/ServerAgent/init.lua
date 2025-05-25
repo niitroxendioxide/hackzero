@@ -169,7 +169,6 @@ end
 
 function ServerAgentClass:UseEnergy(Amount: number): ()
 	self.__Status:UseEnergy(Amount)
-	print("use energy:", Amount)
 
 	Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self)
 end

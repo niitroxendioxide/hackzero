@@ -41,15 +41,13 @@ function StatusClass:SetMaxHealth(Amount: number)
 end
 
 function StatusClass:Damage(Amount: number)
-	print(Amount)
-	print(debug.info(2, 'sl'))
-	assert(typeof(Amount) == 'number' and Amount > 0, 'Cannot take negative damage')
+	assert(typeof(Amount) == 'number' and Amount >= 0, 'Cannot take negative damage')
 
 	self.__Health = math.clamp(self.__Health - Amount, 0, self.__Max_Health)
 end
 
 function StatusClass:Heal(Amount: number)
-	assert(typeof(Amount) == 'number' and Amount > 0, 'Cannot heal negative health')
+	assert(typeof(Amount) == 'number' and Amount >= 0, 'Cannot heal negative health')
 
 	self.__Health = math.clamp(self.__Health + Amount, 0, self.__Max_Health)
 end

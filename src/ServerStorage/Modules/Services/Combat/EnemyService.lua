@@ -81,6 +81,9 @@ function Service:GetSpawns(): {Instance}
 	local WorldFolder = workspace:FindFirstChild('World') :: Folder
 	local MapFolder = WorldFolder.Map :: Folder
 	local Spawns = MapFolder:FindFirstChild('EnemySpawns')
+	if not Spawns then
+		return {}
+	end
 
 	return Spawns:GetChildren()
 end

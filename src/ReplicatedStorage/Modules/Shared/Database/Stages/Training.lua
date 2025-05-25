@@ -26,7 +26,9 @@ return {
                 Begin = {
                     Objective = "Test out new skills",
                     Goal = {LeaveTestingPlace = true},
-                    Enemies = {},
+                    Enemies = {
+                        [1] = {"Immortal", 1}
+                    },
                     Global = true,
 
                     Finished = function(State: Types.EventHandlerState): string

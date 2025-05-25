@@ -441,11 +441,11 @@ export type AbilityClass = {
 	CreateHitbox: (self: AbilityClass, Agent: AgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: EnemyClass) -> ()) -> (),
 
 	Save: (self: AbilityClass, Agent: AgentClass, Key: string, Value: any) -> (),
-	Get: (self: AbilityClass, Agent: AgentClass, Key: string) -> any,
+	Get: <T>(self: AbilityClass, Agent: AgentClass, Key: string) -> T,
 	Increase: (self: AbilityClass, Agent: AgentClass, Key: string, Data: {Rate: number, Limit: number}?) -> (),
 
 	Play: (self: AbilityClass, Agent: AgentClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
-	Begin: (self: AbilityClass, Agent: AgentClass, SequenceFrames: SequenceFrames) -> (),
+	Begin: (self: AbilityClass, Agent: AgentClass, SequenceFrames: SequenceFrames) -> (Sequence),
 
 	--[[
 		Gets a value from the ability data

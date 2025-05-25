@@ -32,7 +32,8 @@ function Sequence.new(Frames: SequenceFrames)
 	self.__cache = {}
 	self.__onFinish = {}
 	self.__playedFrames = {}
-	
+	self.__framePlayCount = {}
+
 	return self
 end
 
@@ -62,26 +63,33 @@ function Sequence:Update(delta: number)
 	if not self.__active then
 		return false
 	end
-	
+
 	self.__currentTime += delta * self:GetSpeed()
-	
+
 	for key, frameData in self.__frames do
 		if table.find(self.__playedFrames, key) then continue end
-		
+
 		if self.__currentTime >= frameData[1] then
-			frameData[2](self)
-			
-			table.insert(self.__playedFrames, key)
+			local secondKey = frameData[2]
+
+			if typeof(secondKey) == 'function' then
+				frameData[2](self)
+
+				table.insert(self.__playedFrames, key)
+			else
+				local handler = frameData[3]
+				self.__framePlayCount[key] = (self.__framePlayCount[key] or 0) + 1
+
+				handler(self, self.__framePlayCount[key])
+
+				if self.__currentTime >= frameData[2] then
+					table.insert(self.__playedFrames, key)
+				end
+			end
 		end
 	end
-	
+
 	if #self.__playedFrames >= #self.__frames then
-		for _, endFunction in self.__onFinish do
-			task.spawn(endFunction, self)
-		end
-		
-		self.__onFinish = {}
-		
 		return self:Destroy()
 	end
 
@@ -90,7 +98,7 @@ end
 
 function Sequence:Pause()
 	self.__active = false
-	
+
 	return self
 end
 
@@ -98,7 +106,13 @@ function Sequence:Destroy()
 	if self.__active ~= true then
 		return
 	end
-	
+
+	for _, endFunction in self.__onFinish do
+		task.spawn(endFunction, self)
+	end
+
+	self.__onFinish = {}
+
 	self.__active = false
 	self.__frames = {}
 end

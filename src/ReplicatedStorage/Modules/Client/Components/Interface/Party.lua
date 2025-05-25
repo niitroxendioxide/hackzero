@@ -49,6 +49,11 @@ local function RequestPartyLeave(): ()
         return
     end
 
+    local MainMenu = UIGroups:GetElementClass("Lobby", "MainMenu")
+    if MainMenu then
+        MainMenu:Set(true, true)
+    end
+
     Interactions:FireLeaveSignal()
 end
 

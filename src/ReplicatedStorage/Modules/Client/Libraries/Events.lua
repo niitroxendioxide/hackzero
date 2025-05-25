@@ -9,7 +9,7 @@ local Signal = require(Shared.Utility.Signal)
 local Events = {
 
 	CharacterChanged = Signal.new(),
-	
+
 } :: {[string]: Signal.ScriptSignal<any>}
 
 return Events

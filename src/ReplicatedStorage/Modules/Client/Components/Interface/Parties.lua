@@ -13,6 +13,7 @@ local ComponentClass = require(Client.Classes.Interface)
 local Fetcher = require(Client.Libraries.Fetcher)
 
 local UIGroups = require(Client.Libraries.UIGroups)
+local NavStates = require(Client.States.Navigation)
 local PartyComponent = ComponentClass.new("Parties", "Lobby")
 
 local Scope = PartyComponent:GetScope()
@@ -104,6 +105,12 @@ function PartyComponent:Init(): ()
         end
 
         Interactions:FireLeaveSignal()
+
+        --
+        local MainMenu = UIGroups:GetElementClass("Lobby", "MainMenu")
+        if MainMenu then
+            MainMenu:Set(true, true)
+        end
     end)
 
 
@@ -129,6 +136,10 @@ function PartyComponent:Init(): ()
         for _, Party in Parties do
             AddPartyToList(Party.Code, Party.Owner, Party.PlayerCount, Party.AverageLevel)
         end
+    end)
+
+    PartyComponent:BindToStateChange(function(State: boolean)
+        NavStates:Set('Movement_Locked', State)
     end)
 
     --[[Scope:Observer(States.Team):onChange(function()
