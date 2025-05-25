@@ -20,13 +20,22 @@ function StatesClass.new(Character: string): Types.StatesClass
 	self.__Base_Stats = Characters:GetSpeedStats(Character)
 	self.__Threads = {}
 	self.__Last_Change = os.clock()
-	
+	self.__Current_Skill = ''
+
 	self.__Keys = {
 		Sprint = false,
 		Jog = false,
 	}
-	
+
 	return self
+end
+
+function StatesClass:GetCurrentSkill()
+	return self.__Current_Skill
+end
+
+function StatesClass:SetCurrentSkill(Name: string)
+	self.__Current_Skill = Name
 end
 
 function StatesClass:GetLastChangeTime(): number

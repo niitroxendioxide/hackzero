@@ -18,22 +18,32 @@ local Controller = {}
 
 function Controller:UseSkill(Buffer: buffer)
 	local Skill = buffer.readu8(Buffer, 1)
-	local _CharacterId = buffer.readu8(Buffer, 2)
-	local EnemyId = buffer.readu8(Buffer, 3)
-	local UserId = buffer.readi32(Buffer, 4)
-	
+	local EnemyId = buffer.readu8(Buffer, 2)
+	local StateId = buffer.readu8(Buffer, 3)
+	local UserId = buffer.readu8(Buffer,4)
+
+	local State = StateId == 1 and 'Begin' or 'End'
 	local ActiveAgent = Characters:GetCurrent(UserId)
 	local Key = GameEnum.KeyLookup(GameEnum.Skills, Skill)
 	local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
+
+	print(State)
+
+	if UserId == Players.LocalPlayer:GetAttribute('ReplicationId') then
+		CharacterMoveset:Release(Key, ActiveAgent)
+
+		return
+	end
+
 	local AgentEnemy = Enemies:GetEnemy(EnemyId)
-	
+
 	if AgentEnemy and Key ~= 'Dodge' then
 		local XZ = Vector3.new(1, 0, 1)
 
 		local LookAt = CFrame.lookAt(ActiveAgent:GetPivot().Position * XZ, AgentEnemy:GetPivot().Position * XZ).LookVector
 		ActiveAgent:Look(LookAt)
 	end
-	
+
 	if Key == 'Dodge' then
 		for _, Character in Characters:GetCharacters(UserId) do
 			Character:SetKey('Sprint', true)
@@ -41,7 +51,11 @@ function Controller:UseSkill(Buffer: buffer)
 		end
 	end
 
-	CharacterMoveset:Begin(Key, ActiveAgent)
+	if State == 'Begin' then
+		CharacterMoveset:Begin(Key, ActiveAgent)
+	else
+		CharacterMoveset:Release(Key, ActiveAgent)
+	end
 end
 
 function Controller:EnemyUseSkill(Buffer: buffer)

@@ -23,12 +23,17 @@ local ServerAbilityClass = {} :: {[string]: (self: Types.ServerAbilityClass, any
 ServerAbilityClass.__index = ServerAbilityClass
 
 function ServerAbilityClass.new(): Types.ServerAbilityClass
+	local Path = debug.info(2, "s")
+	local Split = string.split(Path, '.')
+
 	local self = setmetatable({}, ServerAbilityClass)
 	self.__Cache = {}
+	self.__Name = string.gsub(string.gsub(Split[#Split], ' Server', ''), ' ', '_')
 	self.__Cooldown = Signal.new()
 	self.__Signal = Signal.new()
 	self.__Hit = Signal.new()
 	self.__Ability_Data = {}
+	self.__Held = {}
 
 	return self
 end
@@ -77,10 +82,6 @@ function ServerAbilityClass:Save(Agent: Types.AgentClass, Key: string, Value: an
 	if not self.__Cache[Agent] then
 		self.__Cache[Agent] = {}
 	end
-	
-	if typeof(self.__Cache[Agent][Key]) ~= 'nil' and typeof(self.__Cache[Agent][Key]) ~= typeof(Value) then
-		warn(`Given value for key "{Key}" is a type value than previous value ({Value} {typeof(Value)})`)
-	end
 
 	self.__Cache[Agent][Key] = Value
 end
@@ -104,7 +105,7 @@ function ServerAbilityClass:Get(Agent: Types.AgentClass, Key: string)
 		self.__Cache[Agent] = {}
 	end
 
-	return self.__Cache[Agent][Key] 
+	return self.__Cache[Agent][Key]
 end
 
 function ServerAbilityClass:Begin(_: Types.AgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
@@ -132,6 +133,11 @@ function ServerAbilityClass:Hit(Agent: Types.ServerAgentClass, Enemy: Types.Serv
 	local EnergyAmount = (Dealt_Damage / Enemy.__Status:GetStat("Max_Health")) / 1.25
 	if not Data.DontChargeEnergy then
 		Agent:GiveEnergy(EnergyAmount)
+	end
+
+	if not Data.DontChargeUlt then
+		print('charg')
+		Agent:GiveUltimate(10)
 	end
 
 	--
@@ -199,6 +205,20 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 	end
 
 	return Value
+end
+
+function ServerAbilityClass.Cancel(self: Types.ServerAbilityClass, Caster: Types.ServerAgentClass, Callback: () -> ())
+	if Callback then
+		task.spawn(Callback)
+	end
+
+	--
+	local SkillId = GameEnum.Skills[self.__Name]
+	if not SkillId then
+		return;
+	end
+
+	Replicator:UseSkill(Caster.__Player_Assigned, SkillId, true, 0, 2)
 end
 
 function ServerAbilityClass:SetData(Data: {})

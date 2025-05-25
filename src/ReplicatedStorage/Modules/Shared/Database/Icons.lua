@@ -20,7 +20,28 @@ return {
 	},
 
 	Skills = {
-		Ultimates = {},
+		Ultimates = {
+			['Goku'] = {
+				Id = 139304669014108,
+				Color = Color3.fromRGB(255, 162, 23),
+			},
+
+			['Vegeta'] = {
+				Id = 139304669014108,
+				Color = Color3.fromRGB(108, 59, 255),
+			},
+
+			['Trunks'] = {
+				Id = 139304669014108,
+				Color = Color3.fromRGB(255, 70, 42),
+			},
+
+			['Piccolo'] = {
+				Id = 139304669014108,
+				Color = Color3.fromRGB(140, 254, 91),
+			},
+		},
+		
 		['Basic_Attack'] = 84976350806139,
 		['Swap_Forth'] = 76619175136377,
 		['Dodge'] = 90333531186937,

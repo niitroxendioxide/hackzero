@@ -86,11 +86,11 @@ return {
 					[6] = 202,
 				}
 			},
-			
+
 			--
 			Upgrades = {
 				Damage_Mult = {
-					[1] = 3.3,	
+					[1] = 3.3,
 					[2] = 5.7,
 					[3] = 7.6,
 					[4] = 8,
@@ -104,21 +104,25 @@ return {
 			Base = {
 				Cooldown = 1,
 				Speed = 1,
-				Release = true,
 
 				Required_Energy = 60,
+				Walk_Time = 0.183,
 
 				Attack_State_Time = 0.5,
 				Animation_Speed = 1,
 			},
-
 		},
-
 		['EX Special'] = {
 			Base = {
 				Speed = 1,
-				Attack_State_Time = 0.65,
+				Attack_State_Time = 5,
+				Required_Energy = 60,
 				Animation_Speed = 1,
+				DontConsumeEnergy = true,
+				Release = true,
+				Hit_Frequency = 14/60,
+				Walk_Time = 2/60,
+				Energy_Per_Hit = 3,
 
 				Damage_Mult = 248,
 				Daze_Mult = 19,

@@ -58,8 +58,26 @@ function ServerAgentClass:GetStat(Name: Types.Stat): number
 	return self.__Status:GetStat(Name)
 end
 
+
 function ServerAgentClass:GetMultBonus(Name: string)
 	return self.__Status:GetMultBonus(Name)
+end
+
+function ServerAgentClass.GetUltimate(self: Types.ServerAgentClass): number
+	return self.__Status:GetUltimate()
+end
+
+
+function ServerAgentClass.GiveUltimate(self: Types.ServerAgentClass, Amount: number): ()
+	self.__Status:GiveUltimate(Amount)
+
+	Replicator:UpdateUltBar(self.__Player_Assigned, self)
+end
+
+function ServerAgentClass.UseUltimate(self: Types.ServerAgentClass): ()
+	self.__Status:UseUltimate({})
+
+	Replicator:UpdateUltBar(self.__Player_Assigned, self)
 end
 
 function ServerAgentClass.Init(self: Types.ServerAgentClass, Player: Player)
@@ -105,6 +123,10 @@ function ServerAgentClass:Rotate(...)
 	return self.__Character:Rotate(...)
 end
 
+function ServerAgentClass:GetCurrentSkill()
+	return self.__Character.__States:GetCurrentSkill()
+end
+
 function ServerAgentClass:Look(...)
 	return self:Rotate(...)
 end
@@ -141,6 +163,15 @@ function ServerAgentClass:GetState()
 end
 
 function ServerAgentClass:SwitchState(State: string, Time: number)
+	local Path = string.split(debug.info(2, "s"), '.')
+	local Skill = Path[#Path]
+
+	if State == 'Attacking' then
+		self.__Character.States:SetCurrentSkill(Skill)
+	elseif State ~= 'Attacking' and self.__Character.States:GetState() == 'Attacking' then
+		self.__Character.States:SetCurrentSkill(nil)
+	end
+
 	self.__Character.States:Switch(State, Time)
 
 	if self:IsMoving() then

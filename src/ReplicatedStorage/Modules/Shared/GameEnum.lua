@@ -12,14 +12,15 @@ return {
 		StateSwitch = 10,
 		KeySwitch = 11,
 		UpdateEnergy = 14,
+		UpdateUltBar = 15,
 
 		-- Enemy
-		AddEnemy = 15,
-		RemoveEnemy = 16,
-		MoveEnemy = 17,
-		RotateEnemy = 18,
-		PivotEnemy = 19,
-		StateSwitchEnemy = 21,
+		AddEnemy = 26,
+		RemoveEnemy = 27,
+		MoveEnemy = 28,
+		RotateEnemy = 29,
+		PivotEnemy = 30,
+		StateSwitchEnemy = 31,
 
 		-- Combat
 		EnemyUseSkill = 49,

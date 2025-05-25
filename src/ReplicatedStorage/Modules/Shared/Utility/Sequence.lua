@@ -41,11 +41,11 @@ function Sequence:Start()
 	if self.__active or #self.__playedFrames >= #self.__frames then
 		return
 	end
-	
+
 	self.__active = true
-	
+
 	self.__runContext(self.Update, self, RunService.Heartbeat:Wait())
-	
+
 	return self
 end
 
@@ -53,7 +53,7 @@ function Sequence:Add(Time: number, ...)
 	if typeof(Time) ~= 'number' then
 		return warn('Invalid time parameter given. Value is not a number', debug.info(2, 's'))
 	end
-	
+
 	table.insert(self.__frames, table.pack(Time, ...))
 
 	return;

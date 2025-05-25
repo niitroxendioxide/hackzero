@@ -16,7 +16,7 @@ export type TweenGoals = {
 	Transparency: number?,
 	Brightness: number?,
 	Range: number?,
-	[string]: number?,
+	[string]: any?,
 }
 
 function EffectUtil:Tween(Object: Instance, Info: {number | string}, Goals: TweenGoals)

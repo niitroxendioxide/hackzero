@@ -17,6 +17,7 @@ function StatusClass.new(Base: Types.CharacterStats): Types.AgentStatusClass
 	self.__Effects = {}
 
 	--
+	self.__Ultimate = 0
 	self.__Energy = 0
 	self.__Health = self:GetStat('Health')
 	self.__Max_Health = self:GetStat('Health')
@@ -31,45 +32,62 @@ function StatusClass:Update(delta: number)
 	self:GiveEnergy(Boost_Rate * Energy_Regen_Rate * delta)
 end
 
+function StatusClass.GiveUltimate(self: Types.AgentStatusClass, Amount: number)
+	self:SetUltimate(self:GetUltimate() + Amount)
+end
+
+function StatusClass.UseUltimate(self: Types.AgentStatusClass, Mods: {}?)
+	self:SetUltimate(0)
+end
+
+function StatusClass.GetUltimate(self: Types.AgentStatusClass): number
+	return self.__Ultimate
+end
+
+function StatusClass.SetUltimate(self: Types.AgentStatusClass, Value: number)
+	self.__Ultimate = math.clamp(Value, 0, 100)
+end
+
+
 -- # Health
-function StatusClass:GetHealth()
+function StatusClass.GetHealth(self: Types.AgentStatusClass)
 	return self.__Health, self.__Max_Health
 end
 
-function StatusClass:SetMaxHealth(Amount: number)
+function StatusClass.SetMaxHealth(self: Types.AgentStatusClass, Amount: number)
 	self.__Max_Health = Amount
 end
 
-function StatusClass:Damage(Amount: number)
+function StatusClass.Damage(self: Types.AgentStatusClass, Amount: number)
 	assert(typeof(Amount) == 'number' and Amount >= 0, 'Cannot take negative damage')
 
 	self.__Health = math.clamp(self.__Health - Amount, 0, self.__Max_Health)
 end
 
-function StatusClass:Heal(Amount: number)
+function StatusClass.Heal(self: Types.AgentStatusClass, Amount: number)
 	assert(typeof(Amount) == 'number' and Amount >= 0, 'Cannot heal negative health')
 
 	self.__Health = math.clamp(self.__Health + Amount, 0, self.__Max_Health)
 end
 
 -- # Energy
-function StatusClass:GetEnergy()
+function StatusClass.GetEnergy(self: Types.AgentStatusClass)
 	return self.__Energy
 end
 
-function StatusClass:GiveEnergy(EnergyAdded: number)
+function StatusClass.GiveEnergy(self: Types.AgentStatusClass, EnergyAdded: number)
 	self:SetEnergy(self:GetEnergy() + EnergyAdded)
 end
 
-function StatusClass:SetEnergy(EnergyValue: number)
+function StatusClass.SetEnergy(self: Types.AgentStatusClass, EnergyValue: number)
 	self.__Energy = math.clamp(EnergyValue, 0, 100)
 end
 
-function StatusClass:UseEnergy(EnergyRemoved: number)
+function StatusClass.UseEnergy(self: Types.AgentStatusClass, EnergyRemoved: number)
 	self:SetEnergy(self:GetEnergy() - EnergyRemoved)
 end
 
-function StatusClass:GetStat(n)
+function StatusClass.GetStat(self: Types.AgentStatusClass, n)
 	return self.__Base_Stats[n]
 end
 

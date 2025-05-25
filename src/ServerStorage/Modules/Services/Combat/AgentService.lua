@@ -85,8 +85,19 @@ function Service:RemoveAgent(Player: Player, Name: string)
 	Replicator:RemoveAgent(Player, Name)
 end
 
-function Service:Move(Player: Player)
+function Service:Move(Player: Player, Buffer: buffer?)
 	local CurrentCharacter = Service:GetCurrentCharacter(Player)
+	if Buffer and buffer.len(Buffer) > 1 then
+		local Sprinting = buffer.readu8(Buffer, 1) == 1
+		local Jogging = buffer.readu8(Buffer, 2) == 1
+
+		local Data = Service:Get(Player)
+
+		for _, Character in Data.Characters do
+			Character:SetKey("Sprint", Sprinting)
+			Character:SetKey("Jog", Jogging)
+		end
+	end
 
 	CurrentCharacter:Move()
 

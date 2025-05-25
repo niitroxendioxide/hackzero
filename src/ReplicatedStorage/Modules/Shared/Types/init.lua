@@ -181,6 +181,7 @@ export type AgentClass =  {
 	SetKey: (self: AgentClass, Key: string, State: boolean) -> (),
 	GetKey: (self: AgentClass, Key: string) -> boolean,
 
+	GetCurrentSkill: (self: AgentClass) -> string?,
 	GetHealth: (self: AgentClass) -> (number, number),
 	GetStat: (self: AgentClass, Stat: Stat) -> number,
 	GetState: (self: AgentClass) -> State,
@@ -217,6 +218,16 @@ export type AgentClass =  {
 export type AgentStatusEffect = {}
 
 export type AgentStatusClass = {
+	__Ultimate: number,
+	__Energy: number,
+	__Health: number,
+	__Max_Health: number,
+	__Base_Stats: CharacterStats,
+
+	__Artifact_Set: {},
+	__Card_Set: nil,
+	__Effects: {},
+
 	GetStat: (self: AgentStatusClass, Name: Stat) -> (number),
 	Update: (self: AgentStatusClass, delta: number) -> (),
 
@@ -236,6 +247,11 @@ export type AgentStatusClass = {
 	GetArtifactBonus: (self: AgentStatusClass, Type: string) -> (number),
 	GetDriveBonus: (self: AgentStatusClass, Type: string) -> (),
 	GetMultBonus: (self: AgentStatusClass, Name: string) -> (),
+
+	GetUltimate: (self: AgentStatusClass) -> (number),
+	SetUltimate: (self: AgentStatusClass, Value: number) -> (number),
+	UseUltimate: (self: AgentStatusClass, Mods: {}?) -> (),
+	GiveUltimate: (self: AgentStatusClass, Amount: number) -> (),
 }
 
 -- [[ INPUTS ]]
@@ -348,7 +364,12 @@ export type ServerAgentClass = {
 	Heal: (self: ServerAgentClass, Amount: number) -> (),
 	GetHealth: (self: ServerAgentClass) -> (number, number),
 
+	GiveUltimate: (self: ServerAgentClass, Amount: number) -> (),
+	UseUltimate: (self: ServerAgentClass) -> (),
+	GetUltimate: (self: ServerAgentClass) -> (number),
+
 	GiveEnergy: (self: ServerAgentClass, Energy: number) -> (),
+	UseEnergy: (self: ServerAgentClass, Energy: number) -> (),
 
 	GetPivot: (self: ServerAgentClass) -> CFrame,
 	PivotTo: (self: ServerAgentClass, Pivot: CFrame) -> (),
@@ -370,6 +391,7 @@ export type MovesetClass = {
 	Verify: (self: MovesetClass, Agent: AgentClass, Type: string) -> boolean,
 
 	Begin: (self: MovesetClass, Key: AgentMovesetAbility, Agent: AgentClass) -> (),
+	Release: (self: MovesetClass, Key: AgentMovesetAbility, Agent: AgentClass) -> (),
 
 	GetInfoForSkill: (self: MovesetClass, Name: string) -> {},
 	SetAbilityInformation: (self: MovesetClass, Data: {}) -> (),
@@ -458,6 +480,7 @@ export type AbilityClass = {
 }
 
 export type ServerAbilityClass = {
+	__Name: string,
 	__Cache: {},
 	__Signal: RBXScriptSignal,
 	__Hit: Signal<{
@@ -474,6 +497,7 @@ export type ServerAbilityClass = {
 	Get: (self: ServerAbilityClass, Agent: ServerAgentClass, Key: string) -> any,
 	Increase: (self: ServerAbilityClass, Agent: ServerAgentClass, Key: string, Data: {Rate: number, Limit: number}?) -> (),
 
+	Cancel: (self: ServerAbilityClass, Caster: ServerAgentClass, Callback: () -> ()) -> (),
 	Play: (self: ServerAbilityClass, Agent: ServerAgentClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
 	Begin: (self: ServerAbilityClass, Agent: ServerAgentClass, SequenceFrames: SequenceFrames) -> (),
 
@@ -591,6 +615,7 @@ export type HitEnemyData = {
 	Attack_Type: AgentMovesetAbility,
 	Affliction_Buildup: number?,
 	DontChargeEnergy: boolean,
+	DontChargeUlt: boolean,
 
 	Knockback: {number | number | number}?,
 }

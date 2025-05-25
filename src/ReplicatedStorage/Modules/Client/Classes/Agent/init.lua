@@ -170,12 +170,29 @@ function AgentClass:GetState()
 	return self.__Character:GetState()
 end
 
-function AgentClass:SwitchState(State: string, Time: number)
+function AgentClass:SetUltBar(Amount: number)
+	return self.__Status:SetUltimate(Amount)
+end
+
+function AgentClass:SwitchState(State: string, Time: number): ()
+	local ThreadChanged = string.split(debug.info(2, "s"), '.')
+	local Ability = ThreadChanged[#ThreadChanged]
+
+	if State == 'Attacking' then
+		self.__Character.__States:SetCurrentSkill(Ability)
+	elseif (State ~= 'Attacking' and self:GetState() == 'Attacking') then
+		self.__Character.__States:SetCurrentSkill(nil)
+	end
+
 	self.__Character.__States:Switch(State, Time)
-	
+
 	if self:IsMoving() then
 		self:Move()
 	end
+end
+
+function AgentClass:GetCurrentSkill(): string
+	return self.__Character.__States:GetCurrentSkill()
 end
 
 -- # Gameplay Core

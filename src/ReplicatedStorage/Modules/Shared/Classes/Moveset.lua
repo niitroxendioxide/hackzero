@@ -17,17 +17,17 @@ MovesetClass.__index = MovesetClass
 function MovesetClass.new(Name: string)
 	local self = setmetatable({}, MovesetClass)
 	self.Name = Name
-	
+
 	-- # Privates
 	self.__Information = {}
 	self.__Assigned = {}
 	self.__Last_Use = {}
-	
+
 	if RunService:IsClient() then
 		self:Assign('Swap Back', SwapPackage)
 		self:Assign('Swap Forth', SwapPackage)
 	end
-	
+
 	return self
 end
 
@@ -35,9 +35,9 @@ function MovesetClass:Assign(Type: string, Ability: Types.AbilityClass)
 	if self.__Assigned[Type] ~= nil then
 		return
 	end
-	
+
 	self.__Assigned[Type] = Ability
-	
+
 	Ability.__Cooldown:Connect(function(Time: number, Agent: Types.AgentClass)
 		local CooldownKey = self.Name..Type..Agent.Name
 
@@ -63,6 +63,8 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass): boolean
 	--
 	if Type == "Special" and Agent:GetEnergy() >= Info.Base.Required_Energy then
 		Type = "EX Special"
+
+		Info = self:GetInfoForSkill('EX Special')
 	end
 
 	--
@@ -80,11 +82,11 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass): boolean
 		--local LastUse = self.__Last_Use[Agent][Type] or os.clock()
 
 		--
-		self.__Assigned[Type].__Held = true
+		self.__Assigned[Type].__Held[Agent] = true
 
 		if RunService:IsClient() then
 			if not Type:match('Swap') then
-				self.__Assigned[Type]:Connect(Agent)
+				self.__Assigned[Type]:Connect(Agent, 1)
 			end
 
 			-- #TODO: FIX WTV THIS IS
@@ -114,18 +116,25 @@ function MovesetClass:Release(Type: string, Caster: Types.AgentClass)
 	Type = Type:gsub('_', ' ')
 
 	local Info = self:GetInfoForSkill(Type)
+
+	if Type == 'Special' and Caster:GetCurrentSkill() == 'EX Special' then
+		Type = "EX Special"
+
+		Info = self:GetInfoForSkill('EX Special')
+	end
+
 	if typeof(self.__Assigned[Type]) == 'table' then
-		if not Info.Base.Release then
-			print(Type, 'release')
+		if not(Info.Base.Release) then
 			return false;
 		end
 
-		if Type == 'Special' and self.__Assigned['EX Special'].__Held then
-			Type = "EX Special"
+		--print(`{Type} last used with agent: {Agent.Name} on:`.. os.clock() - LastUse)
+		if RunService:IsClient() then
+			print('Connecting type skill:', Type, ' as State: End')
+			self.__Assigned[Type]:Connect(Caster, 2)
 		end
 
-		--print(`{Type} last used with agent: {Agent.Name} on:`.. os.clock() - LastUse)
-		self.__Assigned[Type].__Held = false
+		self.__Assigned[Type].__Held[Caster] = false
 		self.__Assigned[Type]:Play(Caster, Type, 'End')
 		self.__Last_Use[Caster][Type] = os.clock()
 
@@ -140,27 +149,27 @@ end
 
 function MovesetClass:Verify(Agent: Types.AgentClass, Type: string)
 	local Info = self:GetInfoForSkill(Type)
-	
+
 	if Agent:GetState() ~= 'Idle' and not(Info.AllowedStates and Info.AllowedStates[Agent:GetState()]) then
 		return false
 	end
-	
+
 	return true
 end
 
 function MovesetClass:GetInfoForSkill(Name: string)
 	if self.__Information[Name] == nil then
 		--warn('Information for moveset is nil')
-		
+
 		return {Base = {}, Upgrades = {}}
 	end
-	
+
 	return self.__Information[Name]
 end
 
 function MovesetClass:SetAbilityInformation(Data: {})
 	assert(#self.__Information == 0, 'Ability information is already set. Can\'t overwrite')
-	
+
 	self.__Information = table.freeze(Data)
 end
 

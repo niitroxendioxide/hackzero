@@ -15,18 +15,21 @@ local Ability = AbilityClass.new(true)
 function Ability:Play(Caster: Types.AgentClass, Binding: string, State: string)
 	--
 	local PreviousSequence = Ability:Get(Caster, "CurrentSequence")
-	if PreviousSequence and State ~= 'Begin' then
+	if State ~= 'Begin' then
 		local _= PreviousSequence and PreviousSequence:Destroy()
 
+		Caster:SwitchState('Attacking', 0)
 		Ability:Save(Caster, "CurrentSequence", nil)
 
 		return
 	end
 
+	local AttackTime = Ability:FromData('Attack_State_Time')
 	local LastHitClock = os.clock()
 	local Sequence = Ability:Begin(Caster, {
 		{0, function(self: Types.Sequence)
-			Caster:SwitchState('Attacking', 10)
+			Caster:SwitchState('Attacking',  AttackTime)
+
 			local StartTrack = Ability:PlayAnimation(Caster, "Goku.Abilities.Special.StartupEX", {})
 			self.__cache.track = StartTrack
 
@@ -42,11 +45,11 @@ function Ability:Play(Caster: Types.AgentClass, Binding: string, State: string)
 			Ability:Save(Caster, 'CurrentLoop', Track)
 		end},
 
-		{0.317, 10, function(self)
-			if (os.clock() - LastHitClock > (14/60)) then
+		{0.317, AttackTime, function(self)
+			if (os.clock() - LastHitClock > Ability:FromData('Hit_Frequency')) then
 				LastHitClock = os.clock()
 
-				Caster:Walk(2/60)
+				Caster:Walk(Ability:FromData("Walk_Time"))
 
 				Ability:CreateHitbox(Caster, Vector3.zAxis*-3.4, Vector3.one * 5.75, function(Target: Types.EnemyClass)
 					Target:Hit()

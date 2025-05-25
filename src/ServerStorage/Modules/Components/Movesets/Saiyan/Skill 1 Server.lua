@@ -22,7 +22,6 @@ function Ability:Play(Caster: Types.ServerEnemyClass)
 
 		{.5, function()
 			Ability:CreateHitbox(Caster, Vector3.zAxis* -30, Vector3.new(2.25, 2.25, 60), function(Target: Types.ServerAgentClass)
-				print("hello?", Target)
 				Target:TakeDamage(5)
 			end)
 		end,},

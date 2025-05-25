@@ -75,7 +75,6 @@ function ServerEnemy:Attack()
 	local Next = Moveset_Skills[math.random(1, #Moveset_Skills)]
 
 	if not Moveset:Verify(self, self.__Next_Attack) then
-		print('cancelled?')
 		self.__Next_Attack = Next
 
 		Next = Moveset_Skills[math.random(1, #Moveset_Skills)]
@@ -84,8 +83,8 @@ function ServerEnemy:Attack()
 	local Split = string.split(self.__Next_Attack, ' ')
 	local Number = tonumber(Split[2], 10)
 
+	local TargetSuccess = Moveset:Begin(self.__Next_Attack, self)
 	Replicator:EnemyUseSkill(self.__EnemyId, Number, 'Begin')
-	Moveset:Begin(self.__Next_Attack, self)
 
 	-- skip
 	self.__Next_Attack = Next
@@ -119,7 +118,7 @@ function ServerEnemy:Init(Key: number)
 			Replicator:PivotEnemy(self.__EnemyId, self:GetPivot())
 		end
 
-		if os.clock() - NextAttack >= 4.5 then
+		if os.clock() - NextAttack >= 994.5 then
 			NextAttack = os.clock()
 			self:Attack()
 		end

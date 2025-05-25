@@ -49,7 +49,7 @@ function EventClass.Start(self: Types.EventClass)
     end)
 
     --
-    print("Started event:", self.__Event)
+    --print("Started event:", self.__Event)
 
     for Goal, Value in EventData.Goal do
         local Default = typeof(Value) == "number" and 0 or ''

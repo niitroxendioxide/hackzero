@@ -22,7 +22,8 @@ function Ability:Play(Caster: Types.AgentClass)
 			Effects:Play("Glow", Caster)
 		end},
 
-		{.35, function()
+		{.2, function()
+			Caster:Walk(Ability:FromData('Walk_Time'))
 		end},
 	})
 

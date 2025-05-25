@@ -1,9 +1,12 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local Players = game:GetService("Players")
 
+local Player = Players.LocalPlayer
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
+local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
 
 --
 local Controller = {
@@ -16,7 +19,13 @@ function Controller:Replicate(Action: number, ...)
 	local Args = table.pack(...)
 	local EventName = 'Replicate';
 	local Buffer
-	if Action == GameEnum.Replication.Move or Action == GameEnum.Replication.Stop then
+	if Action == GameEnum.Replication.Move then
+		local Agent = Characters:GetCurrent(Player:GetAttribute("ReplicationId"))
+
+		Buffer = buffer.create(3)
+		buffer.writeu8(Buffer, 1, Agent:GetKey("Sprint") == true and 1 or 0)
+		buffer.writeu8(Buffer, 2, Agent:GetKey("Jog") == true and 1 or 0)
+	elseif Action == GameEnum.Replication.Stop then
 		Buffer = buffer.create(1)
 	elseif Action == GameEnum.Replication.KeySwitch then
 		Buffer = buffer.create(2)
@@ -62,10 +71,11 @@ function Controller:Replicate(Action: number, ...)
 
 		Args = {}
 	elseif Action == GameEnum.Replication.UseSkill then
-		Buffer = buffer.create(3)
+		Buffer = buffer.create(4)
 
 		buffer.writei8(Buffer, 1, Args[1])
-		buffer.writei8(Buffer, 2, Args[2] or 0)
+		buffer.writeu8(Buffer, 2, Args[2] or 0)
+		buffer.writei8(Buffer, 3, Args[3] or 1)
 
 		EventName = 'Ability'
 		Args = {}

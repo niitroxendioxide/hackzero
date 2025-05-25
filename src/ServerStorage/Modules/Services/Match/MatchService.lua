@@ -133,8 +133,6 @@ end
 
 -- ## Private event
 function Service.__HandleEvent(Player: Player, Type: number)
-    print(GameEnum.KeyLookup(GameEnum.MatchEvents, Type))
-
     if Type == GameEnum.MatchEvents.RequestMatchLeave then
         local Result, Message = TeleportService:ReturnToLobby(Players:GetPlayers())
         if not Result then

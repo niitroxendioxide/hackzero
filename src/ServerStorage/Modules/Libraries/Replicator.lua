@@ -199,21 +199,26 @@ function Replicator:EnemyUseSkill(EnemyId: number, SkillId: number, State: strin
 	local Object = buffer.create(8)
 	buffer.writeu8(Object, 0, GameEnum.Replication.EnemyUseSkill)
 	buffer.writeu8(Object, 1, SkillId)
-	buffer.writeu8(Object, 2, EnemyId)	
+	buffer.writeu8(Object, 2, EnemyId)
 	buffer.writeu8(Object, 3, State == 'Begin' and 1 or 0)
 
 	Network:FireForAll('Replicate', Object)
 end
 
-function Replicator:UseSkill(Player: Player, SkillId: number, AgentNumber: number, EnemyNumber: number)
+function Replicator:UseSkill(Player: Player, SkillId: number, IncludePlayer: boolean, EnemyNumber: number, StateId: number)
 	local Object = buffer.create(8)
 	buffer.writeu8(Object, 0, GameEnum.Replication.UseSkill)
 	buffer.writeu8(Object, 1, SkillId)
-	buffer.writeu8(Object, 2, AgentNumber or 1)
-	buffer.writeu8(Object, 3, EnemyNumber or 255)
-	buffer.writei32(Object, 4,  Player:GetAttribute("ReplicationId") :: number)
+	buffer.writeu8(Object, 2, EnemyNumber or 255)
+	buffer.writeu8(Object, 3, StateId)
+	buffer.writeu8(Object, 4,  Player:GetAttribute("ReplicationId") :: number)
 
-	Network:FireForAllBut(Player, 'Replicate', Object)
+	if IncludePlayer then
+		Network:FireForAll('Replicate', Object)
+	else
+		Network:FireForAllBut(Player, 'Replicate', Object)
+	end
+
 end
 
 function Replicator:ClearPlayerData(Player: Player)
@@ -235,6 +240,20 @@ function Replicator:UpdateCurrentEnergy(Player: Player, Agent: Types.ServerAgent
 	buffer.writeu8(Object, 0, GameEnum.Replication.UpdateEnergy)
 	buffer.writeu8(Object, 1, Id)
 	buffer.writeu16(Object, 2, math.floor(Energy * 600))
+
+	Network:Fire("Replicate", Player, Object)
+end
+
+function Replicator:UpdateUltBar(Player: Player, Agent: Types.ServerAgentClass)
+	local Object = buffer.create(4)
+	local UltBar = Agent.__Status:GetUltimate()
+
+	local Id = Agents:GetIdForPlayer(Player:GetAttribute("ReplicationId") :: number, Agent) :: number
+
+	--
+	buffer.writeu8(Object, 0, GameEnum.Replication.UpdateUltBar)
+	buffer.writeu8(Object, 1, Id)
+	buffer.writeu16(Object, 2, math.floor(UltBar * 600))
 
 	Network:Fire("Replicate", Player, Object)
 end

@@ -14,22 +14,34 @@ local Ability = AbilityClass.new()
 function Ability:Play(Caster: Types.ServerAgentClass, Skill_Name: string, State: string, ...)
 	--
 	local SequenceObj = Ability:Get(Caster, 'Sequence')
+	print(State)
+
 	if State ~= 'Begin' then
+		Caster:SwitchState('Attacking', 0)
 		local _=SequenceObj and SequenceObj:Destroy()
 
 		return;
 	end
 
 	local Clock = os.clock()
+	local AttackTime = Ability:FromData('Attack_State_Time')
 	local Sequence = Ability:Begin(Caster, {
 		{0, function(_: Types.Sequence)
-			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time'))
+			Caster:SwitchState('Attacking', AttackTime)
 		end,},
 
-		{.317, 10, function(self)
-			if (os.clock() - Clock) > (14/60) then
+		{.317, AttackTime, function(self)
+			if Caster:GetEnergy() <= 0 then
+				self:Destroy()
+
+				Ability:Cancel(Caster)
+			end
+
+			if (os.clock() - Clock) > Ability:FromData('Hit_Frequency') then
+				Caster:UseEnergy(Ability:FromData('Energy_Per_Hit'))
+
 				Clock = os.clock()
-				Caster:Walk(2/60)
+				Caster:Walk(Ability:FromData('Walk_Time'))
 
 				Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.ServerEnemyClass)
 					Ability:Hit(Caster, Target, {
@@ -45,6 +57,11 @@ function Ability:Play(Caster: Types.ServerAgentClass, Skill_Name: string, State:
 	})
 
 	Ability:Save(Caster, 'Sequence', Sequence);
+
+	Sequence:After(function()
+		Ability:Save(Caster, 'Sequence', nil)
+	end)
+
 end
 
 return Ability

@@ -22,6 +22,7 @@ return {
                     return "X"
                 end
             },
+
             Guide = {
                 Begin = {
                     Objective = "Test out new skills",

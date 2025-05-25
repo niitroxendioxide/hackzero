@@ -23,7 +23,7 @@ function AnimatorClass.new(Character: Types.CharacterClass, Directory: string): 
 	self.__Character = Character
 	self.__Angle = 0
 	self.__SinceStop = os.clock()
-	
+
 	return self
 end
 
@@ -31,17 +31,17 @@ function AnimatorClass:AddTrackToState(State: string, Track: AnimationTrack, Tim
 	if self.__State_Tracks[State] == nil then
 		self.__State_Tracks[State] = {}
 	end
-	
+
 	table.insert(self.__State_Tracks[State], {Track, Time, os.clock(), Track.WeightCurrent})
-	
-	return 
+
+	return
 end
 
 function AnimatorClass:Init()
 	if self.__Thread then
 		return
 	end
-	
+
 	self:Play('Idle')
 	self:Play('Sprint', {Weight = 0.001, Speed = .825})
 	self:Play('Jog', {Weight = 0.001})
@@ -83,7 +83,8 @@ end
 function AnimatorClass:Update(delta: number)
 	local Character = self.__Character
 	local Moving = Character:IsMoving()
-	local InIdle = Character:GetState() == 'Idle'
+	local CurrentState = Character:GetState()
+	local InIdle = CurrentState == 'Idle'
 	local Sprint = self:GetTrack('Sprint')
 	local Jog = self:GetTrack('Jog')
 	local Walk = self:GetTrack('Walk')
@@ -92,7 +93,7 @@ function AnimatorClass:Update(delta: number)
 
 	-- Run stop
 	local Timestamp = Sprint.TimePosition > 0.15 and Sprint.TimePosition < 0.45 and 2 or 1
-	if self.__IsMoving and not Moving and not self:IsPlaying('SprintStop') and Character:GetKey('Jog') then
+	if self.__IsMoving and not Moving and not self:IsPlaying('SprintStop') and Character:GetKey('Jog') and CurrentState ~= 'Attacking' then
 		self:Play('SprintStop'..Timestamp, {Fade = 0.15})
 		self.__SinceStop = os.clock()
 	end

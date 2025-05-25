@@ -163,4 +163,14 @@ function Controller:UpdateEnergy(Buffer: buffer)
 	InterfaceStates.Energy[AgentId]:set(Energy)
 end
 
+function Controller:UpdateUltBar(Buffer: buffer)
+	local AgentId = buffer.readu8(Buffer, 1)
+	local UltAmount = math.round(buffer.readu16(Buffer, 2) / 600)
+	local Agent = CharacterLibrary:GetAgent(Players.LocalPlayer:GetAttribute("ReplicationId"), AgentId)
+
+	Agent:SetUltBar(UltAmount)
+	InterfaceStates.UltBar[AgentId]:set(UltAmount)
+end
+
+
 return Controller

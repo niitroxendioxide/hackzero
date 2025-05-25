@@ -38,9 +38,91 @@ function AbilityClass.new(Holdable: boolean): Types.AbilityClass
 	self.__Cooldown = Signal.new()
 	self.__Ability_Data = {}
 
-	self.__Held = false
+	self.__Held = {}
 
 	return self
+end
+
+function AbilityClass:Begin(Agent: Types.AgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
+	if self.__Active_Sequences[Agent] then
+		self.__Active_Sequences[Agent]:Destroy()
+	end
+
+	--
+	local AbilitySequence = Sequence.new(Frames)
+	local Attack_Warnings = self:FromData('Attack_Warning')
+
+	if typeof(Attack_Warnings) == 'number' and Attack_Warnings > 0 then
+		local function PlayWarningEffect()
+			Effects:Play('Warning', Agent)
+		end
+
+		if typeof(Attack_Warnings) == 'table' then
+			for _, Time in Attack_Warnings do
+				AbilitySequence:Add(Time, PlayWarningEffect)
+			end
+		else
+			AbilitySequence:Add(Attack_Warnings, PlayWarningEffect)
+		end
+	end
+
+	AbilitySequence:SetSpeed(self:FromData('Speed') or 1)
+	AbilitySequence:After(function()
+		self.__Signal:Fire()
+	end)
+
+	self.__Active_Sequences[Agent] = AbilitySequence
+
+	return AbilitySequence:Start()
+end
+
+function AbilityClass:Connect(Agent: Types.AgentClass, StateId: number)
+	local User = Players.LocalPlayer
+	local Id = User:GetAttribute("ReplicationId")
+
+	if Id == Agent.PlayerId then
+		local EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position)
+
+		if Enemy and self.__Name ~= 'Dodge' then
+			Agent:Look(CFrame.lookAt(Agent:GetPivot().Position * Vector3.new(1, 0, 1), Enemy:GetPivot().Position * Vector3.new(1, 0 ,1)).LookVector, false, true)
+		end
+
+		Replicator:Replicate(GameEnum.Replication.PivotTo, Agent:GetPivot(), true)
+		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId)
+	end
+end
+
+function AbilityClass:Effect(Name: string, ...)
+	return Effects:Play(Name, ...)
+end
+
+function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?): ()
+	if Key == 'Knockback' then
+		return {self:FromData('Knockback_Direction'), self:FromData('Knockback_Strength'), self:FromData('Knockback_Time')}
+	end
+
+	local Base = self.__Ability_Data.Base
+	local Upgrade = self.__Ability_Data.Upgrades or {}
+
+	local Level = math.max((GivenLevel or 1) - 1, 0)
+	local Value = Base[Key] or 0
+	local Upgraded_Value = Upgrade[Key]
+
+	if typeof(Value) == 'table' then
+		local Added = Upgraded_Value ~= nil and Upgrade[Key][Sub_Key] or 0
+
+		return Value[Sub_Key] + Added * Level
+	end
+
+	if Key == "Speed" and Value == nil then
+		Value = 1
+	end
+
+	return Value
+end
+
+function AbilityClass:SetData(Data: {})
+	self.__Ability_Data = Data
 end
 
 function AbilityClass:SetCooldown(Agent: Types.AgentClass, Time: number)
@@ -51,12 +133,12 @@ end
 
 function AbilityClass:Play(Agent: Types.AgentClass)
 	print(Agent.Name, 'Ability executed!')
-	
+
 	self:Begin(Agent, {})
 end
 
-function AbilityClass:IsHeld()
-	return self.__Held
+function AbilityClass:IsHeld(Caster: Types.GenericClass)
+	return self.__Held[Caster]
 end
 
 function AbilityClass:PlayAnimation(Agent: Types.AgentClass, Track: string, Data: Types.AnimationDataOptions)
@@ -148,88 +230,6 @@ function AbilityClass:Increase(Agent: Types.AgentClass, Key: string, Data: {Rate
 	else
 		self:Save(Agent, Key, CurrentValue + Added)
 	end
-end
-
-function AbilityClass:Begin(Agent: Types.AgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
-	if self.__Active_Sequences[Agent] then
-		self.__Active_Sequences[Agent]:Destroy()
-	end
-
-	--
-	local AbilitySequence = Sequence.new(Frames)
-	local Attack_Warnings = self:FromData('Attack_Warning')
-
-	if typeof(Attack_Warnings) == 'number' and Attack_Warnings > 0 then
-		local function PlayWarningEffect()
-			Effects:Play('Warning', Agent)
-		end
-
-		if typeof(Attack_Warnings) == 'table' then
-			for _, Time in Attack_Warnings do
-				AbilitySequence:Add(Time, PlayWarningEffect)
-			end
-		else
-			AbilitySequence:Add(Attack_Warnings, PlayWarningEffect)
-		end
-	end
-
-	AbilitySequence:SetSpeed(self:FromData('Speed') or 1)
-	AbilitySequence:After(function()
-		self.__Signal:Fire()
-	end)
-
-	self.__Active_Sequences[Agent] = AbilitySequence
-
-	return AbilitySequence:Start()
-end
-
-function AbilityClass:Connect(Agent: Types.AgentClass)
-	local User = Players.LocalPlayer
-	local Id = User:GetAttribute("ReplicationId")
-
-	if Id == Agent.PlayerId then
-		local EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position)
-
-		if Enemy and self.__Name ~= 'Dodge' then
-			Agent:Look(CFrame.lookAt(Agent:GetPivot().Position * Vector3.new(1, 0, 1), Enemy:GetPivot().Position * Vector3.new(1, 0 ,1)).LookVector, false, true)
-		end
-
-		Replicator:Replicate(GameEnum.Replication.PivotTo, Agent:GetPivot(), true)
-		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId)
-	end
-end
-
-function AbilityClass:Effect(Name: string, ...)
-	return Effects:Play(Name, ...)
-end
-
-function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?): ()
-	if Key == 'Knockback' then
-		return {self:FromData('Knockback_Direction'), self:FromData('Knockback_Strength'), self:FromData('Knockback_Time')}
-	end
-
-	local Base = self.__Ability_Data.Base
-	local Upgrade = self.__Ability_Data.Upgrades or {}
-
-	local Level = math.max((GivenLevel or 1) - 1, 0)
-	local Value = Base[Key] or 0
-	local Upgraded_Value = Upgrade[Key]
-
-	if typeof(Value) == 'table' then
-		local Added = Upgraded_Value ~= nil and Upgrade[Key][Sub_Key] or 0
-
-		return Value[Sub_Key] + Added * Level
-	end
-
-	if Key == "Speed" and Value == nil then
-		Value = 1
-	end
-
-	return Value
-end
-
-function AbilityClass:SetData(Data: {})
-	self.__Ability_Data = Data
 end
 
 return AbilityClass
