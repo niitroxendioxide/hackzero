@@ -81,9 +81,13 @@ function AbilityClass:Connect(Agent: Types.AgentClass, StateId: number)
 	local Id = User:GetAttribute("ReplicationId")
 
 	if Id == Agent.PlayerId then
-		local EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position)
+		local LookAtEnemy = self:FromData('NoAutoTrack') ~= true
+		local EnemyId, Enemy;
+		if LookAtEnemy then
+			EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, 50)
+		end
 
-		if Enemy and self.__Name ~= 'Dodge' then
+		if Enemy and (self.__Name ~= 'Dodge') then
 			Agent:Look(CFrame.lookAt(Agent:GetPivot().Position * Vector3.new(1, 0, 1), Enemy:GetPivot().Position * Vector3.new(1, 0 ,1)).LookVector, false, true)
 		end
 

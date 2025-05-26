@@ -55,8 +55,8 @@ function EnemyLibrary:GetEnemyCount()
 	return k
 end
 
-function EnemyLibrary:GetNearestEnemy(Point: Vector3): (number?, Types.EnemyClass?)
-	local Distance = math.huge
+function EnemyLibrary:GetNearestEnemy(Point: Vector3, MaxDistance: number): (number?, Types.EnemyClass?)
+	local Distance = MaxDistance or math.huge
 	local Selected = nil
 
 	for Key, Enemy in EnemyLibrary:GetAll() do

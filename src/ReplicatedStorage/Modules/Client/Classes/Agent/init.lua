@@ -174,6 +174,10 @@ function AgentClass:SetUltBar(Amount: number)
 	return self.__Status:SetUltimate(Amount)
 end
 
+function AgentClass:GetUltBar()
+	return self.__Status:GetUltimate()
+end
+
 function AgentClass:SwitchState(State: string, Time: number): ()
 	local ThreadChanged = string.split(debug.info(2, "s"), '.')
 	local Ability = ThreadChanged[#ThreadChanged]

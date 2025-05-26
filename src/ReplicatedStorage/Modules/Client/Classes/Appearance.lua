@@ -32,6 +32,7 @@ function AppearanceClass.new(ModelName: string): Types.AppearanceController
 	local self = setmetatable({}, AppearanceClass)
 	self.__Model = AssetsModel:Clone() :: Types.Rig
 	self.__Visible = true
+	self.__Particles = {}
 	self.__TransparencyValues = {}
 	self.__Trove = Trove.new()
 
@@ -59,6 +60,30 @@ function AppearanceClass:SetVisible(State: boolean)
 		local TransparencyValue = State and Value or 1
 
 		self.__Trove:Add(EffectsUtil:Tween(BodyPart, {.4}, {Transparency = TransparencyValue}))
+	end
+
+	for _, Particle in self.__Particles do
+		EffectsUtil:Toggle(Particle, State, nil, true)
+	end
+end
+
+function AppearanceClass:EditPartValue(Part: BasePart, Value: number)
+	self.__TransparencyValues[Part] = Value
+	Part.Transparency = Value
+end
+
+function AppearanceClass:BindParticles(Part: Instance)
+	if table.find(self.__Particles, Part) then
+		return
+	end
+
+	table.insert(self.__Particles, Part)
+end
+
+function AppearanceClass:UnbindParticles(Part: Instance)
+	local Id =  table.find(self.__Particles, Part)
+	if Id then
+		table.remove(self.__Particles, Id)
 	end
 end
 

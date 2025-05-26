@@ -52,6 +52,7 @@ function CutsceneLibrary:Start(Name: string, Data: {any}?): (boolean, string?)
     local Success, FailMsg = pcall(function()
         CutsceneClass:Play(Data)
     end)
+
     if not Success then
         return false, FailMsg
     end

@@ -39,6 +39,7 @@ export type AppearanceController = {
 	SetVisible: (self: AppearanceController, State: boolean) -> (),
 	JoinTo: (self: AppearanceController, BasePart: BasePart) -> (),
 
+	EditPartValue: (self: AppearanceController, Part: BasePart, Value: number) -> (),
 	Destroy: (self: AppearanceController) -> (),
 }
 
@@ -152,6 +153,7 @@ export type GenericClass = {
 	HasTag: (self: GenericClass, Tag: string) -> (boolean),
 
 	GetModel: (self: GenericClass) -> Model,
+	GetUltBar: (self: GenericClass) -> number,
 }
 
 export type AgentClass =  {

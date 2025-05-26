@@ -79,6 +79,12 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 			if (Info.Base.DontConsumeEnergy ~= true) then
 				ActiveAgent:UseEnergy(Info.Base.Required_Energy)
 			end
+		elseif SpacelessSkill == "Ultimate" then
+			if (State == 'Begin' and ActiveAgent:GetUltimate() < 100) then
+				return false;
+			end
+
+			ActiveAgent:UseUltimate();
 		end
 	elseif SpacelessSkill == 'Dodge' then
 		print(SpacelessSkill)

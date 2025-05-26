@@ -6,12 +6,19 @@ local Client = ReplicatedStorage.Modules.Client
 
 local Types = require(Shared.Types)
 local AbilityClass = require(Client.Classes.Ability)
+local Cutscenes = require(Client.Libraries.Cutscenes)
 
 --
 local Ability = AbilityClass.new()
 
 function Ability:Play(Agent: Types.AgentClass)
+    Cutscenes:Start("GokuSSJ", Agent)
 
+    Ability:Begin(Agent, {
+        {0, function()
+            Agent:SwitchState('Attacking', 1)
+        end},
+    })
 end
 
 return Ability

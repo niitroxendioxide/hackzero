@@ -133,6 +133,14 @@ return {
 				Damage_Mult = 27,
 				Daze_Mult = 1,
 			}
+		},
+
+		['Ultimate'] = {
+			Base = {
+				Speed = 1,
+				NoAutoTrack = true,
+			},
+			Upgrades = {},
 		}
 	}
 }

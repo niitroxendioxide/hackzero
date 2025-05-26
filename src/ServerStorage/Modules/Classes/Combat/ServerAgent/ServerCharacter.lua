@@ -11,7 +11,8 @@ local Types = require(Shared.Types)
 local StatesClass = require(Shared.Classes.Agents.States)
 
 -- DEBUG
-local REPLICATE_HITBOX = true
+local TestEnv = require("../../../.testenv/settings")
+local REPLICATE_HITBOX = RunService:IsStudio() and TestEnv.REPLICATE_CONSTANTS.HITBOXES
 
 --
 local ServerCharacterClass = {}

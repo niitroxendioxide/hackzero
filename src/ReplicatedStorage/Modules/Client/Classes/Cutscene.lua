@@ -49,7 +49,7 @@ function CutsceneClass.Sequence(self: Types.CutsceneClass, Data: {}): ()
     -- empty method!
 end
 
-function CutsceneClass.AnimateCamera(self: Types.CutsceneClass, At: CFrame, Animation: string): (AnimationTrack)?
+function CutsceneClass.AnimateCamera(self: Types.CutsceneClass, At: Model | CFrame, GivenAnim: string | Animation): (AnimationTrack)?
     local Rig = Assets.Characters:FindFirstChild('CameraRig');
     if not(Rig) or not(Camera:GetCurrentUser() == self.__Name) then
         return;
@@ -60,10 +60,23 @@ function CutsceneClass.AnimateCamera(self: Types.CutsceneClass, At: CFrame, Anim
 
     local NewCameraRig = self.__Objects.CameraRig or Rig:Clone()
     self.__Objects.CameraRig = NewCameraRig
-    self.__Objects.CameraRig:PivotTo(At)
-    self.__Objects.CameraRig.Parent = (workspace:FindFirstChild("World") :: Folder):FindFirstChild("Effects")
+    if typeof(At) == 'CFrame' then
+        self.__Objects.CameraRig:PivotTo(At)
 
-    local AnimObject = AnimLib:GetAnim('Cutscenes.'..Animation)
+        self.__Objects.CameraRig.PrimaryPart.Anchored = true
+    else
+        local Weld = Instance.new("Weld")
+        local CamRig = self.__Objects.CameraRig
+
+        CamRig.PrimaryPart.Anchored = false
+        Weld.Parent = CamRig.PrimaryPart
+        Weld.Part0 = CamRig.PrimaryPart
+        Weld.Part1 = At.PrimaryPart
+    end
+
+    self.__Objects.CameraRig.Parent = (workspace:FindFirstChild("World") :: Folder):FindFirstChild("Effects"    )
+
+    local AnimObject = typeof(GivenAnim) == 'Instance' and GivenAnim or AnimLib:GetAnim('Cutscenes.'..(GivenAnim :: string))
     local Track = AnimLib:Play(self.__Objects.CameraRig, AnimObject)
 
     RunService:BindToRenderStep(RenderStepKey, Enum.RenderPriority.Camera.Value, function(delta: number)

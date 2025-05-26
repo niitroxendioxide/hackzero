@@ -17,6 +17,7 @@ local AgentClass = require(Client.Classes.Agent)
 
 local CameraLibrary = require(Client.Libraries.Camera)
 local CharacterLibrary = require(Client.Libraries.Characters)
+local CutscenesLibrary = require(Client.Libraries.Cutscenes)
 
 local Replicator = require(Client.Controllers.ReplicationController)
 local GameEnum = require(Shared.GameEnum)
@@ -105,7 +106,7 @@ function Controller:Init(): ()
 			CameraLibrary:ChangePartTrackingType(1)
 		end
 
-		if (Direction.Magnitude > 0) then
+		if (Direction.Magnitude > 0 and not CutscenesLibrary:IsInCutscene()) then
 			CurrentCharacter:Look(Direction.Unit)
 			CurrentCharacter:Move()
 		else

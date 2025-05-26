@@ -60,11 +60,15 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass): boolean
 
 	local Info = self:GetInfoForSkill(Type)
 
-	--
-	if Type == "Special" and Agent:GetEnergy() >= Info.Base.Required_Energy then
-		Type = "EX Special"
+	-- Run client checks for correcting skill usage
+	if RunService:IsClient() then
+		if Type == "Special" and Agent:GetEnergy() >= Info.Base.Required_Energy then
+			Type = "EX Special"
 
-		Info = self:GetInfoForSkill('EX Special')
+			Info = self:GetInfoForSkill('EX Special')
+		elseif Type == 'Ultimate' and Agent:GetUltBar() < 100 then
+			return false
+		end
 	end
 
 	--

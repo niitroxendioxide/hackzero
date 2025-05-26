@@ -19,13 +19,17 @@ export type TweenGoals = {
 	[string]: any?,
 }
 
-function EffectUtil:Tween(Object: Instance, Info: {number | string}, Goals: TweenGoals)
+function EffectUtil:Tween(Object: Instance, Info: {number | string | boolean | nil}, Goals: TweenGoals)
 	--
 	local Time, Ease, Direction = Info[1] :: number, (Info[2] or 'Linear') :: string, (Info[3] or 'Out') :: string;
+	local Reverse, Delay = Info[5] or false, Info[6] or 0
 	local NewInfo = typeof(Info) == 'TweenInfo' and Info or TweenInfo.new(
 		Time,
 		Enum.EasingStyle[Ease] :: Enum.EasingStyle,
-		Enum.EasingDirection[Direction] :: Enum.EasingDirection
+		Enum.EasingDirection[Direction] :: Enum.EasingDirection,
+		0,
+		Reverse,
+		Delay
 	)
 
 	--
@@ -127,9 +131,9 @@ function EffectUtil:GetParent(Name: string?): Instance
 	return WorldFolder.Effects
 end
 
-function EffectUtil:Toggle(Object: Instance, State: boolean, Filter: ((Object: ParticleEmitter | Beam | Instance) -> (boolean))?)
+function EffectUtil:Toggle(Object: Instance, State: boolean, Filter: ((Object: ParticleEmitter | Beam | Instance) -> (boolean))?, IncludeLights: boolean?)
 	for _, Child in Object:GetDescendants() do
-		if not (Child:IsA('ParticleEmitter') or Child:IsA('Beam')) then
+		if not (Child:IsA('ParticleEmitter') or Child:IsA('Beam') or (IncludeLights and Child:IsA("PointLight"))) then
 			continue
 		end
 
