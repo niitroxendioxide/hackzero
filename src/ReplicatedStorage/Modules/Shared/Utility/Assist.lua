@@ -7,7 +7,7 @@ local Types = require(Shared.Types)
 --
 local AssistUtil = {}
 
-function AssistUtil:CalculateSwitchCFrame(Agents: {Types.AgentClass}, Current: number, Direction: number)
+function AssistUtil:CalculateSwitchCFrame(Agents: {Types.GenericClass}, Current: number, Direction: number)
 	local CurrentCharacter =  Agents[Current]
 	local CurrentPivot = CurrentCharacter:GetPivot()
 
@@ -18,7 +18,7 @@ function AssistUtil:CalculateSwitchCFrame(Agents: {Types.AgentClass}, Current: n
 	end
 
 	CurrentCharacter:Stop()
-	
+
 	return CurrentPivot * Offset
 end
 

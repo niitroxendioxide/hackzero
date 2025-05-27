@@ -11,7 +11,7 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.ServerAgentClass)
+function Ability:Play(Caster: Types.GenericClass): ()
 	--
 	Caster:SwitchState('Dashing', .15)
 	Caster:ApplyImpulse(Caster:GetPivot().LookVector * 75)

@@ -35,7 +35,7 @@ function ServerAgentClass.new(Name: string, Level: number): Types.ServerAgentCla
 	self.__Active = false
 	self.__Character = CharacterClass.new(Name, Appearance.Height)
 	self.__Status = AgentStatus.new(CharacterDatabase:GetStatsAtLevel(Name, Level))
-	self.__Items = AgentItems.new();
+	self.__Items = AgentItems.new(self);
 
 	return self
 end
@@ -58,8 +58,9 @@ end
 
 function ServerAgentClass.GetStat(self: Types.ServerAgentClass, Name: Types.Stat): number
 	local Base = self.__Status:GetStat(Name)
+	local Effects = self.__Status:GetStatEffects(Name)
 	local Added = self.__Items:GetTotalAddedStat(Name)
-	local Total = Base + Added
+	local Total = Base + Added + Effects
 
 	return Total
 end
@@ -240,5 +241,29 @@ function ServerAgentClass:HasTag(Tag: string)
 	return self.__Tags[Tag] ~= nil
 end
 
+function ServerAgentClass.AddEffect(self: Types.ServerAgentClass, EffectParams: Types.EffectParameters): Types.EffectObject
+	EffectParams.Callback = function(Id: number)
+		Replicator:RemoveEffect(self, Id)
+	end
+
+	local Effect = self.__Status:AddEffect(EffectParams)
+
+
+	Replicator:AddEffect(self, EffectParams)
+
+	return Effect
+end
+
+function ServerAgentClass.RemoveEffect(self: Types.ServerAgentClass, EffectId: number): Types.EffectObject
+	local Effect = self.__Status:RemoveEffect(EffectId)
+
+	Replicator:RemoveEffect(self, EffectId)
+
+	return Effect
+end
+
+function ServerAgentClass.GetEffect(self: Types.ServerAgentClass, Tag: string): Types.EffectObject
+	return self.__Status:GetEffect(Tag)
+end
 
 return ServerAgentClass

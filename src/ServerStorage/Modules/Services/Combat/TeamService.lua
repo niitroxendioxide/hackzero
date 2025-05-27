@@ -27,6 +27,10 @@ function Service:Create(Player: Player)
 
     for index, AgentData in Team do
         local AgentDataClass = DataService:GetAgent(Player, AgentData.Name)
+        if AgentData.IsBorrowed then
+            AgentDataClass = AgentData
+        end
+
         local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level)
 
         if AgentDataClass.Drive then

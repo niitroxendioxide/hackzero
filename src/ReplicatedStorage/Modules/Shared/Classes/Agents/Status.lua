@@ -2,6 +2,8 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
+local Heap = require(Shared.Utility.Heap)
+local BaseTypes = require(Shared.Types)
 local Types = require(Shared.Types.Agents)
 
 --
@@ -15,6 +17,7 @@ function StatusClass.new(Base: Types.CharacterStats): Types.AgentStatusClass
 	self.__Effects = {}
 
 	--
+	self.__Total_Effects = Heap.new(128)
 	self.__Ultimate = 0
 	self.__Energy = 0
 	self.__Health = self:GetStat('Health')
@@ -89,12 +92,76 @@ function StatusClass.GetStat(self: Types.AgentStatusClass, n)
 	return self.__Base_Stats[n]
 end
 
-function StatusClass:AddEffect()
-	
+function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.EffectParameters)
+	if Effect.Tag and Effect.Unique then
+		for _, Other in self.__Effects do
+			if Other.Tag ~= nil and Other.Tag == Effect.Tag then
+				Other.Remove();
+			end
+		end
+	end
+
+	local NewId = self.__Total_Effects:extract()
+
+	if typeof(Effect.Value) == 'string' and Effect.Value:find("%%") then
+		local Number = tonumber(string.sub(Effect.Value, 1, #Effect.Value-1), 10)
+		local Stat = self.__Base_Stats[Effect.Type]
+
+		Effect.Value = Stat * (Number / 100)
+	end
+
+	local Callback = Effect.Callback
+
+	local EffectObject = {
+		Id = NewId,
+		Type = Effect.Type,
+		Value = Effect.Value,
+		Tag = Effect.Tag,
+
+		Remove = function()
+			self:RemoveEffect(NewId)
+
+			if Callback then
+				task.spawn(Callback, NewId)
+			end
+		end,
+	}
+
+	if Effect.Time then
+		task.delay(Effect.Time, EffectObject.Remove)
+	end
+
+	self.__Effects[NewId] = EffectObject
+
+	return EffectObject
 end
 
-function StatusClass:GetEffect()
-	
+function StatusClass.GetEffect(self: Types.AgentStatusClass, Tag: string)
+	for _, Effect in self.__Effects do
+		if Effect.Tag == Tag then
+			return Effect;
+		end
+	end
+
+	return;
+end
+
+function StatusClass.RemoveEffect(self: Types.AgentStatusClass, Id: number)
+	self.__Effects[Id] = nil
+
+	self.__Total_Effects:insert(Id)
+end
+
+function StatusClass.GetStatEffects(self: Types.AgentStatusClass, Type: Types.Stat)
+	local Amount = 0
+
+	for _, Effect in self.__Effects do
+		if Effect.Type == Type then
+			Amount += Effect.Value
+		end
+	end
+
+	return Amount
 end
 
 function StatusClass:GetArtifactBonus(_Type: string)

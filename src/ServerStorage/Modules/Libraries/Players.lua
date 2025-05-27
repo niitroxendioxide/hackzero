@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 
 --
 local PlayersLibrary = {
@@ -38,7 +39,7 @@ function PlayersLibrary:GetFromPart(BasePart: BasePart): Types.StagePlayer?
     return nil
 end
 
-function PlayersLibrary:GetFromAgent(Agent: Types.ServerAgentClass): Types.StagePlayer?
+function PlayersLibrary:GetFromAgent(Agent: AgentTypes.ServerAgentClass): Types.StagePlayer?
     for _, Player in PlayersLibrary.__Cache do
         if Player:GetBase().UserId == Agent.__User then
             return Player

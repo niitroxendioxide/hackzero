@@ -5,6 +5,8 @@ local Players = game:GetService('Players')
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Agent = require(ReplicatedStorage.Modules.Client.Classes.Agent)
+local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
 local GameEnum = require(Shared.GameEnum)
@@ -164,6 +166,26 @@ function Controller:ResetAffliction(Buffer: buffer)
 	end
 
 	EnemyObject:ResetAffliction(Type)
+end
+
+function Controller:AddEffect(Buffer: buffer, Effect: AgentTypes.EffectParameters)
+	local RepId = buffer.readu8(Buffer, 1)
+	local AgentId = buffer.readu8(Buffer, 2)
+
+	local Agent = Characters:GetAgent(RepId, AgentId)
+	local EffectObj = Agent:AddEffect(Effect)
+	InterfaceStates.EffectAdded:Fire(AgentId, EffectObj.Id)
+end
+
+function Controller:RemoveEffect(Buffer: buffer)
+	local RepId = buffer.readu8(Buffer, 1)
+	local AgentId = buffer.readu8(Buffer, 2)
+	local EffectId = buffer.readu8(Buffer, 3)
+
+	local Agent = Characters:GetAgent(RepId, AgentId)
+
+	InterfaceStates.EffectRemoved:Fire(AgentId, EffectId)
+	Agent:RemoveEffect(EffectId)
 end
 
 

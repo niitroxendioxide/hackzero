@@ -3,12 +3,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 
 --
 local PlayerClass = {}
 PlayerClass.__index = PlayerClass
 
-function PlayerClass.new(Player: Player, Team: {Types.ServerAgentClass}): Types.StagePlayer
+function PlayerClass.new(Player: Player, Team: {AgentTypes.ServerAgentClass}): Types.StagePlayer
     local self = setmetatable({}, PlayerClass)
     self.__Player_Object = Player
     self.__Designated_Id = 0

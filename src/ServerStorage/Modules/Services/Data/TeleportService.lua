@@ -3,9 +3,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
 
+local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Places = require(Shared.Places)
 local Types = require(Shared.Types)
 local TableUtil = require(Shared.Utility.Table)
@@ -254,7 +256,7 @@ function Service:RepeatStage(): (boolean, string?)
 end
 
 
-function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: number}}
+function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: number, IsBorrowed: boolean?}}
     local JoinData = Player:GetJoinData()
 
     if not JoinData.TeleportData then
@@ -262,12 +264,13 @@ function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: n
             Player:Kick("Cannot play match without a set team.")
         end
 
-        local AgentsToTest = {"Goku", "Trunks", "Vegeta"}
+        local AgentsToTest = settings.TEST_AGENTS
         local Converted = {}
         for _, Name in AgentsToTest do
             table.insert(Converted, {
                 Name = Name,
                 Level = 60,
+                IsBorrowed = false,
             })
         end
 

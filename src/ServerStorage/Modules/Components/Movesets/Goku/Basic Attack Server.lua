@@ -11,7 +11,7 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.ServerAgentClass)
+function Ability:Play(Caster: Types.GenericClass): ()
 	Ability:Increase(Caster, 'Count', {Limit = 5})
 	local M1_Count = Ability:Get(Caster, 'Count')
 

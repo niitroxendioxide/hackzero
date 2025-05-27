@@ -10,7 +10,7 @@ local AbilityClass = require(Client.Classes.Ability)
 --
 local Ability = AbilityClass.new(true)
 
-function Ability:Play(Agent: Types.AgentClass)
+function Ability:Play(Agent: Types.GenericClass)
 	Ability:Increase(Agent, 'Count', {Limit = 5})
 	local M1_Count = Ability:Get(Agent, 'Count')
 

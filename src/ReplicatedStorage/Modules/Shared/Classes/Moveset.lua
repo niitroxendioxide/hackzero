@@ -6,6 +6,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local Cooldown = require(Shared.Utility.Cooldown)
 local GameEnum = require(Shared.GameEnum)
 local SwapPackage = require(Client.Packages.Swap)
@@ -38,7 +39,7 @@ function MovesetClass:Assign(Type: string, Ability: Types.AbilityClass)
 
 	self.__Assigned[Type] = Ability
 
-	Ability.__Cooldown:Connect(function(Time: number, Agent: Types.AgentClass)
+	Ability.__Cooldown:Connect(function(Time: number, Agent: AgentTypes.AgentClass)
 		local CooldownKey = self.Name..Type..Agent.Name
 
 		if Cooldown:IsOn(CooldownKey) then return end
@@ -116,7 +117,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass): boolean
 end
 
 
-function MovesetClass:Release(Type: string, Caster: Types.AgentClass)
+function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass)
 	Type = Type:gsub('_', ' ')
 
 	local Info = self:GetInfoForSkill(Type)
@@ -151,7 +152,7 @@ function MovesetClass:Release(Type: string, Caster: Types.AgentClass)
 	return false;
 end
 
-function MovesetClass:Verify(Agent: Types.AgentClass, Type: string)
+function MovesetClass:Verify(Agent: AgentTypes.AgentClass, Type: string)
 	local Info = self:GetInfoForSkill(Type)
 
 	if Agent:GetState() ~= 'Idle' and not(Info.AllowedStates and Info.AllowedStates[Agent:GetState()]) then

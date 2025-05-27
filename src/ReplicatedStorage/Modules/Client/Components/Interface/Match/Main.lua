@@ -6,8 +6,10 @@ local Players = game:GetService('Players')
 local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
+local InterfaceAssets = ReplicatedStorage.Assets.Interface
 
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local ComponentClass = require(Client.Classes.Interface)
 local Fusion = require(Client.Libraries.Fusion)
 local CharacterLibrary = require(Client.Libraries.Characters)
@@ -29,7 +31,7 @@ local function ReplicationId(): number
 end
 
 local function GetEnergyNeededById(Id: number): number
-	--local Agent = CharacterLibrary:GetAgent(ReplicationId(), Id) :: Types.AgentClass
+	--local Agent = CharacterLibrary:GetAgent(ReplicationId(), Id) :: AgentTypes.AgentClass
 	local CharacterInfo = CharacterDatabase:GetMovesetData('Goku') -- Agent.Name
 
 	return CharacterInfo.Special.Base['Required_Energy'] :: number
@@ -66,6 +68,7 @@ function Component:Init()
 	local Icons = Frame.Icons
 
 	local Meters = Info:FindFirstChild('Meters') :: ComponentClass.Meter_Folder
+	local EffectsFrame = Info:FindFirstChild('EffectsList')
 
 	-- Privates
 	local Active_Pos = UDim2.fromScale(-0.05, 0.898)
@@ -90,12 +93,33 @@ function Component:Init()
 		Scope:Spring(Icon_Positions[6], 20, .7)
 	}
 
+	local function CleanUpEffectIcons()
+		for _, EffectObj in EffectsFrame:GetChildren() do
+			if EffectObj:IsA("Frame") then
+				EffectObj:Destroy()
+			end
+		end
+	end
+
+	local function AddEffectIcon(Id: number)
+		local Object = InterfaceAssets.Combat.Effects.EffectObj:Clone()
+		Object.Name = Id
+		Object.Parent = EffectsFrame
+	end
+
+	local function RemoveEffectIcon(Id: number)
+		local Object = EffectsFrame:FindFirstChild(Id)
+		if Object then
+			Object:Destroy()
+		end
+	end
+
 	local function UpdateCharacters()
 		local Characters = CharacterLibrary:GetCharacters(ReplicationId())
 		if Characters == nil then return end
 
 		local CurrentActiveCharacter, Active = CharacterLibrary:GetCurrent(ReplicationId())
-		if not Active then return end
+		if not Active or not CurrentActiveCharacter then return end
 
 		local Next = Active + 1 > 3 and 1 or Active + 1
 		local Prev = Active - 1 < 1 and 3 or Active - 1
@@ -108,11 +132,17 @@ function Component:Init()
 		Icon_Positions[Prev + 3]:set(.6)
 
 		--
-		local Health, Max_Health = (CurrentActiveCharacter :: Types.AgentClass):GetHealth()
+		CleanUpEffectIcons()
+		for _, Effect in CurrentActiveCharacter.__Status.__Effects do
+			AddEffectIcon(Effect.Id)
+		end
+
+		--
+		local Health, Max_Health = (CurrentActiveCharacter :: AgentTypes.AgentClass):GetHealth()
 		InterfaceStates.Health:set(Health)
 		InterfaceStates.Max_Health:set(Max_Health)
 
-		Info.CharacterName.Text = (CurrentActiveCharacter :: Types.AgentClass).Name
+		Info.CharacterName.Text = (CurrentActiveCharacter :: AgentTypes.AgentClass).Name
 
 		for _, Item in Icons:GetChildren() do
 			local Number = tonumber(Item.Name, 10) :: number
@@ -137,6 +167,14 @@ function Component:Init()
 			Model.Parent = Viewport:FindFirstChild('WorldModel')
 		end
 	end
+
+	InterfaceStates.EffectAdded:Connect(function(AgentId: number, Id: number)
+		AddEffectIcon(Id)
+	end)
+
+	InterfaceStates.EffectRemoved:Connect(function(AgentId: number, Id: number)
+		RemoveEffectIcon(Id)
+	end)
 
 	-- Changes
 	Scope:Observer(InterfaceStates.Characters):onChange(UpdateCharacters)

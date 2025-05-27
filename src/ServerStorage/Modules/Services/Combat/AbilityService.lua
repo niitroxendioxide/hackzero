@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
 local Enemies = require(Shared.Libraries.Enemies)
 local GameEnum = require(Shared.GameEnum)
@@ -44,7 +45,7 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 	return;
 end
 
-function Service:PromptAssist(Agent: Types.ServerAgentClass)
+function Service:PromptAssist(Agent: AgentTypes.ServerAgentClass)
 	--
 
 end

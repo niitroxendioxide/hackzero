@@ -99,6 +99,10 @@ function Party.GetPlayerTeam(self: Types.PartyClass, Player: Types.PartyPlayer)
     return self.__Teams[Player:GetId()]
 end
 
+function Party.GetDataTeam(self: Types.PartyClass, Player: Types.PartyPlayer)
+    return {}
+end
+
 function Party.SetPlayerTeam(self: Types.PartyClass, Player: Types.PartyPlayer, Team: Types.PartyPlayerTeam): ()
     self.__Teams[Player:GetId()] = Team;
 end

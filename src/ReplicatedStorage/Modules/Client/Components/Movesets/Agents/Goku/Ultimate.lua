@@ -11,7 +11,7 @@ local Cutscenes = require(Client.Libraries.Cutscenes)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Agent: Types.AgentClass)
+function Ability:Play(Agent: Types.GenericClass)
     Cutscenes:Start("GokuSSJ", Agent)
 
     Ability:Begin(Agent, {

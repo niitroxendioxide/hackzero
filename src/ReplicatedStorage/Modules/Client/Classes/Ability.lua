@@ -10,6 +10,7 @@ local AnimLibrary = require(Client.Libraries.Animation)
 local Effects = require(Client.Libraries.Effects)
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local Signal = require(Shared.Utility.Signal)
 local Hitbox = require(Shared.Utility.Hitbox)
 local Enemies = require(Shared.Libraries.Enemies)
@@ -43,7 +44,7 @@ function AbilityClass.new(Holdable: boolean): Types.AbilityClass
 	return self
 end
 
-function AbilityClass:Begin(Agent: Types.AgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
+function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
 	if self.__Active_Sequences[Agent] then
 		self.__Active_Sequences[Agent]:Destroy()
 	end
@@ -76,7 +77,7 @@ function AbilityClass:Begin(Agent: Types.AgentClass, Frames: Sequence.SequenceFr
 	return AbilitySequence:Start()
 end
 
-function AbilityClass:Connect(Agent: Types.AgentClass, StateId: number)
+function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 	local User = Players.LocalPlayer
 	local Id = User:GetAttribute("ReplicationId")
 
@@ -112,7 +113,7 @@ function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?
 	local Value = Base[Key] or 0
 	local Upgraded_Value = Upgrade[Key]
 
-	if typeof(Value) == 'table' then
+	if typeof(Value) == 'table' and Sub_Key ~= nil then
 		local Added = Upgraded_Value ~= nil and Upgrade[Key][Sub_Key] or 0
 
 		return Value[Sub_Key] + Added * Level
@@ -129,13 +130,13 @@ function AbilityClass:SetData(Data: {})
 	self.__Ability_Data = Data
 end
 
-function AbilityClass:SetCooldown(Agent: Types.AgentClass, Time: number)
+function AbilityClass:SetCooldown(Agent: AgentTypes.AgentClass, Time: number)
 	local ID = self.__Character..self.__Name..Agent.PlayerId
 
 	Cooldown:Add(ID, Time)
 end
 
-function AbilityClass:Play(Agent: Types.AgentClass)
+function AbilityClass:Play(Agent: AgentTypes.AgentClass)
 	print(Agent.Name, 'Ability executed!')
 
 	self:Begin(Agent, {})
@@ -145,7 +146,7 @@ function AbilityClass:IsHeld(Caster: Types.GenericClass)
 	return self.__Held[Caster]
 end
 
-function AbilityClass:PlayAnimation(Agent: Types.AgentClass, Track: string, Data: Types.AnimationDataOptions)
+function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string, Data: Types.AnimationDataOptions)
 	Data = Data or {}
 
 	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed') or 1)
@@ -164,7 +165,7 @@ function AbilityClass:PlayAnimation(Agent: Types.AgentClass, Track: string, Data
 end
 
 --
-function AbilityClass:CreateHitbox(Caster: Types.AgentClass | Types.EnemyClass, Offset, Size, Event)
+function AbilityClass:CreateHitbox(Caster: AgentTypes.AgentClass | Types.EnemyClass, Offset, Size, Event)
 	if tostring(Caster) == 'EnemyClass' then
 		return self:CreateAgentHitbox(Caster, Offset, Size, Event)
 	elseif tostring(Caster) == 'AgentClass' then
@@ -189,7 +190,7 @@ function AbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: V
 end
 
 
-function AbilityClass:CreateEnemyHitbox(Agent: Types.AgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> ())
+function AbilityClass:CreateEnemyHitbox(Agent: AgentTypes.AgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> ())
 	local World = workspace:FindFirstChild('World') :: Folder
 
 	local EnemyHitboxes = Enemies:GetHitboxes()
@@ -206,7 +207,7 @@ function AbilityClass:CreateEnemyHitbox(Agent: Types.AgentClass, Offset: Vector3
 	end
 end
 
-function AbilityClass:Save(Agent: Types.AgentClass, Key: string, Value: any)
+function AbilityClass:Save(Agent: AgentTypes.AgentClass, Key: string, Value: any)
 	if not self.__Cache[Agent] then
 		self.__Cache[Agent] = {}
 	end
@@ -214,7 +215,7 @@ function AbilityClass:Save(Agent: Types.AgentClass, Key: string, Value: any)
 	self.__Cache[Agent][Key] = Value
 end
 
-function AbilityClass:Get(Agent: Types.AgentClass, Key: string)
+function AbilityClass:Get(Agent: AgentTypes.AgentClass, Key: string)
 	if not self.__Cache[Agent] then
 		self.__Cache[Agent] = {}
 	end
@@ -222,7 +223,7 @@ function AbilityClass:Get(Agent: Types.AgentClass, Key: string)
 	return self.__Cache[Agent][Key]
 end
 
-function AbilityClass:Increase(Agent: Types.AgentClass, Key: string, Data: {Rate: number?, Limit: number?})
+function AbilityClass:Increase(Agent: AgentTypes.AgentClass, Key: string, Data: {Rate: number?, Limit: number?})
 	Data = Data or {}
 
 	local Limit = Data.Limit or math.huge

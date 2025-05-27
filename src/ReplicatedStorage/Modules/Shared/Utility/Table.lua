@@ -29,6 +29,7 @@ end
 
 function TableUtil:WriteKeys(dict: {any})
     local keys = {}
+    dict = dict or {}
     for key in dict do
         table.insert(keys, key)
     end
@@ -38,6 +39,7 @@ end
 
 function TableUtil:WriteValues(dict: {any})
     local vals = {}
+    dict = dict or {}
     for _, val in dict do
         table.insert(vals, val)
     end

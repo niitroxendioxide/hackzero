@@ -11,6 +11,7 @@ local Assets = ReplicatedStorage.Assets
 local Classes = Client.Classes
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local EffectsUtil = require(Shared.Utility.Effects)
 local CutsceneClass = require(Classes.Cutscene)
 local CutsceneEffects = require(Client.Libraries.CutsceneEffects)
@@ -21,9 +22,13 @@ local Dir = "Characters.Goku.Abilities.Ultimate."
 local AgentCache = {}
 local GokuUltimate = CutsceneClass.new("GokuSSJ", 0.967)
 
-function GokuUltimate:Sequence(Agent: Types.AgentClass)
+function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     if AgentCache[Agent] then
         AgentCache[Agent]()
+    end
+
+    if Agent.Name ~= 'Goku' then
+        return
     end
 
     local AgentModel = Agent:GetModel()

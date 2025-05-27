@@ -11,10 +11,9 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.ServerAgentClass, Skill_Name: string, State: string, ...)
+function Ability:Play(Caster: Types.GenericClass, Skill_Name: string, State: string, ...)
 	--
 	local SequenceObj = Ability:Get(Caster, 'Sequence')
-	print(State)
 
 	if State ~= 'Begin' then
 		Caster:SwitchState('Attacking', 0)
@@ -49,6 +48,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, Skill_Name: string, State:
 						Affliction = 'Physical',
 						Stun = .225,
 						Daze = Ability:FromData('Daze_Mult', nil, 1),
+						Knockback = Ability:FromData('Knockback'),
 						Affliction_Buildup = Ability:FromData('Affliction_Buildup', nil, 1)
 					})
 				end)

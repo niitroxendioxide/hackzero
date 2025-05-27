@@ -127,6 +127,10 @@ return {
 				Damage_Mult = 248,
 				Daze_Mult = 19,
 				Affliction_Buildup = 1.5,
+
+				Knockback_Direction = Vector3.new(0, 0, 1),
+				Knockback_Strength = 8,
+				Knockback_Time = 0.2,
 			},
 
 			Upgrades = {
@@ -139,6 +143,12 @@ return {
 			Base = {
 				Speed = 1,
 				NoAutoTrack = true,
+
+				SSBuff = {
+					Type = 'Attack',
+					Value = "25%",
+					Time = 10,
+				}
 			},
 			Upgrades = {},
 		}

@@ -9,7 +9,7 @@ return {
 	Stats = {
 		Health = 5000000,
 		Attack = 0,
-		Defense = 25000,
+		Defense = 50,
 		Daze = 662,
 		Daze_Length = 10,
 
@@ -28,7 +28,7 @@ return {
 	Level_Stats = {
 		Attack = 0,
 		Health = 5000,
-		Defense = 500,
+		Defense = 25,
 	},
 
 	Moveset_Data = {

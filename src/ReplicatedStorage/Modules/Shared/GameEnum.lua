@@ -13,6 +13,8 @@ return {
 		KeySwitch = 11,
 		UpdateEnergy = 14,
 		UpdateUltBar = 15,
+		AddEffect = 16,
+		RemoveEffect = 17,
 
 		-- Enemy
 		AddEnemy = 26,

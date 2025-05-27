@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local Statics = require(Database.Statics)
 local AssistUtil = require(Shared.Utility.Assist)
 local IsClient = RunService:IsClient()
@@ -15,7 +16,7 @@ local InterfaceStates = IsClient and require(Client.Packages.InterfaceStates)
 
 --
 local Characters = {
-	__Player_Data = {} :: {[number]: {Active: number, List: {Types.AgentClass}}},
+	__Player_Data = {} :: {[number]: {Active: number, List: {AgentTypes.AgentClass}}},
 }
 
 function Characters:Switch(UserId: number, Direction: number)
@@ -54,7 +55,7 @@ function Characters:Switch(UserId: number, Direction: number)
 	NewCharacter:ApplyImpulse(NewCFrame.LookVector * 75)
 end
 
-function Characters:Add(UserId: number, Character: Types.AgentClass)
+function Characters:Add(UserId: number, Character: AgentTypes.AgentClass)
 	Characters:Build(UserId)
 	
 	local Data = Characters.__Player_Data[UserId]
@@ -90,7 +91,7 @@ function Characters:Remove(UserId: number, Name: string): any
 	return;
 end
 
-function Characters:GetCurrent(UserId: number): (Types.AgentClass?, number?)
+function Characters:GetCurrent(UserId: number): (AgentTypes.AgentClass?, number?)
 	local Data = Characters.__Player_Data[UserId]
 	if not Data then
 		return nil, nil;
@@ -101,7 +102,7 @@ function Characters:GetCurrent(UserId: number): (Types.AgentClass?, number?)
 	return Data.List[CurrentActive], CurrentActive
 end
 
-function Characters:GetAgent(UserId: number, Id: number): Types.AgentClass?
+function Characters:GetAgent(UserId: number, Id: number): AgentTypes.AgentClass?
 	local Data = Characters.__Player_Data[UserId]
 	if not Data then
 		return;
@@ -138,7 +139,7 @@ function Characters:Build(UserId: number)
 	}
 end
 
-function Characters:GetCharacters(UserId: number): {[number]: Types.AgentClass}
+function Characters:GetCharacters(UserId: number): {[number]: AgentTypes.AgentClass}
 	if not Characters.__Player_Data[UserId] then
 		return {}
 	end

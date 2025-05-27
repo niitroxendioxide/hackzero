@@ -1,4 +1,6 @@
+local ServerStorage = game:GetService("ServerStorage")
 local Types = require(script.Parent)
+local Heap = require(script.Parent.Parent.Utility.Heap)
 
 export type Artifact = Types.PlayerArtifactData
 export type Drive = Types.PlayerDriveData
@@ -9,6 +11,7 @@ export type State = Types.State
 export type AnimatorController = Types.AnimatorController
 export type CharacterClass = Types.CharacterClass
 export type CharacterStats = Types.CharacterStats
+export type Heap = Heap.Heap
 type Element = Types.Element
 type AgentMovesetAbility = Types.AgentMovesetAbility
 type Rig = Types.Rig
@@ -17,6 +20,7 @@ export type AgentClass =  {
 	Name: string,
 	PlayerId: number,
 
+	__Level: number,
 	__User: number,
 	GetId: (self: AgentClass) -> (number),
 
@@ -50,9 +54,10 @@ export type AgentClass =  {
 	SetVisible: (self: AgentClass, State: boolean?) -> (),
 	SetEnergy: (self: AgentClass, Energy: number) -> (),
 
-	AddEffect: (self: AgentClass, Name: string, Value: number, Time: number?) -> StateEffect,
+	AddEffect: (self: AgentClass, Effect: EffectParameters) -> StateEffect,
 	AddTrackToState: (self: AgentClass, State: string, Track: AnimationTrack, DisableTime: number) -> (),
 	GetEffect: (self: AgentClass, Name: string) -> StateEffect,
+	RemoveEffect: (self: AgentClass, Id: number) -> (),
 
 	GetAnimator: (self: AgentClass) -> AnimatorController,
 
@@ -74,7 +79,6 @@ export type AgentClass =  {
 	__Status: AgentStatusClass
 }
 
-export type AgentStatusEffect = {}
 
 export type AgentStatusClass = {
 	__Ultimate: number,
@@ -82,10 +86,11 @@ export type AgentStatusClass = {
 	__Health: number,
 	__Max_Health: number,
 	__Base_Stats: CharacterStats,
+	__Total_Effects: Heap,
 
 	__Artifact_Set: {},
 	__Card_Set: nil,
-	__Effects: {},
+	__Effects: {EffectObject},
 
 	GetStat: (self: AgentStatusClass, Name: Stat) -> (number),
 	Update: (self: AgentStatusClass, delta: number) -> (),
@@ -100,8 +105,10 @@ export type AgentStatusClass = {
 	UseEnergy: (self: AgentStatusClass, EnergyUsed: number) -> (),
 	GiveEnergy: (self: AgentStatusClass, EnergyGiven: number) -> (),
 
-	AddEffect: (self: AgentStatusClass, AgentStatusEffect) -> (),
-	GetEffect: (self: AgentStatusClass, AgentStatusEffect) -> (),
+	AddEffect: (self: AgentStatusClass, EffectParameters) -> (EffectObject),
+	GetEffect: (self: AgentStatusClass, string) -> (EffectObject),
+	GetStatEffects: (self: AgentStatusClass, Stat) -> (),
+	RemoveEffect: (self: AgentStatusClass, Id: number) -> (),
 
 	GetArtifactBonus: (self: AgentStatusClass, Type: string) -> (number),
 	GetDriveBonus: (self: AgentStatusClass, Type: string) -> (),
@@ -115,7 +122,8 @@ export type AgentStatusClass = {
 
 
 -- [[Server data]]
-
+export type EffectParameters = {Type: Stat & AgentMovesetAbility, Value: number | string, Time: number, Tag: string, Unique: boolean?, Callback: ((Id: number) -> ())?}
+export type EffectObject = {Remove: () -> (), Id: number, Value: number, Type: Stat & AgentMovesetAbility, Tag: string?, Time: number?}
 export type ServerCharacterClass = {
 	Name: string,
 	States: StatesClass,
@@ -197,11 +205,32 @@ export type ServerAgentClass = {
 	--
 	BindDrive: (self: ServerAgentClass, Drive: Drive) -> (),
 	BindArtifact: (self: ServerAgentClass, Artifact: Artifact) -> (),
+
+	--[[
+		Add an effect to the player, effects are temporary/permanent buffs that are active for as long as specified (or match-long if undefined)
+		@param Value The amount to modify, enter "30%" as a string to use percent, and flat number to use percents. This value gets converted if passed as percent.
+		@param Type The stat or specific ability damage to buff
+		@param Tag A tag to the effect, useful if later needs to be deleted (optional)
+		@param Unique Delete all other effects with this tag (optional)
+		@param Time How long the effect will last (optional)
+		@return `EffectObject` The effect object. Effect.Remove() to delete.
+	]]
+	AddEffect: (self: ServerAgentClass, Data: EffectParameters) -> (EffectObject),
+
+	--[[
+		Get an effect from the player status by indexing it with its id
+		@param Tag The tag to look the effect by
+		@return `EffectObject` The effect object. Effect.Remove() to delete.
+	]]
+	GetEffect: (self: ServerAgentClass, Tag: string) -> (EffectObject?),
 }
 
 export type AgentItemsClass = {
     __Artifacts: {[number]: Artifact},
     __Drive: Drive,
+	__Name: string,
+	__Level: number,
+	__Baked: {[Stat]: number},
 
     GetDriveStats: (self: AgentItemsClass) -> ({[Stat]: number}),
     GetArtifactStats: (self: AgentItemsClass) -> ({[Stat]: number}),

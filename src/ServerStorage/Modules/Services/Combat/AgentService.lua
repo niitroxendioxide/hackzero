@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local AssistUtil = require(Shared.Utility.Assist)
@@ -14,7 +15,7 @@ local AgentLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 
 --
-type Player_Data = {Active: number, Characters: {Types.ServerAgentClass}}
+type Player_Data = {Active: number, Characters: {AgentTypes.ServerAgentClass}}
 
 local Service = {
 	__Characters = {} :: {[Player]: Player_Data},
@@ -57,7 +58,7 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 	end
 end
 
-function Service:AddAgent(Player: Player, AgentClass: Types.ServerAgentClass, Target: Player?)
+function Service:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClass, Target: Player?)
 	local Data = Service:Get(Player)
 	for _, Character in Data.Characters do
 		if Character.Name == AgentClass.Name then
@@ -200,7 +201,7 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 	Replicator:CharacterSwitch(Player, Direction)
 end
 
-function Service:GetCurrentCharacter(Player: Player): Types.ServerCharacterClass?
+function Service:GetCurrentCharacter(Player: Player): AgentTypes.ServerCharacterClass?
 	local Data = Service:Get(Player)
 
 	return Data.Characters[Data.Active]

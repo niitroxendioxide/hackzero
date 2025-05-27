@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Hitbox = {}
-local Types = require(ReplicatedStorage.Modules.Shared.Types)
+local Types = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 
 function Hitbox:IsPointInArea(Point: Vector3, Size: Vector3, At: CFrame)
 	local v3 = At:PointToObjectSpace(Point)

@@ -84,7 +84,7 @@ end
 --
 function EndScreen:Link()
     local PlayerGui = Player.PlayerGui
-	local HUD = PlayerGui:WaitForChild("EndScreenHUD", 10) :: ScreenGui
+	local HUD = PlayerGui:WaitForChild("FullScreenHUD", 10) :: ScreenGui
     if not HUD then return end
 	local Main = HUD:FindFirstChild("EndScreen", true)
 

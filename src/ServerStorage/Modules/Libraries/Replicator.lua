@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Agent = require(ReplicatedStorage.Modules.Client.Classes.Agent)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
@@ -122,6 +123,31 @@ function Replicator:CharacterSwitch(Player: Player, Direction: number)
 	buffer.writeu8(Object, 2,  Player:GetAttribute("ReplicationId") :: number)
 
 	Network:FireForAllBut(Player, 'Replicate', Object)
+end
+
+function Replicator:AddEffect(Agent: AgentTypes.ServerAgentClass, EffectParameters: AgentTypes.EffectParameters)
+	local Player = Agent.__Player_Assigned
+	local Id = Agents:GetIdForPlayer(Player:GetAttribute("ReplicationId") :: number, Agent) :: number
+
+	local Object = buffer.create(3)
+	buffer.writeu8(Object, 0, GameEnum.Replication.AddEffect)
+	buffer.writeu8(Object, 1,  Player:GetAttribute("ReplicationId") :: number)
+	buffer.writei8(Object, 2, Id)
+
+	Network:Fire('Replicate', Player, Object, EffectParameters)
+end
+
+function Replicator:RemoveEffect(Agent: AgentTypes.ServerAgentClass, EffectId: number)
+	local Player = Agent.__Player_Assigned
+	local Id = Agents:GetIdForPlayer(Player:GetAttribute("ReplicationId") :: number, Agent) :: number
+
+	local Object = buffer.create(4)
+	buffer.writeu8(Object, 0, GameEnum.Replication.RemoveEffect)
+	buffer.writeu8(Object, 1,  Player:GetAttribute("ReplicationId") :: number)
+	buffer.writei8(Object, 2, Id)
+	buffer.writeu8(Object, 3, EffectId)
+
+	Network:Fire('Replicate', Player, Object)
 end
 
 function Replicator:AddEnemy(Id: number, Enemy: Types.ServerEnemyClass, Target: Player?)

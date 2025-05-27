@@ -12,7 +12,7 @@ local Effects = require(Client.Libraries.Effects)
 --
 local Ability = AbilityClass.new(true)
 
-function Ability:Play(Caster: Types.AgentClass, Binding: string, State: string)
+function Ability:Play(Caster: Types.GenericClass, Binding: string, State: string)
 	--
 	local PreviousSequence = Ability:Get(Caster, "CurrentSequence")
 	if State ~= 'Begin' then

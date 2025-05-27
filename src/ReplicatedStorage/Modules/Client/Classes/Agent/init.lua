@@ -6,6 +6,7 @@ local RunService = game:GetService('RunService')
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 --local Enemies = require(Shared.Libraries.Enemies)
 local CharacterClass = require(script:WaitForChild('Character'))
 local StatusClass = require(Shared.Classes.Agents:WaitForChild('Status'))
@@ -14,13 +15,13 @@ local StatusClass = require(Shared.Classes.Agents:WaitForChild('Status'))
 local CharacterDatabase = require(Shared.Database.Characters)
 
 --
-local AgentClass = {} :: {[string]: (self: Types.AgentClass, any) -> any, new: (Name: string, Level: number) -> Types.AgentClass}
+local AgentClass = {} :: {[string]: (self: AgentTypes.AgentClass, any) -> any, new: (Name: string, Level: number) -> AgentTypes.AgentClass}
 AgentClass.__index = AgentClass
 AgentClass.__tostring = function()
 	return 'AgentClass'
 end
 
-function AgentClass.new(Name: string, Level: number): Types.AgentClass
+function AgentClass.new(Name: string, Level: number): AgentTypes.AgentClass
 	local self = setmetatable({}, AgentClass)
 
 	self.Name = Name
@@ -115,7 +116,7 @@ function AgentClass:Init(PlayerId: number)
 	return self.__Character:Init()
 end
 
-function AgentClass:GetRotation()
+function AgentClass:GetRotation(): any
 	return self.__Character.__Controller.__Rotation
 end
 
@@ -146,7 +147,7 @@ end
 function AgentClass:Walk(Time: number)
 	local Speed = self.__Character.__States:GetSpeed(true)
 	local Direction = self:GetPivot().LookVector * Speed
-	
+
 	return self.__Character.__Controller:AddLinearMovement(Direction, Time)
 end
 
@@ -159,11 +160,15 @@ function AgentClass:ApplyImpulse(...)
 end
 
 function AgentClass:AddEffect(...)
-	return self.__Character:AddEffect(...)
+	return self.__Status:AddEffect(...)
 end
 
 function AgentClass:GetEffect(...)
-	return self.__Character:GetEffect(...)
+	return self.__Status:GetEffect(...)
+end
+
+function AgentClass:RemoveEffect(...)
+	return self.__Status:RemoveEffect(...)
 end
 
 function AgentClass:GetState()

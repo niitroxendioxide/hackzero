@@ -11,6 +11,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local Trove = require(Shared.Utility.Trove)
 local Inputs = require(Client.Libraries.Inputs)
 local AgentClass = require(Client.Classes.Agent)
@@ -189,7 +190,7 @@ function Controller:SetupKeybinds()
 		Release = false,
 		Callback = function(_: 'Begin' | 'End')
 			local CanRun = true
-			if not (CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId")) :: Types.AgentClass):GetKey('Jog') then
+			if not (CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId")) :: AgentTypes.AgentClass):GetKey('Jog') then
 				CanRun = false
 				Replicator:Replicate(GameEnum.Replication.KeySwitch, GameEnum.Agent_Keys.Jog, true)
 			end
@@ -216,7 +217,7 @@ function Controller:SetupKeybinds()
 	Inputs:Bind('TESTING', {
 		Release = false,
 		Callback = function(_: 'Begin' | 'End')
-			(CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId")) :: Types.AgentClass):SwitchState('Attacking', .5)
+			(CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId")) :: AgentTypes.AgentClass):SwitchState('Attacking', .5)
 		end,
 	})
 end

@@ -11,9 +11,7 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.ServerAgentClass, ...)
-	print(...)
-
+function Ability:Play(Caster: Types.GenericClass, ...)
 	--
 	Ability:Begin(Caster, {
 		{0, function(_: Types.Sequence)

@@ -41,7 +41,7 @@ function Ability:Play(Enemy: Types.EnemyClass)
 		{.5, function()
 			Effects:Play('Saiyan_Skill_1', Enemy, 'Shoot')
 
-			Ability:CreateHitbox(Enemy, Vector3.zAxis* -30, Vector3.new(2.25, 2.25, 60), function(_: Types.AgentClass)
+			Ability:CreateHitbox(Enemy, Vector3.zAxis* -30, Vector3.new(2.25, 2.25, 60), function(_: Types.GenericClass)
 
 			end)
 		end,},

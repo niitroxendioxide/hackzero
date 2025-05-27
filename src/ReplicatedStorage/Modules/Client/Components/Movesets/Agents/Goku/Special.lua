@@ -11,7 +11,7 @@ local Effects = require(Client.Libraries.Effects)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.AgentClass)
+function Ability:Play(Caster: Types.GenericClass)
 	--
 	local Attack_Time = Ability:FromData("Attack_State_Time")
 

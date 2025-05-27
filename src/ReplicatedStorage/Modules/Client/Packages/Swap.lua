@@ -15,7 +15,7 @@ local Replicator = require(Client.Libraries.Replicator)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Agent: Types.AgentClass, Key: string)
+function Ability:Play(Agent: Types.GenericClass, Key: string)
 	local Direction = Key == 'Swap Back' and -1 or Key == 'Swap Forth' and 1 or 0
 	if Direction == 0 then return end
 	

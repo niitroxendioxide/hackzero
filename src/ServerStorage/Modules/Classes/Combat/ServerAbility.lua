@@ -7,6 +7,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Enemies = require(Shared.Libraries.Enemies)
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local Signal = require(Shared.Utility.Signal)
 local Hitbox = require(Shared.Utility.Hitbox)
 local Sequence = require(Shared.Utility.Sequence)
@@ -38,13 +39,13 @@ function ServerAbilityClass.new(): Types.ServerAbilityClass
 	return self
 end
 
-function ServerAbilityClass:Play(Agent: Types.ServerAgentClass)
+function ServerAbilityClass:Play(Agent: AgentTypes.ServerAgentClass)
 	print(Agent.Name, 'Ability executed!')
 
 	self:Begin(Agent, {})
 end
 
-function ServerAbilityClass:CreateHitbox(Caster: Types.ServerAgentClass | Types.ServerEnemyClass, Offset, Size, Event)
+function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass | Types.ServerEnemyClass, Offset, Size, Event)
 	if tostring(Caster) == 'EnemyClass' then
 		return self:CreateAgentHitbox(Caster, Offset, Size, Event)
 	elseif tostring(Caster) == 'AgentClass' then
@@ -54,7 +55,7 @@ function ServerAbilityClass:CreateHitbox(Caster: Types.ServerAgentClass | Types.
 	return;
 end
 
-function ServerAbilityClass:CreateEnemyHitbox(Agent: Types.ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> ())
+function ServerAbilityClass:CreateEnemyHitbox(Agent: AgentTypes.ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> ())
 	local EnemyHitboxes = Enemies:GetHitboxes()
 	local AreaParts = Hitbox:GetPartsInArea({WorldCamera.Enemies}, Size, Agent:GetPivot() * CFrame.new(Offset))
 
@@ -65,8 +66,8 @@ function ServerAbilityClass:CreateEnemyHitbox(Agent: Types.ServerAgentClass, Off
 	end
 end
 
-function ServerAbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerAgentClass) -> ())
-	ServerHitboxUtil:ForAgentsInZone(Size, Enemy:GetPivot() * CFrame.new(Offset), function(Target: Types.ServerAgentClass, ...)
+function ServerAbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> ())
+	ServerHitboxUtil:ForAgentsInZone(Size, Enemy:GetPivot() * CFrame.new(Offset), function(Target: AgentTypes.ServerAgentClass, ...)
 		if Target:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER) then
 			print(Target.Name, 'DODGED')
 			Target:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
@@ -78,7 +79,7 @@ function ServerAbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Off
 	end)
 end
 
-function ServerAbilityClass:Save(Agent: Types.AgentClass, Key: string, Value: any)
+function ServerAbilityClass:Save(Agent: AgentTypes.AgentClass, Key: string, Value: any)
 	if not self.__Cache[Agent] then
 		self.__Cache[Agent] = {}
 	end
@@ -86,7 +87,7 @@ function ServerAbilityClass:Save(Agent: Types.AgentClass, Key: string, Value: an
 	self.__Cache[Agent][Key] = Value
 end
 
-function ServerAbilityClass:Increase(Agent: Types.ServerAgentClass, Key: string, Data: {Rate: number?, Limit: number?})
+function ServerAbilityClass:Increase(Agent: AgentTypes.ServerAgentClass, Key: string, Data: {Rate: number?, Limit: number?})
 	Data = Data or {}
 
 	local Limit = Data.Limit or math.huge
@@ -100,7 +101,7 @@ function ServerAbilityClass:Increase(Agent: Types.ServerAgentClass, Key: string,
 	end
 end
 
-function ServerAbilityClass:Get(Agent: Types.AgentClass, Key: string)
+function ServerAbilityClass:Get(Agent: AgentTypes.AgentClass, Key: string)
 	if not self.__Cache[Agent] then
 		self.__Cache[Agent] = {}
 	end
@@ -108,7 +109,7 @@ function ServerAbilityClass:Get(Agent: Types.AgentClass, Key: string)
 	return self.__Cache[Agent][Key]
 end
 
-function ServerAbilityClass:Begin(_: Types.AgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
+function ServerAbilityClass:Begin(_: AgentTypes.AgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
 	local AbilitySequence = Sequence.new(Frames)
 	AbilitySequence:SetSpeed(self:FromData('Speed') or 1)
 
@@ -119,7 +120,7 @@ function ServerAbilityClass:Begin(_: Types.AgentClass, Frames: Sequence.Sequence
 	return AbilitySequence:Start()
 end
 
-function ServerAbilityClass:Hit(Agent: Types.ServerAgentClass, Enemy: Types.ServerEnemyClass, Data: Types.HitEnemyData)
+function ServerAbilityClass:Hit(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerEnemyClass, Data: Types.HitEnemyData)
 	--
 	local AgentPivot = Agent:GetPivot()
 	local _EnemyPivot = Enemy:GetPivot()
@@ -136,7 +137,6 @@ function ServerAbilityClass:Hit(Agent: Types.ServerAgentClass, Enemy: Types.Serv
 	end
 
 	if not Data.DontChargeUlt then
-		print('charg')
 		Agent:GiveUltimate(10)
 	end
 
@@ -194,7 +194,7 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 	local Value = Base[Key] or 0
 	local Upgraded_Value = Upgrade[Key]
 
-	if typeof(Value) == 'table' then
+	if typeof(Value) == 'table' and Sub_Key ~= nil then
 		local Added = Upgraded_Value ~= nil and Upgrade[Key][Sub_Key] or 0
 
 		return Value[Sub_Key] + Added * Level
@@ -207,7 +207,7 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 	return Value
 end
 
-function ServerAbilityClass.Cancel(self: Types.ServerAbilityClass, Caster: Types.ServerAgentClass, Callback: () -> ())
+function ServerAbilityClass.Cancel(self: Types.ServerAbilityClass, Caster: AgentTypes.ServerAgentClass, Callback: () -> ())
 	if Callback then
 		task.spawn(Callback)
 	end

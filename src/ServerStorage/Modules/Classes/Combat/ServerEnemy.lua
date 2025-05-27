@@ -11,6 +11,7 @@ local Replicator = require(Libraries.Replicator)
 local AgentsLibrary = require(Libraries.Agents)
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local Signal = require(Shared.Utility.Signal)
 local EnemyStatus = require(Shared.Classes.Enemy.EnemyStatus)
 local MovementClass = require(Shared.Classes.Enemy.EnemyMovement)
@@ -211,7 +212,7 @@ function ServerEnemy:FindRandomAggro()
 	local Agents = AgentsLibrary:GetActiveAgents()
 	local At = self.__Movement.__Position
 	local MaxDistance = math.huge
-	local Chosen: Types.ServerAgentClass = nil
+	local Chosen: AgentTypes.ServerAgentClass = nil
 
 	for _, Agent in Agents do
 		local Distance = (Agent:GetPivot().Position - At).Magnitude
@@ -229,7 +230,7 @@ function ServerEnemy:FindRandomAggro()
 	end
 end
 
-function ServerEnemy:Rotate(Direction: Vector3 | Types.ServerAgentClass)
+function ServerEnemy:Rotate(Direction: Vector3 | AgentTypes.ServerAgentClass)
 	if typeof(Direction) == 'CFrame' then
 		Direction = Direction.Position
 	end

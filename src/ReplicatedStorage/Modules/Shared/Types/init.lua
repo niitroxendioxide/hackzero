@@ -144,6 +144,8 @@ export type StatesClass = {
 export type GenericClass = {
 	Name: string,
 
+	GetPivot: (self: GenericClass) -> CFrame,
+
 	BlockRotation: (self: GenericClass, Time: number) -> (),
 	GetId: (self: GenericClass) -> (number),
 	GetEnergy: (self: GenericClass) -> (number),
@@ -154,6 +156,23 @@ export type GenericClass = {
 
 	GetModel: (self: GenericClass) -> Model,
 	GetUltBar: (self: GenericClass) -> number,
+
+	Walk: (self: GenericClass, Time: number) -> (),
+	SwitchState: (self: GenericClass, State: State, Time: number) -> (),
+
+	GetEffect: (self: GenericClass, ...any) -> (),
+
+	--
+	GetAnimator: (self: GenericClass) -> AnimatorController,
+	ApplyImpulse: (self: GenericClass, Impulse: Vector3) -> (),
+
+	GetUltimate: (self: GenericClass) -> (number),
+
+	GiveEnergy: (self: GenericClass) -> (number),
+	UseEnergy: (self: GenericClass, Amount: number) -> (),
+
+	--
+	TakeDamage: (self: GenericClass, Amount: number) -> (),
 }
 -- [[ INPUTS ]]
 export type KeybindData = {
@@ -915,6 +934,7 @@ export type StagePlayer = {
 	GetId: (self: StagePlayer) -> number,
 	GetTeam: (self: StagePlayer) -> {GenericClass},
 	GetBase: (self: StagePlayer) -> Player,
+	GetFromAgent: (self: StagePlayer, Agent: GenericClass) -> (),
 }
 
 export type CutsceneClass = {

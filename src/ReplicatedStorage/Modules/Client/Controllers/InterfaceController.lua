@@ -18,7 +18,11 @@ local Controller = {
 function Controller:Init(): ()
 	Controller:DisableCallback("ResetButtonCallback")
 
-	for _, Component in Client.Components.Interface:GetChildren() do
+	for _, Component in Client.Components.Interface:GetDescendants() do
+		if Component:IsA("Folder") then
+			continue
+		end
+
 		task.spawn(function()
 			local Object = require(Component) :: Types.UIComponent
 

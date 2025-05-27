@@ -10,7 +10,7 @@ local AbilityClass = require(Client.Classes.Ability)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Agent: Types.AgentClass)
+function Ability:Play(Agent: Types.GenericClass)
 
 end
 
