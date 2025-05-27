@@ -1,4 +1,7 @@
-local ArtifactClass = require("../../Classes/Artifact")
+local ServerStorage = game:GetService("ServerStorage")
+local Classes = ServerStorage.Modules.Classes
+
+local ArtifactClass = require(Classes.Items.Artifact)
 
 local ArtifactObject = ArtifactClass.new('Wristband')
 

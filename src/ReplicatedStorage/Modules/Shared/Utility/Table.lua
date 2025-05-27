@@ -18,4 +18,31 @@ function TableUtil:printTable(t, tabcount: number?)
     end
 end
 
+function TableUtil:GetDictLength(a: {any}, min: number?): number | boolean
+    local k=0;
+    for _ in a do
+        if (min and k>min)then return true end
+        k+=1;
+    end
+    return k;
+end
+
+function TableUtil:WriteKeys(dict: {any})
+    local keys = {}
+    for key in dict do
+        table.insert(keys, key)
+    end
+
+    return keys;
+end
+
+function TableUtil:WriteValues(dict: {any})
+    local vals = {}
+    for _, val in dict do
+        table.insert(vals, val)
+    end
+
+    return vals;
+end
+
 return TableUtil

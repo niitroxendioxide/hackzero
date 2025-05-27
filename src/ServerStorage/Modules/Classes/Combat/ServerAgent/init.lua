@@ -7,10 +7,11 @@ local RunService = game:GetService('RunService')
 local Classes = ServerStorage.Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Agents)
 local CharacterDatabase = require(Shared.Database.Characters)
 local CharacterClass = require(Classes.Combat.ServerAgent.ServerCharacter)
 local AgentStatus = require(Shared.Classes.Agents.Status)
+local AgentItems = require(Shared.Classes.Agents.Items)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 
 --
@@ -34,6 +35,7 @@ function ServerAgentClass.new(Name: string, Level: number): Types.ServerAgentCla
 	self.__Active = false
 	self.__Character = CharacterClass.new(Name, Appearance.Height)
 	self.__Status = AgentStatus.new(CharacterDatabase:GetStatsAtLevel(Name, Level))
+	self.__Items = AgentItems.new();
 
 	return self
 end
@@ -54,8 +56,20 @@ function ServerAgentClass:GetTotalVelocity()
 	return self.__Character:GetTotalVelocity()
 end
 
-function ServerAgentClass:GetStat(Name: Types.Stat): number
-	return self.__Status:GetStat(Name)
+function ServerAgentClass.GetStat(self: Types.ServerAgentClass, Name: Types.Stat): number
+	local Base = self.__Status:GetStat(Name)
+	local Added = self.__Items:GetTotalAddedStat(Name)
+	local Total = Base + Added
+
+	return Total
+end
+
+function ServerAgentClass.BindDrive(self: Types.ServerAgentClass, Drive: Types.Drive): ()
+	self.__Items:BindDrive(Drive)
+end
+
+function ServerAgentClass.BindArtifact(self: Types.ServerAgentClass, Artifact: Types.Artifact): ()
+	self.__Items:BindArtifact(Artifact)
 end
 
 

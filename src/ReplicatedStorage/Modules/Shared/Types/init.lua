@@ -155,107 +155,6 @@ export type GenericClass = {
 	GetModel: (self: GenericClass) -> Model,
 	GetUltBar: (self: GenericClass) -> number,
 }
-
-export type AgentClass =  {
-	Name: string,
-	PlayerId: number,
-
-	__User: number,
-	GetId: (self: AgentClass) -> (number),
-
-	Init: (self: AgentClass) -> (),
-	Move: (self: AgentClass) -> (),
-	Stop: (self: AgentClass) -> (),
-	Look: (self: AgentClass, Direction: Vector3, Instant: boolean?, Bypass: boolean?) -> (),
-
-	GetPivot: (self: AgentClass) -> CFrame,
-	GetModel: (self: AgentClass) -> Rig,
-	PivotTo: (self: AgentClass) -> CFrame,
-	IsMoving: (self: AgentClass) -> boolean,
-
-	--[[
-		Walk forward for the specified time
-		@param Time the time to walk for
-	]]
-	Walk: (self: AgentClass, Time: number) -> (),
-	ApplyImpulse: (self: AgentClass, Impulse: Vector3) -> (),
-
-	SetKey: (self: AgentClass, Key: string, State: boolean) -> (),
-	GetKey: (self: AgentClass, Key: string) -> boolean,
-
-	GetCurrentSkill: (self: AgentClass) -> string?,
-	GetHealth: (self: AgentClass) -> (number, number),
-	GetStat: (self: AgentClass, Stat: Stat) -> number,
-	GetState: (self: AgentClass) -> State,
-	GetEnergy: (self: AgentClass) -> (number),
-
-	GiveEnergy: (self: AgentClass, Amount: number) -> (),
-	SetVisible: (self: AgentClass, State: boolean?) -> (),
-	SetEnergy: (self: AgentClass, Energy: number) -> (),
-
-	AddEffect: (self: AgentClass, Name: string, Value: number, Time: number?) -> StateEffect,
-	AddTrackToState: (self: AgentClass, State: string, Track: AnimationTrack, DisableTime: number) -> (),
-	GetEffect: (self: AgentClass, Name: string) -> StateEffect,
-
-	GetAnimator: (self: AgentClass) -> AnimatorController,
-
-	--[[
-		Change the state of the agent to the specified one, this limits/allows specific methods
-		@param State The state to switch to, i. e. "Attacking", "Idle", "Stun";
-		@param Time The time to remain in that state
-	]]
-	SwitchState: (self: AgentClass, State: State, Time: number) -> (),
-
-	TakeDamage: (self: AgentClass, Amount: number) -> (),
-	Heal: (self: AgentClass, Amount: number) -> (),
-
-	AddTag: (self: AgentClass, Tag: string, Time: number) -> (),
-	HasTag: (self: AgentClass, Tag: string) -> (boolean),
-	RemoveTag: (self: AgentClass, Tag: string) -> (),
-
-	__Character: CharacterClass,
-	__Status: AgentStatusClass
-}
-
-export type AgentStatusEffect = {}
-
-export type AgentStatusClass = {
-	__Ultimate: number,
-	__Energy: number,
-	__Health: number,
-	__Max_Health: number,
-	__Base_Stats: CharacterStats,
-
-	__Artifact_Set: {},
-	__Card_Set: nil,
-	__Effects: {},
-
-	GetStat: (self: AgentStatusClass, Name: Stat) -> (number),
-	Update: (self: AgentStatusClass, delta: number) -> (),
-
-
-	Damage: (self: AgentStatusClass, Amount: number) -> (),
-	Heal: (self: AgentStatusClass, Amount: number) -> (),
-	GetHealth: (self: AgentStatusClass) -> (number, number),
-	GetEnergy: (self: AgentStatusClass) -> (number),
-
-	SetEnergy: (self: AgentStatusClass, Energy: number) -> (),
-	UseEnergy: (self: AgentStatusClass, EnergyUsed: number) -> (),
-	GiveEnergy: (self: AgentStatusClass, EnergyGiven: number) -> (),
-
-	AddEffect: (self: AgentStatusClass, AgentStatusEffect) -> (),
-	GetEffect: (self: AgentStatusClass, AgentStatusEffect) -> (),
-
-	GetArtifactBonus: (self: AgentStatusClass, Type: string) -> (number),
-	GetDriveBonus: (self: AgentStatusClass, Type: string) -> (),
-	GetMultBonus: (self: AgentStatusClass, Name: string) -> (),
-
-	GetUltimate: (self: AgentStatusClass) -> (number),
-	SetUltimate: (self: AgentStatusClass, Value: number) -> (number),
-	UseUltimate: (self: AgentStatusClass, Mods: {}?) -> (),
-	GiveUltimate: (self: AgentStatusClass, Amount: number) -> (),
-}
-
 -- [[ INPUTS ]]
 export type KeybindData = {
 	Release: boolean?,
@@ -304,96 +203,16 @@ export type CharacterAppearanceData = {
 	Height: number,
 }
 
--- [[Server data]]
-
-export type ServerCharacterClass = {
-	Name: string,
-	States: StatesClass,
-
-	Init: (self: ServerCharacterClass) -> (),
-
-	Stop: (self: ServerCharacterClass) -> (),
-	Move: (self: ServerCharacterClass) -> (),
-	Rotate: (self: ServerCharacterClass) -> (),
-
-	GetPivot: (self: ServerCharacterClass) -> CFrame,
-	PivotTo: (self: ServerCharacterClass, Pivot: CFrame) -> (),
-
-	AddLinearMovement: (self: ServerCharacterClass, Direction: Vector3, Time: number) -> (),
-}
-
-export type ServerAgentClass = {
-	Name: string,
-
-	__Level: number,
-	__User: number,
-	__Main_Thread: thread,
-	__Player_Assigned: Player,
-	__Status: AgentStatusClass,
-	__Active: boolean,
-	__Character: ServerCharacterClass,
-
-	GetId: (self: ServerAgentClass) -> (number),
-	Init: (self: ServerAgentClass) -> (),
-	Stop: (self: ServerAgentClass) -> (),
-	Move: (self: ServerAgentClass) -> (),
-	Rotate: (self: ServerAgentClass, Angle: number) -> (),
-
-	ApplyImpulse: (self: ServerAgentClass, Velocity: Vector3) -> (),
-	SetKey: (self: ServerAgentClass, Key: string, Value: any) -> (),
-	GetKey: (self: ServerAgentClass, Velocity: Vector3) -> (),
-
-	--[[
-		Walk forward for the specified time
-		@param Time the time to walk for
-	]]
-	Walk: (self: ServerAgentClass, Time: number) -> (),
-
-	GetHitbox: (self: ServerAgentClass) -> (BasePart),
-	GetEnergy: (self: ServerAgentClass) -> (number),
-	GetStat: (self: ServerAgentClass, Stat: Stat) -> number,
-	GetState: (self: ServerAgentClass) -> (),
-	GetMultBonus: (self: ServerAgentClass, Type: Element | AgentMovesetAbility) -> (number),
-
-	--[[
-		Change the state of the agent to the specified one, this limits/allows specific methods
-		@param State The state to switch to, i. e. "Attacking", "Idle", "Stun";
-		@param Time The time to remain in that state
-	]]
-	SwitchState: (self: ServerAgentClass, State: string, Time: number) -> (),
-
-	TakeDamage: (self: ServerAgentClass, Amount: number) -> (),
-	Heal: (self: ServerAgentClass, Amount: number) -> (),
-	GetHealth: (self: ServerAgentClass) -> (number, number),
-
-	GiveUltimate: (self: ServerAgentClass, Amount: number) -> (),
-	UseUltimate: (self: ServerAgentClass) -> (),
-	GetUltimate: (self: ServerAgentClass) -> (number),
-
-	GiveEnergy: (self: ServerAgentClass, Energy: number) -> (),
-	UseEnergy: (self: ServerAgentClass, Energy: number) -> (),
-
-	GetPivot: (self: ServerAgentClass) -> CFrame,
-	PivotTo: (self: ServerAgentClass, Pivot: CFrame) -> (),
-
-	AddTag: (self: ServerAgentClass, Tag: string, Time: number) -> (),
-	HasTag: (self: ServerAgentClass, Tag: string) -> (boolean),
-	RemoveTag: (self: ServerAgentClass, Tag: string) -> (),
-}
-
-
---[[ CHARACTER CONTROLLERS ]]
 export type AgentMovesetAbility = "Basic Attack" | "Special Attack" | "Chain Attack" | "Dodge" | "Dodge Counter" | "Quick Assist" | "Ultimate" | "Passive"
-
 export type MovesetClass = {
 	__Assigned: {[AgentMovesetAbility]: AbilityClass & ServerAbilityClass},
 
 	--
 	Assign: (self: MovesetClass, Key: string, Ability: AbilityClass) -> (),
-	Verify: (self: MovesetClass, Agent: AgentClass, Type: string) -> boolean,
+	Verify: (self: MovesetClass, Agent: GenericClass, Type: string) -> boolean,
 
-	Begin: (self: MovesetClass, Key: AgentMovesetAbility, Agent: AgentClass) -> (),
-	Release: (self: MovesetClass, Key: AgentMovesetAbility, Agent: AgentClass) -> (),
+	Begin: (self: MovesetClass, Key: AgentMovesetAbility, Agent: GenericClass) -> (),
+	Release: (self: MovesetClass, Key: AgentMovesetAbility, Agent: GenericClass) -> (),
 
 	GetInfoForSkill: (self: MovesetClass, Name: string) -> {},
 	SetAbilityInformation: (self: MovesetClass, Data: {}) -> (),
@@ -456,20 +275,20 @@ export type AbilityClass = {
 		@param Track The path to the animation track, i.e "Characters.Goku.Abilities.M1.1"; Starts from the Assets.Animations directory
 		@param Data The properties of the track, FadeIn, Speed and Weight (all numbers, by default: 0, 1, 1)
 	]]
-	PlayAnimation: (self: AbilityClass, Agent: AgentClass, Track: string, Data: {
+	PlayAnimation: (self: AbilityClass, Agent: GenericClass, Track: string, Data: {
 		Fade: number?,
 		Speed: number?,
 		Weight: number?,
 		Active_Time: number?,
 	}) -> (),
-	CreateHitbox: (self: AbilityClass, Agent: AgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: EnemyClass) -> ()) -> (),
+	CreateHitbox: (self: AbilityClass, Agent: GenericClass, Offset: Vector3, Size: Vector3, Event: (Enemy: EnemyClass) -> ()) -> (),
 
-	Save: (self: AbilityClass, Agent: AgentClass, Key: string, Value: any) -> (),
-	Get: <T>(self: AbilityClass, Agent: AgentClass, Key: string) -> T,
-	Increase: (self: AbilityClass, Agent: AgentClass, Key: string, Data: {Rate: number, Limit: number}?) -> (),
+	Save: (self: AbilityClass, Agent: GenericClass, Key: string, Value: any) -> (),
+	Get: <T>(self: AbilityClass, Agent: GenericClass, Key: string) -> T,
+	Increase: (self: AbilityClass, Agent: GenericClass, Key: string, Data: {Rate: number, Limit: number}?) -> (),
 
-	Play: (self: AbilityClass, Agent: AgentClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
-	Begin: (self: AbilityClass, Agent: AgentClass, SequenceFrames: SequenceFrames) -> (Sequence),
+	Play: (self: AbilityClass, Agent: GenericClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
+	Begin: (self: AbilityClass, Agent: GenericClass, SequenceFrames: SequenceFrames) -> (Sequence),
 
 	--[[
 		Gets a value from the ability data
@@ -487,23 +306,23 @@ export type ServerAbilityClass = {
 	__Signal: RBXScriptSignal,
 	__Hit: Signal<{
 		Enemy: ServerEnemyClass,
-		Agent: ServerAgentClass,
+		Agent: GenericClass,
 		Type: Element,
 		Damage: number,
 		Burst: boolean,
 	}>,
 
-	CreateHitbox: (self: ServerAbilityClass, Agent: ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: ServerEnemyClass) -> ()) -> (),
+	CreateHitbox: (self: ServerAbilityClass, Agent: GenericClass, Offset: Vector3, Size: Vector3, Event: (Enemy: ServerEnemyClass) -> ()) -> (),
 
-	Save: (self: ServerAbilityClass, Agent: ServerAgentClass, Key: string, Value: any) -> (),
-	Get: (self: ServerAbilityClass, Agent: ServerAgentClass, Key: string) -> any,
-	Increase: (self: ServerAbilityClass, Agent: ServerAgentClass, Key: string, Data: {Rate: number, Limit: number}?) -> (),
+	Save: (self: ServerAbilityClass, Agent: GenericClass, Key: string, Value: any) -> (),
+	Get: (self: ServerAbilityClass, Agent: GenericClass, Key: string) -> any,
+	Increase: (self: ServerAbilityClass, Agent: GenericClass, Key: string, Data: {Rate: number, Limit: number}?) -> (),
 
-	Cancel: (self: ServerAbilityClass, Caster: ServerAgentClass, Callback: () -> ()) -> (),
-	Play: (self: ServerAbilityClass, Agent: ServerAgentClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
-	Begin: (self: ServerAbilityClass, Agent: ServerAgentClass, SequenceFrames: SequenceFrames) -> (),
+	Cancel: (self: ServerAbilityClass, Caster: GenericClass, Callback: () -> ()) -> (),
+	Play: (self: ServerAbilityClass, Agent: GenericClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
+	Begin: (self: ServerAbilityClass, Agent: GenericClass, SequenceFrames: SequenceFrames) -> (),
 
-	Hit: (self: ServerAbilityClass, Agent: ServerAgentClass, Enemy: ServerEnemyClass, Hit: HitEnemyData) -> (number),
+	Hit: (self: ServerAbilityClass, Agent: GenericClass, Enemy: ServerEnemyClass, Hit: HitEnemyData) -> (number),
 
 	FromData: (self: ServerAbilityClass, Key: AbilityDataKey) -> (any),
 	SetData: (self: ServerAbilityClass, Data: {}) -> (),
@@ -553,7 +372,7 @@ export type ServerEnemyClass = {
 	GetState: (self: ServerEnemyClass) -> State,
 	GetPivot: (self: ServerEnemyClass) -> CFrame,
 	GetHitbox: (self: ServerEnemyClass) -> BasePart,
-	GetTarget: (self: ServerEnemyClass) -> ServerAgentClass,
+	GetTarget: (self: ServerEnemyClass) -> GenericClass,
 	TimeSinceLastPivot: (self: ServerEnemyClass) -> number,
 	Knockback: (self: ServerEnemyClass, Direction: Vector3, Power: number, Time: number) -> (),
 	EnterDazedState: (self: ServerEnemyClass) -> (),
@@ -744,7 +563,7 @@ export type Drive_Data = {
 }
 
 export type Process_Event_Data = {
-	Agent: ServerAgentClass,
+	Agent: GenericClass,
 	Target: ServerEnemyClass,
 	Critical: boolean,
 
@@ -1091,10 +910,10 @@ export type EventClass = {
 export type StagePlayer = {
 	__Player_Object: Player,
 	__Designated_Id: number,
-	__Team: {ServerAgentClass},
+	__Team: {GenericClass},
 
 	GetId: (self: StagePlayer) -> number,
-	GetTeam: (self: StagePlayer) -> {ServerAgentClass},
+	GetTeam: (self: StagePlayer) -> {GenericClass},
 	GetBase: (self: StagePlayer) -> Player,
 }
 

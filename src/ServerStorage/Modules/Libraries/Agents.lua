@@ -1,7 +1,7 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
-local Types = require(ReplicatedStorage.Modules.Shared.Types)
+local Types = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 
 --
 local Agents = {

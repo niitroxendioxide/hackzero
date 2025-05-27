@@ -1,5 +1,5 @@
 --
---local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local Players = game:GetService("Players")
 
@@ -7,7 +7,7 @@ local Modules = ServerStorage.Modules
 local Classes = Modules.Classes
 local Services = Modules.Services
 
---local Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
+local Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
 local ServerAgentClass = require(Classes.Combat.ServerAgent)
 local StagePlayerClass = require(Classes.Game.Player)
 
@@ -28,6 +28,26 @@ function Service:Create(Player: Player)
     for index, AgentData in Team do
         local AgentDataClass = DataService:GetAgent(Player, AgentData.Name)
         local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level)
+
+        if AgentDataClass.Drive then
+            local DriveFromQuery = DataService:GetDrives(Player, function(DriveQuery)
+                return DriveQuery.__Id == AgentDataClass.Drive
+            end, true)
+
+            AgentInstance:BindDrive(DriveFromQuery:ToData())
+        end
+
+        local ArtifactIds = Table:WriteValues(AgentDataClass.Artifacts)
+
+        if #ArtifactIds > 0 then
+            local Artifacts = DataService:GetArtifacts(Player, function(QueryArtifact)
+                return table.find(ArtifactIds, QueryArtifact.__Id) ~= nil
+            end)
+
+            for _, Artifact in Artifacts do
+                AgentInstance:BindArtifact(Artifact:ToData())
+            end
+        end
 
         AgentInstance:Init(Player)
         AgentService:AddAgent(Player, AgentInstance)

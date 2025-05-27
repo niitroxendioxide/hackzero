@@ -2,7 +2,7 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Agents)
 
 --
 local StatusClass = {}
@@ -12,8 +12,6 @@ function StatusClass.new(Base: Types.CharacterStats): Types.AgentStatusClass
 	local self = setmetatable({}, StatusClass)
 
 	self.__Base_Stats = Base
-	self.__Artifact_Set = {}
-	self.__Card_Set = nil
 	self.__Effects = {}
 
 	--

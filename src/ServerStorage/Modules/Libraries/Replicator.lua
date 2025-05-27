@@ -5,6 +5,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local Types = require(Shared.Types)
+local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
 local Characters = require(Database.Characters)
 local Enemies = require(Database.Enemies)
@@ -19,7 +20,7 @@ function Replicator:Effect(Args: {})
 	Args[1] = Args[1]
 end
 
-function Replicator:AddAgent(Player: Player, AgentClass: Types.ServerAgentClass, Target: Player?, At: CFrame?)
+function Replicator:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClass, Target: Player?, At: CFrame?)
 	--print(Table:printTable(AgentClass))
 	local Object = buffer.create(6)
 	buffer.writeu8(Object, 0, GameEnum.Replication.AddAgent)
@@ -171,8 +172,8 @@ function Replicator:MoveEnemy(Id: number, Direction: Vector3, TargetPlayer: Play
 	Network:FireForAll('Replicate', Object)
 end
 
-function Replicator:RotateEnemy(Id: number, Target: Types.ServerAgentClass | Vector3, TargetPlayer: Player?)
-	local At = (typeof(Target) == 'Vector3' and Target) or (Target :: Types.ServerAgentClass):GetPivot()
+function Replicator:RotateEnemy(Id: number, Target: AgentTypes.ServerAgentClass | Vector3, TargetPlayer: Player?)
+	local At = (typeof(Target) == 'Vector3' and Target) or (Target :: AgentTypes.ServerAgentClass):GetPivot()
 	local Object = buffer.create(10)
 	buffer.writeu8(Object, 0, GameEnum.Replication.RotateEnemy)
 	buffer.writeu8(Object, 1, Id)
@@ -230,7 +231,7 @@ function Replicator:ClearPlayerData(Player: Player)
 	Network:FireForAll("Replicate", Object)
 end
 
-function Replicator:UpdateCurrentEnergy(Player: Player, Agent: Types.ServerAgentClass)
+function Replicator:UpdateCurrentEnergy(Player: Player, Agent: AgentTypes.ServerAgentClass)
 	local Object = buffer.create(4)
 	local Energy = Agent.__Status:GetEnergy()
 
@@ -244,7 +245,7 @@ function Replicator:UpdateCurrentEnergy(Player: Player, Agent: Types.ServerAgent
 	Network:Fire("Replicate", Player, Object)
 end
 
-function Replicator:UpdateUltBar(Player: Player, Agent: Types.ServerAgentClass)
+function Replicator:UpdateUltBar(Player: Player, Agent: AgentTypes.ServerAgentClass)
 	local Object = buffer.create(4)
 	local UltBar = Agent.__Status:GetUltimate()
 
@@ -282,7 +283,7 @@ function Replicator:Knockback(Enemy: Types.ServerEnemyClass, Direction: Vector3,
 	Network:FireForAll('Replicate', Object)
 end
 
-function Replicator:DamageAgent(Agent: Types.ServerAgentClass, Damage: number)
+function Replicator:DamageAgent(Agent: AgentTypes.ServerAgentClass, Damage: number)
 	local UserId = Agent.__User
 	local AgentIndex = table.find(Agents:GetAll(UserId), Agent)
 

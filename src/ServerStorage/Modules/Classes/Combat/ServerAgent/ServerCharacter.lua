@@ -6,7 +6,7 @@ local RunService = game:GetService('RunService')
 local Shared = ReplicatedStorage.Modules.Shared
 
 local World = require(Shared.World)
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Agents)
 
 local StatesClass = require(Shared.Classes.Agents.States)
 
@@ -49,7 +49,7 @@ end
 
 function ServerCharacterClass:Init()
 	self.__Active = true
-	
+
 	if self.__ActiveThread == nil then
 		self:CreateCollider()
 
@@ -97,7 +97,7 @@ function ServerCharacterClass:GetPivot()
 end
 
 function ServerCharacterClass:PivotTo(To: CFrame)
-	assert(typeof(To) == 'CFrame', 'Not a CFrame')	
+	assert(typeof(To) == 'CFrame', 'Not a CFrame')
 
 	self.__Normal = To.UpVector
 	self.__Position = To.Position
@@ -106,7 +106,7 @@ end
 
 function ServerCharacterClass:CalculateVelocityDeceleration(Velocity: Vector3, AirMod: number)
 	AirMod = AirMod or 1
-	
+
 	local AirFriction = World:GetAirFriction()
 	local SurfaceFriction = World:GetSurfaceFriction(self.__Position)
 
@@ -138,7 +138,7 @@ end
 function ServerCharacterClass:GetTotalVelocity(): Vector3
 	local MovementVelocity = (self.__MovementVelocity * self.__MovementAcceleration * self.__Rotation.Unit * self.States:GetVelocityMod())
 	local Velocity = self.__Velocity + self:GetAdditionalVelocities()
-	
+
 	--
 	return (MovementVelocity + Velocity + self.__SurfaceVelocity + self.__LastMovementVelocity)
 end
@@ -156,9 +156,9 @@ function ServerCharacterClass:Update(Delta: number)
 	local MovementVelocity = (self.__MovementVelocity * self.__MovementAcceleration * self.__Rotation.Unit * self.States:GetVelocityMod())
 	self.__LastMovementVelocity -= self:CalculateVelocityDeceleration(self.__LastMovementVelocity) * CurrentWorldSpeed *Delta
 	self.__Velocity -= TotalSpeedDeceleration * CurrentWorldSpeed * Delta
-	
+
 	local Velocity = self.__Velocity + self:GetAdditionalVelocities()
-	
+
 	local Origin = self:GetPivot() * CFrame.new(0, 0, 1.5)
 	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
 	if EnemyCollisions then
@@ -190,7 +190,7 @@ function ServerCharacterClass:Update(Delta: number)
 		self.__SurfaceVelocity = Cast.Instance.AssemblyLinearVelocity
 		self.__Position = Vector3.new(self.__Position.X, Cast.Position.Y + self.__Height, self.__Position.Z)
 	end
-	
+
 	if self.__Collider then
 		self.__Collider:PivotTo(self:GetPivot())
 	end
