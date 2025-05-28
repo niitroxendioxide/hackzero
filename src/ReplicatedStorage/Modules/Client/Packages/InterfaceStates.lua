@@ -22,6 +22,7 @@ local module = {
 
 	EffectAdded = Signal.new(),
 	EffectRemoved = Signal.new(),
+
 	Health = Fusion.Value(Scope, 100),
 	Max_Health = Fusion.Value(Scope, 100),
 	Characters = Fusion.Value(Scope, {})

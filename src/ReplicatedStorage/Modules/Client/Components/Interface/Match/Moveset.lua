@@ -6,7 +6,7 @@ local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
-local Assets = ReplicatedStorage:FindFirstChild("Assets") :: Folder
+local Assets = ReplicatedStorage:FindFirstChild("Assets")
 
 local Types = require(Shared.Types.Assets)
 local Inputs = require(Client.Libraries.Inputs)
@@ -98,6 +98,7 @@ local function Press(ButtonName: string)
     if not FrameScales[ButtonName] then return end
     local MainFrame = Component:GetFrame()
     local ButtonObj = MainFrame.Buttons:FindFirstChild(ButtonName)
+    if not ButtonObj:GetAttribute('Active') then return end
 
     EffectUtil:Tween(ButtonObj.UIScale, {.25, 'Cubic'}, {Scale = FrameScales[ButtonName] * 0.8})
 end
@@ -107,6 +108,7 @@ local function Release(ButtonName: string)
 
     local MainFrame = Component:GetFrame()
     local ButtonObj = MainFrame.Buttons:FindFirstChild(ButtonName)
+    if not ButtonObj:GetAttribute('Active') then return end
 
     EffectUtil:Tween(ButtonObj.UIScale, {.25, 'Back'}, {Scale = FrameScales[ButtonName]})
 end
@@ -178,6 +180,61 @@ local function SetUltBarFill(Coefficient: number)
     LastCoefficient = Coefficient
 end
 
+local function ToggleButton(Name: string, State: boolean)
+    local MainFrame = Component:GetFrame()
+    local SkillButton = MainFrame.Buttons:FindFirstChild(Name)
+    if not SkillButton then return end
+    SkillButton:SetAttribute('Active', State)
+
+    if State == false then
+        EffectUtil:Tween(SkillButton.Background, {.15}, {ImageTransparency = 1})
+        EffectUtil:Tween(SkillButton.Icon, {.15}, {ImageTransparency = 1})
+        EffectUtil:Tween(SkillButton.Cooldown, {.15}, {GroupTransparency = 1})
+        EffectUtil:Tween(SkillButton.Key, {.15}, {GroupTransparency = 1})
+        EffectUtil:Tween(SkillButton.Inner.UIStroke, {.15}, {Transparency = 1})
+        EffectUtil:Tween(SkillButton.UIScale, {.15}, {Scale = 0.5})
+    else
+        EffectUtil:Tween(SkillButton.Background, {.15}, {ImageTransparency = 0.8})
+        EffectUtil:Tween(SkillButton.Icon, {.15}, {ImageTransparency = 0})
+        EffectUtil:Tween(SkillButton.Cooldown, {.15}, {GroupTransparency = 0})
+        EffectUtil:Tween(SkillButton.Key, {.15}, {GroupTransparency = 0})
+        EffectUtil:Tween(SkillButton.Inner.UIStroke, {.15}, {Transparency = .75})
+        EffectUtil:Tween(SkillButton.UIScale, {.15}, {Scale = FrameScales[Name]})
+    end
+end
+
+local function PopUpAgentIcon(Name: string)
+    local MainFrame = Component:GetFrame()
+    local AgentModel = Assets.Characters.Agents:FindFirstChild(Name)
+    if not AgentModel then
+        return
+    end
+
+    Component:DeletePopUp()
+
+    --
+    ToggleButton("Swap_Forth", false)
+
+    local UiObject = Assets.Interface.Combat.Skill.AgentPopUp:Clone()
+    UiObject.GroupTransparency = 1
+    UiObject.Position = FramePositions.Swap_Forth
+    UiObject.UIStroke.Transparency = 1
+    UiObject.UIScale.Scale = 1.1
+    UiObject.Parent = MainFrame.Buttons
+    UiObject.Name = 'PopUp'
+
+    EffectUtil:Tween(UiObject, {.25}, {GroupTransparency = 0})
+    EffectUtil:Tween(UiObject.UIStroke, {.25}, {Transparency = 0})
+    EffectUtil:Tween(UiObject.UIScale, {.15, 'Quad', 'In'}, {Scale = 1})
+
+    local ClonedAgent = AgentModel:Clone()
+    local NewCamera = Instance.new('Camera')
+    ClonedAgent:PivotTo(CFrame.new())
+    ClonedAgent.Parent = UiObject.Main.WorldModel
+    NewCamera.CFrame = ClonedAgent:GetPivot() * CFrame.new(0, 1.5, -160) * CFrame.Angles(0, math.pi, 0)
+    NewCamera.FieldOfView = 1
+end
+
 -- Publics
 -- Link the frame
 function Component:Link()
@@ -187,6 +244,24 @@ function Component:Link()
 	local Main = HUD:FindFirstChild("Moveset", true)
 
     return Main
+end
+
+function Component:PopUpAgent(Name: string)
+    PopUpAgentIcon(Name)
+end
+
+function Component:DeletePopUp()
+    local MainFrame = Component:GetFrame()
+    local AgentPopup = MainFrame.Buttons:FindFirstChild("PopUp")
+
+    if AgentPopup then
+        AgentPopup.Name = '__deleting'
+        ToggleButton("Swap_Forth", true)
+
+        EffectUtil:Tween(AgentPopup, {.25}, {GroupTransparency = 1})
+        EffectUtil:Tween(AgentPopup.UIStroke, {.25}, {Transparency = 1})
+        EffectUtil:Tween(AgentPopup.UIScale, {.3, 'Quad', 'In'}, {Scale = 0.6})
+    end
 end
 
 function Component:Init()

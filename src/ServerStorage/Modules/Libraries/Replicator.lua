@@ -5,6 +5,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local Agent = require(ReplicatedStorage.Modules.Client.Classes.Agent)
+local Play = require(ReplicatedStorage.Modules.Client.Components.Areas.Play)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
@@ -295,6 +296,19 @@ function Replicator:DisplayDamage(Enemy: Types.ServerEnemyClass, Damage: number,
 	buffer.writef32(Object, 5, Damage)
 
 	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:PromptAssist(Player: Player, Agent: AgentTypes.ServerAgentClass)
+	local RepId = Player:GetAttribute("ReplicationId") :: number
+	local Id = Agents:GetIdForPlayer(RepId, Agent) :: number
+
+	--
+	local Object = buffer.create(3)
+
+	buffer.writeu8(Object, 0, GameEnum.Replication.PromptAssist)
+	buffer.writeu8(Object, 1, Id)
+
+	Network:Fire("Replicate", Player, Object)
 end
 
 function Replicator:Knockback(Enemy: Types.ServerEnemyClass, Direction: Vector3, Power: number, Time: number)

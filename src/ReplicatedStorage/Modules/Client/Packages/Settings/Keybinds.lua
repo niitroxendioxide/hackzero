@@ -21,5 +21,4 @@ return {
 		Swap_Back = Enum.KeyCode.C,
 		Ultimate = Enum.KeyCode.Q,
 	}
-	
 }

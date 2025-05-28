@@ -47,11 +47,12 @@ end
 
 function Service:PromptAssist(Agent: AgentTypes.ServerAgentClass)
 	--
-
+	Replicator:PromptAssist(Agent.__Player_Assigned, Agent)
 end
 
 function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, StateId: number)
-	local ActiveAgent, _ = AgentLibrary:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
+	local ReplicationId = Player:GetAttribute("ReplicationId") :: number
+	local ActiveAgent, _ = AgentLibrary:GetCurrentActive(ReplicationId)
 
 	local Moveset = Service:GetMoveset(ActiveAgent.Name)
 	local Skill = GameEnum.KeyLookup(GameEnum.Skills, SkillId)
@@ -64,6 +65,16 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 	local LookAt = ActiveAgent:GetPivot().LookVector
 	if Enemy then
 		LookAt = CFrame.lookAt(ActiveAgent:GetPivot().Position * XZ, Enemy:GetPivot().Position * XZ).LookVector
+	end
+
+	if math.random(1, 2) == 1 then
+		local AllAgents = AgentLibrary:GetAll(ReplicationId)
+		local CurId = table.find(AllAgents, ActiveAgent)
+		if CurId then
+			table.remove(AllAgents, CurId)
+		end
+
+		Service:PromptAssist(AllAgents[math.random(1, #AllAgents)])
 	end
 
 	-- Skill behavior

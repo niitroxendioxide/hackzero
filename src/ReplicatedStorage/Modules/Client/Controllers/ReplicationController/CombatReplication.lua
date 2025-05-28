@@ -13,6 +13,7 @@ local GameEnum = require(Shared.GameEnum)
 local Enemies = require(Shared.Libraries.Enemies)
 local Effects = require(Client.Libraries.Effects)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
+local InterfaceController = require(Client.Controllers.InterfaceController)
 
 
 --
@@ -188,5 +189,18 @@ function Controller:RemoveEffect(Buffer: buffer)
 	Agent:RemoveEffect(EffectId)
 end
 
+function Controller:PromptAssist(Buffer: buffer)
+	local Moveset = InterfaceController:GetComponent("Moveset")
+	local AgentId = buffer.readu8(Buffer, 1)
+	local Agent = Characters:GetAgent(Players.LocalPlayer:GetAttribute("ReplicationId"), AgentId)
+	if not Agent then
+		return
+	end
+
+	Moveset:PopUpAgent(Agent.Name)
+
+	task.wait(math.random() + 1)
+	Moveset:DeletePopUp()
+end
 
 return Controller

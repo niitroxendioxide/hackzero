@@ -70,7 +70,7 @@ function Agents:GetAll(UserId: number): {Types.AgentClass | Types.ServerAgentCla
 		return {};
 	end
 
-	return Agents.__Players[UserId]
+	return table.clone(Agents.__Players[UserId])
 end
 
 function Agents:GetIdForPlayer(UserId: number, AgentParameter: Types.ServerAgentClass): (number)
