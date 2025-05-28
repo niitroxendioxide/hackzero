@@ -1,6 +1,6 @@
 return table.freeze({
     REPLICATE_CONSTANTS = {
-        HITBOXES = false,
+        HITBOXES = true,
     },
 
     TEST_AGENTS = {

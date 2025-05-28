@@ -16,7 +16,11 @@ function Ability:Play(Caster: Types.ServerAgentClass)
 
 	Ability:Begin(Caster, {
         {0, function()
-            Caster:AddEffect(EffectData)
+            for _, Effect in EffectData do
+                Caster:AddEffect(Effect)
+            end
+
+            Caster:SwitchState('Attacking', 1, true)
         end},
     })
 end

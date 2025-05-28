@@ -33,7 +33,7 @@ end
 function ItemsClass.BindDrive(self: Types.AgentItemsClass, Drive: Types.Drive)
     local isValid = typeof(Drive) == 'table';
     if not isValid then
-        return warn(`Rejected binding artifact. Given data: {Drive}`);
+        return warn(`Rejected binding drive. Given data: {Drive}`);
     end
 
     self.__Drive = Drive;

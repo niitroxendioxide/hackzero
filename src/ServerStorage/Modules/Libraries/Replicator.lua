@@ -117,11 +117,12 @@ function Replicator:SyncVelocities(Player: Player, Target: Player, ...)
 	Network:Fire('Replicate', Target, Object, ...)
 end
 
-function Replicator:CharacterSwitch(Player: Player, Direction: number)
-	local Object = buffer.create(3)
+function Replicator:CharacterSwitch(Player: Player, Direction: number, TargetId: number)
+	local Object = buffer.create(4)
 	buffer.writeu8(Object, 0, GameEnum.Replication.CharacterSwitch)
 	buffer.writei8(Object, 1, Direction)
 	buffer.writeu8(Object, 2,  Player:GetAttribute("ReplicationId") :: number)
+	buffer.writeu8(Object, 3, TargetId)
 
 	Network:FireForAllBut(Player, 'Replicate', Object)
 end
@@ -298,15 +299,17 @@ function Replicator:DisplayDamage(Enemy: Types.ServerEnemyClass, Damage: number,
 	Network:FireForAll('Replicate', Object)
 end
 
-function Replicator:PromptAssist(Player: Player, Agent: AgentTypes.ServerAgentClass)
+function Replicator:PromptAssist(Player: Player, Agent: AgentTypes.ServerAgentClass, Time: number, EnemyTarget: number)
 	local RepId = Player:GetAttribute("ReplicationId") :: number
 	local Id = Agents:GetIdForPlayer(RepId, Agent) :: number
 
 	--
-	local Object = buffer.create(3)
+	local Object = buffer.create(4)
 
 	buffer.writeu8(Object, 0, GameEnum.Replication.PromptAssist)
 	buffer.writeu8(Object, 1, Id)
+	buffer.writeu8(Object, 2, math.floor(Time * 10))
+	buffer.writeu8(Object, 3, EnemyTarget)
 
 	Network:Fire("Replicate", Player, Object)
 end

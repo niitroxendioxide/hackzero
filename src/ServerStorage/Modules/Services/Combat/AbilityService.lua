@@ -13,10 +13,12 @@ local GameEnum = require(Shared.GameEnum)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local AgentLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local MovesetLibrary = require(ServerStorage.Modules.Libraries.Movesets)
+local AgentService = require(script.Parent.AgentService)
 
 --
 local Service = {
 	__Movesets = {},
+	__Prompts = {},
 }
 
 function Service:Init()
@@ -45,9 +47,19 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 	return;
 end
 
-function Service:PromptAssist(Agent: AgentTypes.ServerAgentClass)
+function Service:PromptAssist(Agent: AgentTypes.ServerAgentClass, Time: number)
+	local Player = Agent.__Player_Assigned
+	if Service.__Prompts[Player] then
+		task.cancel(Service.__Prompts[Player])
+	end
+
 	--
-	Replicator:PromptAssist(Agent.__Player_Assigned, Agent)
+	AgentService.__Targets[Player] = 1
+	Replicator:PromptAssist(Player, Agent, Time, 1)
+
+	Service.__Prompts[Player] = task.delay(Time, function()
+		AgentService.__Targets[Player] = nil
+	end)
 end
 
 function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, StateId: number)
@@ -64,17 +76,15 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 
 	local LookAt = ActiveAgent:GetPivot().LookVector
 	if Enemy then
+		print(EnemyId)
 		LookAt = CFrame.lookAt(ActiveAgent:GetPivot().Position * XZ, Enemy:GetPivot().Position * XZ).LookVector
 	end
 
 	if math.random(1, 2) == 1 then
 		local AllAgents = AgentLibrary:GetAll(ReplicationId)
 		local CurId = table.find(AllAgents, ActiveAgent)
-		if CurId then
-			table.remove(AllAgents, CurId)
-		end
-
-		Service:PromptAssist(AllAgents[math.random(1, #AllAgents)])
+		local AgentToSwitch = CurId + 1 > 3 and AllAgents[1] or AllAgents[CurId + 1]
+		Service:PromptAssist(AgentToSwitch, 2)
 	end
 
 	-- Skill behavior

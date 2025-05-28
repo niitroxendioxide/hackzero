@@ -109,9 +109,12 @@ function ServerAbilityClass:Get(Agent: AgentTypes.AgentClass, Key: string)
 	return self.__Cache[Agent][Key]
 end
 
-function ServerAbilityClass:Begin(_: AgentTypes.AgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
+function ServerAbilityClass:Begin(Agent: AgentTypes.ServerAgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
+	local Sequence_Speed = self:FromData('Speed') or 1
+	local Agent_Speed = Agent:GetStat("Speed")
+
 	local AbilitySequence = Sequence.new(Frames)
-	AbilitySequence:SetSpeed(self:FromData('Speed') or 1)
+	AbilitySequence:SetSpeed(Sequence_Speed * Agent_Speed)
 
 	AbilitySequence:After(function()
 		self.__Signal:Fire()

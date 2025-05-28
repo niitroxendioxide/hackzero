@@ -6,6 +6,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Agent = require(ReplicatedStorage.Modules.Client.Classes.Agent)
+local Play = require(ReplicatedStorage.Modules.Client.Components.Areas.Play)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
@@ -192,14 +193,18 @@ end
 function Controller:PromptAssist(Buffer: buffer)
 	local Moveset = InterfaceController:GetComponent("Moveset")
 	local AgentId = buffer.readu8(Buffer, 1)
+	local Time = buffer.readu8(Buffer, 2) /  10
+	local EnemyTargetId = buffer.readu8(Buffer, 3)
+
 	local Agent = Characters:GetAgent(Players.LocalPlayer:GetAttribute("ReplicationId"), AgentId)
 	if not Agent then
 		return
 	end
 
+	Characters:SetCharacterTarget(Players.LocalPlayer, EnemyTargetId, Time)
 	Moveset:PopUpAgent(Agent.Name)
 
-	task.wait(math.random() + 1)
+	task.wait(Time)
 	Moveset:DeletePopUp()
 end
 

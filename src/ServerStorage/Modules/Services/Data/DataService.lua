@@ -9,6 +9,8 @@ local Classes = Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local For = require(ReplicatedStorage.Modules.Client.Libraries.Fusion.State.For)
+local Places = require(ReplicatedStorage.Modules.Shared.Places)
 local Network = require(Shared.Network)
 
 local GameEnum = require(Shared.GameEnum)
@@ -87,12 +89,14 @@ function Service:FetchAgents(Player: Player)
     return Data
 end
 
-function Service:FetchArtifacts(Player: Player)
-    local Artifacts = Service:GetArtifacts(Player)
+function Service:FetchArtifacts(Player: Player, Filter: ((a: Types.PlayerArtifactDataClass) -> (boolean))?)
+    local Artifacts = Service:GetArtifacts(Player, Filter)
     if not Artifacts then return end
     local Data = {}
 
-    --print(Artifacts)
+    if typeof(Artifacts[1]) ~= 'table' then
+        Artifacts = {Artifacts}
+    end
 
     for _, Artifact in Artifacts do
         local CompressedObject = Artifact:Compress()
@@ -103,10 +107,14 @@ function Service:FetchArtifacts(Player: Player)
     return Data
 end
 
-function Service:FetchDrives(Player: Player)
-    local Drives = Service:GetDrives(Player)
+function Service:FetchDrives(Player: Player, Filter: ((a: Types.PlayerDriveDataClass) -> (boolean))?)
+    local Drives = Service:GetDrives(Player, Filter)
     if not Drives then return end
     local Data = {}
+
+    if typeof(Drives[1]) ~= 'table' then
+        Drives = {Drives}
+    end
 
     for _, Drive in Drives do
         local CompressedObject = Drive:Compress()
@@ -404,7 +412,7 @@ function Service:GetArtifacts<T>(Player: Player, Filter: ((Artifact: Types.Playe
     end
 
     for _, Artifact in Service.__Artifacts[Player] do
-        if (#Artifacts == 1 and First) then
+        if (#Artifacts == 1 and (First == true)) then
             break
         end
 
@@ -433,7 +441,7 @@ function Service:GetDrives<T>(Player: Player, Filter: ((Drive: Types.PlayerDrive
     end
 
     for _, Drive in Service.__Drives[Player] do
-        if (#Drives == 1 and First) then
+        if (#Drives == 1 and (First == true)) then
             break
         end
 

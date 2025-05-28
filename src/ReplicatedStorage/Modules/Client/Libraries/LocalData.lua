@@ -50,6 +50,8 @@ end
 
 function LocalData:SetArtifacts(Data: {Types.PlayerArtifactData})
     LocalData.__Cache['Artifacts'] = Data
+
+    print('Set artifacts', Data)
 end
 
 function LocalData:GetArtifactById(Id: string): Types.PlayerArtifactData?

@@ -52,6 +52,7 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 	--
 	local AbilitySequence = Sequence.new(Frames)
 	local Attack_Warnings = self:FromData('Attack_Warning')
+	local Agent_Speed_Mod = Agent:GetStat("Speed")
 
 	if typeof(Attack_Warnings) == 'number' and Attack_Warnings > 0 then
 		local function PlayWarningEffect()
@@ -67,7 +68,7 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 		end
 	end
 
-	AbilitySequence:SetSpeed(self:FromData('Speed') or 1)
+	AbilitySequence:SetSpeed((self:FromData('Speed') or 1) * Agent_Speed_Mod)
 	AbilitySequence:After(function()
 		self.__Signal:Fire()
 	end)
@@ -149,7 +150,8 @@ end
 function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string, Data: Types.AnimationDataOptions)
 	Data = Data or {}
 
-	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed') or 1)
+	local Agent_Speed_Mod = Agent:GetStat("Speed")
+	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed') or 1) * Agent_Speed_Mod
 
 	--
 	local Type = tostring(Agent) == 'AgentClass' and 'Characters.' or 'Enemies.'

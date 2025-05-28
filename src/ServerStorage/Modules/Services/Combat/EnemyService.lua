@@ -18,7 +18,7 @@ local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 --
 local Service = {
 	__Limit = 4,
-	__CurrentEnemies = 0,
+	__CurrentEnemies = 1,
 	__EnemyCache = {},
 	EnemiesCleared = {} :: Types.Signal<>,
 }
@@ -109,7 +109,7 @@ function Service:__Add(Enemy: Types.ServerEnemyClass): ()
 	if Service.__CurrentEnemies < 255 then
 		Enemies:AddEnemy(EnemyKey, Enemy)
 	else
-		for key = 0, 255 do
+		for key = 1, 255 do
 			if Enemies:GetEnemy(EnemyKey) == nil then
 				EnemyKey = key
 
@@ -133,7 +133,7 @@ function Service:__Remove(Enemy: Types.ServerEnemyClass): ()
 
 		Service.__CurrentEnemies -= 1
 
-		if Service.__CurrentEnemies <= 0 then
+		if Service.__CurrentEnemies <= 1 then
 			Service.EnemiesCleared:Fire()
 		end
 	end

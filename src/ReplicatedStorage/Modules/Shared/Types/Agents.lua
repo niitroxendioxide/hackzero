@@ -1,4 +1,3 @@
-local ServerStorage = game:GetService("ServerStorage")
 local Types = require(script.Parent)
 local Heap = require(script.Parent.Parent.Utility.Heap)
 
@@ -22,6 +21,7 @@ export type AgentClass =  {
 
 	__Level: number,
 	__User: number,
+	__Items: AgentItemsClass,
 	GetId: (self: AgentClass) -> (number),
 
 	Init: (self: AgentClass) -> (),
@@ -44,6 +44,7 @@ export type AgentClass =  {
 	SetKey: (self: AgentClass, Key: string, State: boolean) -> (),
 	GetKey: (self: AgentClass, Key: string) -> boolean,
 
+	GetRotation: (self: AgentClass) -> (Vector3),
 	GetCurrentSkill: (self: AgentClass) -> string?,
 	GetHealth: (self: AgentClass) -> (number, number),
 	GetStat: (self: AgentClass, Stat: Stat) -> number,
@@ -66,7 +67,7 @@ export type AgentClass =  {
 		@param State The state to switch to, i. e. "Attacking", "Idle", "Stun";
 		@param Time The time to remain in that state
 	]]
-	SwitchState: (self: AgentClass, State: State, Time: number) -> (),
+	SwitchState: (self: AgentClass, State: State, Time: number, Unaffected: boolean?) -> (),
 
 	TakeDamage: (self: AgentClass, Amount: number) -> (),
 	Heal: (self: AgentClass, Amount: number) -> (),
@@ -182,7 +183,7 @@ export type ServerAgentClass = {
 		@param State The state to switch to, i. e. "Attacking", "Idle", "Stun";
 		@param Time The time to remain in that state
 	]]
-	SwitchState: (self: ServerAgentClass, State: string, Time: number) -> (),
+	SwitchState: (self: ServerAgentClass, State: string, Time: number, Unaffected: boolean?) -> (),
 
 	TakeDamage: (self: ServerAgentClass, Amount: number) -> (),
 	Heal: (self: ServerAgentClass, Amount: number) -> (),

@@ -6,7 +6,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
 local AbilityClass = require(Client.Classes.Ability)
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Agents)
 local GameEnum = require(Shared.GameEnum)
 
 local CharacterLibrary = require(Client.Libraries.Characters)
@@ -15,13 +15,18 @@ local Replicator = require(Client.Libraries.Replicator)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Agent: Types.GenericClass, Key: string)
+function Ability:Play(Agent: Types.AgentClass, Key: string)
 	local Direction = Key == 'Swap Back' and -1 or Key == 'Swap Forth' and 1 or 0
 	if Direction == 0 then return end
-	
-	CharacterLibrary:Switch(Players.LocalPlayer:GetAttribute("ReplicationId"), -1)
 
-	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, -1)
+	local Plr = Players.LocalPlayer
+	local Localplr = Plr:GetAttribute("ReplicationId")
+	local TargetId = CharacterLibrary:GetCharacterTarget(Plr)
+
+	CharacterLibrary:Switch(Localplr, Direction, TargetId)
+
+	local NewAgent = CharacterLibrary:GetCurrent(Localplr)
+	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, Direction, NewAgent:GetRotation())
 end
 
 return Ability

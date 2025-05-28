@@ -50,20 +50,20 @@ function StatesClass:Switch(State: string, Time: number)
 	if not table.find(GameEnum.Agent_States, State) then
 		return warn('Tried to switch to invalid state')
 	end
-	
+
 	local CurrentThread = self.__Threads['CurrentState']
-	
+
 	if typeof(CurrentThread) == 'thread' then
 		task.cancel(CurrentThread)
-	end	
-	
+	end
+
 	self.__State = State
 	self.__Last_Change = os.clock()
-	
+
 	self.__Threads['CurrentState'] = task.delay(Time, function()
 		self.__State = 'Idle'
 		self.__Last_Change = os.clock()
-		
+
 		self.__Threads['CurrentState'] = nil
 	end)
 
@@ -76,29 +76,28 @@ end
 
 function StatesClass:SetKey(Key: string, Value: boolean): ()
 	assert(typeof(Value) == 'boolean' or Value == nil, 'Cannot set keys to numerical values')
-	
+
 	if Value == nil then
 		Value = not self.__Keys[Key]
 	end
-	
+
 	self.__Keys[Key] = Value
 end
 
 function StatesClass:GetSpeed(Ignore_States: boolean)
 	local CharStats = self.__Base_Stats
-	
+
 	--
 	if (self.__State ~= 'Idle' and self.__State ~= 'Dashing') and not Ignore_States then
 		return 0
 	end
-	
+
 	if self:GetKey('Sprint') then
 		return CharStats.Sprint_Speed
 	elseif self:GetKey('Jog') then
 		return CharStats.Jog_Speed
 	end
-	
-	
+
 	return CharStats.Walk_Speed or 16
 end
 

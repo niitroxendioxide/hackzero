@@ -4,6 +4,7 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
@@ -19,6 +20,7 @@ type Player_Data = {Active: number, Characters: {AgentTypes.ServerAgentClass}}
 
 local Service = {
 	__Characters = {} :: {[Player]: Player_Data},
+	__Targets = {},
 }
 
 function Service:Init()
@@ -137,7 +139,7 @@ end
 
 function Service:Rotate(Player: Player, Buffer: buffer)
 	local Angle = math.rad(buffer.readi16(Buffer, 1) / 180)
-	local X, Z = math.sin(Angle), math.cos(Angle) 
+	local X, Z = math.sin(Angle), math.cos(Angle)
 	local Rebuilt = Vector3.new(X, 0, Z)
 
 	local CurrentCharacter = Service:GetCurrentCharacter(Player)
@@ -171,10 +173,20 @@ end
 
 function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 	local Direction = buffer.readi8(Buffer, 1)
+	local Angle = math.rad(buffer.readi16(Buffer, 2) / 180)
+	local X, Z = math.sin(Angle), math.cos(Angle)
+	local RebuiltRotationVector = Vector3.new(X, 0, Z)
+
 	local Data = Service:Get(Player)
 	local Previous = Data.Characters[Data.Active]
 	local WasMoving = Previous:IsMoving()
-	local CharacterCFrame = AssistUtil:CalculateSwitchCFrame(Data.Characters, Data.Active, Direction)
+	local CurrentAgent = Data.Characters[Data.Active]
+	local TargetId = Service.__Targets[Player]
+	local Target = TargetId ~= nil and Enemies:GetEnemy(TargetId)
+
+	local CharacterCFrame = AssistUtil:CalculateSwitchCFrame(CurrentAgent, Direction, Target)
+
+	Service.__Targets[Player] = nil
 	Service:Stop(Player)
 
 	Data.Active += Direction
@@ -192,13 +204,18 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 	local CurrentCharacter = Service:GetCurrentCharacter(Player)
 	CurrentCharacter:SetActive(true)
 	CurrentCharacter:PivotTo(CharacterCFrame)
-	CurrentCharacter:ApplyImpulse(CurrentCharacter:GetPivot().LookVector * 75)
+	CurrentCharacter:Rotate(RebuiltRotationVector)
+
+	if not Target then
+		CurrentCharacter:ApplyImpulse(CurrentCharacter:GetPivot().LookVector * 75)
+	end
 
 	if WasMoving then
 		Service:Move(Player)
 	end
 
-	Replicator:CharacterSwitch(Player, Direction)
+	Replicator:CharacterSwitch(Player, Direction, TargetId)
+	Replicator:Rotate(Player, RebuiltRotationVector)
 end
 
 function Service:GetCurrentCharacter(Player: Player): AgentTypes.ServerCharacterClass?

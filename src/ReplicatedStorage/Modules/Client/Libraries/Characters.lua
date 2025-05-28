@@ -7,28 +7,50 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Agents)
 local AgentTypes = require(Shared.Types.Agents)
 local Statics = require(Database.Statics)
 local AssistUtil = require(Shared.Utility.Assist)
-local IsClient = RunService:IsClient()
-local InterfaceStates = IsClient and require(Client.Packages.InterfaceStates)
+local Enemies = require(Shared.Libraries.Enemies)
+local InterfaceStates = require(Client.Packages.InterfaceStates)
+
+print('client require:', RunService:IsClient())
 
 --
 local Characters = {
 	__Player_Data = {} :: {[number]: {Active: number, List: {AgentTypes.AgentClass}}},
+	__Targets = {},
+	__Target_Threads = {},
 }
 
-function Characters:Switch(UserId: number, Direction: number)
+function Characters:GetCharacterTarget(Player: Player)
+	return Characters.__Targets[Player]
+end
+
+function Characters:SetCharacterTarget(Player: Player, Id: number, Time: number)
+	if Characters.__Target_Threads[Player] then
+		task.cancel(Characters.__Target_Threads[Player])
+	end
+
+	Characters.__Targets[Player] = Id
+
+	Characters.__Target_Threads[Player] = task.delay(Time, function()
+		Characters.__Targets[Player] = nil
+		Characters.__Target_Threads[Player] = nil
+	end)
+end
+
+function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: number)
 	Characters:Build(UserId)
 
-	--	
+	--
 	Direction = math.sign(Direction)
-	
+
 	local CurrentCharacter = Characters:GetCurrent(UserId)
 	local Data = Characters.__Player_Data[UserId]
-	local NewCFrame = AssistUtil:CalculateSwitchCFrame(Data.List, Data.Active, Direction)
-	
+	local TargetObject = EnemyTargetId and Enemies:GetEnemy(EnemyTargetId)
+	local NewCFrame = AssistUtil:CalculateSwitchCFrame(Data.List[Data.Active], Direction, TargetObject)
+
 	if Data.Active + Direction > #Data.List then
 		Data.Active = 1
 	elseif Data.Active + Direction < 1 then
@@ -36,39 +58,41 @@ function Characters:Switch(UserId: number, Direction: number)
 	else
 		Data.Active += Direction
 	end
-	
+
 	Data.Last_Anim = Data.Last_Anim == 1 and 2 or 1
-	
-	if IsClient and Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
+
+	if Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
 		InterfaceStates.Characters:set(Data)
 	end
-	
+
 	--
 	CurrentCharacter:SetVisible(false)
-	
+
 
 	local NewCharacter = Characters:GetCurrent(UserId)
 	local Animator = NewCharacter:GetAnimator()
 	Animator:Play('Dash'..(Data.Last_Anim == 2 and 'Right' or 'Left'), {Name = 'Dash', Speed = 1.25})
 	NewCharacter:SetVisible(true)
 	NewCharacter:PivotTo(NewCFrame)
-	NewCharacter:ApplyImpulse(NewCFrame.LookVector * 75)
+	if not TargetObject then
+		NewCharacter:ApplyImpulse(NewCFrame.LookVector * 75)
+	end
 end
 
 function Characters:Add(UserId: number, Character: AgentTypes.AgentClass)
 	Characters:Build(UserId)
-	
+
 	local Data = Characters.__Player_Data[UserId]
-	
+
 	if #Data.List >= Statics.Max_Team_Size then
 		warn('Cannot add character to team, reason: Team is already full')
-		
+
 		return
 	end
 
 	table.insert(Data.List, Character)
-	
-	if IsClient and Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
+
+	if Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
 		InterfaceStates.Characters:set(Data)
 	end
 end
@@ -84,7 +108,7 @@ function Characters:Remove(UserId: number, Name: string): any
 		end
 	end
 
-	if IsClient and Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
+	if Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
 		InterfaceStates.Characters:set(Data)
 	end
 
@@ -150,7 +174,7 @@ end
 function Characters:GetCurrentName(UserId: number): string
 	local Current = Characters:GetCurrent(UserId)
 	if not Current then return '' end
-	
+
 	return Current.Name
 end
 

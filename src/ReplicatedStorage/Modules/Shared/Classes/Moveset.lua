@@ -9,7 +9,7 @@ local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Cooldown = require(Shared.Utility.Cooldown)
 local GameEnum = require(Shared.GameEnum)
-local SwapPackage = require(Client.Packages.Swap)
+--local SwapPackage = require(Client.Packages.Swap)
 
 --
 local MovesetClass = {} :: {[string]: (self: Types.MovesetClass, any) -> any, new: () -> Types.MovesetClass}
@@ -23,11 +23,6 @@ function MovesetClass.new(Name: string)
 	self.__Information = {}
 	self.__Assigned = {}
 	self.__Last_Use = {}
-
-	if RunService:IsClient() then
-		self:Assign('Swap Back', SwapPackage)
-		self:Assign('Swap Forth', SwapPackage)
-	end
 
 	return self
 end

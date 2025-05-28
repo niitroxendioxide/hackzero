@@ -11,6 +11,7 @@ local CharacterDatabase = require(Shared.Database.Characters)
 local DrivesDatabase = require(Shared.Database.Drives)
 local DriveTraits = require(Shared.Database.DriveTraits)
 local LocalData = require(Client.Libraries.LocalData)
+local SharedData = require(Client.Libraries.SharedData)
 local InterfaceController = require(Client.Controllers.InterfaceController)
 
 --
@@ -73,11 +74,28 @@ local function BufferTableToDrive(Table: {}): Types.PlayerDriveData
     return DriveData
 end
 
+local function DecompressTableOfAgents(Table: {}): {}
+    local TranslatedData = {}
+    for _, AgentData in Table do
+        local Buffer = AgentData[1]
+        local Artifacts = AgentData[2]
+        local DriveId = AgentData[3]
+
+        table.insert(TranslatedData, {
+            Name = CharacterDatabase:GetCharacterFromId(buffer.readu8(Buffer, 0)),
+            Level = buffer.readu8(Buffer, 1),
+            Drive = DriveId,
+            Artifacts = Artifacts,
+        })
+    end
+
+    return TranslatedData :: {}
+end
+
 --
 local Controller = {}
 
 function Controller:Init()
-
     Network:On("ItemData", function(Type: number, Payload: {}): ()
         if Type == GameEnum.ItemDataEvent.GetAllArtifacts then
             Controller:ConvertArtifacts(Payload)
@@ -94,6 +112,34 @@ function Controller:Init()
         elseif Type == GameEnum.AgentEvent.UpdateDrive then
             Controller:UpdateDriveState(Payload)
         end
+    end)
+
+    Network:On("SharedData", function(Player: Player, Data: {})
+        local Agents = Data[1]
+        local Drives = Data[2]
+        local Artifacts = Data[3]
+
+        local Match_Drives = {}
+
+        for _, Drive in Drives do
+            local DriveObjectData = BufferTableToDrive(Drive)
+
+            -- Save to the full list
+            table.insert(Match_Drives, DriveObjectData)
+        end
+
+        local Match_Artifacts = {}
+
+        for _, Artifact in Artifacts do
+            local ArtifactObjectData = BufferTableToArtifact(Artifact)
+
+            -- Save to the full list
+            table.insert(Match_Artifacts, ArtifactObjectData)
+        end
+
+        local Match_Agents = DecompressTableOfAgents(Agents)
+
+        SharedData:SetData(Player, Match_Agents, Match_Drives, Match_Artifacts)
     end)
 end
 

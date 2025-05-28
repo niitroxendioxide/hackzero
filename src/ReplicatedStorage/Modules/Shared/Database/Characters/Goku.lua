@@ -129,7 +129,7 @@ return {
 				Affliction_Buildup = 1.5,
 
 				Knockback_Direction = Vector3.new(0, 0, 1),
-				Knockback_Strength = 8,
+				Knockback_Strength = 3,
 				Knockback_Time = 0.2,
 			},
 
@@ -144,11 +144,15 @@ return {
 				Speed = 1,
 				NoAutoTrack = true,
 
-				SSBuff = {
+				SSBuff = {{
 					Type = 'Attack',
 					Value = "25%",
 					Time = 10,
-				}
+				},{
+					Type = 'Speed',
+					Value = .2,
+					Time = 10,
+				}}
 			},
 			Upgrades = {},
 		}

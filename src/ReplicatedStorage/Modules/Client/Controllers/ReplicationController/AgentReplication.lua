@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local CharacterLibrary = require(Client.Libraries.Characters)
 local AgentClass = require(Client.Classes.Agent)
 local GameEnum = require(Shared.GameEnum)
@@ -12,8 +13,16 @@ local GameEnum = require(Shared.GameEnum)
 --local BufferUtil = require(Shared.Utility.Buffer)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
 local CharacterDatabase = require(Shared.Database.Characters)
-local Types = require(Shared.Types)
-local CamLib = require(Client.Libraries.Camera)
+local SharedData = require(Client.Libraries.SharedData)
+
+--
+local function GetPlayerById(Id: number)
+	for _, Player in Players:GetChildren() do
+		if Player:GetAttribute("ReplicationId") == Id then
+			return Player
+		end
+	end
+end
 
 --
 local Controller = {}
@@ -29,7 +38,9 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 		return
 	end
 
-	local CharacterInstance = AgentClass.new(CharacterName, 1)
+	local AgentOwner = GetPlayerById(UserId)
+	local AgentData = SharedData:GetAgentData( AgentOwner, CharacterName)
+	local CharacterInstance = AgentClass.new(CharacterName, AgentData.Level)
 	CharacterInstance:Init(UserId)
 
 	--CharacterInstance.__Controller:GetCollider().Transparency = 0.9
@@ -42,8 +53,21 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 		CharacterInstance:PivotTo(At)
 	end
 
-	if UserId == Players.LocalPlayer:GetAttribute("ReplicationId") then
-		
+	do
+		CharacterInstance:SetLevel(AgentData.Level)
+
+		for _, ArtifactId in AgentData.Artifacts do
+			local ArtifactData = SharedData:GetArtifactById(AgentOwner, ArtifactId)
+
+			if ArtifactData ~= nil then
+				CharacterInstance.__Items:BindArtifact(ArtifactData)
+			end
+		end
+
+		if AgentData.Drive ~= nil then
+			local DriveObj = SharedData:GetDriveById(AgentOwner, AgentData.Drive)
+			CharacterInstance.__Items:BindDrive(DriveObj)
+		end
 	end
 
 	if CharacterLibrary:GetCurrent(UserId) ~= CharacterInstance then
@@ -138,13 +162,15 @@ end
 function Controller:CharacterSwitch(Buffer: buffer)
 	local Direction = buffer.readi8(Buffer, 1)
 	local UserId = buffer.readu8(Buffer, 2)
+	local EnemyTargetId = buffer.readu8(Buffer, 3)
 
 	local Previous = CharacterLibrary:GetCurrent(UserId)
 	local Moving = Previous:IsMoving()
+	local EnemyTarget =  EnemyTargetId > 0 and Enemies:GetEnemy( EnemyTargetId)
 
 	--local CFrameClient = Previous:GetPivot()
 
-	CharacterLibrary:Switch(UserId, Direction)
+	CharacterLibrary:Switch(UserId, Direction, EnemyTarget)
 
 	if Moving then
 		local Current = CharacterLibrary:GetCurrent(UserId)

@@ -60,6 +60,7 @@ function ServerAgentClass.GetStat(self: Types.ServerAgentClass, Name: Types.Stat
 	local Base = self.__Status:GetStat(Name)
 	local Effects = self.__Status:GetStatEffects(Name)
 	local Added = self.__Items:GetTotalAddedStat(Name)
+
 	local Total = Base + Added + Effects
 
 	return Total
@@ -177,7 +178,7 @@ function ServerAgentClass:GetState()
 	return self.__Character:GetState()
 end
 
-function ServerAgentClass:SwitchState(State: string, Time: number)
+function ServerAgentClass:SwitchState(State: string, Time: number, Unaffected: boolean?)
 	local Path = string.split(debug.info(2, "s"), '.')
 	local Skill = Path[#Path]
 
@@ -187,7 +188,9 @@ function ServerAgentClass:SwitchState(State: string, Time: number)
 		self.__Character.States:SetCurrentSkill(nil)
 	end
 
-	self.__Character.States:Switch(State, Time)
+	local TimeMod = not Unaffected and State == 'Attacking' and self:GetStat("Speed") or 1
+
+	self.__Character.States:Switch(State, Time / TimeMod)
 
 	if self:IsMoving() then
 		self:Move()

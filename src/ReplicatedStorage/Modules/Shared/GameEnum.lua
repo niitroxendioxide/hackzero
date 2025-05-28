@@ -143,12 +143,19 @@ return {
 		UpdateDrive = 4,
 		GetCurrencies = 5,
 	},
+	
+	ShareDataEvent = {
+		MatchArtifacts = 1,
+		MatchDrives = 2,
+		MatchAgents = 3,
+	},
 
 	AgentEvent = {
 		UpdateArtifactSlot = 1,
 		UpdateDrive = 2,
 		LevelAgent = 3,
 		EvolveAgent = 4,
+		LoadAll = 5,
 	},
 
 	ChangeEvents = {

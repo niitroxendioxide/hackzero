@@ -10,6 +10,7 @@ local AgentTypes = require(Shared.Types.Agents)
 --local Enemies = require(Shared.Libraries.Enemies)
 local CharacterClass = require(script:WaitForChild('Character'))
 local StatusClass = require(Shared.Classes.Agents:WaitForChild('Status'))
+local ItemsClass = require(Shared.Classes.Agents.Items)
 
 --local InterfaceStates = require(Client.Packages.InterfaceStates)
 local CharacterDatabase = require(Shared.Database.Characters)
@@ -28,10 +29,11 @@ function AgentClass.new(Name: string, Level: number): AgentTypes.AgentClass
 	self.PlayerId = -125
 
 	-- # Private
+	self:SetLevel(Level)
 	self.__Tags = {}
 	self.__Look_Marked = false
 	self.__Character = CharacterClass.new(Name)
-	self:SetLevel(Level)
+	self.__Items = ItemsClass.new(self)
 
 	return self
 end
@@ -46,7 +48,12 @@ function AgentClass:SetLevel(Amount: number)
 end
 
 function AgentClass:GetStat(Key: string)
-	return self.__Status:GetStat(Key)
+	local Base = self.__Status:GetStat(Key)
+	local Effects = self.__Status:GetStatEffects(Key)
+	local Added = self.__Items:GetTotalAddedStat(Key)
+
+	local Total = Base + Added + Effects
+	return Total
 end
 
 function AgentClass:GetAnimator(): Types.AnimatorController
@@ -183,7 +190,7 @@ function AgentClass:GetUltBar()
 	return self.__Status:GetUltimate()
 end
 
-function AgentClass:SwitchState(State: string, Time: number): ()
+function AgentClass:SwitchState(State: string, Time: number, Unaffected: boolean?): ()
 	local ThreadChanged = string.split(debug.info(2, "s"), '.')
 	local Ability = ThreadChanged[#ThreadChanged]
 
@@ -193,7 +200,9 @@ function AgentClass:SwitchState(State: string, Time: number): ()
 		self.__Character.__States:SetCurrentSkill(nil)
 	end
 
-	self.__Character.__States:Switch(State, Time)
+	local TimeMod = not Unaffected and State == 'Attacking' and self:GetStat("Speed") or 1
+
+	self.__Character.__States:Switch(State, Time / TimeMod)
 
 	if self:IsMoving() then
 		self:Move()

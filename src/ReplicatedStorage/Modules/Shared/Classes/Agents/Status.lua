@@ -89,6 +89,10 @@ function StatusClass.UseEnergy(self: Types.AgentStatusClass, EnergyRemoved: numb
 end
 
 function StatusClass.GetStat(self: Types.AgentStatusClass, n)
+	if n == 'Speed' then
+		return 1
+	end
+
 	return self.__Base_Stats[n]
 end
 

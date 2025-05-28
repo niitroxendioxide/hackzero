@@ -65,9 +65,13 @@ function Controller:Replicate(Action: number, ...)
 
 		Args = {}
 	elseif Action == GameEnum.Replication.CharacterSwitch then
-		Buffer = buffer.create(2)
+		local Vec = Args[2].Unit
+		local Angle = math.deg(math.atan2(Vec.X, Vec.Z))
+
+		Buffer = buffer.create(4)
 
 		buffer.writei8(Buffer, 1, Args[1])
+		buffer.writei16(Buffer, 2, Angle * 180)
 
 		Args = {}
 	elseif Action == GameEnum.Replication.UseSkill then

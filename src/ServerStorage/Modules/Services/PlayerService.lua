@@ -9,6 +9,7 @@ local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 
+local Network = require(ReplicatedStorage.Modules.Shared.Network)
 local Notifications = require(Modules.Packages.Notifications)
 local TeamService = require(script.Parent.Combat.TeamService)
 local PartyService = require(script.Parent.Lobby.PartyService)
@@ -16,6 +17,7 @@ local ChatService = require(script.Parent.Lobby.ChatService)
 local DataService = require(script.Parent.Data.DataService)
 local SummonService = require(script.Parent.Items.SummonService)
 
+local TeleportService = require(script.Parent.Data.TeleportService)
 local Places = require(Shared.Places)
 
 local Messages = require(Modules.Packages.Messages)
@@ -23,9 +25,31 @@ local LastPlayerId = 0
 local AvailableIds = {}
 
 --
+local DataCache = {}
+local function SyncPlayerDataWithOthers(Player: Player, AgentTeam: {}?, PlayerToSync: Player)
+	if DataCache[Player] == nil and AgentTeam ~= nil then
+		local Agents = DataService:FetchAgents(Player)
+		local Drives = DataService:FetchDrives(Player, function(Drive)
+			if not Drive.__Equipped then return false end
+			return AgentTeam[Drive.__Equipped.Name]
+		end)
+		local Artifacts = DataService:FetchArtifacts(Player, function(Artifact)
+			if not Artifact.__Equipped then return false end
+			return AgentTeam[Artifact.__Equipped.Name]
+		end)
+
+		DataCache[Player] = {Agents, Drives, Artifacts}
+	end
+
+	Network:Fire("SharedData", PlayerToSync, Player, DataCache[Player])
+end
+
+--
 local Service = {}
 
 function Service:Init(): ()
+	Network.new("SharedData", 'Event')
+
 	Notifications:Init()
 	Service:SetupStarterPlayer()
 
@@ -88,14 +112,30 @@ function Service.PlayerAdded(Player: Player): ()
 	--DataService:UnlockAllAgents(Player)
 
 	--
-	if Places:CanFight() then
-		Service:InitializeCharacters(Player)
-	end
-
-	--
 	ChatService:SetupChannels(Player)
-	DataService:SyncPlayerItems(Player)
 	SummonService:SyncBanner(Player)
+
+	-- hi?
+	if Places:CanFight() then
+		for PlayerInCache in DataCache do
+			SyncPlayerDataWithOthers(PlayerInCache, nil, Player)
+		end
+
+		--
+		local Team = TeleportService:GetPlayerTeamFromData(Player)
+		local HashMap = {}
+		for _, Agent in Team do
+			HashMap[Agent.Name] = true
+		end
+
+		for _, NetPlayer in Players:GetPlayers() do
+			SyncPlayerDataWithOthers(Player, HashMap, NetPlayer)
+		end
+
+		Service:InitializeCharacters(Player)
+	else
+		DataService:SyncPlayerItems(Player)
+	end
 end
 
 function Service.PlayerRemoving(Player: Player): ()
