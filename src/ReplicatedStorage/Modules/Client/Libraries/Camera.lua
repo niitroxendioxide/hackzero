@@ -89,7 +89,7 @@ function Camera:Update(delta: number)
 	if Camera.__Track_Type == 1 then
 		CameraPosition = Model:FindFirstChild(self.__Target_Part).Position + Settings.Offset
 	else
-		local Torso: Vector3 = Model:FindFirstChild('UpperTorso').Position
+		local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
 		local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
 		local Goal = Vector3.new(Root.X, Torso:Lerp(Root, 0.5).Y, Root.Z)
 

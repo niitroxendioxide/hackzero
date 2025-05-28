@@ -31,7 +31,19 @@ Ping.OnServerInvoke = function(Player: Player)
 	return tick()
 end
 
+task.spawn(function()
+	for _, Children: Instance in workspace:GetChildren() do
+		if Children:IsA('Terrain') or Children:IsA("Folder") or Children:IsA("Camera") or Children:IsA("SpawnLocation") or Children.Name == 'Baseplate' then
+			continue
+		end
+
+		Children:Destroy()
+	end
+
+end)
+
 --
+local Child = require(ReplicatedStorage.Modules.Client.Libraries.Fusion.Instances.Child)
 local Framework = require(ReplicatedStorage.Modules.Framework)
 local World = workspace:WaitForChild('World');
 

@@ -10,6 +10,7 @@ local Assets = ReplicatedStorage.Assets
 
 local Classes = Client.Classes
 
+local Goku = require(ReplicatedStorage.Modules.Client.Components.Movesets.Agents.Goku)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local EffectsUtil = require(Shared.Utility.Effects)
@@ -40,7 +41,15 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
 
     CutsceneEffects:HideHUD(GokuUltimate.__Time)
     local SuperSaiyanAura = Assets.Effects.Agents.Goku.SuperSaiyanAura:Clone()
+    GokuUltimate:SetFOV(40)
 
+    GokuUltimate:SetFOV(39, {.4})
+    task.delay(.4, function()
+        GokuUltimate:SetFOV(30, {.317})
+
+        task.wait(.317)
+        GokuUltimate:SetFOV(45, {0.05})
+    end)
 
     local CameraAnimObj = AnimLib:GetAnim(Dir..'Camera')
     local AgentAnimObj = AnimLib:GetAnim(Dir..'Agent')
@@ -57,7 +66,7 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
         EffectsUtil:Tween(BaseHair, {.2, "Quad", nil, nil, true}, {Color = Color3.fromRGB(253, 220, 138)})
     end)
 
-    GokuUltimate:Wait(0.783)
+    GokuUltimate:Wait(0.733)
     local CC = Instance.new('ColorCorrectionEffect')
     CC.Saturation = 0.75
     CC.Contrast = 0.75
