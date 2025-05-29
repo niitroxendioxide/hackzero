@@ -1,3 +1,5 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
 local Types = require(script.Parent)
 local Heap = require(script.Parent.Parent.Utility.Heap)
 
@@ -14,6 +16,7 @@ export type Heap = Heap.Heap
 type Element = Types.Element
 type AgentMovesetAbility = Types.AgentMovesetAbility
 type Rig = Types.Rig
+type Signal<T...> = Signal.ScriptSignal<T...>
 
 export type AgentClass =  {
 	Name: string,
@@ -21,6 +24,7 @@ export type AgentClass =  {
 
 	__Level: number,
 	__User: number,
+	__Player_Assigned: Player,
 	__Items: AgentItemsClass,
 	GetId: (self: AgentClass) -> (number),
 
@@ -124,7 +128,7 @@ export type AgentStatusClass = {
 
 -- [[Server data]]
 export type EffectParameters = {Type: Stat & AgentMovesetAbility, Value: number | string, Time: number, Tag: string, Unique: boolean?, Callback: ((Id: number) -> ())?}
-export type EffectObject = {Remove: () -> (), Id: number, Value: number, Type: Stat & AgentMovesetAbility, Tag: string?, Time: number?}
+export type EffectObject = {Remove: () -> (), Id: number, Value: number, Type: Stat & AgentMovesetAbility, Tag: string?, Time: number?, Created: number}
 export type ServerCharacterClass = {
 	Name: string,
 	States: StatesClass,
@@ -143,6 +147,12 @@ export type ServerCharacterClass = {
 
 
 --[[ CHARACTER CONTROLLERS ]]
+export type AssistStruct = {
+	TargetId: number,
+	Accepted: Signal<nil>,
+	Time: number,
+}
+
 export type ServerAgentClass = {
 	Name: string,
 
@@ -152,6 +162,7 @@ export type ServerAgentClass = {
 	__Player_Assigned: Player,
 	__Status: AgentStatusClass,
     __Items: AgentItemsClass,
+	__Current_Target: {Data: AssistStruct, Thread: thread}?,
 
 	__Active: boolean,
 	__Character: ServerCharacterClass,
@@ -161,6 +172,15 @@ export type ServerAgentClass = {
 	Stop: (self: ServerAgentClass) -> (),
 	Move: (self: ServerAgentClass) -> (),
 	Rotate: (self: ServerAgentClass, Angle: number) -> (),
+
+	GetMarkedTarget: (self: ServerAgentClass) -> (AssistStruct?),
+
+	--[[
+		Set to nil for no target
+		@param TargetId Number id for enemy
+		@param Time how long prompt lasts
+	]]
+	MarkTarget: (self: ServerAgentClass, TargetId: number?, Time: number?) -> (AssistStruct),
 
 	ApplyImpulse: (self: ServerAgentClass, Velocity: Vector3) -> (),
 	SetKey: (self: ServerAgentClass, Key: string, Value: any) -> (),

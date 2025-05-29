@@ -3,15 +3,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
 
 --
-local World = workspace:FindFirstChild("World")
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage.Assets
 
 local Classes = Client.Classes
 
-local Goku = require(ReplicatedStorage.Modules.Client.Components.Movesets.Agents.Goku)
-local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local EffectsUtil = require(Shared.Utility.Effects)
 local CutsceneClass = require(Classes.Cutscene)
@@ -20,17 +17,26 @@ local AnimLib = require(Client.Libraries.Animation)
 local Dir = "Characters.Goku.Abilities.Ultimate."
 
 --
-local AgentCache = {}
+local AgentCache = {
+    __Threads = {},
+    __Methods = {},
+}
 local GokuUltimate = CutsceneClass.new("GokuSSJ", 0.967)
 
 function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
-    if AgentCache[Agent] then
-        AgentCache[Agent]()
+    if AgentCache.__Methods[Agent] then
+        AgentCache.__Methods[Agent]()
+    end
+
+    if AgentCache.__Threads[Agent] then
+        task.cancel(AgentCache.__Threads[Agent])
     end
 
     if Agent.Name ~= 'Goku' then
         return
     end
+
+    GokuUltimate:SetCameraUser(Agent.__Player_Assigned)
 
     local AgentModel = Agent:GetModel()
     local Appearance = Agent.__Character.__Appearance
@@ -39,7 +45,10 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
         return
     end
 
-    CutsceneEffects:HideHUD(GokuUltimate.__Time)
+    if GokuUltimate:IsCameraUser() then
+        CutsceneEffects:HideHUD(GokuUltimate.__Time)
+    end
+
     local SuperSaiyanAura = Assets.Effects.Agents.Goku.SuperSaiyanAura:Clone()
     GokuUltimate:SetFOV(40)
 
@@ -67,14 +76,16 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     end)
 
     GokuUltimate:Wait(0.733)
-    local CC = Instance.new('ColorCorrectionEffect')
-    CC.Saturation = 0.75
-    CC.Contrast = 0.75
-    CC.Brightness = 0.75
-    CC.TintColor = Color3.fromRGB(255, 194, 140)
-    CC.Parent = Lighting
+    if GokuUltimate:IsCameraUser() then
+        local CC = Instance.new('ColorCorrectionEffect')
+        CC.Saturation = 0.75
+        CC.Contrast = 0.75
+        CC.Brightness = 0.75
+        CC.TintColor = Color3.fromRGB(255, 194, 140)
+        CC.Parent = Lighting
 
-    EffectsUtil:Tween(CC, {0.225, 'Quad'}, {Contrast = 0, Saturation = 0, Brightness = 0, TintColor = Color3.new(1,1,1)})
+        EffectsUtil:Tween(CC, {0.225, 'Quad'}, {Contrast = 0, Saturation = 0, Brightness = 0, TintColor = Color3.new(1,1,1)})
+    end
 
     EffectsUtil:Weld(SuperSaiyanAura, AgentModel.PrimaryPart)
     SuperSaiyanAura:PivotTo(Agent:GetPivot())
@@ -95,7 +106,7 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     Highlight.OutlineTransparency = 0.1
     Highlight.Parent = AgentModel
 
-    AgentCache[Agent] = function()
+    AgentCache.__Methods[Agent] = function()
         BaseHair.Transparency = 1
         SSHair.Transparency = 0
 
@@ -114,7 +125,7 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     end
 
     --
-    task.delay(10, AgentCache[Agent])
+    AgentCache.__Threads[Agent] = task.delay(10, AgentCache.__Methods[Agent])
 end
 
 return GokuUltimate

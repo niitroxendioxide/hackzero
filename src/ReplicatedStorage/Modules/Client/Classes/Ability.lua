@@ -86,7 +86,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 		local LookAtEnemy = self:FromData('NoAutoTrack') ~= true
 		local EnemyId, Enemy;
 		if LookAtEnemy then
-			EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, 50)
+			EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, 15)
 		end
 
 		if Enemy and (self.__Name ~= 'Dodge') then

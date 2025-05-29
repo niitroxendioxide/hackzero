@@ -945,9 +945,12 @@ export type CutsceneClass = {
 	__Active: boolean,
 	__Name: string,
 	__Time: number,
+	__Camera_User: Player?,
 	__Thread: thread?,
 
 	--
+	IsCameraUser: (self: CutsceneClass) -> (boolean),
+	SetCameraUser: (self: CutsceneClass, Player: Player) -> (),
 	Sequence: (self: CutsceneClass, Data: {any}) -> (),
 	Play: (self: CutsceneClass, Data: {any}) -> (),
 	CleanUp: (self: CutsceneClass) -> (),

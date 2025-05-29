@@ -5,8 +5,6 @@ local Players = game:GetService('Players')
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Agent = require(ReplicatedStorage.Modules.Client.Classes.Agent)
-local Play = require(ReplicatedStorage.Modules.Client.Components.Areas.Play)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
@@ -31,8 +29,6 @@ function Controller:UseSkill(Buffer: buffer)
 	local Key = GameEnum.KeyLookup(GameEnum.Skills, Skill)
 	local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
 
-	print(State)
-
 	if UserId == Players.LocalPlayer:GetAttribute('ReplicationId') then
 		CharacterMoveset:Release(Key, ActiveAgent)
 
@@ -56,9 +52,9 @@ function Controller:UseSkill(Buffer: buffer)
 	end
 
 	if State == 'Begin' then
-		CharacterMoveset:Begin(Key, ActiveAgent)
+		CharacterMoveset:Begin(Key, ActiveAgent, true)
 	else
-		CharacterMoveset:Release(Key, ActiveAgent)
+		CharacterMoveset:Release(Key, ActiveAgent, true)
 	end
 end
 
@@ -171,32 +167,41 @@ function Controller:ResetAffliction(Buffer: buffer)
 end
 
 function Controller:AddEffect(Buffer: buffer, Effect: AgentTypes.EffectParameters)
+	local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")
 	local RepId = buffer.readu8(Buffer, 1)
 	local AgentId = buffer.readu8(Buffer, 2)
 
 	local Agent = Characters:GetAgent(RepId, AgentId)
 	local EffectObj = Agent:AddEffect(Effect)
-	InterfaceStates.EffectAdded:Fire(AgentId, EffectObj.Id)
+
+	if UserId == RepId then
+		InterfaceStates.EffectAdded:Fire(AgentId, EffectObj)
+	end
 end
 
 function Controller:RemoveEffect(Buffer: buffer)
+	local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")
 	local RepId = buffer.readu8(Buffer, 1)
 	local AgentId = buffer.readu8(Buffer, 2)
 	local EffectId = buffer.readu8(Buffer, 3)
 
 	local Agent = Characters:GetAgent(RepId, AgentId)
 
-	InterfaceStates.EffectRemoved:Fire(AgentId, EffectId)
 	Agent:RemoveEffect(EffectId)
+
+	if UserId == RepId then
+		InterfaceStates.EffectRemoved:Fire(AgentId, EffectId)
+	end
 end
 
 function Controller:PromptAssist(Buffer: buffer)
+	local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")
 	local Moveset = InterfaceController:GetComponent("Moveset")
 	local AgentId = buffer.readu8(Buffer, 1)
 	local Time = buffer.readu8(Buffer, 2) /  10
 	local EnemyTargetId = buffer.readu8(Buffer, 3)
 
-	local Agent = Characters:GetAgent(Players.LocalPlayer:GetAttribute("ReplicationId"), AgentId)
+	local Agent = Characters:GetAgent(UserId, AgentId)
 	if not Agent then
 		return
 	end

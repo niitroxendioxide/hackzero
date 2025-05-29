@@ -43,7 +43,7 @@ function MovesetClass:Assign(Type: string, Ability: Types.AbilityClass)
 	end)
 end
 
-function MovesetClass:Begin(Type: string, Agent: Types.GenericClass): boolean
+function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, IsSignal: boolean): boolean
 	Type = Type:gsub('_', ' ')
 
 	if not self.__Assigned[Type] then
@@ -57,7 +57,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass): boolean
 	local Info = self:GetInfoForSkill(Type)
 
 	-- Run client checks for correcting skill usage
-	if RunService:IsClient() then
+	if not(IsSignal) and RunService:IsClient() then
 		if Type == "Special" and Agent:GetEnergy() >= Info.Base.Required_Energy then
 			Type = "EX Special"
 

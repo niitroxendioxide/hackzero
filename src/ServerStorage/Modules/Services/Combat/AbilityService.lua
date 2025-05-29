@@ -13,7 +13,6 @@ local GameEnum = require(Shared.GameEnum)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local AgentLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local MovesetLibrary = require(ServerStorage.Modules.Libraries.Movesets)
-local AgentService = require(script.Parent.AgentService)
 
 --
 local Service = {
@@ -47,18 +46,14 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 	return;
 end
 
-function Service:PromptAssist(Agent: AgentTypes.ServerAgentClass, Time: number)
-	local Player = Agent.__Player_Assigned
-	if Service.__Prompts[Player] then
-		task.cancel(Service.__Prompts[Player])
-	end
+function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, AgentToSwitch: AgentTypes.ServerAgentClass, Time: number)
+	local Player = CasterAgent.__Player_Assigned
+	local Prompt = CasterAgent:MarkTarget(1, Time)
+	Replicator:PromptAssist(Player, AgentToSwitch, Time, 1)
 
-	--
-	AgentService.__Targets[Player] = 1
-	Replicator:PromptAssist(Player, Agent, Time, 1)
-
-	Service.__Prompts[Player] = task.delay(Time, function()
-		AgentService.__Targets[Player] = nil
+	Prompt.Accepted:Once(function()
+		print('Accepted assist')
+		CasterAgent:MarkTarget(nil)
 	end)
 end
 
@@ -83,7 +78,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 		local AllAgents = AgentLibrary:GetAll(ReplicationId)
 		local CurId = table.find(AllAgents, ActiveAgent)
 		local AgentToSwitch = CurId + 1 > 3 and AllAgents[1] or AllAgents[CurId + 1]
-		Service:PromptAssist(AgentToSwitch, 2)
+		Service:PromptAssist(ActiveAgent, AgentToSwitch, 2)
 	end
 
 	-- Skill behavior

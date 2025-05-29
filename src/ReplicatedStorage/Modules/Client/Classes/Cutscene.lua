@@ -13,6 +13,7 @@ local Types = require(Shared.Types)
 local EffectsUtil = require(Shared.Utility.Effects)
 local AnimLib = require(Client.Libraries.Animation)
 local CharactersLib = require(Client.Libraries.Characters)
+local LocalPlayer = Players.LocalPlayer
 
 --
 local CutsceneClass = {}
@@ -29,6 +30,7 @@ function CutsceneClass.new(Name: string, Time: number): Types.CutsceneClass
     self.__Cache = {}
     self.__Objects = {}
     self.__Thread = nil;
+    self.__Camera_User = nil;
 
     return self
 end
@@ -49,9 +51,21 @@ function CutsceneClass.Sequence(self: Types.CutsceneClass, Data: {}): ()
     -- empty method!
 end
 
+function CutsceneClass.SetCameraUser(self: Types.CutsceneClass, Player: Player)
+    self.__Camera_User = Player
+end
+
+function CutsceneClass.IsCameraUser(self: Types.CutsceneClass)
+    if self.__Camera_User == nil then
+        return true
+    end
+
+    return self.__Camera_User == LocalPlayer
+end
+
 function CutsceneClass.AnimateCamera(self: Types.CutsceneClass, At: Model | CFrame, GivenAnim: string | Animation): (AnimationTrack)?
     local Rig = Assets.Characters:FindFirstChild('CameraRig');
-    if not(Rig) or not(Camera:GetCurrentUser() == self.__Name) then
+    if not(Rig) or not(Camera:GetCurrentUser() == self.__Name) or (self.__Camera_User ~= nil and self.__Camera_User ~= LocalPlayer) then
         return;
     end
 
@@ -97,7 +111,7 @@ function CutsceneClass.AnimateCamera(self: Types.CutsceneClass, At: Model | CFra
 end
 
 function CutsceneClass.MoveCamera(self: Types.CutsceneClass, To: CFrame, Info: {any}): Tween?
-    if not(Camera:GetCurrentUser() == self.__Name) then
+    if not(Camera:GetCurrentUser() == self.__Name) or (self.__Camera_User ~= nil and self.__Camera_User ~= LocalPlayer) then
         return
     end
 
@@ -114,7 +128,7 @@ function CutsceneClass.MoveCamera(self: Types.CutsceneClass, To: CFrame, Info: {
 end
 
 function CutsceneClass.SetFOV(self: Types.CutsceneClass, FOV: number, Info: {any})
-    if not(Camera:GetCurrentUser() == self.__Name) then
+    if not(Camera:GetCurrentUser() == self.__Name) or (self.__Camera_User ~= nil and self.__Camera_User ~= LocalPlayer) then
         return
     end
 
@@ -137,6 +151,7 @@ function CutsceneClass.Play(self: Types.CutsceneClass, Data: {})
         return
     end
 
+    self.__Camera_User = nil;
     if self.__Thread then
         task.cancel(self.__Thread)
         self.__Thread = nil
@@ -163,6 +178,8 @@ function CutsceneClass.CleanUp(self: Types.CutsceneClass)
             EffectsUtil:CleanUp(Item, 0)
         end
     end
+
+    self.__Camera_User = nil;
 end
 
 function CutsceneClass.Add(self: Types.CutsceneClass, Item: any): ()

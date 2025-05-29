@@ -8,7 +8,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local InterfaceAssets = ReplicatedStorage.Assets.Interface
 
-local Types = require(ReplicatedStorage.Modules.Shared.Types)
+local EffectUtil = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local AgentTypes = require(Shared.Types.Agents)
 local ComponentClass = require(Client.Classes.Interface)
 local Fusion = require(Client.Libraries.Fusion)
@@ -101,15 +101,30 @@ function Component:Init()
 		end
 	end
 
-	local function AddEffectIcon(Id: number)
+	local function AddEffectIcon(AgentName: string, Effect: {Id: number, Time: number?, Created: number})
+
+		--
 		local Object = InterfaceAssets.Combat.Effects.EffectObj:Clone()
-		Object.Name = Id
+		Object.Name = AgentName..Effect.Id
+		Object.Timer.Visible = Effect.Time ~= nil
 		Object.Parent = EffectsFrame
+
+
+		if Effect.Time then
+			local TimeLeft = Effect.Time - (os.clock() - Effect.Created)
+			local Size = UDim2.fromScale(1, TimeLeft / Effect.Time)
+			Object.Timer.Fill.Size = Size
+			EffectUtil:Tween(Object.Timer.Fill, {TimeLeft}, {Size = UDim2.fromScale(1, 0)})
+		end
 	end
 
-	local function RemoveEffectIcon(Id: number)
+	local function RemoveEffectIcon(Id: string)
 		local Object = EffectsFrame:FindFirstChild(Id)
 		if Object then
+			Object.Name = '__destroying'
+			EffectUtil:Tween(Object.UIScale, {.2, 'Quad'}, {Scale = 0})
+			EffectUtil:CleanUp(Object, .2)
+
 			Object:Destroy()
 		end
 	end
@@ -134,7 +149,7 @@ function Component:Init()
 		--
 		CleanUpEffectIcons()
 		for _, Effect in CurrentActiveCharacter.__Status.__Effects do
-			AddEffectIcon(Effect.Id)
+			AddEffectIcon(CurrentActiveCharacter.Name, Effect)
 		end
 
 		--
@@ -168,12 +183,22 @@ function Component:Init()
 		end
 	end
 
-	InterfaceStates.EffectAdded:Connect(function(AgentId: number, Id: number)
-		AddEffectIcon(Id)
+	InterfaceStates.EffectAdded:Connect(function(AgentId: number, EffectObj)
+		local Agent, ActiveAgentId = CharacterLibrary:GetCurrent(ReplicationId())
+
+		print(AgentId, ActiveAgentId)
+		if AgentId == ActiveAgentId and Agent then
+			AddEffectIcon(Agent.Name, EffectObj)
+		end
 	end)
 
 	InterfaceStates.EffectRemoved:Connect(function(AgentId: number, Id: number)
-		RemoveEffectIcon(Id)
+		local AgentObj = CharacterLibrary:GetAgent(ReplicationId(), AgentId)
+		if not AgentObj then
+			return
+		end
+
+		RemoveEffectIcon(AgentObj.Name..Id)
 	end)
 
 	-- Changes

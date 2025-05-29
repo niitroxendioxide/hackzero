@@ -119,8 +119,10 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 	local EffectObject = {
 		Id = NewId,
 		Type = Effect.Type,
+		Time = Effect.Time,
 		Value = Effect.Value,
 		Tag = Effect.Tag,
+		Created = os.clock(),
 
 		Remove = function()
 			self:RemoveEffect(NewId)
@@ -151,9 +153,12 @@ function StatusClass.GetEffect(self: Types.AgentStatusClass, Tag: string)
 end
 
 function StatusClass.RemoveEffect(self: Types.AgentStatusClass, Id: number)
-	self.__Effects[Id] = nil
+	local PreviousEffect = self.__Effects[Id]
+	if PreviousEffect ~= nil then
+		self.__Effects[Id] = nil
 
-	self.__Total_Effects:insert(Id)
+		self.__Total_Effects:insert(Id)
+	end
 end
 
 function StatusClass.GetStatEffects(self: Types.AgentStatusClass, Type: Types.Stat)

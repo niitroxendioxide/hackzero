@@ -411,7 +411,7 @@ function Service:GetArtifacts<T>(Player: Player, Filter: ((Artifact: Types.Playe
         return Service.__Artifacts[Player]
     end
 
-    for _, Artifact in Service.__Artifacts[Player] do
+    for _, Artifact in (Service.__Artifacts[Player] or {}) do
         if (#Artifacts == 1 and (First == true)) then
             break
         end
@@ -440,7 +440,7 @@ function Service:GetDrives<T>(Player: Player, Filter: ((Drive: Types.PlayerDrive
         return Service.__Drives[Player]
     end
 
-    for _, Drive in Service.__Drives[Player] do
+    for _, Drive in (Service.__Drives[Player] or {}) do
         if (#Drives == 1 and (First == true)) then
             break
         end

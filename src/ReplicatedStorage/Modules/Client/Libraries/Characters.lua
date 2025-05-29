@@ -13,9 +13,6 @@ local Statics = require(Database.Statics)
 local AssistUtil = require(Shared.Utility.Assist)
 local Enemies = require(Shared.Libraries.Enemies)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
-
-print('client require:', RunService:IsClient())
-
 --
 local Characters = {
 	__Player_Data = {} :: {[number]: {Active: number, List: {AgentTypes.AgentClass}}},
@@ -44,6 +41,7 @@ function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: num
 	Characters:Build(UserId)
 
 	--
+	local IsLocal = Players.LocalPlayer:GetAttribute("ReplicationId") == UserId
 	Direction = math.sign(Direction)
 
 	local CurrentCharacter = Characters:GetCurrent(UserId)
@@ -71,9 +69,9 @@ function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: num
 
 	local NewCharacter = Characters:GetCurrent(UserId)
 	local Animator = NewCharacter:GetAnimator()
+	NewCharacter:PivotTo(NewCFrame, not IsLocal)
 	Animator:Play('Dash'..(Data.Last_Anim == 2 and 'Right' or 'Left'), {Name = 'Dash', Speed = 1.25})
 	NewCharacter:SetVisible(true)
-	NewCharacter:PivotTo(NewCFrame)
 
 	local Force = TargetObject and 30 or 75
 	NewCharacter:ApplyImpulse(NewCFrame.LookVector * Force)

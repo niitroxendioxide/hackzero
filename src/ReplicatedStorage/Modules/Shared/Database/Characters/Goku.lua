@@ -150,7 +150,7 @@ return {
 					Time = 10,
 				},{
 					Type = 'Speed',
-					Value = .2,
+					Value = 1.5,
 					Time = 10,
 				}}
 			},

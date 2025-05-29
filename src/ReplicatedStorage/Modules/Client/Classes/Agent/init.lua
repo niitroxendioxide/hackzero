@@ -1,4 +1,5 @@
 --
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
 
@@ -113,13 +114,20 @@ end
 
 function AgentClass:Init(PlayerId: number)
 	assert(typeof(PlayerId) == 'number', 'Requires a valid playerid to initialize agent.')
-	
+
 	self.PlayerId = PlayerId
-	
+
+
+	for _, Player in Players:GetPlayers() do
+		if Player:GetAttribute("ReplicationId") == PlayerId then
+			self.__Player_Assigned = Player
+		end
+	end
+
 	self.__Main_Thread = RunService.Heartbeat:Connect(function(Delta: number)
 		self.__Status:Update(Delta)
 	end)
-	
+
 	return self.__Character:Init()
 end
 

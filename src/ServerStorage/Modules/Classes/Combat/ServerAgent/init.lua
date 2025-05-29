@@ -7,6 +7,7 @@ local RunService = game:GetService('RunService')
 local Classes = ServerStorage.Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
 local Types = require(Shared.Types.Agents)
 local CharacterDatabase = require(Shared.Database.Characters)
 local CharacterClass = require(Classes.Combat.ServerAgent.ServerCharacter)
@@ -195,6 +196,41 @@ function ServerAgentClass:SwitchState(State: string, Time: number, Unaffected: b
 	if self:IsMoving() then
 		self:Move()
 	end
+end
+
+function ServerAgentClass.MarkTarget(self: Types.ServerAgentClass, TargetId: number, Time: number): Types.AssistStruct?
+	if self.__Current_Target then
+		task.cancel(self.__Current_Target.Thread)
+	end
+
+	if TargetId == nil then
+		self.__Current_Target = nil
+
+		return
+	end
+
+	local Struct = {
+		TargetId = TargetId,
+		Accepted = Signal.new(),
+		Time = Time,
+	}
+
+	self.__Current_Target = {
+		Data = Struct,
+		Thread = task.delay(Time, function()
+			self.__Current_Target = nil
+		end)
+	}
+
+	return (self.__Current_Target :: {Data: Types.AssistStruct, Thread: thread}).Data
+end
+
+function ServerAgentClass.GetMarkedTarget(self: Types.ServerAgentClass): Types.AssistStruct?
+	if not self.__Current_Target then
+		return nil
+	end
+
+	return self.__Current_Target.Data
 end
 
 -- # Interacting

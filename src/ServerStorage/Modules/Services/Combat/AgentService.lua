@@ -20,7 +20,6 @@ type Player_Data = {Active: number, Characters: {AgentTypes.ServerAgentClass}}
 
 local Service = {
 	__Characters = {} :: {[Player]: Player_Data},
-	__Targets = {},
 }
 
 function Service:Init()
@@ -180,13 +179,14 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 	local Data = Service:Get(Player)
 	local Previous = Data.Characters[Data.Active]
 	local WasMoving = Previous:IsMoving()
+
 	local CurrentAgent = Data.Characters[Data.Active]
-	local TargetId = Service.__Targets[Player]
-	local Target = TargetId ~= nil and Enemies:GetEnemy(TargetId)
+	local MarkedAgentStruct = CurrentAgent:GetMarkedTarget()
+
+	local Target = MarkedAgentStruct ~= nil and Enemies:GetEnemy(MarkedAgentStruct.TargetId)
 
 	local CharacterCFrame = AssistUtil:CalculateSwitchCFrame(CurrentAgent, Direction, Target)
 
-	Service.__Targets[Player] = nil
 	Service:Stop(Player)
 
 	Data.Active += Direction
@@ -213,8 +213,14 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 		Service:Move(Player)
 	end
 
-	Replicator:CharacterSwitch(Player, Direction, TargetId)
+	Replicator:CharacterSwitch(Player, Direction, MarkedAgentStruct and MarkedAgentStruct.TargetId)
 	Replicator:Rotate(Player, RebuiltRotationVector)
+
+	--
+	if MarkedAgentStruct then
+		MarkedAgentStruct.Accepted:Fire()
+		MarkedAgentStruct.TargetId = nil
+	end
 end
 
 function Service:GetCurrentCharacter(Player: Player): AgentTypes.ServerCharacterClass?
@@ -232,7 +238,10 @@ end
 function Service:Sync(Player: Player, Target: Player)
 	local CurrentCharacter = Service:GetCurrentCharacter(Player)
 
-	print(CurrentCharacter)
+	if not CurrentCharacter then
+		return
+	end
+
 	Replicator:AddAgent(Player, CurrentCharacter, Target, CurrentCharacter:GetPivot())
 
 	for _, Character in Service:GetCharacters(Player) do
