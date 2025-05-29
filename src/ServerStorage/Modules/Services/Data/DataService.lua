@@ -94,7 +94,7 @@ function Service:FetchArtifacts(Player: Player, Filter: ((a: Types.PlayerArtifac
     if not Artifacts then return end
     local Data = {}
 
-    if typeof(Artifacts[1]) ~= 'table' then
+    if Artifacts.__Id then
         Artifacts = {Artifacts}
     end
 
@@ -112,7 +112,7 @@ function Service:FetchDrives(Player: Player, Filter: ((a: Types.PlayerDriveDataC
     if not Drives then return end
     local Data = {}
 
-    if typeof(Drives[1]) ~= 'table' then
+    if Drives.__Id then
         Drives = {Drives}
     end
 

@@ -25,22 +25,24 @@ function Math:ApplyPercents(StatsTable: {}, AgentStats: {})
 end
 
 function Math:WriteArtifactsStats(StatsTable: {}, Artifacts)
+    local Effects = {}
     for _, ArtifactObject in Artifacts do
         local Data = ArtifactDatabase:GetArtifactData(ArtifactObject.Name)
 
         local MainStatName = next(ArtifactObject.Stats.Main_Stat)
         local MainStatValue = ArtifactObject.Stats.Main_Stat[MainStatName]
 
-        local SlotCount = 0
-        for _, OtherItem in Artifacts do
-            if OtherItem.Id == ArtifactObject.Id then continue end
+        if Effects[Data.Name] == nil then
+            local SlotCount = 0
 
-            if OtherItem.Name == ArtifactObject.Name then
-                SlotCount += 1
+            for _, OtherItem in Artifacts do
+                if OtherItem.Id == ArtifactObject.Id then continue end
+
+                if OtherItem.Name == ArtifactObject.Name then
+                    SlotCount += 1
+                end
             end
-        end
 
-        if SlotCount >= 2 then
             for StatName, StatValue in Data.Piece_Effects.Two_Piece do
                 if StatsTable[StatName] == nil then
                     StatsTable[StatName] = 0
@@ -58,6 +60,8 @@ function Math:WriteArtifactsStats(StatsTable: {}, Artifacts)
                     StatsTable[StatName] += StatValue
                 end
             end
+
+            Effects[Data.Name] = SlotCount
         end
 
         if StatsTable[MainStatName] == nil then

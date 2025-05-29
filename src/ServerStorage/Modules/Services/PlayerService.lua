@@ -114,6 +114,7 @@ function Service.PlayerAdded(Player: Player): ()
 	--
 	ChatService:SetupChannels(Player)
 	SummonService:SyncBanner(Player)
+	DataService:SyncPlayerItems(Player)
 
 	-- hi?
 	if Places:CanFight() then
@@ -133,8 +134,6 @@ function Service.PlayerAdded(Player: Player): ()
 		end
 
 		Service:InitializeCharacters(Player)
-	else
-		DataService:SyncPlayerItems(Player)
 	end
 end
 

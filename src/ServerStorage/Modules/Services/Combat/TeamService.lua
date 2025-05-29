@@ -49,6 +49,8 @@ function Service:Create(Player: Player)
             end)
 
             for _, Artifact in Artifacts do
+                if typeof(Artifact) ~= 'table' or not Artifact.ToData or not Artifact.__Id then continue end
+
                 AgentInstance:BindArtifact(Artifact:ToData())
             end
         end

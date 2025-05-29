@@ -206,9 +206,8 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 	CurrentCharacter:PivotTo(CharacterCFrame)
 	CurrentCharacter:Rotate(RebuiltRotationVector)
 
-	if not Target then
-		CurrentCharacter:ApplyImpulse(CurrentCharacter:GetPivot().LookVector * 75)
-	end
+	local Force = Target and 30 or 75
+	CurrentCharacter:ApplyImpulse(CurrentCharacter:GetPivot().LookVector * Force)
 
 	if WasMoving then
 		Service:Move(Player)

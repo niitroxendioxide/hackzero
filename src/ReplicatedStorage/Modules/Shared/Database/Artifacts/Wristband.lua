@@ -6,7 +6,7 @@ return {
 	Piece_Effects = {
 		Two_Piece = {
 			Critical_Damage = 16,
-			Speed = -0.025,
+			Affliction_Aptitude = 20,
 		},
 
 		Four_Piece = {},

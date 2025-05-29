@@ -122,7 +122,7 @@ function Replicator:CharacterSwitch(Player: Player, Direction: number, TargetId:
 	buffer.writeu8(Object, 0, GameEnum.Replication.CharacterSwitch)
 	buffer.writei8(Object, 1, Direction)
 	buffer.writeu8(Object, 2,  Player:GetAttribute("ReplicationId") :: number)
-	buffer.writeu8(Object, 3, TargetId)
+	buffer.writeu8(Object, 3, TargetId or 0)
 
 	Network:FireForAllBut(Player, 'Replicate', Object)
 end

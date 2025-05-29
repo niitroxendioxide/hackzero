@@ -76,7 +76,6 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 
 	local LookAt = ActiveAgent:GetPivot().LookVector
 	if Enemy then
-		print(EnemyId)
 		LookAt = CFrame.lookAt(ActiveAgent:GetPivot().Position * XZ, Enemy:GetPivot().Position * XZ).LookVector
 	end
 
@@ -109,8 +108,6 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 			ActiveAgent:UseUltimate();
 		end
 	elseif SpacelessSkill == 'Dodge' then
-		print(SpacelessSkill)
-
 		for _, Character in AgentLibrary:GetAll(Player:GetAttribute('ReplicationId') :: number) do
 			Character:SetKey('Sprint', true)
 			Character:SetKey('Jog', true)

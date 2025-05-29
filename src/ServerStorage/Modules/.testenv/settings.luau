@@ -1,11 +1,11 @@
 return table.freeze({
     REPLICATE_CONSTANTS = {
-        HITBOXES = true,
+        HITBOXES = false,
     },
 
     TEST_AGENTS = {
         'Goku',
-        'Trunks',
-        'Vegeta',
+        'Yuno',
+        'Luffy',
     }
 })

@@ -74,9 +74,10 @@ function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: num
 	Animator:Play('Dash'..(Data.Last_Anim == 2 and 'Right' or 'Left'), {Name = 'Dash', Speed = 1.25})
 	NewCharacter:SetVisible(true)
 	NewCharacter:PivotTo(NewCFrame)
-	if not TargetObject then
-		NewCharacter:ApplyImpulse(NewCFrame.LookVector * 75)
-	end
+
+	local Force = TargetObject and 30 or 75
+	NewCharacter:ApplyImpulse(NewCFrame.LookVector * Force)
+
 end
 
 function Characters:Add(UserId: number, Character: AgentTypes.AgentClass)
