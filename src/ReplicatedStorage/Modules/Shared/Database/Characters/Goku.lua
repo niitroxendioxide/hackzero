@@ -155,6 +155,13 @@ return {
 				}}
 			},
 			Upgrades = {},
-		}
+		},
+
+
+		['Quick Assist'] = {
+			Base = {
+				Speed = 1,
+			}
+		},
 	}
 }

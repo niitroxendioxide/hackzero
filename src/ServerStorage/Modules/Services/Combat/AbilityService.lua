@@ -52,7 +52,8 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, AgentToS
 	Replicator:PromptAssist(Player, AgentToSwitch, Time, 1)
 
 	Prompt.Accepted:Once(function()
-		print('Accepted assist')
+		Service:PlaySkill(Player, GameEnum.Skills.Quick_Assist, 1, 1)
+
 		CasterAgent:MarkTarget(nil)
 	end)
 end
@@ -83,6 +84,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 
 	-- Skill behavior
 	local SpacelessSkill = string.gsub(Skill, '_', ' ')
+
 	local Info = Moveset:GetInfoForSkill(SpacelessSkill)
 	if SpacelessSkill ~= 'Dodge' then
 		ActiveAgent:Look(LookAt)
@@ -115,7 +117,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 		Moveset:Release(Skill, ActiveAgent)
 	end
 
-	Replicator:UseSkill(Player, SkillId, false, EnemyId, StateId)
+	Replicator:UseSkill(Player, SkillId, SkillId == GameEnum.Skills.Quick_Assist, EnemyId, StateId)
 
 	return true;
 end

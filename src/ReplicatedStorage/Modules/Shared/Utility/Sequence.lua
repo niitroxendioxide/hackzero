@@ -6,7 +6,8 @@ export type SequenceFrames = {SequenceFrame}
 export type Sequence = {
 	__cache: {[any]: any},
 	__frames: SequenceFrames,
-	
+	__name: string,
+
 	--
 	Start: (self: Sequence) -> Sequence,
 	Pause: (self: Sequence) -> Sequence,
@@ -22,9 +23,10 @@ export type Sequence = {
 local Sequence = {}
 Sequence.__index = Sequence
 
-function Sequence.new(Frames: SequenceFrames)
+function Sequence.new(Frames: SequenceFrames, Name: string?)
 	local self = setmetatable({}, Sequence)
 	self.__currentTime = 0
+	self.__name = Name or 'default_sequence'
 	self.__runContext = task.spawn
 	self.__speed = 1
 	self.__active = false

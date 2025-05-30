@@ -11,7 +11,15 @@ local AbilityClass = require(Client.Classes.Ability)
 local Ability = AbilityClass.new()
 
 function Ability:Play(Agent: Types.GenericClass)
+    Ability:Begin(Agent, {
+        {.15, function()
+            Ability:Effect('Saiyan_Skill_1', Agent, 'Charge')
+        end},
 
+        {.5, function()
+            Ability:Effect('Saiyan_Skill_1', Agent, 'Shoot')
+        end}
+    })
 end
 
 return Ability

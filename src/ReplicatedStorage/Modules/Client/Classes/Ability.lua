@@ -50,7 +50,7 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 	end
 
 	--
-	local AbilitySequence = Sequence.new(Frames)
+	local AbilitySequence = Sequence.new(Frames, self.__Name)
 	local Attack_Warnings = self:FromData('Attack_Warning')
 	local Agent_Speed_Mod = Agent:GetStat("Speed")
 
@@ -68,7 +68,8 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 		end
 	end
 
-	AbilitySequence:SetSpeed((self:FromData('Speed') or 1) * Agent_Speed_Mod)
+	local Base_Speed = (self:FromData('Speed') or 1)
+	AbilitySequence:SetSpeed( Base_Speed * Agent_Speed_Mod)
 	AbilitySequence:After(function()
 		self.__Signal:Fire()
 	end)

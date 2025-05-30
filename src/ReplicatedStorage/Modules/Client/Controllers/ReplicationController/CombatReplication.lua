@@ -29,7 +29,7 @@ function Controller:UseSkill(Buffer: buffer)
 	local Key = GameEnum.KeyLookup(GameEnum.Skills, Skill)
 	local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
 
-	if UserId == Players.LocalPlayer:GetAttribute('ReplicationId') then
+	if UserId == Players.LocalPlayer:GetAttribute('ReplicationId') and Skill ~= GameEnum.Skills.Quick_Assist then
 		CharacterMoveset:Release(Key, ActiveAgent)
 
 		return
