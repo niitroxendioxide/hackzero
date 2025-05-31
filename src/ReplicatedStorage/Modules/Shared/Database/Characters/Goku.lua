@@ -150,7 +150,7 @@ return {
 					Time = 10,
 				},{
 					Type = 'Speed',
-					Value = 1.5,
+					Value = .3,
 					Time = 10,
 				}}
 			},
@@ -161,6 +161,16 @@ return {
 		['Quick Assist'] = {
 			Base = {
 				Speed = 1,
+
+				AssistBuff = {{
+					Type = 'Attack',
+					Value = "10%",
+					Time = 5,
+				},{
+					Type = 'Speed',
+					Value = .25,
+					Time = 7,
+				}}
 			}
 		},
 	}

@@ -11,12 +11,12 @@ local AgentTypes = require(Shared.Types.Agents)
 local Signal = require(Shared.Utility.Signal)
 local Hitbox = require(Shared.Utility.Hitbox)
 local Sequence = require(Shared.Utility.Sequence)
---local CharacterDatabase = require(Shared.Database.Characters)
 local GameEnum = require(Shared.GameEnum)
 
 local ServerHitboxUtil = require(ServerStorage.Modules.Libraries.Hitbox)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local DamageLibrary = require(ServerStorage.Modules.Libraries.Damage)
+local AgentsLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local WorldCamera = workspace:WaitForChild('Camera')
 
 --
@@ -182,6 +182,24 @@ function ServerAbilityClass:Hit(Agent: AgentTypes.ServerAgentClass, Enemy: Types
 		Damage = Dealt_Damage,
 		Burst = Affliction_Triggered,
 	})
+end
+
+function ServerAbilityClass.ForOtherAgents(self: Types.ServerAbilityClass, Agent: AgentTypes.ServerAgentClass, Callback: (Agent: AgentTypes.ServerAgentClass, Data: {any}) -> ())
+	local Player = Agent.__Player_Assigned
+	local RepId = Player:GetAttribute("ReplicationId") :: number
+	local AgentsTotal = AgentsLibrary:GetAll(RepId)
+	local _, CurId = AgentsLibrary:GetCurrentActive(RepId)
+
+	local Next = CurId + 1
+	if Next > 3 then Next = 1 end
+
+	for id, OtherAgent in AgentsTotal do
+		local AgentData = {
+			IsNext = id == Next,
+		}
+
+		task.spawn(Callback, OtherAgent, AgentData);
+	end
 end
 
 

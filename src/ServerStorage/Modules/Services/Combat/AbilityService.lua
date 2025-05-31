@@ -52,9 +52,9 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, AgentToS
 	Replicator:PromptAssist(Player, AgentToSwitch, Time, 1)
 
 	Prompt.Accepted:Once(function()
-		Service:PlaySkill(Player, GameEnum.Skills.Quick_Assist, 1, 1)
-
 		CasterAgent:MarkTarget(nil)
+
+		Service:PlaySkill(Player, GameEnum.Skills.Quick_Assist, 1, 1)
 	end)
 end
 

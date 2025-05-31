@@ -19,7 +19,14 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
         end},
 
         {0.2, function()
-
+            Ability:ForOtherAgents(Caster, function(Agent, Data)
+                if Data.IsNext then
+                    print(Data.IsNext, Agent.Name)
+                    for _, Buff in Ability:FromData('AssistBuff') do
+                        Agent:AddEffect(Buff)
+                    end
+                end
+            end)
         end},
     })
 end

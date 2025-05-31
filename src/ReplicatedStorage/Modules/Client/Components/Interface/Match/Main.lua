@@ -186,7 +186,7 @@ function Component:Init()
 	InterfaceStates.EffectAdded:Connect(function(AgentId: number, EffectObj)
 		local Agent, ActiveAgentId = CharacterLibrary:GetCurrent(ReplicationId())
 
-		print(AgentId, ActiveAgentId)
+		--print(AgentId, ActiveAgentId)
 		if AgentId == ActiveAgentId and Agent then
 			AddEffectIcon(Agent.Name, EffectObj)
 		end

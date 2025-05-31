@@ -341,6 +341,7 @@ export type ServerAbilityClass = {
 	Play: (self: ServerAbilityClass, Agent: GenericClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
 	Begin: (self: ServerAbilityClass, Agent: GenericClass, SequenceFrames: SequenceFrames) -> (),
 
+	ForOtherAgents: (self: ServerAbilityClass, Agent: GenericClass, Callback: (Agent: GenericClass, Data: {IsNext: boolean}) -> ()) -> (),
 	Hit: (self: ServerAbilityClass, Agent: GenericClass, Enemy: ServerEnemyClass, Hit: HitEnemyData) -> (number),
 
 	FromData: (self: ServerAbilityClass, Key: AbilityDataKey) -> (any),
