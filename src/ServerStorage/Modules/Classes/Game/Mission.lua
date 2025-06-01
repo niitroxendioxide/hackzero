@@ -119,9 +119,10 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
         self:BeginEvent(Next_Stage, Players)
     end)
 
+    self.__Current_Events[Event] = EventObject
+
     EventObject:Start()
 
-    self.__Current_Events[Event] = EventObject
 end
 
 function MissionClass.DetectAreaTriggers(self: Types.MissionClass)

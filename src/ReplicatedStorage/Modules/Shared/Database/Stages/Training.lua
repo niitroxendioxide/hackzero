@@ -36,7 +36,21 @@ return {
                         return "End"
                     end
                 },
-            }
+
+                CutsceneTest = {
+                    Cutscene = "TrainingAreaTest",
+                    Objective = "Cutscene test!",
+                    Global = true,
+                    Goal = {},
+                    Enemies = {
+                        [1] = {"Immortal", 1},
+                    },
+
+                    Finished = function()
+                        return "Begin"
+                    end
+                }
+            },
         }
     }
 } :: Types.Stage

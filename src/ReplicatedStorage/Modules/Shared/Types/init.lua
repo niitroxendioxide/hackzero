@@ -796,6 +796,11 @@ export type Goal = {
 export type EventHandlerState = {Dead: boolean, [string | Stage_Objective]: any}
 export type Action = "KickPlayer"
 export type Stage_Key_Event = {
+
+	--[[
+		Key/Name to a cutscene that plays as soon as a player reaches this area
+	]]
+	Cutscene: string?,
 	Actions: {
 		[Action]: string,
 	},
@@ -916,6 +921,7 @@ export type EventClass = {
 
 	HasGoal: (self: EventClass, Type: Stage_Objective) -> (boolean),
 	IsFinished: (self: EventClass) -> (),
+	GetPlayerObjects: (self: EventClass) -> ({Player}),
 
 	--[[
 		Update the progress in teh current mission

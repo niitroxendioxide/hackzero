@@ -143,11 +143,16 @@ return {
 		UpdateDrive = 4,
 		GetCurrencies = 5,
 	},
-	
+
 	ShareDataEvent = {
 		MatchArtifacts = 1,
 		MatchDrives = 2,
 		MatchAgents = 3,
+	},
+
+	CutsceneStatus = {
+		Received = 1,
+		Finished = 2,
 	},
 
 	AgentEvent = {

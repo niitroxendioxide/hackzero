@@ -43,10 +43,9 @@ task.spawn(function()
 end)
 
 --
-local Child = require(ReplicatedStorage.Modules.Client.Libraries.Fusion.Instances.Child)
 local Framework = require(ReplicatedStorage.Modules.Framework)
 local World = workspace:WaitForChild('World');
 
-Framework:Init(ReplicatedStorage.Modules.Shared.Database, {Modules.Services, true})
+Framework:Init(ReplicatedStorage.Modules.Shared.Database, ServerStorage.Modules.Libraries, {Modules.Services, true})
 
 World.Effects:ClearAllChildren()

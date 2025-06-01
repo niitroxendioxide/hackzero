@@ -17,13 +17,12 @@ function Movesets:Init()
 	for _, Moveset in MovesetFolder:GetDescendants() do
 		if Moveset:IsA('ModuleScript') and Moveset.Parent:IsA('Folder') then
 			local Success, Required = pcall(require, Moveset)
-		
+
 			if Success then
 				Movesets.__Cache[Moveset.Name] = Required
 			end
 		end
 	end
-		
 end
 
 function Movesets:Get(Name: string, default): Types.MovesetClass

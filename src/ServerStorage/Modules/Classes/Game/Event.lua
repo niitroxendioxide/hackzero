@@ -1,4 +1,5 @@
 --
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -12,6 +13,7 @@ local Signal = require(Shared.Utility.Signal)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local EnemyService = require(Modules.Services.Combat.EnemyService)
+local CutscenesLibrary = require(Modules.Libraries.Cutscenes)
 
 --
 local EventClass = {}
@@ -49,12 +51,25 @@ function EventClass.Start(self: Types.EventClass)
     end)
 
     --
-    --print("Started event:", self.__Event)
+    if EventData.Cutscene then
+        local PlayersToUse = self:GetPlayerObjects()
+        local OneLoaded = CutscenesLibrary:AttemptGroup(PlayersToUse, EventData.Cutscene)
 
+        OneLoaded:Wait()
+    end
+
+    local TotalGoals = 0;
     for Goal, Value in EventData.Goal do
         local Default = typeof(Value) == "number" and 0 or ''
 
+        TotalGoals += 1;
         self.__Current_State[Goal] = Default;
+    end
+
+    if TotalGoals <= 0 then
+        self:Destroy()
+
+        return
     end
 
     self.__Current_Goals = EventData.Goal
@@ -180,6 +195,14 @@ function EventClass.AddPlayer(self: Types.EventClass, Player: Types.StagePlayer)
     Network:Fire("Match", Player:GetBase(), GameEnum.MatchEvents.BeginEvent, self.__Event)
 
     table.insert(self.__Players, Player)
+end
+
+function EventClass.GetPlayerObjects(self: Types.EventClass): {Player}
+    local List = {}
+    for _, Player in self.__Players do
+        table.insert(List, Player:GetBase())
+    end
+    return List
 end
 
 function EventClass.GetCorrectedState(self: Types.EventClass)

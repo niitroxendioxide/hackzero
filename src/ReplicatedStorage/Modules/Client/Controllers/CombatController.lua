@@ -5,9 +5,11 @@ local Players = game:GetService('Players')
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local GameEnum = require(Shared.GameEnum)
 local Inputs = require(Client.Libraries.Inputs)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
+local CutsceneLibrary = require(Client.Libraries.Cutscenes)
 local Places = require(Shared.Places)
 local Network = require(Shared.Network)
 local InterfaceController = require(Client.Controllers.InterfaceController)
@@ -29,6 +31,11 @@ function Controller:Init()
 	Movesets:Init()
 
 	--
+	Network:On("Cutscene", function(Type: number, CutscenName: string)
+		if Type == GameEnum.CutsceneStatus.Received then
+			CutsceneLibrary:Start(CutscenName)
+		end
+	end)
 
 	--
 	for _, Key in Controller.__Abilities do
@@ -40,6 +47,11 @@ function Controller:Init()
 		})
 	end
 end
+
+function Controller:RequestCutscene()
+	
+end
+
 
 function Controller:SetCombatState(State: boolean, Key: number?)
 	Controller.__State = State

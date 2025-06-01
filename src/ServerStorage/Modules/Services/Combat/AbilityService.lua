@@ -21,7 +21,7 @@ local Service = {
 }
 
 function Service:Init()
-	MovesetLibrary:Init()
+	--MovesetLibrary:Init()
 
 	Network.new("Ability", "Event")
 	Network:On('Ability', Service.ReplicateEvent)
