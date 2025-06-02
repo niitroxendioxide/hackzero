@@ -48,6 +48,14 @@ function ServerEnemy.new(At: Vector3, Name: string, Level: number)
 	return self
 end
 
+function ServerEnemy:GetStat(Stat: string)
+	if Stat == 'Speed' then
+		return 1
+	end
+
+	return self.__Status:GetStat(Stat)
+end
+
 function ServerEnemy:GetEnergy(): number
 	return 0
 end
@@ -71,24 +79,58 @@ function ServerEnemy:EnterDazedState()
 end
 
 function ServerEnemy:Attack()
-	local Moveset_Skills = EnemyDatabase:GetAbilities(self.Name)
-	local Moveset = MovesetLibrary:Get(self.Name, true)
-	local Next = Moveset_Skills[math.random(1, #Moveset_Skills)]
+	local MovesetData = EnemyDatabase:GetMovesetData(self.__Name)
+	local Target = self:GetTarget()
 
-	if not Moveset:Verify(self, self.__Next_Attack) then
-		self.__Next_Attack = Next
-
-		Next = Moveset_Skills[math.random(1, #Moveset_Skills)]
+	if not Target then
+		return
 	end
 
-	local Split = string.split(self.__Next_Attack, ' ')
-	local Number = tonumber(Split[2], 10)
+	local Ranges = {}
+	for SkillName, Skill in MovesetData do
+		if Skill.Base and Skill.Base.Range then
+			Ranges[SkillName] = Skill.Base.Range
+		end
+	end
 
-	local TargetSuccess = Moveset:Begin(self.__Next_Attack, self)
-	Replicator:EnemyUseSkill(self.__EnemyId, Number, 'Begin')
+	local DistanceToTarget = (Target:GetPivot().Position - self:GetPivot().Position).Magnitude
+	local SkillPool = {}
 
-	-- skip
-	self.__Next_Attack = Next
+	for SkillName, SkillRange in Ranges do
+		if SkillRange >= DistanceToTarget then
+			-- check if skill is  ready
+			table.insert(SkillPool, {
+				Name = SkillName,
+				Weight = (DistanceToTarget - SkillRange)
+			})
+		end
+	end
+
+	local SkillToUse = SkillPool[1]
+	if #SkillPool > 1 then
+		for _, SkillObject in SkillPool do
+			if SkillObject.Weight > SkillToUse.Weight then
+				SkillToUse = SkillObject
+			end
+		end
+	end
+
+	print("To use:", SkillToUse.Name)
+	--print('Pool:', SkillPool, ' Ranges:', Ranges, ' Data:', MovesetData)
+
+	if SkillToUse ~= nil then
+		local Moveset = MovesetLibrary:Get(self.__Name, true)
+		if not Moveset:Verify(self, SkillToUse.Name) then
+			return
+		end
+
+		Moveset:Begin(SkillToUse.Name, self)
+
+		local SplitSkillId = string.split(SkillToUse.Name, ' ')
+		local ReplicationSkillId = tonumber(SplitSkillId[2], 10)
+
+		Replicator:EnemyUseSkill(self.__EnemyId, ReplicationSkillId, 'Begin')
+	end
 end
 
 function ServerEnemy:Init(Key: number)
@@ -119,7 +161,7 @@ function ServerEnemy:Init(Key: number)
 			Replicator:PivotEnemy(self.__EnemyId, self:GetPivot())
 		end
 
-		if os.clock() - NextAttack >= 994.5 then
+		if os.clock() - NextAttack >= 1 then
 			NextAttack = os.clock()
 			self:Attack()
 		end
@@ -167,32 +209,36 @@ end
 
 function ServerEnemy:PivotTo(Pivot: CFrame)
 	self.__Snapfix = os.clock()
-	
+
 	Replicator:PivotEnemy(self.__EnemyId, Pivot)
 	self.__Movement:PivotTo(Pivot)
 end
 
 function ServerEnemy:Knockback(Dir: Vector3, Pow: number, Time: number)
 	local Velocity = self:GetPivot():VectorToWorldSpace(Dir) * Pow
-	
+
 	return self.__Movement:Knockback(Velocity, Time)
+end
+
+function ServerEnemy:GetTarget()
+	return self.__Current_Target
 end
 
 function ServerEnemy:Move(Direction: Vector3)
 	if self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5 and Direction.Z < 0 then
 		return
 	end
-	
+
 	if self.__Status:IsKnocked() then
 		return
 	end
-	
+
 	--
 	self.__Movement:Move(Direction)
 	self.__LastMovement = os.clock()
 
 	self.__Next = Rng:NextNumber(0.5, 3.5)
-	
+
 	Replicator:MoveEnemy(self.__EnemyId, Direction)
 end
 
@@ -203,7 +249,7 @@ function ServerEnemy:TrackCurrentTarget()
 	local At = CurrentTarget:GetPivot().Position
 
 	At = At + (CurrentTarget:GetTotalVelocity() * 1/15)
-	
+
 	--
 	self:Rotate(At)
 end
@@ -211,7 +257,7 @@ end
 function ServerEnemy:FindRandomAggro()
 	local Agents = AgentsLibrary:GetActiveAgents()
 	local At = self.__Movement.__Position
-	local MaxDistance = math.huge
+	local MaxDistance = 70 --math.huge
 	local Chosen: AgentTypes.ServerAgentClass = nil
 
 	for _, Agent in Agents do

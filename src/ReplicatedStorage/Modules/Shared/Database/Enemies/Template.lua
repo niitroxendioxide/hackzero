@@ -34,7 +34,7 @@ return {
 	Moveset_Data = {
 		['Skill 1'] = {
 			Base = {
-				Cooldown = 400,
+				Cooldown = 4,
 
 				Speed = 1,
 				Animation_Speed = 1,

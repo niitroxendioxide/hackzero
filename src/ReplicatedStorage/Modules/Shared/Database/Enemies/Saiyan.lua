@@ -12,16 +12,15 @@ return {
 		Defense = 72,
 		Daze = 662,
 		Daze_Length = 10,
-		
+
 		Weakness = {'Energy'},
 		Strength = {'Physical'},
-		
-		
+
 		--
 		Daze_Multiplier = 200,
 		Daze_Resistance = 27,
 		Resistance = 25,
-		
+
 		Movement_Speed = 10,
 	},
 
@@ -30,11 +29,11 @@ return {
 		Health = 1720,
 		Defense = 16,
 	},
-	
+
 	Moveset_Data = {
 		['Skill 1'] = {
 			Base = {
-				Cooldown = 4,
+				Cooldown = 5,
 
 				Speed = 1,
 				Animation_Speed = 1,
@@ -42,7 +41,28 @@ return {
 
 				Agent_Stun_Time = 0.3,
 				Damage_Mult = 220,
-				
+
+				Range = 60,
+				Attack_Warning = 0.25,
+			},
+
+			Upgrades = {
+				Damage_Mult = 7.5,
+			}
+		},
+
+		['Skill 2'] = {
+			Base = {
+				Cooldown = 3,
+
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.66,
+
+				Agent_Stun_Time = 0.3,
+				Damage_Mult = 220,
+
+				Range = 6,
 				Attack_Warning = 0.25,
 			},
 

@@ -47,7 +47,11 @@ function EnemyData:GetAbilities(Character: string)
 	return Total
 end
 
-function EnemyData:GetMovesetData(Enemy: string): Types.CharacterStats
+type EnemyMoveset = {
+	[string]: Types.AbilityInfo,
+}
+
+function EnemyData:GetMovesetData(Enemy: string): EnemyMoveset
 	local AccessedData = EnemyData:GetEnemyData(Enemy)
 
 	return AccessedData.Moveset_Data
