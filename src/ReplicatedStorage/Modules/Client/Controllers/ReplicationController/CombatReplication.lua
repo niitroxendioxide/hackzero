@@ -5,6 +5,7 @@ local Players = game:GetService('Players')
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
@@ -100,7 +101,7 @@ function Controller:DazeEnemy(Buffer: buffer)
 	if EnemyObject == nil then
 		return
 	end
-	
+
 	EnemyObject:TakeDaze(Amount)
 end
 
@@ -108,34 +109,48 @@ function Controller:DamageAgent(Buffer: buffer)
 	local Agent = buffer.readu8(Buffer, 1)
 	local PlayerId = buffer.readu8(Buffer, 2)
 	local Damage = buffer.readf32(Buffer, 3)
-	
-	local ActiveAgent = Characters:GetCharacters(PlayerId)[Agent]
-	
+
+	local ActiveAgent = Characters:GetAgent(PlayerId, Agent)
+
 	ActiveAgent:TakeDamage(Damage)
-	
-	if ActiveAgent == Characters:GetCurrent(PlayerId) and PlayerId == Players.LocalPlayer:GetAttribute("ReplicationId") then
-		local Health = ActiveAgent:GetHealth()
-		
-		InterfaceStates.Health:set(Health)
+
+	if PlayerId == Players.LocalPlayer:GetAttribute("ReplicationId") then
+		local Health, Max = ActiveAgent:GetHealth()
+
+		InterfaceStates.Health[Agent]:set(Health / Max)
 	end
-	
+
 	--
 	Effects:Play('Indicator', ActiveAgent, {Affliction = 'Enemy', Crit = false, Number = math.floor(Damage)})
+
+	return ActiveAgent
 end
 
+
+function Controller:KillAgent(Buffer: buffer)
+	local _PlayerId = buffer.readu8(Buffer, 2)
+	local GivenAgent = Controller:DamageAgent(Buffer)
+
+	local Object = Animation:GetAnim("Characters.Dying")
+
+	if Object then
+		Animation:Play(GivenAgent:GetModel(), Object, 0)
+		GivenAgent:Kill();
+	end
+end
 
 function Controller:Knockback(Buffer: buffer)
 	local EnemyId = buffer.readu8(Buffer, 1)
 	local Direction = GameEnum.KeyLookup(GameEnum.Knockback_Directions, buffer.readu8(Buffer, 2))
 	local Strength = buffer.readu8(Buffer, 3)
 	local Time = buffer.readu8(Buffer, 4) / 10
-	
+
 	local EnemyObject = Enemies:GetEnemy(EnemyId)
-	
+
 	if not EnemyObject then
 		return
 	end
-	
+
 	EnemyObject:Knockback(Direction, Strength, Time)
 end
 

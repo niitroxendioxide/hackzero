@@ -86,6 +86,8 @@ function ServerEnemy:Attack()
 		return
 	end
 
+	local Moveset = MovesetLibrary:Get(self.__Name, true)
+
 	local Ranges = {}
 	for SkillName, Skill in MovesetData do
 		if Skill.Base and Skill.Base.Range then
@@ -98,7 +100,10 @@ function ServerEnemy:Attack()
 
 	for SkillName, SkillRange in Ranges do
 		if SkillRange >= DistanceToTarget then
-			-- check if skill is  ready
+			if not Moveset:Verify(self, SkillName) then
+				return
+			end
+
 			table.insert(SkillPool, {
 				Name = SkillName,
 				Weight = (DistanceToTarget - SkillRange)
@@ -115,15 +120,7 @@ function ServerEnemy:Attack()
 		end
 	end
 
-	print("To use:", SkillToUse.Name)
-	--print('Pool:', SkillPool, ' Ranges:', Ranges, ' Data:', MovesetData)
-
 	if SkillToUse ~= nil then
-		local Moveset = MovesetLibrary:Get(self.__Name, true)
-		if not Moveset:Verify(self, SkillToUse.Name) then
-			return
-		end
-
 		Moveset:Begin(SkillToUse.Name, self)
 
 		local SplitSkillId = string.split(SkillToUse.Name, ' ')

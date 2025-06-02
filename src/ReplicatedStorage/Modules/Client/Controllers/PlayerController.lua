@@ -25,6 +25,7 @@ local GameEnum = require(Shared.GameEnum)
 local Places = require(Shared.Places)
 local UIGroups = require(Client.Libraries.UIGroups)
 local NavStates = require(Client.States.Navigation)
+local SwapPackage = require(Client.Components.Movesets.Swap)
 
 --
 local INPUT_DIRECTIONS = {
@@ -107,12 +108,22 @@ function Controller:Init(): ()
 			CameraLibrary:ChangePartTrackingType(1)
 		end
 
-		if (Direction.Magnitude > 0 and not CutscenesLibrary:IsInCutscene()) then
-			CurrentCharacter:Look(Direction.Unit)
-			CurrentCharacter:Move()
+		if CurrentCharacter:IsAlive() then
+			if (Direction.Magnitude > 0 and not CutscenesLibrary:IsInCutscene()) then
+				CurrentCharacter:Look(Direction.Unit)
+				CurrentCharacter:Move()
+			else
+				CurrentCharacter:Stop()
+			end
+
+			CurrentCharacter.__Swapped = false
 		else
-			CurrentCharacter:Stop()
+			if not(CurrentCharacter.__Locked) and not CurrentCharacter.__Swapped then
+				CurrentCharacter.__Swapped = true
+				SwapPackage:Play(CurrentCharacter, 'Swap Forth', 'Begin')
+			end
 		end
+
 		debug.profileend()
 
 		CameraLibrary:SetSubject(CurrentCharacter:GetModel())

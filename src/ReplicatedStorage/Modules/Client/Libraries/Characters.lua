@@ -57,6 +57,23 @@ function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: num
 		Data.Active += Direction
 	end
 
+	local Count = 0
+	while not Data.List[Data.Active]:IsAlive() do
+		if Count > 3 then
+
+			return false
+		end
+
+		Data.Active += 1
+		if Data.Active > #Data.List then
+			Data.Active = 1
+		elseif Data.Active < 1 then
+			Data.Active = #Data.List
+		end
+
+		Count += 1
+	end
+
 	Data.Last_Anim = Data.Last_Anim == 1 and 2 or 1
 
 	if Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
@@ -68,6 +85,10 @@ function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: num
 
 
 	local NewCharacter = Characters:GetCurrent(UserId)
+	if CurrentCharacter == NewCharacter then
+		return false
+	end
+
 	local Animator = NewCharacter:GetAnimator()
 	NewCharacter:PivotTo(NewCFrame, not IsLocal)
 	Animator:Play('Dash'..(Data.Last_Anim == 2 and 'Right' or 'Left'), {Name = 'Dash', Speed = 1.25})
@@ -76,6 +97,7 @@ function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: num
 	local Force = TargetObject and 30 or 75
 	NewCharacter:ApplyImpulse(NewCFrame.LookVector * Force)
 
+	return true
 end
 
 function Characters:Add(UserId: number, Character: AgentTypes.AgentClass)

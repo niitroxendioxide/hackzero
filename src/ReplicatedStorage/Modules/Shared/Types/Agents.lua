@@ -56,6 +56,7 @@ export type AgentClass =  {
 	__Player_Assigned: Player,
 	__Items: AgentItemsClass,
 	__Gear: ClientGearManager,
+	__Locked: boolean,
 	GetId: (self: AgentClass) -> (number),
 
 	Init: (self: AgentClass) -> (),
@@ -63,10 +64,12 @@ export type AgentClass =  {
 	Stop: (self: AgentClass) -> (),
 	Look: (self: AgentClass, Direction: Vector3, Instant: boolean?, Bypass: boolean?) -> (),
 
+	CanSwitch: (self: AgentClass) -> (boolean),
 	GetPivot: (self: AgentClass) -> CFrame,
 	GetModel: (self: AgentClass) -> Rig,
 	PivotTo: (self: AgentClass) -> CFrame,
 	IsMoving: (self: AgentClass) -> boolean,
+	IsAlive: (self: AgentClass) -> boolean,
 
 	--[[
 		Walk forward for the specified time
@@ -121,6 +124,7 @@ export type AgentStatusClass = {
 	__Health: number,
 	__Max_Health: number,
 	__Base_Stats: CharacterStats,
+	__Alive: boolean,
 	__Total_Effects: Heap,
 
 	__Artifact_Set: {},
@@ -130,7 +134,8 @@ export type AgentStatusClass = {
 	GetStat: (self: AgentStatusClass, Name: Stat) -> (number),
 	Update: (self: AgentStatusClass, delta: number) -> (),
 
-
+	IsAlive: (self: AgentStatusClass) -> (boolean),
+	Revive: (self: AgentStatusClass) -> (),
 	Damage: (self: AgentStatusClass, Amount: number) -> (),
 	Heal: (self: AgentStatusClass, Amount: number) -> (),
 	GetHealth: (self: AgentStatusClass) -> (number, number),
@@ -249,6 +254,7 @@ export type ServerAgentClass = {
 
 	GetPivot: (self: ServerAgentClass) -> CFrame,
 	PivotTo: (self: ServerAgentClass, Pivot: CFrame) -> (),
+	IsAlive: (self: ServerAgentClass) -> boolean,
 
 	AddGear: (self: ServerAgentClass, GearName: string) -> (),
 	RemoveGear: (self: ServerAgentClass, GearName: string) -> (),

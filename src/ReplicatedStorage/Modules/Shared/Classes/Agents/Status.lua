@@ -3,7 +3,6 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Heap = require(Shared.Utility.Heap)
-local BaseTypes = require(Shared.Types)
 local Types = require(Shared.Types.Agents)
 
 --
@@ -20,6 +19,7 @@ function StatusClass.new(Base: Types.CharacterStats): Types.AgentStatusClass
 	self.__Total_Effects = Heap.new(128)
 	self.__Ultimate = 0
 	self.__Energy = 0
+	self.__Alive = true
 	self.__Health = self:GetStat('Health')
 	self.__Max_Health = self:GetStat('Health')
 
@@ -51,7 +51,7 @@ end
 
 
 -- # Health
-function StatusClass.GetHealth(self: Types.AgentStatusClass)
+function StatusClass.GetHealth(self: Types.AgentStatusClass): (number, number)
 	return self.__Health, self.__Max_Health
 end
 
@@ -63,12 +63,28 @@ function StatusClass.Damage(self: Types.AgentStatusClass, Amount: number)
 	assert(typeof(Amount) == 'number' and Amount >= 0, 'Cannot take negative damage')
 
 	self.__Health = math.clamp(self.__Health - Amount, 0, self.__Max_Health)
+
+	if self.__Health <= 0 then
+		self.__Alive = false
+	end
 end
 
 function StatusClass.Heal(self: Types.AgentStatusClass, Amount: number)
 	assert(typeof(Amount) == 'number' and Amount >= 0, 'Cannot heal negative health')
 
+	if not self.__Alive then
+		return
+	end
+
 	self.__Health = math.clamp(self.__Health + Amount, 0, self.__Max_Health)
+end
+
+function StatusClass.Revive(self: Types.AgentStatusClass)
+	self.__Alive = true
+end
+
+function StatusClass.IsAlive(self: Types.AgentStatusClass)
+	return self.__Alive and self.__Health > 0
 end
 
 -- # Energy

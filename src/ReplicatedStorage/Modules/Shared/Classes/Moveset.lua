@@ -9,7 +9,6 @@ local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Cooldown = require(Shared.Utility.Cooldown)
 local GameEnum = require(Shared.GameEnum)
---local SwapPackage = require(Client.Packages.Swap)
 
 --
 local MovesetClass = {} :: {[string]: (self: Types.MovesetClass, any) -> any, new: () -> Types.MovesetClass}
@@ -149,8 +148,13 @@ end
 
 function MovesetClass:Verify(Agent: AgentTypes.AgentClass, Type: string)
 	local Info = self:GetInfoForSkill(Type)
+	local CooldownKey = self.Name..Type..Agent.Name..Agent:GetId()
 
 	if Agent:GetState() ~= 'Idle' and not(Info.AllowedStates and Info.AllowedStates[Agent:GetState()]) then
+		return false
+	end
+
+	if Cooldown:IsOn(CooldownKey) then
 		return false
 	end
 

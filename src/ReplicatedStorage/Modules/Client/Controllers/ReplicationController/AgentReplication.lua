@@ -22,6 +22,8 @@ local function GetPlayerById(Id: number)
 			return Player
 		end
 	end
+
+	return;
 end
 
 --

@@ -137,7 +137,13 @@ function ServerAgentClass:IsMoving()
 	return self.__Character:IsMoving()
 end
 
-function ServerAgentClass:Move()
+function ServerAgentClass.Move(self: Types.ServerAgentClass)
+	if not self.__Status:IsAlive() then
+		self.__Character:Stop()
+
+		return
+	end
+
 	return self.__Character:Move()
 end
 
@@ -146,6 +152,10 @@ function ServerAgentClass:Stop()
 end
 
 function ServerAgentClass:Rotate(...)
+	if not self.__Status:IsAlive() then
+		return
+	end
+
 	return self.__Character:Rotate(...)
 end
 
@@ -244,9 +254,19 @@ end
 
 -- # Interacting
 function ServerAgentClass:TakeDamage(Amount: number)
-	Replicator:DamageAgent(self, Amount)
+	self.__Status:Damage(Amount)
 
-	return self.__Status:Damage(Amount)
+	if not self.__Status:IsAlive() then
+		Replicator:KillAgent(self, Amount);
+	else
+		Replicator:DamageAgent(self, Amount)
+	end
+
+	return
+end
+
+function ServerAgentClass:IsAlive()
+	return self.__Status:IsAlive()
 end
 
 function ServerAgentClass:Heal(...)

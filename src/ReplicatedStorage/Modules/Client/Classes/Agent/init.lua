@@ -70,6 +70,10 @@ function AgentClass:AddTrackToState(...)
 end
 
 function AgentClass:Move()
+	if not self.__Status:IsAlive() then
+		return self:Stop()
+	end
+
 	return self.__Character:Move()
 end
 
@@ -79,6 +83,27 @@ end
 
 function AgentClass:GetEnergy()
 	return self.__Status:GetEnergy()
+end
+
+function AgentClass:Kill()
+	self.__Status.__Alive = false
+	self.__Locked = true
+
+	task.delay(1, function()
+		self.__Locked = false
+	end)
+end
+
+function AgentClass:CanSwitch(): boolean
+	return not self.__Locked;
+end
+
+function AgentClass:IsAlive(): boolean
+	return self.__Status:IsAlive()
+end
+
+function AgentClass:Revive()
+	self.__Status:Revive()
 end
 
 function AgentClass:SetEnergy(Amount: number)
@@ -242,7 +267,7 @@ function AgentClass:AddTag(Tag: string, Time: number)
 	if self.__Tags[Tag] then
 		task.cancel(self.__Tags[Tag])
 	end
-	
+
 	self.__Tags[Tag] = task.delay(Time or 5e12, function()
 		self.__Tags[Tag] = nil
 	end)

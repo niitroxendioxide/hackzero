@@ -60,7 +60,11 @@ function Component:Init()
 		Scope:Spring(InterfaceStates.Energy[2], 15, .8),
 		Scope:Spring(InterfaceStates.Energy[3], 15, .8),
 	}
-	local HealthSpring = Scope:Spring(InterfaceStates.Health, 30, .8)
+	local HealthSprings = {
+		Scope:Spring(InterfaceStates.Health[1], 30, .8),
+		Scope:Spring(InterfaceStates.Health[2], 30, .8),
+		Scope:Spring(InterfaceStates.Health[3], 30, .8),
+	}
 	local ColorSpring = Scope:Spring(Color, 25, .8)
 
 	--
@@ -153,10 +157,6 @@ function Component:Init()
 		end
 
 		--
-		local Health, Max_Health = (CurrentActiveCharacter :: AgentTypes.AgentClass):GetHealth()
-		InterfaceStates.Health:set(Health)
-		InterfaceStates.Max_Health:set(Max_Health)
-
 		Info.CharacterName.Text = (CurrentActiveCharacter :: AgentTypes.AgentClass).Name
 
 		for _, Item in Icons:GetChildren() do
@@ -208,15 +208,16 @@ function Component:Init()
 
 	--
 	table.insert(Scope, RunService.Heartbeat:Connect(function(_: number)
-		local _, CurrentId = CharacterLibrary:GetCurrent(ReplicationId())
+		local CurrentAgent, CurrentId = CharacterLibrary:GetCurrent(ReplicationId())
 		local CurrentEnergySpring = EnergySprings[CurrentId :: number]
 
-		if not CurrentEnergySpring then
+		if not CurrentEnergySpring or not CurrentAgent or not CurrentId then
 			return;
 		end
 
+		local HealthValue, Max_Health = CurrentAgent:GetHealth()
 		local EnergySize = math.clamp(peek(CurrentEnergySpring) / 100, 0, 1)
-		local HealthSize = math.clamp(peek(HealthSpring) / peek(InterfaceStates.Max_Health), 0, 1)
+		local HealthSize = math.clamp(peek(HealthSprings[CurrentId]), 0, 1)
 
 		--
 		if peek(CurrentEnergySpring) > GetEnergyNeededById(CurrentId :: number) then
@@ -226,7 +227,7 @@ function Component:Init()
 		end
 
 		Info.EnergyPercent.Text = math.floor(peek(InterfaceStates.Energy[CurrentId])).."%"
-		Info.HealthCount.Text = math.floor(peek(InterfaceStates.Health)).."/"..math.floor(peek(InterfaceStates.Max_Health))
+		Info.HealthCount.Text = `{HealthValue} / {Max_Health}`
 
 		local EnergyMain = Meters.Energy.Main
 		local HealthMain = Meters.Health.Main
@@ -240,13 +241,22 @@ function Component:Init()
 			local Spring_Value = Icon_Springs[Index]
 			local Icon_Object = Icons[tostring(Index)]
 			local Energy_Size = peek(InterfaceStates.Energy[Index])
+			local Health_Size = peek(HealthSprings[Index])
 			local Icon_Scale = peek(Icon_Springs[Index + 3])
+			local Light = Color3.fromRGB(330, 330, 330)
+
+			if Health_Size <= 0 then
+				Energy_Size = 0
+				Light = Color3.new()
+			end
 
 
 			--
 			local TransparencyMod = (Icon_Scale - 0.6) / 0.4
 
+			Icon_Object.Main.LightColor = Light;
 			Icon_Object.Info.GroupTransparency = TransparencyMod
+			Icon_Object.Info.Meters.Health.Fill.Size = UDim2.fromScale(Health_Size, 1)
 			Icon_Object.Info.Meters.Energy.Fill.Size = UDim2.fromScale(Energy_Size / 100, 1)
 			Icon_Object.Info.Meters.Energy.Fill.BackgroundColor3 = (Energy_Size >= GetEnergyNeededById(Index)) and FULL_COLOR or NOT_COLOR
 			Icon_Object.IconScale.Scale = Icon_Scale

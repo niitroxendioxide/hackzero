@@ -336,14 +336,27 @@ function Replicator:Knockback(Enemy: Types.ServerEnemyClass, Direction: Vector3,
 end
 
 function Replicator:DamageAgent(Agent: AgentTypes.ServerAgentClass, Damage: number)
-	local UserId = Agent.__User
-	local AgentIndex = table.find(Agents:GetAll(UserId), Agent)
+	local RepId = Agent.__Player_Assigned:GetAttribute("ReplicationId")
+	local AgentIndex = table.find(Agents:GetAll(RepId), Agent)
 
-	local Object = buffer.create(10)
+	local Object = buffer.create(7)
 	buffer.writeu8(Object, 0, GameEnum.Replication.DamageAgent)
 	buffer.writeu8(Object, 1, AgentIndex)
-	buffer.writei32(Object, 2, UserId)
-	buffer.writef32(Object, 6, Damage)
+	buffer.writeu8(Object, 2, RepId)
+	buffer.writef32(Object, 3, Damage)
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:KillAgent(Agent: AgentTypes.ServerAgentClass, Damage: number)
+	local RepId = Agent.__Player_Assigned:GetAttribute("ReplicationId")
+	local AgentIndex = table.find(Agents:GetAll(RepId), Agent)
+
+	local Object = buffer.create(7)
+	buffer.writeu8(Object, 0, GameEnum.Replication.KillAgent)
+	buffer.writeu8(Object, 1, AgentIndex)
+	buffer.writeu8(Object, 2, RepId)
+	buffer.writef32(Object, 3, Damage)
 
 	Network:FireForAll('Replicate', Object)
 end

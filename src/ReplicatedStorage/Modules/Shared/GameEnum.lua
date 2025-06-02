@@ -17,6 +17,7 @@ return {
 		RemoveEffect = 17,
 		AddGear = 18,
 		RemoveGear = 19,
+		KillAgent = 20,
 
 		-- Enemy
 		AddEnemy = 26,

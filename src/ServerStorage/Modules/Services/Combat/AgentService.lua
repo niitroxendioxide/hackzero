@@ -196,6 +196,24 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 		Data.Active = #Data.Characters
 	end
 
+	local Count = 0
+	while not Data.Characters[Data.Active]:IsAlive() do
+		if Count > 3 then
+			warn("Handle player loss here.")
+
+			return
+		end
+
+		Data.Active += 1
+		if Data.Active > #Data.Characters then
+			Data.Active = 1
+		elseif Data.Active < 1 then
+			Data.Active = #Data.Characters
+		end
+
+		Count += 1
+	end
+
 	for _, Character in Service:GetCharacters(Player) do
 		Character:SetActive(false)
 	end

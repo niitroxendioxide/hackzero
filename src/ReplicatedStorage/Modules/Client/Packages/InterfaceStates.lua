@@ -14,6 +14,7 @@ local module = {
 		[2] = Fusion.Value(Scope, 0),
 		[3] = Fusion.Value(Scope, 0),
 	},
+
 	UltBar = {
 		[1] = Fusion.Value(Scope, 0),
 		[2] = Fusion.Value(Scope, 0),
@@ -23,8 +24,11 @@ local module = {
 	EffectAdded = Signal.new(),
 	EffectRemoved = Signal.new(),
 
-	Health = Fusion.Value(Scope, 100),
-	Max_Health = Fusion.Value(Scope, 100),
+	Health = {
+		[1] = Fusion.Value(Scope, 1),
+		[2] = Fusion.Value(Scope, 1),
+		[3] = Fusion.Value(Scope, 1)
+	},
 	Characters = Fusion.Value(Scope, {})
 }
 

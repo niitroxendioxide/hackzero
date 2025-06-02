@@ -53,17 +53,17 @@ return {
 
 		['Skill 2'] = {
 			Base = {
-				Cooldown = 3,
+				Cooldown = 1.25,
 
 				Speed = 1,
 				Animation_Speed = 1,
-				Attack_State_Time = 0.66,
+				Attack_State_Time = 0.817,
 
-				Agent_Stun_Time = 0.3,
+				Agent_Stun_Time = 0.45,
 				Damage_Mult = 220,
 
 				Range = 6,
-				Attack_Warning = 0.25,
+				Attack_Warning = 0.15,
 			},
 
 			Upgrades = {

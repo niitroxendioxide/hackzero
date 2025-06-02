@@ -21,7 +21,7 @@ function Hitbox:ForAgentsInZone(Size: Vector3, At: CFrame, fn: (Agent: Types.Ser
 	for _, Part in PartsInZone do
 		local Agent = Hitboxes[Part]
 
-		if Agent then
+		if Agent and Agent:IsAlive() then
 			task.spawn(fn, Agent)
 		end
 	end

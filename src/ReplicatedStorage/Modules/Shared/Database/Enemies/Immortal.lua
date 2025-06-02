@@ -34,7 +34,7 @@ return {
 	Moveset_Data = {
 		['Skill 1'] = {
 			Base = {
-				Range = 14,
+				Range = 60,
 				Cooldown = 2,
 
 				Speed = 1,

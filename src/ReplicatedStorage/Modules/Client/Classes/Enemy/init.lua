@@ -109,7 +109,11 @@ function EnemyClass:GetId(): number
 end
 
 --
-function EnemyClass:GetStat(n: Types.Element): number
+function EnemyClass:GetStat(n: Types.Stat): number
+	if n == 'Speed' then
+		return 1
+	end
+
 	return self.__Status:GetStat(n)
 end
 
