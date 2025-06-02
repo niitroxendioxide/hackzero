@@ -13,10 +13,39 @@ export type AnimatorController = Types.AnimatorController
 export type CharacterClass = Types.CharacterClass
 export type CharacterStats = Types.CharacterStats
 export type Heap = Heap.Heap
+type Enemy = Types.ServerEnemyClass
 type Element = Types.Element
 type AgentMovesetAbility = Types.AgentMovesetAbility
 type Rig = Types.Rig
 type Signal<T...> = Signal.ScriptSignal<T...>
+
+export type ProcessEventData = {
+	Agent: ServerAgentClass,
+	Target: Enemy?,
+	Critical: boolean?,
+	Element: Element?,
+	Total_Damage: number?,
+}
+
+export type HitProcessState = "Before" | "After"
+export type AgentArtifactClass = {
+	Name: string,
+	Level: number,
+
+	-- #Privates
+	__Cache: {},
+	__Events: {},
+
+	--
+	Extend: (self: AgentArtifactClass, Level: number) -> AgentArtifactClass,
+
+	GetPieceCount: (self: AgentArtifactClass) -> (number),
+
+	OnEffectProcess: (self: AgentArtifactClass, Event: (Data: ProcessEventData, PieceCount: number) -> ()) -> (),
+	OnHitProcess: (self: AgentArtifactClass, State: HitProcessState, Event: (Data: ProcessEventData, PieceCount: number) -> (number, number)) -> (),
+	GetEventFor: (self: AgentArtifactClass, EventName: string) -> ((Data: ProcessEventData) -> () | (Effect: Element, Data: ProcessEventData) -> ())?,
+}
+export type DriveObject = {}
 
 export type AgentClass =  {
 	Name: string,
@@ -26,6 +55,7 @@ export type AgentClass =  {
 	__User: number,
 	__Player_Assigned: Player,
 	__Items: AgentItemsClass,
+	__Gear: ClientGearManager,
 	GetId: (self: AgentClass) -> (number),
 
 	Init: (self: AgentClass) -> (),
@@ -163,6 +193,7 @@ export type ServerAgentClass = {
 	__Status: AgentStatusClass,
     __Items: AgentItemsClass,
 	__Current_Target: {Data: AssistStruct, Thread: thread}?,
+	__Gear: ServerGearManager,
 
 	__Active: boolean,
 	__Character: ServerCharacterClass,
@@ -219,6 +250,10 @@ export type ServerAgentClass = {
 	GetPivot: (self: ServerAgentClass) -> CFrame,
 	PivotTo: (self: ServerAgentClass, Pivot: CFrame) -> (),
 
+	AddGear: (self: ServerAgentClass, GearName: string) -> (),
+	RemoveGear: (self: ServerAgentClass, GearName: string) -> (),
+	GetGearManager: (self: ServerAgentClass) -> (ServerGearManager),
+
 	AddTag: (self: ServerAgentClass, Tag: string, Time: number) -> (),
 	HasTag: (self: ServerAgentClass, Tag: string) -> (boolean),
 	RemoveTag: (self: ServerAgentClass, Tag: string) -> (),
@@ -252,14 +287,72 @@ export type AgentItemsClass = {
 	__Name: string,
 	__Level: number,
 	__Baked: {[Stat]: number},
+	__Artifact_Count: {[string]: number},
 
     GetDriveStats: (self: AgentItemsClass) -> ({[Stat]: number}),
     GetArtifactStats: (self: AgentItemsClass) -> ({[Stat]: number}),
 
     GetTotalAddedStat: (self: AgentItemsClass, Key: Stat) -> (number),
+	GetArtifactPieceEffects: (self: AgentItemsClass) -> ({[string]: number}),
 
     BindArtifact: (self: AgentItemsClass, Artifact: Artifact) -> (),
     BindDrive: (self: AgentItemsClass, Drive: Drive) -> (),
 }
+
+export type GearObject = {
+	Name: string,
+	Amount: number,
+}
+
+export type ServerGearManager = {
+	__Items: AgentItemsClass,
+	__Objects: {[string]: AgentArtifactClass & DriveObject},
+	__Gears: {[string]: GearObject},
+
+	--[[
+		Tries adding a gear item to the list of gear items, returns false if the ItemLimit is Reached
+		@return `boolean` Whether the item was added to the list or not.
+	]]
+	AddGear: (self: ServerGearManager, Gear: string) -> (),
+	AddObject: (self: ServerGearManager, Item: AgentArtifactClass) -> (),
+
+	HasObject: (self: ServerGearManager, Name: string) -> (boolean),
+	RemoveObject: (self: ServerGearManager, Item: AgentArtifactClass) -> (),
+
+	--[[
+		Removes an item from the itemlist, returns true if the item was succesfully deleted
+		@return `boolean` Whether or not the gear was fully removed from the class
+	]]
+	RemoveGear: (self: ServerGearManager, Gear: string) -> (),
+
+	--[[
+		Runs all the Effect Events for the artifacts/items equipped
+		@param EventData : `ProcessEventData` The data for the effect process event
+	]]
+	RunEffectProcesses: (self: ServerGearManager, EventData: ProcessEventData) -> (),
+
+	--[[
+		Runs all the Hit Events for the artifacts/items equipped
+		@param EventData : `ProcessEventData` The data for the hit process event
+	]]
+	RunHitProcesses: (self: ServerGearManager, State: HitProcessState, EventData: ProcessEventData) -> (),
+
+	GetAddedGearStat: (self: ServerGearManager, Stat: Stat) -> (number),
+}
+
+export type ClientGearManager = {
+	__Items: {string},
+	__Gears: {[string]: GearObject},
+
+	Has: (self: ClientGearManager, ObjectName: string) -> (),
+	AddItem: (self: ClientGearManager, Item: string) -> (),
+	AddGear: (self: ClientGearManager, Gear: string) -> (),
+
+	RemoveItem: (self: ClientGearManager, Item: string) -> (),
+	RemoveGear: (self: ClientGearManager, Gear: string) -> (),
+
+	GetAddedGearStat: (self: ClientGearManager, Stat: Stat) -> (number),
+}
+
 
 return{}

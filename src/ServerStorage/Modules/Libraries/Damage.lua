@@ -1,4 +1,4 @@
---
+--!strict
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
@@ -10,8 +10,16 @@ local Defense_Factors = require(Shared.Database.Defense)
 local RNG = Random.new()
 local DamageLibrary = {}
 
-function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.ServerEnemyClass,Data:Types.HitEnemyData): (number, number, number, number, number)
+function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.ServerEnemyClass,Data:Types.HitEnemyData): (number, boolean, string, number, number, boolean)
 	local EnemyStatus = Enemy.__Status
+	local AgentGear = Agent:GetGearManager()
+
+	-- Pre-process
+	AgentGear:RunHitProcesses("Before", {
+		Agent = Agent,
+		Target = Enemy,
+	})
+
 
 	-- Agent
 	local Attack = Agent:GetStat('Attack')
@@ -45,6 +53,16 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.Serv
 	local Filled_Affliction = ((Data.Affliction_Buildup or 1) / 100) * (1 + Affliction_Aptitude/90) * (1 + Percent_Bonus)
 	local Burst_Damage = 0
 
+	--
+	AgentGear:RunHitProcesses("After",{
+		Agent = Agent,
+		Target = Enemy,
+		Element = Data.Affliction,
+		Total_Damage = Final_Damage,
+		Critical = Is_Critical,
+	})
+
+	--
 	Enemy:TakeAffliction(Data.Affliction, Filled_Affliction)
 
 	local AfflictionTriggered = false;
@@ -53,8 +71,14 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.Serv
 		AfflictionTriggered = true;
 		Burst_Damage = DamageLibrary:CalculateAfflictionBurst(Attack, Data.Affliction, Defense_Mult, Resistance_Multiplier, Agent, Enemy)
 		Enemy:TakeDamage(Burst_Damage)
-
 		Enemy:ResetAffliction(Data.Affliction)
+
+		AgentGear:RunEffectProcesses({
+			Agent = Agent,
+			Target = Enemy,
+			Element = Data.Affliction,
+			Total_Damage = Burst_Damage,
+		})
 	end
 
 	Enemy:TakeDamage(Final_Damage)

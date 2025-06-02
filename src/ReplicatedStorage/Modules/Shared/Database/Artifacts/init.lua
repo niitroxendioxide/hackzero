@@ -17,7 +17,7 @@ function Artifacts:Init()
 
 			table.insert(Artifacts.__Ids, ArtifactModule.Name)
 		else
-			warn('Error on character data for:', ArtifactModule.Name)
+			warn('Error on Artifact data for:', ArtifactModule.Name)
 		end
 	end
 end

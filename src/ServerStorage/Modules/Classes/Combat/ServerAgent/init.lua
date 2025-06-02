@@ -7,10 +7,12 @@ local RunService = game:GetService('RunService')
 local Classes = ServerStorage.Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 
+local ArtifactsFetcher = require(ServerStorage.Modules.Libraries.ArtifactsFetcher)
 local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
 local Types = require(Shared.Types.Agents)
 local CharacterDatabase = require(Shared.Database.Characters)
-local CharacterClass = require(Classes.Combat.ServerAgent.ServerCharacter)
+local ServerGearClass = require(Classes.Combat.ServerAgent.ServerGear)
+local MovementClass = require(Classes.Combat.ServerAgent.ServerMovement)
 local AgentStatus = require(Shared.Classes.Agents.Status)
 local AgentItems = require(Shared.Classes.Agents.Items)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
@@ -34,9 +36,10 @@ function ServerAgentClass.new(Name: string, Level: number): Types.ServerAgentCla
 	self.__Level = Level
 	self.__User = -125
 	self.__Active = false
-	self.__Character = CharacterClass.new(Name, Appearance.Height)
+	self.__Character = MovementClass.new(Name, Appearance.Height)
 	self.__Status = AgentStatus.new(CharacterDatabase:GetStatsAtLevel(Name, Level))
-	self.__Items = AgentItems.new(self);
+	self.__Items = AgentItems.new(self)
+	self.__Gear = ServerGearClass.new(self.__Items)
 
 	return self
 end
@@ -60,9 +63,10 @@ end
 function ServerAgentClass.GetStat(self: Types.ServerAgentClass, Name: Types.Stat): number
 	local Base = self.__Status:GetStat(Name)
 	local Effects = self.__Status:GetStatEffects(Name)
-	local Added = self.__Items:GetTotalAddedStat(Name)
+	local ItemAdded = self.__Items:GetTotalAddedStat(Name)
+	local GearAdded = self.__Gear:GetAddedGearStat(Name)
 
-	local Total = Base + Added + Effects
+	local Total = Base + ItemAdded + GearAdded + Effects
 
 	return Total
 end
@@ -72,9 +76,14 @@ function ServerAgentClass.BindDrive(self: Types.ServerAgentClass, Drive: Types.D
 end
 
 function ServerAgentClass.BindArtifact(self: Types.ServerAgentClass, Artifact: Types.Artifact): ()
+	if not self.__Gear:HasObject(Artifact.Name) then
+		local ObjectExtended = ArtifactsFetcher:ExtendFrom(Artifact.Name, Artifact.Level);
+
+		self.__Gear:AddObject(ObjectExtended)
+	end
+
 	self.__Items:BindArtifact(Artifact)
 end
-
 
 function ServerAgentClass:GetMultBonus(Name: string)
 	return self.__Status:GetMultBonus(Name)
@@ -303,6 +312,26 @@ end
 
 function ServerAgentClass.GetEffect(self: Types.ServerAgentClass, Tag: string): Types.EffectObject
 	return self.__Status:GetEffect(Tag)
+end
+
+function ServerAgentClass.AddGear(self: Types.ServerAgentClass, GearName: string)
+	local SuccessAdding = self.__Gear:AddGear(GearName)
+
+	if SuccessAdding then
+		Replicator:AddGear(self, GearName)
+	end
+end
+
+function ServerAgentClass.RemoveGear(self: Types.ServerAgentClass, GearName: string)
+	local SuccessRemoving = self.__Gear:AddGear(GearName)
+
+	if SuccessRemoving then
+		Replicator:RemoveGear(self, GearName)
+	end
+end
+
+function ServerAgentClass.GetGearManager(self: Types.ServerAgentClass)
+	return self.__Gear
 end
 
 return ServerAgentClass

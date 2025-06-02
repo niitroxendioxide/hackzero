@@ -4,13 +4,12 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
-local Agent = require(ReplicatedStorage.Modules.Client.Classes.Agent)
-local Play = require(ReplicatedStorage.Modules.Client.Components.Areas.Play)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
 local Characters = require(Database.Characters)
 local Enemies = require(Database.Enemies)
+local Gears = require(Database.Gears)
 local GameEnum = require(Shared.GameEnum)
 local Agents = require(script.Parent.Agents)
 
@@ -18,8 +17,16 @@ local Agents = require(script.Parent.Agents)
 local _ReplicatePlayerToo = false
 local Replicator = {}
 
-function Replicator:Effect(Args: {})
-	Args[1] = Args[1]
+--[[
+	@return AgentId
+	@return ReplicationId
+]]
+local function GetPlayerIds(Agent: AgentTypes.ServerAgentClass): (number, number)
+	local Player = Agent.__Player_Assigned
+	local RepId = Player:GetAttribute("ReplicationId") :: number
+	local AgentId = Agents:GetIdForPlayer(RepId, Agent) :: number
+
+	return AgentId, RepId
 end
 
 function Replicator:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClass, Target: Player?, At: CFrame?)
@@ -388,5 +395,31 @@ function Replicator:SwitchStateEnemy(EnemyId: number, State: string, Time: numbe
 	Network:FireForAll('Replicate', Object)
 end
 
+
+function Replicator:AddGear(Agent: AgentTypes.ServerAgentClass, GearName: string)
+	local GearId = Gears:GetIdFor(GearName)
+	local AgentId, RepId = GetPlayerIds(Agent)
+
+	local Object = buffer.create(4)
+	buffer.writeu8(Object, 0, GameEnum.Replication.AddGear)
+	buffer.writeu8(Object, 1, RepId)
+	buffer.writeu8(Object, 2, AgentId)
+	buffer.writeu8(Object, 3, GearId)
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:RemoveGear(Agent: AgentTypes.ServerAgentClass, GearName: string)
+	local GearId = Gears:GetIdFor(GearName)
+	local AgentId, RepId = GetPlayerIds(Agent)
+
+	local Object = buffer.create(4)
+	buffer.writeu8(Object, 0, GameEnum.Replication.RemoveGear)
+	buffer.writeu8(Object, 1, RepId)
+	buffer.writeu8(Object, 2, AgentId)
+	buffer.writeu8(Object, 3, GearId)
+
+	Network:FireForAll('Replicate', Object)
+end
 
 return Replicator

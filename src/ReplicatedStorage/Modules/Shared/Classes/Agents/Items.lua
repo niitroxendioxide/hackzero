@@ -15,6 +15,7 @@ function ItemsClass.new(Agent: Types.ServerAgentClass & Types.AgentClass): Types
     self.__Artifacts = {}
     self.__Drive = nil
     self.__PrecalculatedStats = {}
+    self.__Artifact_Count = {}
 
     return self
 end
@@ -26,6 +27,7 @@ function ItemsClass.BindArtifact(self: Types.AgentItemsClass, Artifact: Types.Ar
     end
 
     self.__Artifacts[Artifact.Slot] = Artifact;
+    self.__Artifact_Count = {}
 
     return;
 end
@@ -69,6 +71,20 @@ function ItemsClass.GetTotalAddedStat(self: Types.AgentItemsClass, Stat: Types.S
     local Total = self.__Baked[Stat]
 
     return (Total or 0);
+end
+
+function ItemsClass.GetArtifactPieceEffects(self: Types.AgentItemsClass)
+    if not next(self.__Artifact_Count) then
+        local List = {}
+
+        for _, ArtifactObject in self.__Artifacts do
+            List[ArtifactObject.Name] = (List[ArtifactObject.Name] or 0) + 1
+        end
+
+        self.__Artifact_Count = List;
+    end
+
+    return self.__Artifact_Count
 end
 
 return ItemsClass

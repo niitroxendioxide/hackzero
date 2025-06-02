@@ -192,7 +192,7 @@ export type BoundKeybind = {
 
 -- [[ DATA ]]
 export type Role = 'Attack' | 'Element' | 'Support' | 'Stun'
-export type Stat = 'Speed' | 'Max_Health' | 'Max_Daze' | 'Health' | 'Attack' | 'Defense' | 'Critical_Rate' | 'Critical_Damage' | 'Penetration' | 'Pen_Ratio' | 'Daze' | 'Energy_Regeneration' | 'Affliction_Aptitude' | 'Affliction_Facility'
+export type Stat = 'Daze_Resistance' | 'Speed' | 'Max_Health' | 'Max_Daze' | 'Health' | 'Attack' | 'Defense' | 'Critical_Rate' | 'Critical_Damage' | 'Penetration' | 'Pen_Ratio' | 'Daze' | 'Energy_Regeneration' | 'Affliction_Aptitude' | 'Affliction_Facility'
 export type Element = 'Physical' | 'Energy' | 'Fire' | 'Ice' | 'Electric' | 'Wind' | 'Rock' | 'None'
 export type CharacterStats = {[Stat]: number, Jog_Speed: number, Sprint_Speed: number, Walk_Speed: number}
 
@@ -397,7 +397,7 @@ export type ServerEnemyClass = {
 	Knockback: (self: ServerEnemyClass, Direction: Vector3, Power: number, Time: number) -> (),
 	EnterDazedState: (self: ServerEnemyClass) -> (),
 
-	TakeDaze: (self: ServerEnemyClass, Amount: number) -> (),
+	TakeDaze: (self: ServerEnemyClass, Amount: number) -> (boolean),
 	TakeDamage: (self: ServerEnemyClass, Amount: number) -> (),
 	TakeAffliction: (self: ServerEnemyClass, Affliction: Element, Amount: number) -> (),
 
@@ -440,6 +440,7 @@ export type EnemyStatus = {
 	GetResistanceMultiplier: (self: EnemyStatus) -> (number),
 	GetElementResistances: (self: EnemyStatus, Element: Element) -> (number, number),
 	GetDazeMultiplier: (self: EnemyStatus) -> (number),
+	GetElementMultiplier: (self: EnemyStatus, Element: Element) -> (number),
 
 	FillAffliction: (self: EnemyStatus, Type: Element, Amount: number, Damage: number?) -> (),
 	ResetAffliction: (self: EnemyStatus, Type: Element) -> (),
@@ -582,38 +583,8 @@ export type Drive_Data = {
 	},
 }
 
-export type Process_Event_Data = {
-	Agent: GenericClass,
-	Target: ServerEnemyClass,
-	Critical: boolean,
-
-}
-
 export type Substats = {
 	[Artifact_Substat]: number,
-}
-export type Hit_Process_State = "Before" | "After"
-export type AgentArtifactClass = {
-	Name: string,
-	Slot: number,
-	Level: number,
-
-	--
-	Main_Stat: MainStat,
-	Sub_Stats: Substats,
-
-	-- #Privates
-	__Cache: {},
-	__Events: {},
-	__Count: number,
-
-	--
-	Extend: (self: AgentArtifactClass, Slot: number, Level: number, MainStat: MainStat, SubStat: Substats) -> AgentArtifactClass,
-
-	GetPieceCount: (self: AgentArtifactClass) -> (number),
-
-	OnEffectProcess: (self: AgentArtifactClass, Event: (Effect: Element, Data: Process_Event_Data) -> ()) -> (),
-	OnHitProcess: (self: AgentArtifactClass, State: Hit_Process_State, Event: (Data: Process_Event_Data) -> (number, number)) -> (),
 }
 
 export type AnimationDataOptions =  {Name: string?, Fade: number?, Speed: number?, Weight: number?, Priority: Enum.AnimationPriority?, Active_Time: number?}

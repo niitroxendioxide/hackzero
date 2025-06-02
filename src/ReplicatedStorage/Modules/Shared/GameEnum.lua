@@ -15,6 +15,8 @@ return {
 		UpdateUltBar = 15,
 		AddEffect = 16,
 		RemoveEffect = 17,
+		AddGear = 18,
+		RemoveGear = 19,
 
 		-- Enemy
 		AddEnemy = 26,
