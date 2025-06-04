@@ -197,6 +197,8 @@ export type ServerAgentClass = {
 	__Player_Assigned: Player,
 	__Status: AgentStatusClass,
     __Items: AgentItemsClass,
+	__Last_Skill_Cast: number,
+	__Last_Hit_Time: number,
 	__Current_Target: {Data: AssistStruct, Thread: thread}?,
 	__Gear: ServerGearManager,
 
@@ -209,6 +211,8 @@ export type ServerAgentClass = {
 	Move: (self: ServerAgentClass) -> (),
 	Rotate: (self: ServerAgentClass, Angle: number) -> (),
 
+	IsBeingAttacked: (self: ServerAgentClass) -> (boolean),
+	Hit: (self: ServerAgentClass, Caster: Enemy, Time: number) -> (),
 	GetMarkedTarget: (self: ServerAgentClass) -> (AssistStruct?),
 
 	--[[

@@ -21,7 +21,7 @@ local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local ServerAgentClass = {}
 ServerAgentClass.__index = ServerAgentClass
 ServerAgentClass.__tostring = function()
-	return 'AgentClass'
+	return 'ServerAgentClass'
 end
 
 
@@ -36,6 +36,8 @@ function ServerAgentClass.new(Name: string, Level: number): Types.ServerAgentCla
 	self.__Level = Level
 	self.__User = -125
 	self.__Active = false
+	self.__Last_Hit_Time = os.clock()
+	self.__Last_Skill_Cast = os.clock()
 	self.__Character = MovementClass.new(Name, Appearance.Height)
 	self.__Status = AgentStatus.new(CharacterDatabase:GetStatsAtLevel(Name, Level))
 	self.__Items = AgentItems.new(self)
@@ -58,6 +60,19 @@ end
 
 function ServerAgentClass:GetTotalVelocity()
 	return self.__Character:GetTotalVelocity()
+end
+
+function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.ServerAgentClass, Time: number)
+	local AnimObject: Animation = ReplicatedStorage.Assets.Animations.General.Hit.AgentHit1;
+
+	self.__Last_Hit_Time = os.clock()
+	self:SwitchState('Stunned', Time)
+
+	Replicator:HitAgent(self, Time, AnimObject)
+end
+
+function ServerAgentClass.IsBeingAttacked(self: Types.ServerAgentClass)
+	return (os.clock() - self.__Last_Hit_Time) < 1.5 and (os.clock() - self.__Last_Skill_Cast) > 5
 end
 
 function ServerAgentClass.GetStat(self: Types.ServerAgentClass, Name: Types.Stat): number

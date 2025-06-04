@@ -361,6 +361,20 @@ function Replicator:KillAgent(Agent: AgentTypes.ServerAgentClass, Damage: number
 	Network:FireForAll('Replicate', Object)
 end
 
+function Replicator:HitAgent(Agent: AgentTypes.ServerAgentClass, Time: number, AnimObject: Animation)
+	local RepId = Agent.__Player_Assigned:GetAttribute("ReplicationId")
+	local AgentIndex = table.find(Agents:GetAll(RepId), Agent)
+
+	local Object = buffer.create(4)
+	buffer.writeu8(Object, 0, GameEnum.Replication.HitAgent)
+	buffer.writeu8(Object, 1, AgentIndex)
+	buffer.writeu8(Object, 2, RepId)
+	buffer.writeu8(Object, 3, Time * 10)
+
+	Network:FireForAll('Replicate', Object, AnimObject)
+end
+
+
 function Replicator:FillAffliction(Enemy: Types.ServerEnemyClass, Type: Types.Element | string, Amount: number)
 	local Object = buffer.create(5)
 	buffer.writeu8(Object, 0, GameEnum.Replication.FillAffliction)

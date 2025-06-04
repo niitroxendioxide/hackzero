@@ -48,7 +48,7 @@ end
 function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass | Types.ServerEnemyClass, Offset, Size, Event)
 	if tostring(Caster) == 'EnemyClass' then
 		return self:CreateAgentHitbox(Caster, Offset, Size, Event)
-	elseif tostring(Caster) == 'AgentClass' then
+	elseif tostring(Caster) == 'ServerAgentClass' then
 		return self:CreateEnemyHitbox(Caster, Offset, Size, Event)
 	end
 
@@ -123,8 +123,9 @@ function ServerAbilityClass:Begin(Agent: AgentTypes.ServerAgentClass, Frames: Se
 	return AbilitySequence:Start()
 end
 
-function ServerAbilityClass:Hit(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerEnemyClass, Data: Types.HitEnemyData)
-	--
+
+-- Hit functions
+local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerEnemyClass, Data: Types.HitEnemyData)
 	local AgentPivot = Agent:GetPivot()
 	local _EnemyPivot = Enemy:GetPivot()
 
@@ -175,13 +176,34 @@ function ServerAbilityClass:Hit(Agent: AgentTypes.ServerAgentClass, Enemy: Types
 	Replicator:DazeEnemy(Enemy, Dealt_Daze)
 
 	--
-	self.__Hit:Fire({
+	return {
 		Enemy = Enemy,
 		Agent = Agent,
 		Type = Data.Affliction,
 		Damage = Dealt_Damage,
 		Burst = Affliction_Triggered,
-	})
+	}
+end
+
+local function HitAgent(Caster: Types.ServerEnemyClass, Agent: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
+	Agent:Hit(Caster, 0.35)
+	Agent:TakeDamage(Data.Damage)
+
+	--
+	return {
+	}
+end
+
+function ServerAbilityClass:Hit(Agent: any, Enemy: any, Data: Types.HitEnemyData)
+	local _Result;
+
+	if tostring(Agent) == 'ServerAgentClass' then
+		_Result = HitEnemy(Agent, Enemy, Data)
+	else
+		_Result = HitAgent(Agent, Enemy, Data)
+	end
+
+	--self.__Hit:Fire(Result)
 end
 
 function ServerAbilityClass.ForOtherAgents(self: Types.ServerAbilityClass, Agent: AgentTypes.ServerAgentClass, Callback: (Agent: AgentTypes.ServerAgentClass, Data: {any}) -> ())

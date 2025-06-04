@@ -4,6 +4,7 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Clock = require(Shared.Utility.Clock)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
@@ -15,9 +16,13 @@ local AgentLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local MovesetLibrary = require(ServerStorage.Modules.Libraries.Movesets)
 
 --
+local HELP_ASSIST_PROMPT_TIME = 1.25
+
+--
 local Service = {
 	__Movesets = {},
 	__Prompts = {},
+	__Prompt_Cooldown = {},
 }
 
 function Service:Init()
@@ -25,6 +30,19 @@ function Service:Init()
 
 	Network.new("Ability", "Event")
 	Network:On('Ability', Service.ReplicateEvent)
+
+	Clock:ThreadLoop(.5, function(delta: number)
+		for _, Agent in AgentLibrary:GetActiveAgents() do
+			if Agent:IsBeingAttacked() and not Service.__Prompt_Cooldown[Agent] then
+				Service.__Prompt_Cooldown[Agent] = true
+				Service:PromptAssist(Agent, HELP_ASSIST_PROMPT_TIME)
+
+				task.delay(HELP_ASSIST_PROMPT_TIME, function()
+					Service.__Prompt_Cooldown[Agent] = false
+				end)
+			end
+		end
+	end)
 end
 
 function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
@@ -46,7 +64,13 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 	return;
 end
 
-function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, AgentToSwitch: AgentTypes.ServerAgentClass, Time: number)
+function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: number)
+	local ReplicationId = CasterAgent.__Player_Assigned:GetAttribute("ReplicationId")
+	local AllAgents = AgentLibrary:GetAll(ReplicationId)
+	local CurId = table.find(AllAgents, CasterAgent)
+	local AgentToSwitch = CurId + 1 > 3 and AllAgents[1] or AllAgents[CurId + 1]
+
+	--
 	local Player = CasterAgent.__Player_Assigned
 	local Prompt = CasterAgent:MarkTarget(1, Time)
 	Replicator:PromptAssist(Player, AgentToSwitch, Time, 1)
@@ -73,13 +97,6 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 	local LookAt = ActiveAgent:GetPivot().LookVector
 	if Enemy then
 		LookAt = CFrame.lookAt(ActiveAgent:GetPivot().Position * XZ, Enemy:GetPivot().Position * XZ).LookVector
-	end
-
-	if math.random(1, 2) == 1 then
-		local AllAgents = AgentLibrary:GetAll(ReplicationId)
-		local CurId = table.find(AllAgents, ActiveAgent)
-		local AgentToSwitch = CurId + 1 > 3 and AllAgents[1] or AllAgents[CurId + 1]
-		Service:PromptAssist(ActiveAgent, AgentToSwitch, 2)
 	end
 
 	-- Skill behavior
