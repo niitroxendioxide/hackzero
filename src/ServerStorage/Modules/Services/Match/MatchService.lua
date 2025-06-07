@@ -16,6 +16,7 @@ local GameEnum = require(Shared.GameEnum)
 local MissionClass = require(Classes.Game.Mission)
 local StageDatabase = require(Database.Stages)
 local TeleportService = require(Services.Data.TeleportService);
+local DestructibleService = require(Services.Match.DestructibleService)
 
 --
 local Service = {
@@ -97,6 +98,8 @@ function Service:Begin(Stage: string, Act: string)
     MissionClass:Begin()
 
     Network:FireForAll("Match", GameEnum.MatchEvents.MatchBegin)
+
+    DestructibleService:SetupStage()
 
     --
     MissionClass.Finished:Connect(function()

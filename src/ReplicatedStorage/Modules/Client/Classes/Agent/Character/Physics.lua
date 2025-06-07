@@ -10,6 +10,24 @@ local Types = require(Shared.Types)
 --local Signal = require(Shared.Utility.Signal)
 
 --
+local function CastAround(Origin: CFrame, Size: number): RaycastResult?
+	local RayCount = 6
+	local Wide = math.rad(60)
+	local Params = World:GetCollisionParams() :: RaycastParams
+	for i = 1, RayCount do
+		local Angle = -Wide * 0.75 + ((Wide * 0.75) / RayCount * i)
+		local Direction = (Origin * CFrame.Angles(0, Angle, 0)).LookVector * 2.5
+
+		local Result = workspace:Spherecast(Origin.Position, 1.75, Direction, Params)--workspace:Spherecast(Origin.Position, 1, Direction, Params)
+		if Result then
+			return Result
+		end
+	end
+
+	return;
+end
+
+--
 local PhysicsClass = {} :: {[string]: (self: Types.PhysicsController, any) -> any, new: () -> Types.PhysicsController}
 PhysicsClass.__index = PhysicsClass
 
@@ -185,7 +203,7 @@ function PhysicsClass:Update(Delta: number)
 
 		local Extra = math.atan(self.__Normal:Dot(Vector3.yAxis)) + World.StepHeight
 		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams():: RaycastParams)
-		local Collision = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * Collider.Size.Z, World:GetCollisionParams() :: RaycastParams)
+		local Collision = CastAround(Origin, Collider.Size.Z)
 
 		if CanReachFloor and (CanReachFloor.Position.Y - (self.__Position.Y - self.__Height)) < World.StepHeight then
 			if not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1 then
@@ -193,7 +211,11 @@ function PhysicsClass:Update(Delta: number)
 			elseif Collision then
 				local ProjectedMovement = TotalDisplacement - TotalDisplacement:Dot(Collision.Normal) * Collision.Normal
 
-				self.__Position += ProjectedMovement * CurrentWorldSpeed * Delta
+				local Params = World:GetCollisionParams() :: RaycastParams
+				local Result = workspace:Raycast(Origin.Position, ProjectedMovement.Unit * 3, Params)--workspace:Spherecast(Origin.Position, 1, Direction, Params)
+				if not Result then
+					self.__Position += ProjectedMovement * CurrentWorldSpeed * Delta
+				end
 			end
 		end
 	end

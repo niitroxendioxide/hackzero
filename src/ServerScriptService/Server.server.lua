@@ -18,6 +18,11 @@ local Colliders = Instance.new('Folder')
 Colliders.Name = 'Enemy_Collisions'
 Colliders.Parent = workspace:FindFirstChild('Camera')
 
+
+local Destructibles = Instance.new('Folder')
+Destructibles.Name = 'Destructibles'
+Destructibles.Parent = workspace:FindFirstChild('Camera')
+
 local Modules = ServerStorage.Modules
 local Ping = ReplicatedStorage:FindFirstChild("Ping") or Instance.new("RemoteFunction")
 Ping.Name = 'Ping'

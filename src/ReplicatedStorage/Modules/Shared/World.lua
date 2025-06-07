@@ -29,7 +29,13 @@ end
 function World:GetCollisionParams(Overlap: boolean?): OverlapParams | RaycastParams
 	local Camera = workspace:FindFirstChild('Camera') :: Camera
 	local ParamsNew = Overlap and OverlapParams.new() or RaycastParams.new()
-	ParamsNew.FilterDescendantsInstances = {WorldFolder.Map, WorldFolder.Entities.Colliders, Camera:FindFirstChild('Enemy_Collisions')}
+	ParamsNew.FilterDescendantsInstances = {
+		WorldFolder.Map,
+		WorldFolder.Entities:FindFirstChild("Destructibles"),
+		WorldFolder.Entities.Colliders, Camera:FindFirstChild('Enemy_Collisions'),
+		Camera:FindFirstChild("Destructibles")
+	}
+
 	ParamsNew.FilterType = Enum.RaycastFilterType.Include
 
 	return ParamsNew
@@ -38,7 +44,14 @@ end
 function World:GetColliderParams(Overlap: boolean?): OverlapParams | RaycastParams
 	local Camera = workspace:FindFirstChild('Camera') :: Camera
 	local ParamsNew = Overlap and OverlapParams.new() or RaycastParams.new()
-	ParamsNew.FilterDescendantsInstances = {WorldFolder.Entities.Colliders, WorldFolder.Entities.Hitboxes, Camera:FindFirstChild('Enemy_Collisions')}
+	ParamsNew.FilterDescendantsInstances = {
+		WorldFolder.Entities.Colliders,
+		WorldFolder.Entities.Hitboxes,
+		WorldFolder.Entities:FindFirstChild('Destructibles'),
+		Camera:FindFirstChild('Enemy_Collisions'),
+		Camera:FindFirstChild("Destructibles"),
+	}
+
 	ParamsNew.FilterType = Enum.RaycastFilterType.Include
 
 	return ParamsNew
@@ -47,7 +60,11 @@ end
 function World:GetEnemyColliderParams(Overlap: boolean?): OverlapParams | RaycastParams
 	local Camera = workspace:FindFirstChild('Camera') :: Camera
 	local ParamsNew = Overlap and OverlapParams.new() or RaycastParams.new()
-	ParamsNew.FilterDescendantsInstances = {WorldFolder.Entities.Colliders, Camera:FindFirstChild('Enemy_Collisions')}
+	ParamsNew.FilterDescendantsInstances = {
+		WorldFolder.Entities.Colliders,
+		Camera:FindFirstChild('Enemy_Collisions'),
+	}
+
 	ParamsNew.FilterType = Enum.RaycastFilterType.Include
 
 	return ParamsNew

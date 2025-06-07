@@ -110,22 +110,22 @@ end
 
 function EnemyMovement:Update(Delta: number)
 	local Position = self.__Position
-	
+
 	local Velocity = self:GetSumOfKnockbacks()
-	
+
 	local ConvertedDirection = CFrame.lookAlong(Position, self.__Looking):VectorToWorldSpace(self.__Direction)
 	local Movement = (ConvertedDirection * self.__Speed + Velocity) * Delta * World:GetSpeed()
-	
+
 	local Map = World:GetMapParams()
 	local Colliders = World:GetColliderParams()
-	
+
 	local Collision = workspace:Spherecast(self.__Position, 1.5, ConvertedDirection * 2, Map)
 	if Collision then
 		local ProjectedMovement = Movement - Movement:Dot(Collision.Normal) * Collision.Normal
 
 		Movement = ProjectedMovement * self.__Speed * Delta * World:GetSpeed()
 	end
-	
+
 	local EntitiesHit = workspace:Spherecast(self.__Position, 1.5, ConvertedDirection * 2, Colliders)
 	if EntitiesHit then
 		local ProjectedMovement = Movement - Movement:Dot(EntitiesHit.Normal) * EntitiesHit.Normal

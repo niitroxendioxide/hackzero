@@ -86,6 +86,17 @@ function ServerEnemy:Attack()
 		return
 	end
 
+	local Params = RaycastParams.new()
+	Params.FilterDescendantsInstances = {workspace.Camera.Destructibles}
+	Params.FilterType = Enum.RaycastFilterType.Include
+
+	local At = self:GetPivot()
+	local LookAt = CFrame.lookAt(At.Position, Target:GetPivot().Position)
+	local LookAtRay = workspace:Raycast(At.Position, LookAt.LookVector * 1000, Params)
+	if LookAtRay then
+		return
+	end
+
 	local Moveset = MovesetLibrary:Get(self.__Name, true)
 
 	local Ranges = {}
@@ -259,6 +270,7 @@ function ServerEnemy:FindRandomAggro()
 
 	for _, Agent in Agents do
 		local Distance = (Agent:GetPivot().Position - At).Magnitude
+
 		if Distance < MaxDistance then
 			MaxDistance = Distance
 			Chosen = Agent

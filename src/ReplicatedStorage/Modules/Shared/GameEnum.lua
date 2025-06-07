@@ -42,6 +42,10 @@ return {
 
 		--
 		ClearPlayerData = 150,
+
+		--
+		CreateDestructible = 80,
+		DestroyDestructible = 81,
 	},
 
 

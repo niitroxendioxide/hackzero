@@ -6,6 +6,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
+local Structures = require(ReplicatedStorage.Modules.Client.Libraries.Structures)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
@@ -14,6 +15,8 @@ local Enemies = require(Shared.Libraries.Enemies)
 local Effects = require(Client.Libraries.Effects)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
 local InterfaceController = require(Client.Controllers.InterfaceController)
+
+local DestructiblesDatabase = require(Shared.Database.Destructibles)
 
 
 --
@@ -226,6 +229,21 @@ function Controller:PromptAssist(Buffer: buffer)
 
 	task.wait(Time)
 	Moveset:DeletePopUp()
+end
+
+function Controller:CreateDestructible(Buffer: buffer)
+	local Id = buffer.readu8(Buffer, 1)
+	local Type = DestructiblesDatabase:FromId(buffer.readu8(Buffer, 2))
+	local X = buffer.readf32(Buffer, 3)
+	local Z = buffer.readf32(Buffer, 7)
+	local Y = buffer.readi16(Buffer, 11) / 10
+
+	local Position = Vector3.new(X, Y, Z)
+
+	Structures.Create(Type, {
+		Id = Id,
+		At = Position,
+	})
 end
 
 return Controller
