@@ -27,6 +27,15 @@ function Structures.Create(Type: string, Data)
     Handler:Create(Data)
 end
 
+function Structures.Hit(Type: string, Id: number)
+    if not Structures.__Handlers[Type] then
+        return
+    end
+
+    local Handler = Structures.__Handlers[Type]
+    Handler:Hit(Id)
+end
+
 function Structures.Destroy(Type: string, Data)
     if not Structures.__Handlers[Type] then
         return

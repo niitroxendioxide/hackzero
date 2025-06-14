@@ -1,17 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Types = require(ReplicatedStorage.Modules.Shared.Types)
---
-
-type DestructibleData = {
-
-    Health: number,
-    Size: Vector3,
-
-    Element_Damage_Multipliers: {
-        [Types.Element]: number?,
-    },
-
-}
+local Types = require(ReplicatedStorage.Modules.Shared.Types.Structures)
 
 --
 local Destructibles = {
@@ -33,7 +21,7 @@ function Destructibles:Init()
     end
 end
 
-function Destructibles:GetData(Name: string): DestructibleData?
+function Destructibles:GetData(Name: string): Types.DestructibleData?
     return Destructibles.__Cache[Name]
 end
 

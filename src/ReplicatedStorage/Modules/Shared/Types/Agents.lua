@@ -147,7 +147,7 @@ export type AgentStatusClass = {
 
 	AddEffect: (self: AgentStatusClass, EffectParameters) -> (EffectObject),
 	GetEffect: (self: AgentStatusClass, string) -> (EffectObject),
-	GetStatEffects: (self: AgentStatusClass, Stat) -> (),
+	GetStatEffects: (self: AgentStatusClass, Stat) -> (number),
 	RemoveEffect: (self: AgentStatusClass, Id: number) -> (),
 
 	GetArtifactBonus: (self: AgentStatusClass, Type: string) -> (number),

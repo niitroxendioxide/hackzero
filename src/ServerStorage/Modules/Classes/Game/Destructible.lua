@@ -1,30 +1,18 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
+local Modules = ServerStorage.Modules
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Signal = require(Shared.Utility.Signal)
+local Network = require(Shared.Network)
+local StructureList = require(Modules.Libraries.StructureList)
+local DestructibleTypes = require(Shared.Types.Structures)
 local DestructiblesDatabase = require(Shared.Database.Destructibles)
 
 --
-type Destructible = {
-
-    __Type: string,
-    __Position: Vector3,
-    __Collider: BasePart,
-    __Health: number,
-    __Id: number,
-
-    Destroy: (self: Destructible) -> (),
-    Compress: (self: Destructible) -> (buffer),
-
-    GetCollider: (self: Destructible) -> (BasePart),
-    GetPosition: (self: Destructible) -> (Vector3),
-
-    --[[
-        Sets up the destructible and it's stats
-    ]]
-    Spawn: (self: Destructible, Id: number) -> (),
-    TakeDamage: (self: Destructible, Amount: number) -> (),
-}
+type Destructible = DestructibleTypes.DestructibleServerEntity
 
 --
 local function CreateColliderAt(Position: Vector3)
@@ -47,6 +35,8 @@ DestructibleClass.__index =  DestructibleClass;
 
 function DestructibleClass.new(Type: string, Position: Vector3)
     local self = setmetatable({}, DestructibleClass)
+    self.Destroyed = Signal.new()
+
     self.__Position = Position or Vector3.new()
     self.__Collider = CreateColliderAt(self.__Position)
     self.__Health = 0
@@ -63,11 +53,22 @@ function DestructibleClass.Spawn(self: Destructible, Id: number)
 
     self.__Health = Data.Health
     self.__Id = Id
+
+    StructureList:Add(self)
 end
 
-function DestructibleClass.Compress(self: Destructible)
+function DestructibleClass.Compress(self: Destructible, OnlyId: boolean)
     if self.__Id < 1 then
         return
+    end
+
+    -- Don't need to send all the info for just destroying or hitting it, so why do it :v
+    if OnlyId then
+        local Obj = buffer.create(2)
+        buffer.writeu8(Obj, 0, self.__Id)
+        buffer.writeu8(Obj, 1, DestructiblesDatabase:GetId(self.__Type))
+
+        return  Obj
     end
 
     local Object = buffer.create(12)
@@ -80,12 +81,36 @@ function DestructibleClass.Compress(self: Destructible)
     return Object
 end
 
-function DestructibleClass.TakeDamage(self: Destructible)
-    
+function DestructibleClass.TakeDamage(self: Destructible, Player: Player, Damage: number)
+    local NewHealth = self.__Health - Damage
+
+    self.__Health = NewHealth
+
+    if NewHealth <= 0 then
+        self.Destroyed:Fire(Player)
+        self:Destroy()
+
+        return
+    end
+
+    -- hit structure, very hardcoded but whatever man
+    local BufferObj = self:Compress(true)
+    local BufferLen = buffer.len(BufferObj)
+    local NewBuffer = buffer.create(BufferLen + 1)
+    buffer.writeu8(NewBuffer, 0, GameEnum.Replication.HitDestructible)
+    buffer.copy(NewBuffer, 1, BufferObj, 0, BufferLen)
+
+    Network:FireForAll("Replicate", NewBuffer)
 end
 
-function DestructibleClass:Destroy()
+function DestructibleClass.GetCollider(self: Destructible)
+    return self.__Collider
+end
+
+function DestructibleClass.Destroy(self: Destructible)
     -- send signal to destroy here too !!
+    StructureList:Remove(self)
+
     self.__Collider:Destroy()
 end
 

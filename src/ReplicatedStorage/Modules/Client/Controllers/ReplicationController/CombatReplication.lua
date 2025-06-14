@@ -246,4 +246,21 @@ function Controller:CreateDestructible(Buffer: buffer)
 	})
 end
 
+function Controller:DestroyDestructible(Buffer: buffer)
+	local Id = buffer.readu8(Buffer, 1)
+	local Type = DestructiblesDatabase:FromId(buffer.readu8(Buffer, 2))
+
+	Structures.Destroy(Type, {
+		Id = Id,
+	})
+end
+
+function Controller:HitDestructible(Buffer: buffer)
+	local Id = buffer.readu8(Buffer, 1)
+	local Type = DestructiblesDatabase:FromId(buffer.readu8(Buffer, 2))
+
+	Structures.Hit(Type, Id)
+end
+
+
 return Controller

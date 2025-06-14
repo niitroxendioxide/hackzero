@@ -17,7 +17,7 @@ local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 
 --
 local Service = {
-	__Limit = 4,
+	__Limit = 240,
 	__CurrentEnemies = 1,
 	__EnemyCache = {},
 	EnemiesCleared = {} :: Types.Signal<>,

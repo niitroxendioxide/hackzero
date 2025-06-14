@@ -45,7 +45,13 @@ function ServerAbilityClass:Play(Agent: AgentTypes.ServerAgentClass)
 	self:Begin(Agent, {})
 end
 
-function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass | Types.ServerEnemyClass, Offset, Size, Event)
+function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & Types.ServerEnemyClass, Offset, Size, Event)
+	local At = Caster:GetPivot()
+	ServerHitboxUtil:ForStructuresInZone(Size,  At * CFrame.new(Offset), function(Structure)
+		Event(Structure)
+	end)
+
+	--
 	if tostring(Caster) == 'EnemyClass' then
 		return self:CreateAgentHitbox(Caster, Offset, Size, Event)
 	elseif tostring(Caster) == 'ServerAgentClass' then
@@ -176,13 +182,13 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerE
 	Replicator:DazeEnemy(Enemy, Dealt_Daze)
 
 	--
-	return {
+	--[[return {
 		Enemy = Enemy,
 		Agent = Agent,
 		Type = Data.Affliction,
 		Damage = Dealt_Damage,
 		Burst = Affliction_Triggered,
-	}
+	}]]
 end
 
 local function HitAgent(Caster: Types.ServerEnemyClass, Agent: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
@@ -194,13 +200,21 @@ local function HitAgent(Caster: Types.ServerEnemyClass, Agent: AgentTypes.Server
 	}
 end
 
+local function HitStructure(Caster, Structure, Data)
+	Structure:TakeDamage(Caster, Data.Damage)
+
+	return {}
+end
+
 function ServerAbilityClass:Hit(Agent: any, Enemy: any, Data: Types.HitEnemyData)
 	local _Result;
 
-	if tostring(Agent) == 'ServerAgentClass' then
+	if tostring(Enemy) == 'ServerAgentClass' then
+		_Result = HitAgent(Agent, Enemy, Data)
+	elseif tostring(Enemy) == 'EnemyClass' then
 		_Result = HitEnemy(Agent, Enemy, Data)
 	else
-		_Result = HitAgent(Agent, Enemy, Data)
+		_Result = HitStructure(Agent, Enemy, Data)
 	end
 
 	--self.__Hit:Fire(Result)

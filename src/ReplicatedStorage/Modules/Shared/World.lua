@@ -1,4 +1,3 @@
---
 local Plastic = PhysicalProperties.new(Enum.Material.SmoothPlastic)
 local AREA_OF_CONTACT = 1.8
 local FrictionValues = {} :: {number}

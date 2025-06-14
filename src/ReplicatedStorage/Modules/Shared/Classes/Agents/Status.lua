@@ -26,9 +26,9 @@ function StatusClass.new(Base: Types.CharacterStats): Types.AgentStatusClass
 	return self
 end
 
-function StatusClass:Update(delta: number)
+function StatusClass.Update(self: Types.AgentStatusClass, delta: number)
 	local Energy_Regen_Rate = self:GetStat('Energy_Regeneration')
-	local Boost_Rate = 10--self:GetEff()
+	local Boost_Rate = 1 + self:GetStatEffects('Energy_Regeneration')
 
 	self:GiveEnergy(Boost_Rate * Energy_Regen_Rate * delta)
 end

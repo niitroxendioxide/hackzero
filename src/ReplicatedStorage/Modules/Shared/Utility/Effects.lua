@@ -59,6 +59,12 @@ function EffectUtil:CleanUp(Object: any, Time: number)
 	end)
 end
 
+function EffectUtil:MultiClean(Objects: {any}, Time: number)
+	for _, newObj in Objects do
+		EffectUtil:CleanUp(newObj, Time)
+	end
+end
+
 function EffectUtil:SetRandomSeed(n: number)
 	Random_Number = Random.new(n)
 end

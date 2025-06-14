@@ -46,6 +46,7 @@ return {
 		--
 		CreateDestructible = 80,
 		DestroyDestructible = 81,
+		HitDestructible = 82,
 	},
 
 
