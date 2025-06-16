@@ -57,6 +57,7 @@ export type AgentClass =  {
 	__Items: AgentItemsClass,
 	__Gear: ClientGearManager,
 	__Locked: boolean,
+	__Skill_Levels: SkillLevels,
 	GetId: (self: AgentClass) -> (number),
 
 	Init: (self: AgentClass) -> (),
@@ -87,6 +88,7 @@ export type AgentClass =  {
 	GetStat: (self: AgentClass, Stat: Stat) -> number,
 	GetState: (self: AgentClass) -> State,
 	GetEnergy: (self: AgentClass) -> (number),
+	GetSkillLevel: (self: AgentClass, Name: AgentMovesetAbility) -> (),
 
 	GiveEnergy: (self: AgentClass, Amount: number) -> (),
 	SetVisible: (self: AgentClass, State: boolean?) -> (),
@@ -188,6 +190,12 @@ export type AssistStruct = {
 	Time: number,
 }
 
+type SkillLevels = {
+		Basic_Attack: number,
+		Ultimate: number,
+		Special: number,
+	}
+
 export type ServerAgentClass = {
 	Name: string,
 
@@ -197,6 +205,7 @@ export type ServerAgentClass = {
 	__Player_Assigned: Player,
 	__Status: AgentStatusClass,
     __Items: AgentItemsClass,
+	__Skill_Levels: SkillLevels,
 	__Last_Skill_Cast: number,
 	__Last_Hit_Time: number,
 	__Current_Target: {Data: AssistStruct, Thread: thread}?,
@@ -237,6 +246,7 @@ export type ServerAgentClass = {
 	GetStat: (self: ServerAgentClass, Stat: Stat) -> number,
 	GetState: (self: ServerAgentClass) -> (),
 	GetMultBonus: (self: ServerAgentClass, Type: Element | AgentMovesetAbility) -> (number),
+	GetSkillLevel: (self: ServerAgentClass, Name: AgentMovesetAbility) -> (),
 
 	--[[
 		Change the state of the agent to the specified one, this limits/allows specific methods

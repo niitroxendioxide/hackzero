@@ -5,6 +5,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Modules = ServerStorage.Modules
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Types = require(ReplicatedStorage.Modules.Shared.Types)
 local Signal = require(Shared.Utility.Signal)
 local Network = require(Shared.Network)
 local StructureList = require(Modules.Libraries.StructureList)
@@ -81,13 +82,13 @@ function DestructibleClass.Compress(self: Destructible, OnlyId: boolean)
     return Object
 end
 
-function DestructibleClass.TakeDamage(self: Destructible, Player: Player, Damage: number)
+function DestructibleClass.TakeDamage(self: Destructible, Perpetrator: Types.GenericClass, Damage: number)
     local NewHealth = self.__Health - Damage
 
     self.__Health = NewHealth
 
     if NewHealth <= 0 then
-        self.Destroyed:Fire(Player)
+        self.Destroyed:Fire(Perpetrator)
         self:Destroy()
 
         return

@@ -49,6 +49,10 @@ local function UpdateDrive(Player: Player, Drive: Types.PlayerDriveDataClass): (
     })
 end
 
+local function UpdateSkills(Player: Player, Agent: Types.PlayerAgentDataClass): ()
+    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpgradeAgentSkill, {Agent.Name, Agent.Skills})
+end
+
 
 --[[
     Handles setting up the builds & using the data from the player artifacts & more
@@ -65,7 +69,22 @@ function Service.__HandleEvent(Player: Player, Type: number, Request: {})
         Service:SetAgentArtifactSlot(Player, Request[1], Request[2])
     elseif Type == GameEnum.AgentEvent.UpdateDrive then
         Service:SetAgentDrive(Player, Request[1], Request[2])
+    elseif Type == GameEnum.AgentEvent.UpgradeAgentSkill then
+        Service:UpgradeAgentSkill(Player, Request[1], Request[2])
     end
+end
+
+function Service:UpgradeAgentSkill(Player: Player, AgentName: string, SkillName: number)
+    local Agent = DataService:GetAgent(Player, AgentName)
+
+    if not Agent.Skills[SkillName] or (Agent.Skills[SkillName] + 1 > 20) then
+        return
+    end
+
+    --
+    Agent:SetSkill(SkillName, Agent.Skills[SkillName] + 1)
+
+    UpdateSkills(Player, Agent)
 end
 
 function Service:SetAgentArtifactSlot(Player: Player, AgentName: string, ArtifactId: string)

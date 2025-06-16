@@ -18,6 +18,12 @@ function PlayerAgentDataClass.new(Name: string, Level: number, Date: number)
     self.Drive = nil
     self.Artifacts = {}
     self.Skins = {}
+    self.Skills = {
+        Basic_Attack = 0,
+        Special = 0,
+        Ultimate = 0,
+    }
+    self.Ascensions = 0
     self.ObtainmentDate = Date
 
     return self
@@ -46,6 +52,12 @@ function PlayerAgentDataClass.SetArtifacts(self: Types.PlayerAgentDataClass, Art
     self.Artifacts = Saved;
 end
 
+function PlayerAgentDataClass.SetSkill(self: Types.PlayerAgentDataClass, SkillName: string, SkillLevel: number)
+    assert(SkillLevel <= 20 and SkillLevel >= 0, 'Skill level out of bounds');
+
+    self.Skills[SkillName] = SkillLevel
+end
+
 function PlayerAgentDataClass.EquipArtifactToSlot(self: Types.PlayerAgentDataClass, SlotId: number, Artifact: Types.PlayerArtifactDataClass?): ()
     if Artifact then
         local Previous = self.Artifacts[SlotId]
@@ -72,6 +84,9 @@ function PlayerAgentDataClass.ToData(self: Types.PlayerAgentDataClass): Types.Pl
             [6] = self.Artifacts[6],
         },
 
+        Ascensions = self.Ascensions,
+        Skills = self.Skills,
+
         Name = self.Name,
         Level = self.Level,
         Obtained = self.ObtainmentDate,
@@ -83,10 +98,14 @@ end
 function PlayerAgentDataClass.Compress(self: Types.PlayerAgentDataClass)
     local Id = CharactersDatabase:GetIdForCharacter(self.Name)
 
-    local DataBuffer = buffer.create(4)
+    local DataBuffer = buffer.create(8)
     buffer.writeu8(DataBuffer, 0, Id)
     buffer.writeu8(DataBuffer, 1, self.Level)
-    buffer.writeu16(DataBuffer, 2, self.Experience)
+    buffer.writeu8(DataBuffer, 2, self.Skills.Basic_Attack)
+    buffer.writeu8(DataBuffer, 3, self.Skills.Special)
+    buffer.writeu8(DataBuffer, 4, self.Skills.Ultimate)
+    buffer.writeu8(DataBuffer, 5, self.Ascensions)
+    buffer.writeu16(DataBuffer, 6, self.Experience)
 
     return {DataBuffer, self.Artifacts, self.Drive}
 end

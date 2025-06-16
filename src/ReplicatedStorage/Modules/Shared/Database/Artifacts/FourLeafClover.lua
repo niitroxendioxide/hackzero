@@ -2,6 +2,8 @@ local Types = require('../../Types')
 
 return {
 	Name = 'Four Leaf Clover',
+	Icon = 0,
+	Tier = 'Rare',
 
 	Piece_Effects = {
 		Two_Piece = {

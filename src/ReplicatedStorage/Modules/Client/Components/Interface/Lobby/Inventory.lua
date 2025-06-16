@@ -7,16 +7,18 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local Assets = ReplicatedStorage.Assets
-local World = workspace:FindFirstChild("World")
 
+local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
 local Types = require(Shared.Types)
-local GameEnum = require(Shared.GameEnum)
+local DataTypes = require(Shared.Types.Data)
+local _GameEnum = require(Shared.GameEnum)
 local UIGroups = require(Client.Libraries.UIGroups)
 local LocalData = require(Client.Libraries.LocalData)
 local EffectUtil = require(Shared.Utility.Effects)
+local ItemDatabase = require(Database.Items)
 local ComponentClass = require(Client.Classes.Interface)
-local ArtifactsDatabase = require(Database.Artifacts)
 local DrivesDatabase = require(Database.Drives)
+local ArtifactDatabase = require(Database.Artifacts)
 
 local Component = ComponentClass.new("Inventory", "Lobby")
 
@@ -45,21 +47,35 @@ local function ShowItemInfo(ItemId: string?)
     EffectUtil:Tween(DataFrame, {.3, 'Quint'}, {Position = UDim2.fromScale(XPos, .5)})
 
     local ItemInfo, ItemType = LocalData:GetItemById(ItemId)
-    DataFrame.ItemType.Text = ItemType
-    DataFrame.ItemName.Text = ItemInfo.Name
+    local OtherData = ItemDatabase:GetItemData(ItemInfo.Name)
+    or ArtifactDatabase:GetArtifactData(ItemInfo.Name)
+    or DrivesDatabase:GetDriveData(ItemInfo.Name)
 
+    DataFrame.ItemType.Text = ItemType
+    DataFrame.ItemName.Text = OtherData.DisplayName or ItemInfo.Name
+
+    DataFrame.ItemInfo.Visible = ItemType == 'Item'
     if ItemType == 'Drive' then
         --
         DataFrame.LvlBar.Visible = true
         DataFrame.ArtLvl.Visible = false
 
         DataFrame.LvlBar.Lvl.Text = `Lvl. {ItemInfo.Level} / 60`;
-    else
+    elseif ItemType == 'Artifact' then
         DataFrame.LvlBar.Visible = false
         DataFrame.ArtLvl.Visible = true
 
         DataFrame.ArtLvl.Text = `Level: <b>{ItemInfo.Level}</b>`;
         --
+    else
+        DataFrame.LvlBar.Visible = false
+        DataFrame.ArtLvl.Visible = false
+
+        DataFrame.ItemInfo.Icon.Image = 'rbxassetid://' .. OtherData.Icon
+        DataFrame.ItemInfo.ItemCount.Text = `Amount Owned: <b>{ItemInfo.Amount or 0}</b>`
+        DataFrame.ItemInfo.ItemDescription.Text = OtherData.Description
+        DataFrame.ItemInfo.ItemDescription.TextSize = ScreenUtil:GetTextSize(24)
+        DataFrame.ItemInfo.ItemDescription.TextScaled = not DataFrame.ItemInfo.ItemDescription.TextFits
     end
 
     DataFrame.EquippedData.Visible = ItemInfo.Equipped ~= nil
@@ -98,9 +114,13 @@ local function SetFilter(FilterName: string, State: boolean)
         local Active = Filters[FilterObj.Name]
 
         if Active then
+            EffectUtil:Tween(FilterObj.State.Inactive.UIScale, {.2, 'Sine'}, {Scale = 0})
+            EffectUtil:Tween(FilterObj.State.ActiveIcon.UIScale, {.25, 'Back'}, {Scale = 1})
             FilterObj.State.BackgroundColor3 = Color3.fromRGB(36, 67, 29)
             FilterObj.State.UIStroke.Color = Color3.new(0, 1)
         else
+            EffectUtil:Tween(FilterObj.State.ActiveIcon.UIScale, {.2, 'Sine'}, {Scale = 0})
+            EffectUtil:Tween(FilterObj.State.Inactive.UIScale, {.25, 'Back'}, {Scale = 1})
             FilterObj.State.BackgroundColor3 = Color3.fromRGB(67, 32, 32)
             FilterObj.State.UIStroke.Color = Color3.new(1)
         end
@@ -175,6 +195,9 @@ local function SelectItem(ItemId: string)
     States.__Selected_Item = ItemId
     ItemObject.Selected.Visible = true
 
+    ItemObject.UIScale.Scale = 0.85
+    EffectUtil:Tween(ItemObject.UIScale, {.25, 'Back'}, {Scale = 0.9})
+
     --
     ItemSelectedThread = task.spawn(function()
         local Angle = 0
@@ -189,7 +212,7 @@ local function SelectItem(ItemId: string)
     ShowItemInfo(ItemId)
 end
 
-local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact', ItemData: Types.PlayerDriveData & Types.PlayerArtifactData & {Amount: number})
+local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', ItemData: Types.PlayerDriveData & Types.PlayerArtifactData & DataTypes.PlayerItemData)
     local MainFrame = Component:GetFrame()
     local InventoryFrame = MainFrame.InventoryFrame
     local Prefix = "rbxassetid://"
@@ -201,6 +224,7 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact', ItemData: 
         return
     end
 
+    local ItemInfo = ItemDatabase:GetItemData(ItemData.Name) or ArtifactDatabase:GetArtifactData(ItemData.Name)
     local InventoryObject = Assets.Interface.Lobby.Inventory.InventoryObject:Clone()
     InventoryObject.Name = ItemId
     InventoryObject.Id.Value = ItemId
@@ -211,11 +235,14 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact', ItemData: 
 
         InventoryObject.DriveIcon.Image = Prefix .. DriveData.IconId
         InventoryObject.DriveIcon.Visible = true
-        InventoryObject.ArtifactIcon.Visible = false
-    elseif Type == 'Artifact' then
+        InventoryObject.ItemIcon.Visible = false
+    else
         InventoryObject.DriveIcon.Visible = false
-        InventoryObject.ArtifactIcon.Visible = true
-        --InventoryObject.ArtifactIcon.Image = Prefix .. ItemData.ArtifactIcon
+        InventoryObject.ItemIcon.Visible = true
+
+        if ItemInfo and ItemInfo.Icon then
+            InventoryObject.ItemIcon.Image = Prefix .. ItemInfo.Icon
+        end
     end
 
     InventoryObject.Equipped.Visible = ItemData.Equipped ~= nil
@@ -239,6 +266,10 @@ local function CreateAllItems()
     for _, Artifact in LocalData:GetArtifacts() do
         CreateItem(Artifact.Id, 'Artifact', Artifact)
     end
+
+    for _, Item in LocalData:GetItems() do
+        CreateItem(Item.Name, 'Item', Item)
+    end
 end
 
 
@@ -255,7 +286,7 @@ end
 
 function Component:Init()
 
-    local UsedFilters = {"Artifact", "Drive"}
+    local UsedFilters = {"Artifact", "Drive", "Item"}
 
     for _, FilterName in UsedFilters do
         CreateFilterBtn(FilterName)
@@ -284,12 +315,12 @@ function Component:Init()
 
     ReturnButton.MouseEnter:Connect(function()
         ReturnHolder.UIStroke.Color = Color3.new(1, 1, 1)
-        EffectUtil:Tween(ReturnHolder.UIScale, {.25}, {Scale = 1.1})
+        EffectUtil:Tween(ReturnHolder.UIScale, {.25, 'Cubic'}, {Scale = 1.1})
     end)
 
     ReturnButton.MouseLeave:Connect(function()
         ReturnHolder.UIStroke.Color = Color3.new()
-        EffectUtil:Tween(ReturnHolder.UIScale, {.25}, {Scale = 1})
+        EffectUtil:Tween(ReturnHolder.UIScale, {.25, 'Cubic'}, {Scale = 1})
     end)
 end
 

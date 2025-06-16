@@ -16,14 +16,14 @@ function Drives:Init()
 			Drives.__Stored[DriveModule.Name] = table.freeze(Drive_Data)
 
 			table.insert(Drives.__Ids, DriveModule.Name)
-
-			table.sort(Drives.__Ids, function(a, b)
-				return a > b
-			end)
 		else
 			warn('Error on character data for:', DriveModule.Name)
 		end
 	end
+
+	table.sort(Drives.__Ids, function(a, b)
+		return a > b
+	end)
 end
 
 function Drives:GetDriveData(Name: string): Types.Drive_Data

@@ -20,6 +20,10 @@ function Artifacts:Init()
 			warn('Error on Artifact data for:', ArtifactModule.Name)
 		end
 	end
+
+	table.sort(Artifacts.__Ids, function(a, b)
+		return a > b
+	end)
 end
 
 function Artifacts:GetArtifactData(Name: string): Types.Artifact_Data

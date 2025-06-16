@@ -10,6 +10,7 @@ local Assets = ReplicatedStorage.Assets
 local World = workspace:FindFirstChild("World")
 
 
+local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Types = require(Shared.Types)
 local Camera = require(Client.Libraries.Camera)
 local Fetcher = require(Client.Libraries.Fetcher)
@@ -24,6 +25,7 @@ local ComponentClass = require(Client.Classes.Interface)
 local CharacterDatabase = require(Database.Characters)
 local DrivesDatabase = require(Database.Drives)
 local ArtifactDatabase = require(Database.Artifacts)
+local SkillsSubModule = require(script.Skills)
 
 --
 export type FilterFunction = (Artifact: Frame & {Slot: NumberValue, Type: StringValue}) -> (boolean)
@@ -121,7 +123,7 @@ end
 
 local function RequestChangeArtifact()
     local SelectedArtifact = States.__Current_Selected_Item
-    local SelectedAgent = States.__Current_Agent.Name
+    local SelectedAgent = States.__Current_Agent.Name.Name
 
     Network:Fire('UpdateAgent', GameEnum.AgentEvent.UpdateArtifactSlot, {
         SelectedAgent,
@@ -214,6 +216,7 @@ function Component:Init()
         EffectUtil:Tween(ReturnHolder.UIScale, {.25}, {Scale = 1})
     end)
 
+    local IdToNames = {'Stats', 'Skills', 'Items'}
     for _, Button in MainFrame.TabButtons:GetChildren() do
         if not Button:FindFirstChild("Btn") then continue end
 
@@ -224,7 +227,10 @@ function Component:Init()
                 return
             end
 
-            States.__Current_Tab:set(Button.Name)
+            local Id = tonumber(Button.Name, 10)
+            if not Id then return end
+
+            States.__Current_Tab:set(IdToNames[Id])
         end)
     end
 
@@ -233,9 +239,10 @@ function Component:Init()
         local CurrentTab = Component:Peek(States.__Current_Tab)
 
         for _, Tab in TabButtons:GetChildren() do
-            if not Tab:IsA("Frame") then continue end
+            local Id = tonumber(Tab.Name, 10)
+            if not Tab:IsA("Frame") or not Id then continue end
 
-            if Tab.Name == CurrentTab then
+            if IdToNames[Id] == CurrentTab then
                 EffectUtil:Tween(Tab.UIScale, {.25, 'Back', 'Out'}, {Scale = 1.25})
             else
                 EffectUtil:Tween(Tab.UIScale, {.25}, {Scale = 1})
@@ -361,6 +368,8 @@ function Component:SelectAgent(AgentData: Types.ClientAgentData)
         Component:UpdateDriveInfo(AgentData.Name, Drive)
     elseif CurrentTab == "Stats" then
         Component:ShowStats(AgentData)
+    elseif CurrentTab == 'Skills' then
+        Component:ShowSkills(AgentData)
     elseif CurrentTab == "None" then
         print("none?!")
         MainFrame.Stats.Visible = false
@@ -936,98 +945,17 @@ end
 -- [[ AGENT STATS ]] --
 --
 local function CalculateAgentStatBuffs(AgentData: Types.ClientAgentData)
-    local AgentStats = CharacterDatabase:GetStatsAtLevel(AgentData.Name, AgentData.Level)
     local StatBuffs = {}
 
+    local Artifacts = {}
     for _, ArtifactId in AgentData.Artifacts do
         local ArtifactObject = LocalData:GetArtifactById(ArtifactId)
-        local Data = ArtifactDatabase:GetArtifactData(ArtifactObject.Name)
 
-        local MainStatName = next(ArtifactObject.Stats.Main_Stat)
-        local MainStatValue = ArtifactObject.Stats.Main_Stat[MainStatName]
-
-        local SlotCount = 0
-        for _, OtherItemId in AgentData.Artifacts do
-            if OtherItemId == ArtifactId then continue end
-
-            local OtherItem = LocalData:GetArtifactById(OtherItemId)
-            if OtherItem.Name == ArtifactObject.Name then
-                SlotCount += 1
-            end
-        end
-
-        if SlotCount >= 2 then
-            for StatName, StatValue in Data.Piece_Effects.Two_Piece do
-                if StatBuffs[StatName] == nil then
-                    StatBuffs[StatName] = 0
-                end
-
-                StatBuffs[StatName] += StatValue
-            end
-
-            if SlotCount >= 4 then
-                for StatName, StatValue in Data.Piece_Effects.Two_Piece do
-                    if StatBuffs[StatName] == nil then
-                        StatBuffs[StatName] = 0
-                    end
-
-                    StatBuffs[StatName] += StatValue
-                end
-            end
-        end
-
-        if StatBuffs[MainStatName] == nil then
-            StatBuffs[MainStatName] = 0
-        end
-
-        StatBuffs[MainStatName] += MainStatValue
-
-        --
-        for SubName, SubValue in ArtifactObject.Stats.Sub_Stats do
-            if StatBuffs[SubName] == nil then
-                StatBuffs[SubName] = 0
-            end
-
-            StatBuffs[SubName] += SubValue
-        end
+        table.insert(Artifacts, ArtifactObject)
     end
 
     local AgentDrive = AgentData.Drive ~= nil and LocalData:GetDriveById(AgentData.Drive)
-    if AgentDrive then
-        local Level = AgentDrive.Level
-        local DriveData = DrivesDatabase:GetDriveData(AgentDrive.Name)
-        local MainStatName = DriveData.Main_Stat.StatName
-        local MainStatValue = DriveData.Main_Stat.Base + (DriveData.Main_Stat.UpgradePerLevel) * Level
-
-        if StatBuffs[MainStatName] == nil then
-            StatBuffs[MainStatName] = 0
-        end
-
-        StatBuffs[MainStatName] += MainStatValue
-
-        local SubStatName = DriveData.Advanced_Stat.StatName
-        local SubStatValue = DriveData.Advanced_Stat.Base + (DriveData.Advanced_Stat.UpgradePerAscension) * (Level // 10)
-
-        if StatBuffs[SubStatName] == nil then
-            StatBuffs[SubStatName] = 0
-        end
-
-        StatBuffs[SubStatName] += SubStatValue
-    end
-
-    for StatBuffName, StatBuffValue in StatBuffs do
-        if string.match(StatBuffName, "%%") then
-            local StatRaw = string.gsub(StatBuffName, "%%", "")
-
-            local AddedPercentBoost = AgentStats[StatRaw] * (StatBuffValue / 100)
-            if not StatBuffs[StatRaw] then
-                StatBuffs[StatRaw] = 0
-            end
-
-            StatBuffs[StatRaw] += AddedPercentBoost
-            StatBuffs[StatBuffName] = nil
-        end
-    end
+    StatBuffs = Math:CalculateStatsForAgent(AgentData.Name, AgentData.Level, AgentDrive, Artifacts)
 
     return StatBuffs
 end
@@ -1086,6 +1014,22 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
     AgentDataFrame.Playstyle.Element.ElementName.Text = AgentInfo.Element
 
     AgentDataFrame.Level.AgentLevel.Text = `Level: {AgentData.Level}/{math.ceil(AgentData.Level / 10) * 10}`
+end
+
+function Component:ShowSkills()
+    local MainFrame = self:GetFrame()
+    local SkillsFrame = MainFrame.Skills
+
+    Camera:TweenTo(RoomLocations.SkillsTab.CFrame, {.6, 'Cubic'})
+
+    SkillsSubModule:UpdateSkills(SkillsFrame, States.__Current_Agent.Name)
+end
+
+function Component:RefreshSkills()
+    local MainFrame = self:GetFrame()
+    local SkillsFrame = MainFrame.Skills
+
+    SkillsSubModule:UpdateSkillLevels(SkillsFrame, States.__Current_Agent.Name)
 end
 
 return Component

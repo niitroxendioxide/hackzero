@@ -151,6 +151,7 @@ return {
 		GetAllDrives = 3,
 		UpdateDrive = 4,
 		GetCurrencies = 5,
+		GetAllItems = 6,
 	},
 
 	ShareDataEvent = {
@@ -170,6 +171,7 @@ return {
 		LevelAgent = 3,
 		EvolveAgent = 4,
 		LoadAll = 5,
+		UpgradeAgentSkill = 6,
 	},
 
 	ChangeEvents = {

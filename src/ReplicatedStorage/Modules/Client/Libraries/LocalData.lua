@@ -1,6 +1,7 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
+local Data = require(ReplicatedStorage.Modules.Shared.Types.Data)
 
 --
 local LocalData = {
@@ -75,7 +76,13 @@ function LocalData:EditArtifact(Artifact: Types.PlayerArtifactData): ()
 end
 
 --
-function LocalData:GetItemById(IdGiven: string): ((Types.PlayerArtifactData | Types.PlayerDriveData)?, ('Drive' | 'Artifact')?)
+function LocalData:GetItemById(IdGiven: string): ((Types.PlayerArtifactData | Types.PlayerDriveData)?, ('Drive' | 'Artifact' | 'Item')?)
+    for _, Item in LocalData:GetItems() do
+        if Item.Name == IdGiven then
+            return Item, 'Item'
+        end
+    end
+
     for _, Item in LocalData:GetArtifacts() do
         if Item.Id == IdGiven then
             return Item, 'Artifact'
@@ -126,6 +133,15 @@ function LocalData:EditDrive(Artifact: Types.PlayerDriveData): ()
             return
         end
     end
+end
+
+--
+function LocalData:SetItems(Items: {Data.PlayerItemData})
+    LocalData.__Cache['Items'] = table.freeze(Items)
+end
+
+function LocalData:GetItems(): {Data.PlayerItemData}
+    return LocalData.__Cache['Items']
 end
 
 return LocalData

@@ -18,7 +18,6 @@ function Ability:Play(Agent: Types.GenericClass)
 		Ability:Get(Agent, 'M1_Track'):Stop(0.125)
 	end
 
-
 	--
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
 	Ability:Begin(Agent, {
@@ -29,6 +28,7 @@ function Ability:Play(Agent: Types.GenericClass)
 				Fade = .1,
 				Active_Time = Attack_Time + .25,
 			})
+
 			Ability:Save(Agent, 'M1_Track', Track)
 		end,},
 

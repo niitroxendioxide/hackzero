@@ -31,7 +31,7 @@ function Service:Create(Player: Player)
             AgentDataClass = AgentData
         end
 
-        local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level)
+        local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level, AgentDataClass.Skills)
 
         if AgentDataClass.Drive then
             local DriveFromQuery = DataService:GetDrives(Player, function(DriveQuery)

@@ -19,7 +19,6 @@ function Stages:Init()
         else
             warn("Error on stage data for [", Module.Name, "]:", Data)
         end
-
     end
 end
 

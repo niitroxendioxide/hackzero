@@ -19,6 +19,10 @@ function Destructibles:Init()
             warn("Error loading data for: ", Mod.Name)
         end
     end
+
+    table.sort(Destructibles.__Ids, function(a, b)
+		return a > b
+	end)
 end
 
 function Destructibles:GetData(Name: string): Types.DestructibleData?

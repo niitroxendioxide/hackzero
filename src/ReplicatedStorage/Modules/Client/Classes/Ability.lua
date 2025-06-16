@@ -32,6 +32,8 @@ function AbilityClass.new(Holdable: boolean): Types.AbilityClass
 	local self = setmetatable({}, AbilityClass)
 	self.__Character = Dir[#Dir - 1]
 	self.__Name = Dir[#Dir]:gsub(' ', '_')
+	self.Name = self.__Name
+
 	self.__Active_Sequences = {}
 	self.__Cache = {}
 	self.__Holdable = Holdable

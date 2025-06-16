@@ -3,13 +3,20 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
+
+local Data = require(Shared.Types.Data)
+local Fetcher = require(Client.Libraries.Fetcher)
+
 local Types = require(Shared.Types)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
-local ArtifactDatabase = require(Shared.Database.Artifacts)
+
 local CharacterDatabase = require(Shared.Database.Characters)
+local ArtifactDatabase = require(Shared.Database.Artifacts)
 local DrivesDatabase = require(Shared.Database.Drives)
+local ItemsDatabase = require(Shared.Database.Items)
 local DriveTraits = require(Shared.Database.DriveTraits)
+
 local LocalData = require(Client.Libraries.LocalData)
 local SharedData = require(Client.Libraries.SharedData)
 local InterfaceController = require(Client.Controllers.InterfaceController)
@@ -77,16 +84,7 @@ end
 local function DecompressTableOfAgents(Table: {}): {}
     local TranslatedData = {}
     for _, AgentData in Table do
-        local Buffer = AgentData[1]
-        local Artifacts = AgentData[2]
-        local DriveId = AgentData[3]
-
-        table.insert(TranslatedData, {
-            Name = CharacterDatabase:GetCharacterFromId(buffer.readu8(Buffer, 0)),
-            Level = buffer.readu8(Buffer, 1),
-            Drive = DriveId,
-            Artifacts = Artifacts,
-        })
+        table.insert(TranslatedData, Fetcher:BufferListToData(AgentData))
     end
 
     return TranslatedData :: {}
@@ -101,6 +99,8 @@ function Controller:Init()
             Controller:ConvertArtifacts(Payload)
         elseif Type == GameEnum.ItemDataEvent.GetAllDrives then
             Controller:ConvertDrives(Payload)
+        elseif Type == GameEnum.ItemDataEvent.GetAllItems then
+            Controller:ConvertItems(Payload)
         elseif Type == GameEnum.ItemDataEvent.GetCurrencies then
             Controller:ShowCurrencies(Payload)
         end
@@ -111,6 +111,8 @@ function Controller:Init()
             Controller:UpdateArtifactState(Payload)
         elseif Type == GameEnum.AgentEvent.UpdateDrive then
             Controller:UpdateDriveState(Payload)
+        elseif Type == GameEnum.AgentEvent.UpgradeAgentSkill then
+            Controller:UpdateAgentSkills(Payload)
         end
     end)
 
@@ -141,6 +143,34 @@ function Controller:Init()
 
         SharedData:SetData(Player, Match_Agents, Match_Drives, Match_Artifacts)
     end)
+end
+
+function Controller:ConvertItems(Payload: {})
+    local Items = {}
+
+    for _, ItemBuffer in Payload do
+        local Id = buffer.readu16(ItemBuffer, 0)
+        local Amount = buffer.readf32(ItemBuffer, 2)
+
+        local Name = ItemsDatabase:GetFromId(Id)
+        table.insert(Items, {
+            Name = Name,
+            Amount = Amount,
+        } :: Data.PlayerItemData)
+    end
+
+    LocalData:SetItems(Items)
+end
+
+function Controller:UpdateAgentSkills(Payload: {})
+    local AgentName = Payload[1]
+    local Skills = Payload[2]
+    local UI = InterfaceController:GetComponent("Agents")
+
+    local Agent = LocalData:GetAgent(AgentName)
+    Agent.Skills = Skills
+
+    UI:RefreshSkills()
 end
 
 function Controller:UpdateArtifactState(Payload: {number | {}})

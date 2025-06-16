@@ -47,6 +47,10 @@ function ServerEnemy.new(At: Vector3, Name: string, Level: number)
 	return self
 end
 
+function ServerEnemy:GetSkillLevel()
+	return 0
+end
+
 function ServerEnemy:GetStat(Stat: string)
 	if Stat == 'Speed' then
 		return 1

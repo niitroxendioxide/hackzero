@@ -23,7 +23,7 @@ AgentClass.__tostring = function()
 	return 'AgentClass'
 end
 
-function AgentClass.new(Name: string, Level: number): AgentTypes.AgentClass
+function AgentClass.new(Name: string, Level: number, Skills: {}): AgentTypes.AgentClass
 	local self = setmetatable({}, AgentClass)
 
 	self.Name = Name
@@ -32,11 +32,16 @@ function AgentClass.new(Name: string, Level: number): AgentTypes.AgentClass
 	-- # Private
 	self:SetLevel(Level)
 	self.__Tags = {}
+	self.__Skill_Levels = Skills
 	self.__Look_Marked = false
 	self.__Character = CharacterClass.new(Name)
 	self.__Items = ItemsClass.new(self)
 
 	return self
+end
+
+function AgentClass.GetSkillLevel(self: AgentTypes.AgentClass, Name: string)
+	return (self.__Skill_Levels[Name] or 1)
 end
 
 function AgentClass:GetId(): number

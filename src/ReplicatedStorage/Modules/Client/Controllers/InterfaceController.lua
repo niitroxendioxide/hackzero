@@ -19,7 +19,7 @@ function Controller:Init(): ()
 	Controller:DisableCallback("ResetButtonCallback")
 
 	for _, Component in Client.Components.Interface:GetDescendants() do
-		if Component:IsA("Folder") then
+		if Component:IsA("Folder") or (not Component.Parent:IsA('Folder')) then
 			continue
 		end
 

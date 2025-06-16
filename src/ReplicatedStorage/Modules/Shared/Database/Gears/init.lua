@@ -22,6 +22,10 @@ function Gear:Init()
 			warn('Error on Gear data for:', GearModule.Name)
 		end
 	end
+
+	table.sort(Gear.__Ids, function(a, b)
+		return a > b
+	end)
 end
 
 function Gear:GetGearData(Name: string): DataTypes.GearData

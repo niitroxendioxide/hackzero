@@ -15,6 +15,8 @@ function Ability:Play(Caster: Types.GenericClass): ()
 	Ability:Increase(Caster, 'Count', {Limit = 5})
 	local M1_Count = Ability:Get(Caster, 'Count')
 
+	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
+
 	--
 	Ability:Begin(Caster, {
 		{0, function(_: Types.Sequence)
@@ -28,12 +30,12 @@ function Ability:Play(Caster: Types.GenericClass): ()
 		{.17, function()
 			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.ServerEnemyClass)
 				Ability:Hit(Caster, Target, {
-					Damage = Ability:FromData('Damage_Mult', M1_Count, 12),
+					Damage = Ability:FromData('Damage_Mult', M1_Count, SkillLevel),
 					Affliction = 'Physical',
 					Stun = .325,
-					Daze = Ability:FromData('Daze_Mult', M1_Count),
+					Daze = Ability:FromData('Daze_Mult', M1_Count, SkillLevel),
 					Knockback = Ability:FromData('Knockback'),
-					Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count)
+					Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count, SkillLevel)
 				})
 			end)
 		end,},

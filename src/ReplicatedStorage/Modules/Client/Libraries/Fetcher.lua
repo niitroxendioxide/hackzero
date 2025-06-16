@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
+local Types = require(ReplicatedStorage.Modules.Shared.Types)
 local Network = require(Shared.Network)
 local AgentDatabase = require(Shared.Database.Characters)
 local DriveDatabase = require(Shared.Database.Drives)
@@ -23,24 +24,39 @@ function Fetcher:Init()
     end)
 end
 
+function Fetcher:BufferListToData(AgentData: {}): Types.ClientAgentData
+    local Buffer = AgentData[1]
+    local Artifacts = AgentData[2]
+    local DriveId = AgentData[3]
+
+    local SkillLevels = {
+        Basic_Attack = buffer.readu8(Buffer, 2),
+        Special = buffer.readu8(Buffer, 3),
+        Ultimate = buffer.readu8(Buffer, 4),
+    }
+
+    local Ascensions = buffer.readu8(Buffer, 5)
+
+    return {
+        Name = AgentDatabase:GetCharacterFromId(buffer.readu8(Buffer, 0)),
+        Level = buffer.readu8(Buffer, 1),
+        Drive = DriveId,
+        Artifacts = Artifacts,
+        Ascensions = Ascensions,
+        Skills = SkillLevels,
+        Experience = buffer.readu16(Buffer, 6)
+    }
+end
+
 function Fetcher:FetchAgents(): {any}
     local Data = Fetcher:SendRequest(GameEnum.FetchRequests.Agents)-- Request[2]
     local TranslatedData = {}
 
     for _, AgentData in Data do
-        local Buffer = AgentData[1]
-        local Artifacts = AgentData[2]
-        local DriveId = AgentData[3]
-
-        table.insert(TranslatedData, {
-            Name = AgentDatabase:GetCharacterFromId(buffer.readu8(Buffer, 0)),
-            Level = buffer.readu8(Buffer, 1),
-            Drive = DriveId,
-            Artifacts = Artifacts,
-        })
+        table.insert(TranslatedData, Fetcher:BufferListToData(AgentData))
     end
 
-    LocalData:SetAgents(TranslatedData :: {})
+    LocalData:SetAgents(TranslatedData)
 
     return TranslatedData
 end

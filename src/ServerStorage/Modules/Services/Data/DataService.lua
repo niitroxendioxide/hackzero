@@ -9,9 +9,8 @@ local Classes = Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
-local For = require(ReplicatedStorage.Modules.Client.Libraries.Fusion.State.For)
-local Places = require(ReplicatedStorage.Modules.Shared.Places)
 local Network = require(Shared.Network)
+local DataTypes = require(Shared.Types.Data)
 
 local GameEnum = require(Shared.GameEnum)
 local Types = require(Shared.Types)
@@ -20,12 +19,13 @@ local Clock = require(Shared.Utility.Clock)
 local ProfileTemplate = require(Database.Data.ProfileTemplate)
 local CharacterDatabase = require(Database.Characters)
 
+local PlayerItemDataClass = require(Classes.Data.PlayerItemData)
 local PlayerAgentDataClass = require(Classes.Data.PlayerAgentData)
 local PlayerDriveDataClass = require(Classes.Data.PlayerDriveData)
 local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("pleaseworkforonce", ProfileTemplate)
+local DataStore = ProfileStore.New("AgentSkills1", ProfileTemplate)
 
 --
 local ReplicatedKeys = {"Gems", "Money"}
@@ -33,7 +33,8 @@ local Service = {
     __Profiles = {} :: {[Player]: typeof(ProfileStore:StartSessionAsync())},
     __Agents = {},
     __Artifacts = {},
-    __Drives = {}
+    __Drives = {},
+    __Items = {},
 }
 
 local function RecursiveSearch(Data: {}, Key: string): ({}, string)
@@ -89,6 +90,17 @@ function Service:FetchAgents(Player: Player)
     return Data
 end
 
+function Service:FetchItems(Player: Player)
+    local Items = Service:GetItems(Player)
+
+    local Data = {}
+    for _, Item in (Items or {}) do
+        table.insert(Data, Item:Compress())
+    end
+
+    return Data
+end
+
 function Service:FetchArtifacts(Player: Player, Filter: ((a: Types.PlayerArtifactDataClass) -> (boolean))?)
     local Artifacts = Service:GetArtifacts(Player, Filter)
     if not Artifacts then return end
@@ -139,11 +151,19 @@ function Service:UpdatePlayerDrives(Player: Player): ()
     Network:Fire("ItemData", Player, GameEnum.ItemDataEvent.GetAllDrives, Drives)
 end
 
+function Service:UpdatePlayerItems(Player: Player): ()
+    local Items = Service:FetchItems(Player)
+    if not Items then return end
+
+    Network:Fire("ItemData", Player, GameEnum.ItemDataEvent.GetAllItems, Items)
+end
+
 function Service:SyncPlayerItems(Player: Player)
     local Data = Service:GetDataFor(Player)
 
     Service:UpdatePlayerArtifacts(Player)
     Service:UpdatePlayerDrives(Player)
+    Service:UpdatePlayerItems(Player)
 
     Network:Fire('ItemData', Player, GameEnum.ItemDataEvent.GetCurrencies, {
         ['Money'] = Data.Money,
@@ -184,6 +204,7 @@ function Service:AddPlayer(Player: Player)
             Service:SetupAgents(Player)
             Service:SetupArtifacts(Player)
             Service:SetupDrives(Player)
+            Service:SetupItems(Player)
         else
         -- The player has left before the profile session started
             RetrievedProfile:EndSession()
@@ -352,6 +373,12 @@ function Service:CreateAgentClass(Player: Player, Name: string)
             ClassObject:SetArtifacts(AgentData.Artifacts)
         end
 
+        if AgentData.Skills then
+            for SkillName, SkillLevel in AgentData.Skills do
+                ClassObject:SetSkill(SkillName, SkillLevel)
+            end
+        end
+
         Service:SetAgentClass(Player, ClassObject)
     end
 end
@@ -383,6 +410,10 @@ function Service:SavePlayerData(Player: Player)
 
     for _, Artifact: Types.PlayerArtifactDataClass in (Service.__Artifacts[Player] or {}) do
         Service:AddArtifact(Player, Artifact)
+    end
+
+    for _, Item: DataTypes.PlayerItemDataClass in (Service.__Items[Player] or {}) do
+        Service:SaveItem(Player, Item)
     end
 end
 
@@ -480,6 +511,35 @@ function Service:SetupDrives(Player: Player)
         local Drive = PlayerDriveDataClass.new(DriveData, Agent)
 
         Service:AddDrive(Player, Drive)
+    end
+end
+
+
+function Service:SaveItem(Player: Player, Item: DataTypes.PlayerItemDataClass)
+    local PlayerData = Service:GetDataFor(Player)
+    if not Service.__Items[Player] then
+        Service.__Items[Player] = {}
+    end
+
+    PlayerData.Items.Progress[Item.__Name] = Item:ToData()
+    Service.__Items[Player][Item.__Name] = Item
+end
+
+function Service:GetItem(Player: Player, ItemName: string)
+    return Service.__Items[Player][ItemName]
+end
+
+function Service:GetItems(Player: Player)
+    return Service.__Items[Player]
+end
+
+function Service:SetupItems(Player: Player)
+    local PlayerData = Service:GetDataFor(Player)
+
+    for _, ItemData in PlayerData.Items.Progress do
+        local Class = PlayerItemDataClass.new(ItemData.Name, ItemData.Amount)
+
+        Service:SaveItem(Player, Class)
     end
 end
 

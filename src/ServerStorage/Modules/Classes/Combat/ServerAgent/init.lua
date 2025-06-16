@@ -25,7 +25,7 @@ ServerAgentClass.__tostring = function()
 end
 
 
-function ServerAgentClass.new(Name: string, Level: number): Types.ServerAgentClass
+function ServerAgentClass.new(Name: string, Level: number, Skills: {}): Types.ServerAgentClass
 	local self = setmetatable({}, ServerAgentClass)
 	self.Name = Name
 
@@ -36,6 +36,7 @@ function ServerAgentClass.new(Name: string, Level: number): Types.ServerAgentCla
 	self.__Level = Level
 	self.__User = -125
 	self.__Active = false
+	self.__Skill_Levels = table.freeze(Skills)
 	self.__Last_Hit_Time = os.clock()
 	self.__Last_Skill_Cast = os.clock()
 	self.__Character = MovementClass.new(Name, Appearance.Height)
@@ -44,6 +45,10 @@ function ServerAgentClass.new(Name: string, Level: number): Types.ServerAgentCla
 	self.__Gear = ServerGearClass.new(self.__Items)
 
 	return self
+end
+
+function ServerAgentClass.GetSkillLevel(self: Types.ServerAgentClass, SkillName: string)
+	return self.__Skill_Levels[SkillName]
 end
 
 function ServerAgentClass:GetEnergy(): number

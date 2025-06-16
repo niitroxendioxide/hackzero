@@ -156,6 +156,7 @@ export type GenericClass = {
 
 	GetModel: (self: GenericClass) -> Model,
 	GetUltBar: (self: GenericClass) -> number,
+	GetSkillLevel: (self: GenericClass, Name: string) -> (number),
 
 	Walk: (self: GenericClass, Time: number) -> (),
 	SwitchState: (self: GenericClass, State: State, Time: number) -> (),
@@ -281,6 +282,8 @@ export type AbilityClass = {
 	__Cache: {},
 	__Signal: RBXScriptSignal,
 	__Cooldown: any,
+	__Name: string,
+	Name: string,
 
 	--[[
 		Play an animation using any character controller, example:
@@ -344,7 +347,7 @@ export type ServerAbilityClass = {
 	ForOtherAgents: (self: ServerAbilityClass, Agent: GenericClass, Callback: (Agent: GenericClass, Data: {IsNext: boolean}) -> ()) -> (),
 	Hit: (self: ServerAbilityClass, Agent: GenericClass, Enemy: ServerEnemyClass, Hit: HitEnemyData) -> (number),
 
-	FromData: (self: ServerAbilityClass, Key: AbilityDataKey) -> (any),
+	FromData: (self: ServerAbilityClass, Key: AbilityDataKey, SubKey: string?, Level: number?) -> (any),
 	SetData: (self: ServerAbilityClass, Data: {}) -> (),
 }
 
@@ -506,6 +509,8 @@ export type Artifact_Substat = "Health%" | "Health" | "Attack" | "Attack%" | "De
 
 export type Artifact_Data = {
 	Name: string,
+	Tier: Tier,
+	Icon: number,
 
 	--
 	Piece_Effects: {
@@ -597,6 +602,13 @@ export type ClientAgentData = {
 	Level: number,
 	Experience: number,
 	Drive: string,
+	Ascensions: number,
+
+	Skills: {
+		Basic_Attack: number,
+		Ultimate: number,
+		Special: number,
+	},
 
 	Artifacts: {
 		[number]: string,
@@ -665,6 +677,12 @@ export type PlayerAgentData = {
 	Skins: {},
 
 	Drive: PlayerDriveData,
+	Ascensions: number,
+	Skills: {
+		Basic_Attack: number,
+		Ultimate: number,
+		Special: number,
+	},
 
 	Artifacts: {
 		[number]: string,
@@ -739,7 +757,13 @@ export type PlayerAgentDataClass = {
 
 	ObtainmentDate: number,
 	Skins: {},
+	Skills: {
+		Basic_Attack: number,
+		Ultimate: number,
+		Special: number,
+	},
 
+	Ascensions: number,
 	Drive: string,
 
 	Artifacts: {
@@ -749,6 +773,7 @@ export type PlayerAgentDataClass = {
 	EquipArtifactToSlot: (self: PlayerAgentDataClass, SlotId: number, Artifact: PlayerArtifactDataClass?) -> (string?),
 	SetDrive: (self: PlayerAgentDataClass, Drive: string?) -> (string?),
 	SetArtifacts: (self: PlayerAgentDataClass, Artifacts: {string}) -> (),
+	SetSkill: (self: PlayerAgentDataClass) -> (number),
 	ToData: (self: PlayerAgentDataClass) -> (PlayerAgentData),
 	Compress: (self: PlayerAgentDataClass) -> ({}),
 }

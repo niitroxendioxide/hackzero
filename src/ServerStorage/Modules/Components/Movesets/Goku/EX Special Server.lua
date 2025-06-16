@@ -22,6 +22,8 @@ function Ability:Play(Caster: Types.GenericClass, Skill_Name: string, State: str
 		return;
 	end
 
+	local SkillLevel = Caster:GetSkillLevel('Special')
+
 	local Clock = os.clock()
 	local AttackTime = Ability:FromData('Attack_State_Time')
 	local Sequence = Ability:Begin(Caster, {
@@ -44,12 +46,12 @@ function Ability:Play(Caster: Types.GenericClass, Skill_Name: string, State: str
 
 				Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.ServerEnemyClass)
 					Ability:Hit(Caster, Target, {
-						Damage = Ability:FromData('Damage_Mult', nil, 1),
+						Damage = Ability:FromData('Damage_Mult', nil, SkillLevel),
 						Affliction = 'Physical',
 						Stun = .225,
-						Daze = Ability:FromData('Daze_Mult', nil, 1),
+						Daze = Ability:FromData('Daze_Mult', nil, SkillLevel),
 						Knockback = Ability:FromData('Knockback'),
-						Affliction_Buildup = Ability:FromData('Affliction_Buildup', nil, 1)
+						Affliction_Buildup = Ability:FromData('Affliction_Buildup', nil, SkillLevel)
 					})
 				end)
 			end
