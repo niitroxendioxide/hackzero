@@ -285,6 +285,26 @@ function Service:Add(Player: Player, GivenKey: string, Object: {}): ()
     return;
 end
 
+function Service:Increase(Player, GivenKey: string, Value: number)
+    local Data = Service:GetDataFor(Player)
+    local Dir, Key = RecursiveSearch(Data, GivenKey)
+
+    if typeof(Dir[Key]) ~= "number" then
+        return warn(`Cannot edit value {GivenKey} because it is not a number [{Dir}, {Key}]`)
+    end
+
+    Dir[Key] = Dir[Key] + Value
+
+    if table.find(ReplicatedKeys, Key) then
+        Network:Fire('ItemData', Player, GameEnum.ItemDataEvent.GetCurrencies, {
+            ['Money'] = Data.Money,
+            ['Gems'] = Data.Gems,
+        })
+    end
+
+    return
+end
+
 function Service:AddAgent(Player: Player, Agent: Types.PlayerAgentDataClass)
     local PlayerData = Service:GetDataFor(Player)
 

@@ -49,6 +49,11 @@ return {
 		HitDestructible = 82,
 	},
 
+	MarketplaceRequestTypes = {
+		BuyProduct = 1,
+		BuyGamepass = 2,
+	},
+
 
 	Skills = {
 		Basic_Attack = 1,

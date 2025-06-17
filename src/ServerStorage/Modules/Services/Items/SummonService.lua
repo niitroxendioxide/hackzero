@@ -13,8 +13,10 @@ local Banner = require(Packages.Summon.Banner)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local Statics = require(Shared.Database.Statics)
+local Products = require(Shared.Database.Products)
 
 local DataService = require(Modules.Services.Data.DataService)
+local ShopService = require(Modules.Services.Lobby.ShopService)
 local Probabilities = require(Shared.Database.Probabilities)
 local PlayerAgentDataClass = require(Modules.Classes.Data.PlayerAgentData)
 
@@ -70,6 +72,18 @@ function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: nu
         local PlayerGems = DataService:Get(Player, "Gems")
         local HasEnough = PlayerGems >= GemRequirement
         if not HasEnough then
+            local Difference = math.abs(PlayerGems - GemRequirement)
+            local CurrentPass = 'Huge'
+
+            for Key, Pass in Products.Dev_Products.Gems do
+                if Pass.Amount <= Products.Dev_Products.Gems[CurrentPass].Amount and Pass.Amount >= Difference then
+                    CurrentPass = Key
+                end
+            end
+
+            print("broo buy this", Products.Dev_Products.Gems[CurrentPass])
+            ShopService:PromptGemProduct(Player, CurrentPass)
+
             return
         end
 

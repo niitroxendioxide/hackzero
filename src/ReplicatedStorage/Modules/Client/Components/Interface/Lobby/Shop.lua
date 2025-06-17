@@ -6,6 +6,8 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(Shared.Types)
+local Network = require(Shared.Network)
+local GameEnum = require(Shared.GameEnum)
 local Products = require(Shared.Database.Products)
 local UIStates = require(Client.States.Interface)
 local EffectUtil = require(Shared.Utility.Effects)
@@ -13,6 +15,11 @@ local ComponentClass = require(Client.Classes.Interface)
 
 local Component = ComponentClass.new("Shop", "Shop", {KeyToBind = Enum.KeyCode.P})
 
+local function RequestBuyProduct(Type: string, Size: string)
+    Network:Fire('Shop', GameEnum.MarketplaceRequestTypes.BuyProduct, {Type, Size})
+end
+
+--
 function Component:Link(): Instance?
 	local PlayerGui = Player.PlayerGui
 	local HUD = PlayerGui:WaitForChild("LobbyHUD", 10) :: ScreenGui
@@ -46,6 +53,24 @@ function Component:Init()
     end)
 
     self:Set(false)
+
+    for _, Page in MainFrame.Shop.Pages:GetChildren() do
+        if not Page:IsA('Frame') then continue end
+
+        local PageType = string.gsub(Page.Name, 'Shop', '')
+        local Options = Page:FindFirstChild('Options')
+
+        for _, BuyOption in Options:GetChildren() do
+            local Size = BuyOption.Name
+
+            BuyOption.Button.MouseButton1Click:Connect(function()
+                RequestBuyProduct(PageType, Size)
+
+                BuyOption.UIScale.Scale = 0.8
+                EffectUtil:Tween(BuyOption.UIScale, {.3, 'Back'}, {Scale = 1})
+            end)
+        end
+    end
 
     --
     for _, Tab in MainFrame.Shop.TabList:GetChildren() do
