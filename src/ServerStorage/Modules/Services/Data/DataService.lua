@@ -95,7 +95,9 @@ function Service:FetchItems(Player: Player)
 
     local Data = {}
     for _, Item in (Items or {}) do
-        table.insert(Data, Item:Compress())
+        if Item.__Amount > 0 then
+            table.insert(Data, Item:Compress())
+        end
     end
 
     return Data
@@ -541,6 +543,24 @@ function Service:SetupItems(Player: Player)
 
         Service:SaveItem(Player, Class)
     end
+end
+
+function Service:HasItem(Player: Player, ItemName: string, Amount: number)
+    local Retrieved = Service:GetItem(Player, ItemName)
+    if not Retrieved then
+        return
+    end
+
+    return (Amount and (Retrieved.__Amount >= Amount) or Retrieved ~= nil)
+end
+
+function Service:TakeItem(Player: Player, ItemName: string, Amount: number)
+    local Retrieved = Service:GetItem(Player, ItemName)
+    if not Retrieved then
+        return
+    end
+
+    Retrieved:SetAmount(Retrieved.__Amount - Amount)
 end
 
 

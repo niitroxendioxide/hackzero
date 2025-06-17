@@ -5,11 +5,13 @@ local ServerStorage = game:GetService("ServerStorage")
 local Modules = ServerStorage.Modules
 local Services = Modules.Services
 local Shared = ReplicatedStorage.Modules.Shared
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local Types = require(Shared.Types)
 
 local DataService = require(Services.Data.DataService)
+local AgentDatabase = require(Shared.Database.Characters)
 
 -- Artifacts
 local function AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
@@ -81,9 +83,21 @@ function Service:UpgradeAgentSkill(Player: Player, AgentName: string, SkillName:
         return
     end
 
-    --
+    local AgentData = AgentDatabase:GetCharacterData(AgentName)
+    local Element = AgentData.Element
+    local Cost = Statics.Skill_Upgrade_Cost(Agent.Skills[SkillName] + 1)
+    local ItemName = Element..'Chip'
+
+    local HasOfItem = DataService:HasItem(Player, ItemName, Cost)
+    if not HasOfItem then
+        return
+    end
+
+    DataService:TakeItem(Player, ItemName, Cost)
+
     Agent:SetSkill(SkillName, Agent.Skills[SkillName] + 1)
 
+    DataService:UpdatePlayerItems(Player)
     UpdateSkills(Player, Agent)
 end
 

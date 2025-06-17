@@ -21,6 +21,9 @@ return {
 		Money = 5,
 	},
 
+	Max_Skill_Level = 20,
+	Skill_Upgrade_Cost = function(Level: number): number return math.floor(0.17 * Level^2 + 1) end,
+
 	--
 	Daze_Length_Level_Multiplier = 0.01416666666,
 	Drive_Trait_Chance = 25,

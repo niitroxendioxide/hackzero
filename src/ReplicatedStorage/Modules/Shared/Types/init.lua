@@ -217,6 +217,7 @@ export type CharacterData = {
 
 	Stats: CharacterStats,
 	Level_Stats: {[Stat]: number},
+	Moveset_Data: MovesetInfo,
 }
 
 export type CharacterAppearanceData = {
@@ -241,6 +242,11 @@ export type MovesetClass = {
 export type Mults = "Daze_Mult" | "Damage_Mult" | "Affliction_Buildup"
 export type AbilityDataKey = "Attack_State_Time" | "Speed" | "Animation_Speed" | "Attack_State_Time" | "Required_Energy" | Mults | string
 export type AbilityInfo = {
+	Upgrade_Requirements: {
+		[string]: number,
+	}?,
+	Description: string?,
+
 	Base: {
 		[AbilityDataKey | Mults | string]: number | {[number]: number},
 	},

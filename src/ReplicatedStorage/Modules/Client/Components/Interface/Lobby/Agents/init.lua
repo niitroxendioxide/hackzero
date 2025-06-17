@@ -35,7 +35,7 @@ if RoomLocations then
 end
 
 --
-local Component = ComponentClass.new(script.Name, 'Lobby', {KeyToBind = Enum.KeyCode.C}) :: Types.UIComponent & {FilterArtifacts: (self: Types.UIComponent, FilterFunction) -> ()}
+local Component = ComponentClass.new(script.Name, 'Lobby') :: Types.UIComponent & {FilterArtifacts: (self: Types.UIComponent, FilterFunction) -> ()}
 local Scope = Component:GetScope()
 
 local States = {

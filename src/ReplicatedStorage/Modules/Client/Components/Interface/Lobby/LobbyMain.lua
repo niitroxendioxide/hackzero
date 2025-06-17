@@ -11,6 +11,7 @@ local Types = require(Shared.Types)
 local Statics = require(Shared.Database.Statics)
 local UIGroups = require(Client.Libraries.UIGroups)
 local UIEffects = require(Client.Utility.UIEffects)
+local UIStates = require(Client.States.Interface)
 local ComponentClass = require(Client.Classes.Interface)
 local EffectUtil = require(Shared.Utility.Effects)
 local Inputs = require(Client.Libraries.Inputs)
@@ -28,8 +29,14 @@ local function ToggleTab(State: boolean)
     local Buttons = MainFrame.Buttons
     local Tab = MainFrame.MainButtonTab
 
+    if not UIStates:Get('MENU_BLOCKED') then
+        State = false
+    end
+
     States.Active = State
     Buttons.Visible = not States.Active
+
+    UIStates:Set("MENU_TAB_OPEN", State)
 
     if State then
         local MenuCorr: ColorCorrectionEffect = Lighting:FindFirstChild("MenuCorrection") or Instance.new("ColorCorrectionEffect")
@@ -105,7 +112,7 @@ function Component:CreateTabButton(Name: string)
     local Selector: TextButton = ButtonObj.Button
 
     Selector.MouseButton1Click:Connect(function()
-        local Element = UIGroups:GetElementClass("Lobby", Name)
+        local Element = UIGroups:GetElementClass("Lobby", Name) or UIGroups:GetElementClass(Name, Name)
 
         if not Element then return end
         ToggleTab(false)
@@ -209,7 +216,7 @@ function Component:Init(): ()
     MainTab.UserIdLabel.Text = Player.UserId
 
     --
-    for _, ButtonName in {'Inventory', 'Agents', 'Settings', 'Map'} do
+    for _, ButtonName in {'Inventory', 'Agents', 'Settings', 'Map', 'Shop'} do
         Component:CreateTabButton(ButtonName)
     end
 
@@ -246,14 +253,16 @@ function Component:Init(): ()
     end)
 
     --
-    local Agents = Component:GetButton("Agents")
-    Agents.Button.MouseButton1Click:Connect(function()
+    local function ActivateAgentsMenu()
         local Element = UIGroups:GetElementClass("Lobby", 'Agents')
-        if not Element then return end
+        if not Element or not UIStates:Get("MENU_BLOCKED") then return end
 
         ToggleTab(false)
         Element:Set(true)
-    end)
+    end
+
+    local Agents = Component:GetButton("Agents")
+    Agents.Button.MouseButton1Click:Connect(ActivateAgentsMenu)
 
     Agents.Button.MouseEnter:Connect(function()
         Agents.UIStroke.Color = Color3.new(1, 1, 1)
@@ -284,6 +293,18 @@ function Component:Init(): ()
             end
 
             ToggleTab(not States.Active)
+        end
+    })
+
+    Inputs:Bind(Enum.KeyCode.C, {
+        Callback = function()
+            if UIGroups:GetActiveElement("Lobby") ~= Component then
+                ToggleTab(false)
+
+                return
+            end
+
+            ActivateAgentsMenu()
         end
     })
 end
