@@ -51,6 +51,13 @@ local function ShowItemInfo(ItemId: string?)
     or ArtifactDatabase:GetArtifactData(ItemInfo.Name)
     or DrivesDatabase:GetDriveData(ItemInfo.Name)
 
+    if string.match(ItemId, 'AgentToken') then
+        OtherData = {
+            Description = 'Agent Token',
+            Icon = 0,
+        }
+    end
+
     DataFrame.ItemType.Text = ItemType
     DataFrame.ItemName.Text = OtherData.DisplayName or ItemInfo.Name
 
@@ -71,7 +78,7 @@ local function ShowItemInfo(ItemId: string?)
         DataFrame.LvlBar.Visible = false
         DataFrame.ArtLvl.Visible = false
 
-        DataFrame.ItemInfo.Icon.Image = 'rbxassetid://' .. OtherData.Icon
+        DataFrame.ItemInfo.Icon.Image = 'rbxassetid://' .. (OtherData.Icon or 0)
         DataFrame.ItemInfo.ItemCount.Text = `Amount Owned: <b>{ItemInfo.Amount or 0}</b>`
         DataFrame.ItemInfo.ItemDescription.Text = OtherData.Description
         DataFrame.ItemInfo.ItemDescription.TextSize = ScreenUtil:GetTextSize(24)
@@ -268,6 +275,7 @@ local function CreateAllItems()
     end
 
     for _, Item in LocalData:GetItems() do
+        print(Item.Name)
         CreateItem(Item.Name, 'Item', Item)
     end
 end

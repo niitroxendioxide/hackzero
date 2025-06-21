@@ -24,8 +24,8 @@ local EffectUtil = require(Shared.Utility.Effects)
 local ComponentClass = require(Client.Classes.Interface)
 local CharacterDatabase = require(Database.Characters)
 local DrivesDatabase = require(Database.Drives)
-local ArtifactDatabase = require(Database.Artifacts)
 local SkillsSubModule = require(script.Skills)
+local AscensionsSubModule = require(script.Ascensions)
 
 --
 export type FilterFunction = (Artifact: Frame & {Slot: NumberValue, Type: StringValue}) -> (boolean)
@@ -216,7 +216,7 @@ function Component:Init()
         EffectUtil:Tween(ReturnHolder.UIScale, {.25}, {Scale = 1})
     end)
 
-    local IdToNames = {'Stats', 'Skills', 'Items'}
+    local IdToNames = {'Stats', 'Skills', 'Items', 'Ascensions'}
     for _, Button in MainFrame.TabButtons:GetChildren() do
         if not Button:FindFirstChild("Btn") then continue end
 
@@ -258,9 +258,8 @@ function Component:Init()
 
             Component:SelectAgent(States.__Current_Agent)
 
-            local StringTabs = {"Items", "Stats", "Skills"}
             for _, SubFrame in MainFrame:GetChildren() do
-                if table.find(StringTabs, SubFrame.Name) and SubFrame ~= Frame then
+                if table.find(IdToNames, SubFrame.Name) and SubFrame ~= Frame then
                     SubFrame.Visible = false
                 end
             end
@@ -370,8 +369,9 @@ function Component:SelectAgent(AgentData: Types.ClientAgentData)
         Component:ShowStats(AgentData)
     elseif CurrentTab == 'Skills' then
         Component:ShowSkills(AgentData)
+    elseif CurrentTab == 'Ascensions' then
+        Component:ShowAscensions(AgentData)
     elseif CurrentTab == "None" then
-        print("none?!")
         MainFrame.Stats.Visible = false
         MainFrame.Items.Visible = false
     end
@@ -1030,6 +1030,22 @@ function Component:RefreshSkills()
     local SkillsFrame = MainFrame.Skills
 
     SkillsSubModule:UpdateSkillLevels(SkillsFrame, States.__Current_Agent.Name)
+end
+
+function Component:ShowAscensions()
+    local MainFrame = self:GetFrame()
+    local AscensionsFrame = MainFrame.Ascensions
+
+    Camera:TweenTo(RoomLocations.AscensionsTab.CFrame, {.6, 'Cubic'})
+
+    AscensionsSubModule:UpdateAscensionInfo(AscensionsFrame, States.__Current_Agent.Name)
+end
+
+function Component:RefreshAscensions()
+    local MainFrame = self:GetFrame()
+    local AscensionsFrame = MainFrame.Ascensions
+
+    AscensionsSubModule:RefreshAscensionInfo(AscensionsFrame, States.__Current_Agent.Name)
 end
 
 return Component

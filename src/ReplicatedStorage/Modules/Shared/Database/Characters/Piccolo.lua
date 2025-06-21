@@ -39,5 +39,31 @@ return {
 		['Basic Attack'] = {
 			Cooldown = .35
 		},
+	},
+
+	Ascension_Data = {
+		[1] = {
+			Description = 'Piccolo ascension 1',
+		},
+
+		[2] = {
+			Description = 'Piccolo ascension 2',
+		},
+
+		[3] = {
+			Description = 'Piccolo ascension 3',
+		},
+
+		[4] = {
+			Description = 'Piccolo ascension 4',
+		},
+
+		[5] = {
+			Description = 'Piccolo ascension 5',
+		},
+
+		[6] = {
+			Description = 'Piccolo ascension 6',
+		},
 	}
 }

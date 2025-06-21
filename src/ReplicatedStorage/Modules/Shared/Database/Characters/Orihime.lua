@@ -39,5 +39,31 @@ return {
 		['Basic Attack'] = {
 			Cooldown = .35
 		},
+	},
+
+	Ascension_Data = {
+		[1] = {
+			Description = 'Orihime ascension 1',
+		},
+
+		[2] = {
+			Description = 'Orihime ascension 2',
+		},
+
+		[3] = {
+			Description = 'Orihime ascension 3',
+		},
+
+		[4] = {
+			Description = 'Orihime ascension 4',
+		},
+
+		[5] = {
+			Description = 'Orihime ascension 5',
+		},
+
+		[6] = {
+			Description = 'Orihime ascension 6',
+		},
 	}
 }

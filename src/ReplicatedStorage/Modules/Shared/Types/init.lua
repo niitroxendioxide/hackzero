@@ -204,6 +204,14 @@ export type EnemyStats = {
 	Movement_Speed: number
 }
 
+export type AscensionData = {
+	Description: number,
+
+	Passive_Buffs: {
+		Stage: 'BeforeDamage' | 'AfterDamage' | '',
+	},
+}
+
 export type CharacterData = {
 	Display_Name: string,
 	Nickname: string,
@@ -218,6 +226,9 @@ export type CharacterData = {
 	Stats: CharacterStats,
 	Level_Stats: {[Stat]: number},
 	Moveset_Data: MovesetInfo,
+	Ascension_Data: {
+		[number]: AscensionData,
+	},
 }
 
 export type CharacterAppearanceData = {
@@ -779,6 +790,7 @@ export type PlayerAgentDataClass = {
 	EquipArtifactToSlot: (self: PlayerAgentDataClass, SlotId: number, Artifact: PlayerArtifactDataClass?) -> (string?),
 	SetDrive: (self: PlayerAgentDataClass, Drive: string?) -> (string?),
 	SetArtifacts: (self: PlayerAgentDataClass, Artifacts: {string}) -> (),
+	SetAscensions: (self: PlayerAgentDataClass, Amount: number) -> (),
 	SetSkill: (self: PlayerAgentDataClass) -> (number),
 	ToData: (self: PlayerAgentDataClass) -> (PlayerAgentData),
 	Compress: (self: PlayerAgentDataClass) -> ({}),

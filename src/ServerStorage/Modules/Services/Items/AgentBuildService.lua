@@ -55,6 +55,10 @@ local function UpdateSkills(Player: Player, Agent: Types.PlayerAgentDataClass): 
     Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpgradeAgentSkill, {Agent.Name, Agent.Skills})
 end
 
+local function AscendAgent(Player: Player, Agent: Types.PlayerAgentDataClass): ()
+    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.AscendAgent, {Agent.Name, Agent.Ascensions})
+end
+
 
 --[[
     Handles setting up the builds & using the data from the player artifacts & more
@@ -73,7 +77,31 @@ function Service.__HandleEvent(Player: Player, Type: number, Request: {})
         Service:SetAgentDrive(Player, Request[1], Request[2])
     elseif Type == GameEnum.AgentEvent.UpgradeAgentSkill then
         Service:UpgradeAgentSkill(Player, Request[1], Request[2])
+    elseif Type == GameEnum.AgentEvent.AscendAgent then
+        Service:AscendAgent(Player, Request[1], Request[2])
     end
+end
+
+function Service:AscendAgent(Player: Player, AgentName: string, Times: number)
+    local Agent = DataService:GetAgent(Player, AgentName)
+
+    Times = Times or 1
+
+    if Agent.Ascensions + Times > 6 then
+        return
+    end
+
+    local ItemName = 'AgentToken:'..AgentName
+    local HasOfItem = DataService:HasItem(Player, ItemName, Times)
+    if not HasOfItem then
+        return
+    end
+
+    Agent:SetAscensions(Agent.Ascensions + Times)
+    DataService:TakeItem(Player, ItemName, Times)
+
+    DataService:SyncPlayerItems(Player)
+    AscendAgent(Player, Agent)
 end
 
 function Service:UpgradeAgentSkill(Player: Player, AgentName: string, SkillName: number)

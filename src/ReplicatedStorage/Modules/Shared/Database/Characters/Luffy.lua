@@ -39,5 +39,31 @@ return {
 		['Basic Attack'] = {
 			Cooldown = .35
 		},
+	},
+
+	Ascension_Data = {
+		[1] = {
+			Description = 'Luffy ascension 1',
+		},
+
+		[2] = {
+			Description = 'Luffy ascension 2',
+		},
+
+		[3] = {
+			Description = 'Luffy ascension 3',
+		},
+
+		[4] = {
+			Description = 'Luffy ascension 4',
+		},
+
+		[5] = {
+			Description = 'Luffy ascension 5',
+		},
+
+		[6] = {
+			Description = 'Luffy ascension 6',
+		},
 	}
 }

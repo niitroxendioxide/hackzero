@@ -44,11 +44,16 @@ local function SyncPlayerDataWithOthers(Player: Player, AgentTeam: {}?, PlayerTo
 	Network:Fire("SharedData", PlayerToSync, Player, DataCache[Player])
 end
 
+local function SavePlayerSettings(SettingsToChange: {[string]: number | boolean})
+	
+end
+
 --
 local Service = {}
 
 function Service:Init(): ()
 	Network.new("SharedData", 'Event')
+	Network.new('PlayerSettings', 'Event')
 
 	Notifications:Init()
 	Service:SetupStarterPlayer()
@@ -60,6 +65,8 @@ function Service:Init(): ()
 	for _, Player in Players:GetPlayers() do
 		task.spawn(Service.PlayerAdded, Player)
 	end
+
+	Network:On("PlayerSettings", SavePlayerSettings)
 
 	Players.PlayerAdded:Connect(Service.PlayerAdded)
 	Players.PlayerRemoving:Connect(Service.PlayerRemoving)

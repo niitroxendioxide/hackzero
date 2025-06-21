@@ -73,14 +73,22 @@ local function UpdateSkillUpgradeRequirements(StatsTab, Agent, Skill)
             end
         end
 
+        local function GetByName(Name: string)
+            for _, Item in TotalItems do
+                if Item.Name == Name then
+                    return Item
+                end
+            end
+
+            return;
+        end
+
         for _, Items in ItemsToUpgrade do
             local ItemToShow = Items[1]
             local AmountToShow = Items[2]
 
-            local PlayerHas = TotalItems[ItemToShow]
-            if typeof(PlayerHas) ~= 'number' then
-                PlayerHas = 0
-            end
+            local PlayerItem = GetByName(ItemToShow) or {Amount = 0}
+            local PlayerHas = PlayerItem.Amount
 
             local ItemDBData = ItemsDatabase:GetItemData(ItemToShow)
             if not ItemDBData then
@@ -91,7 +99,7 @@ local function UpdateSkillUpgradeRequirements(StatsTab, Agent, Skill)
             local NewItem = Existed or Assets.Interface.Agents.Skills.ItemRequired:Clone()
             NewItem.Name = ItemToShow
             NewItem.Item.ItemIcon.Image = 'rbxassetid://' .. ItemDBData.Icon
-            NewItem.Count.TextLabel.Text = `{PlayerHas} / {AmountToShow}`
+            NewItem.Count.TextLabel.Text = `{PlayerHas} / <b>{AmountToShow}</b>`
             NewItem.Count.TextLabel.TextColor3 = PlayerHas >= AmountToShow and ENOUGH_COLOR or NOT_ENOUGH_COLOR
             NewItem.Parent = StatsTab.ItemList
 

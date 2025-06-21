@@ -81,7 +81,6 @@ function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: nu
                 end
             end
 
-            print("broo buy this", Products.Dev_Products.Gems[CurrentPass])
             ShopService:PromptGemProduct(Player, CurrentPass)
 
             return
@@ -89,20 +88,32 @@ function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: nu
 
         DataService:Set(Player, "Gems", PlayerGems - GemRequirement)
 
+        local TokenUpdated = false;
         local List = {};
         for idx = 1, Amount do
             local NewAgent = Service:SummonFromBanner()
 
-            --print(NewAgent.Name, NewAgent)
-            DataService:AddAgent(Player, NewAgent)
+            local HasAgent = DataService:GetAgent(Player, NewAgent.Name)
+            if HasAgent then
+                local Item = DataService:GetItem(Player, 'AgentToken:'..NewAgent.Name, true)
+                Item:SetAmount(math.min(6, Item.__Amount + 1))
+                print('Hey!')
+
+                TokenUpdated = true;
+
+                DataService:SaveItem(Player, Item)
+            else
+                DataService:AddAgent(Player, NewAgent)
+            end
 
             table.insert(List, {NewAgent.Name})
         end
 
-        Network:Fire("Summon", Player, GameEnum.SummonRequests.SummonResult, List)
+        if TokenUpdated then
+            DataService:UpdatePlayerItems(Player)
+        end
 
-        --
-        -- print("Server summoned stuff :3")
+        Network:Fire("Summon", Player, GameEnum.SummonRequests.SummonResult, List)
     end
 end
 

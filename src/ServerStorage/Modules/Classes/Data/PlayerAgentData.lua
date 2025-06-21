@@ -72,7 +72,13 @@ function PlayerAgentDataClass.EquipArtifactToSlot(self: Types.PlayerAgentDataCla
     end
 end
 
+function PlayerAgentDataClass.SetAscensions(self: Types.PlayerAgentDataClass, Amount: number)
+    self.Ascensions = math.clamp(Amount, 0, 6)
+end
+
 function PlayerAgentDataClass.ToData(self: Types.PlayerAgentDataClass): Types.PlayerAgentData
+    print(self.Ascensions)
+
     return table.freeze({
         Drive = self.Drive,
         Artifacts = {

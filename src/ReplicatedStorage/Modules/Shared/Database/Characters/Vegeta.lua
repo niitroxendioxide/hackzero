@@ -39,5 +39,31 @@ return {
 		['Basic Attack'] = {
 			Cooldown = .35
 		},
+	},
+
+	Ascension_Data = {
+		[1] = {
+			Description = 'Vegeta ascension 1',
+		},
+
+		[2] = {
+			Description = 'Vegeta ascension 2',
+		},
+
+		[3] = {
+			Description = 'Vegeta ascension 3',
+		},
+
+		[4] = {
+			Description = 'Vegeta ascension 4',
+		},
+
+		[5] = {
+			Description = 'Vegeta ascension 5',
+		},
+
+		[6] = {
+			Description = 'Vegeta ascension 6',
+		},
 	}
 }

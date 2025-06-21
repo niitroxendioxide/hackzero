@@ -173,5 +173,31 @@ return {
 				}}
 			}
 		},
+	},
+
+	Ascension_Data = {
+		[1] = {
+			Description = 'Goku ascension 1',
+		},
+
+		[2] = {
+			Description = 'Goku ascension 2',
+		},
+
+		[3] = {
+			Description = 'Goku ascension 3',
+		},
+
+		[4] = {
+			Description = 'Goku ascension 4',
+		},
+
+		[5] = {
+			Description = 'Goku ascension 5',
+		},
+
+		[6] = {
+			Description = 'Goku ascension 6',
+		},
 	}
 }

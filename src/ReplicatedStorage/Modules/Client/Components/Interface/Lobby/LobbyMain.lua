@@ -21,8 +21,10 @@ local IconDatabase = require(Shared.Database.Icons)
 --
 local Component = ComponentClass.new("MainMenu", 'Lobby') :: Types.UIComponent & Types.UIGetSetButton
 
+local TranslatedCurrencies = {Gems = "Gem", Money = 'Gold'}
 local States = {
     Active = false,
+    TweenConnection = nil,
 }
 local function ToggleTab(State: boolean)
     local MainFrame = Component:GetFrame()
@@ -35,8 +37,13 @@ local function ToggleTab(State: boolean)
 
     States.Active = State
     Buttons.Visible = not States.Active
+    Tab.Visible = true
 
     UIStates:Set("MENU_TAB_OPEN", State)
+
+    if States.TweenConnection then
+        States.TweenConnection:Disconnect()
+    end
 
     if State then
         local MenuCorr: ColorCorrectionEffect = Lighting:FindFirstChild("MenuCorrection") or Instance.new("ColorCorrectionEffect")
@@ -69,7 +76,11 @@ local function ToggleTab(State: boolean)
             EffectUtil:Tween(MenuCorr, {.2, 'Sine'}, {Saturation = 0, Contrast = 0, Brightness = 0})
         end
 
-        EffectUtil:Tween(Tab, {.25, 'Cubic', 'In'}, {Position = UDim2.fromScale(1.5, 0)})
+        local TweenObj = EffectUtil:Tween(Tab, {.25, 'Cubic', 'In'}, {Position = UDim2.fromScale(1.5, 0)})
+
+        States.TweenConnection = TweenObj.Completed:Once(function()
+            Tab.Visible = false
+        end)
     end
 
     --
@@ -117,6 +128,7 @@ function Component:CreateTabButton(Name: string)
         if not Element then return end
         ToggleTab(false)
 
+        print(Element)
         Element:Set(true)
     end)
 
@@ -195,7 +207,11 @@ function Component:ShowCurrency(Name: string)
     NewObject.Parent = CurrencyFrame.List
 
     NewObject.Button.MouseButton1Click:Connect(function()
-        print("gotta buy", Name)
+        local Name = TranslatedCurrencies[Name] or Name
+        local Element = UIGroups:GetElementClass("Shop", 'Shop')
+        if not Element then return end
+
+        Element:OpenOn(Name)
     end)
 
     NewObject.Button.MouseEnter:Connect(function()

@@ -177,6 +177,7 @@ return {
 		EvolveAgent = 4,
 		LoadAll = 5,
 		UpgradeAgentSkill = 6,
+		AscendAgent = 7,
 	},
 
 	ChangeEvents = {

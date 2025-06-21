@@ -5,10 +5,10 @@ local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Types = require(Shared.Types)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local Products = require(Shared.Database.Products)
+local UIEffects = require(Client.Utility.UIEffects)
 local UIStates = require(Client.States.Interface)
 local EffectUtil = require(Shared.Utility.Effects)
 local ComponentClass = require(Client.Classes.Interface)
@@ -35,11 +35,12 @@ function Component:Init()
 
     Component:BindToStateChange(function(State: boolean)
         MainFrame.Visible = true
-        if UIStates:Get("MENU_TAB_OPEN") then
+        if UIStates:Get("MENU_TAB_OPEN") or UIStates:Get("SETTINGS_OPEN") then
             State = false
         end
 
         UIStates:Set('MENU_BLOCKED', not State)
+        UIStates:Set('SHOP_OPEN', State)
 
         if State then
             EffectUtil:Tween(MainFrame.Background, {.25, 'Sine'}, {Transparency = 0.3})
@@ -81,6 +82,22 @@ function Component:Init()
             Pages.UIPageLayout:JumpTo(TabPointer)
         end)
     end
+
+    UIEffects:AnimateReturnButton(MainFrame.Shop.Return, function()
+        Component:Set(false)
+    end)
+end
+
+function Component:OpenOn(Tab: string)
+    local MainFrame = self:GetFrame()
+
+    local Layout = MainFrame.Shop.Pages.UIPageLayout :: UIPageLayout
+    local Page = MainFrame.Shop.Pages:FindFirstChild(Tab .. 'Shop')
+    print(Page, Tab)
+
+    Layout:JumpTo(Page)
+
+    Component:Set(true)
 end
 
 return Component

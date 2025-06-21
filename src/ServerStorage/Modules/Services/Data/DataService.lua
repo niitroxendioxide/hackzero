@@ -401,6 +401,10 @@ function Service:CreateAgentClass(Player: Player, Name: string)
             end
         end
 
+        if AgentData.Ascensions then
+            ClassObject:SetAscensions(AgentData.Ascensions)
+        end
+
         Service:SetAgentClass(Player, ClassObject)
     end
 end
@@ -547,8 +551,17 @@ function Service:SaveItem(Player: Player, Item: DataTypes.PlayerItemDataClass)
     Service.__Items[Player][Item.__Name] = Item
 end
 
-function Service:GetItem(Player: Player, ItemName: string)
-    return Service.__Items[Player][ItemName]
+function Service:GetItem(Player: Player, ItemName: string, CreateIfDoesntExist: boolean?)
+    local Item = Service.__Items[Player][ItemName]
+
+    if CreateIfDoesntExist and Item == nil then
+        local Class = PlayerItemDataClass.new(ItemName, 0)
+
+        Service:SaveItem(Player, Class)
+        Item = Class
+    end
+
+    return Item
 end
 
 function Service:GetItems(Player: Player)
@@ -565,13 +578,15 @@ function Service:SetupItems(Player: Player)
     end
 end
 
-function Service:HasItem(Player: Player, ItemName: string, Amount: number)
+function Service:HasItem(Player: Player, ItemName: string, Amount: number): boolean
     local Retrieved = Service:GetItem(Player, ItemName)
     if not Retrieved then
-        return
+        return false
     end
 
-    return (Amount and (Retrieved.__Amount >= Amount) or Retrieved ~= nil)
+    Amount = Amount or 1
+
+    return Amount and (Retrieved.__Amount >= Amount)
 end
 
 function Service:TakeItem(Player: Player, ItemName: string, Amount: number)

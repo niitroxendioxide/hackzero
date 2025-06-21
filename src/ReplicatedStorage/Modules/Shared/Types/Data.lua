@@ -28,7 +28,7 @@ export type PlayerItemDataClass = {
 
     SetAmount: (self: PlayerItemDataClass, number) -> (),
 
-    Compress: (self: PlayerItemDataClass) -> (buffer),
+    Compress: (self: PlayerItemDataClass) -> (buffer, string?),
     ToData: (self: PlayerItemDataClass) -> (),
 }
 

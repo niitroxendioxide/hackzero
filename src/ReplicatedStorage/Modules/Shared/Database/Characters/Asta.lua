@@ -39,5 +39,31 @@ return {
 		['Basic Attack'] = {
 			Cooldown = .35
 		},
+	},
+
+	Ascension_Data = {
+		[1] = {
+			Description = 'Asta ascension 1',
+		},
+
+		[2] = {
+			Description = 'Asta ascension 2',
+		},
+
+		[3] = {
+			Description = 'Asta ascension 3',
+		},
+
+		[4] = {
+			Description = 'Asta ascension 4',
+		},
+
+		[5] = {
+			Description = 'Asta ascension 5',
+		},
+
+		[6] = {
+			Description = 'Asta ascension 6',
+		},
 	}
 }

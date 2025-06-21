@@ -1,0 +1,3 @@
+return {
+    CameraShake = true,
+}

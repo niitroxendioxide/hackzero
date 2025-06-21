@@ -1,13 +1,10 @@
 return {
-    --
     Level = 1,
     Experience = 0,
 
-    --
     Money = 1000,
     Gems = 0,
 
-    --
     Stats = {
         TotalDamage = 0,
         TotalDaze = 0,
@@ -15,6 +12,12 @@ return {
         TotalPulls = 0,
         TotalGemsSpent = 0,
         TotalMoneySpent = 0,
+    },
+
+    Settings = {
+        Graphics = {},
+        Sounds = {},
+        QOL = {},
     },
 
     Agents = {},

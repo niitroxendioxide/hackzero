@@ -39,5 +39,31 @@ return {
 		['Basic Attack'] = {
 			Cooldown = .35
 		},
+	},
+
+	Ascension_Data = {
+		[1] = {
+			Description = 'Yuno ascension 1',
+		},
+
+		[2] = {
+			Description = 'Yuno ascension 2',
+		},
+
+		[3] = {
+			Description = 'Yuno ascension 3',
+		},
+
+		[4] = {
+			Description = 'Yuno ascension 4',
+		},
+
+		[5] = {
+			Description = 'Yuno ascension 5',
+		},
+
+		[6] = {
+			Description = 'Yuno ascension 6',
+		},
 	}
 }

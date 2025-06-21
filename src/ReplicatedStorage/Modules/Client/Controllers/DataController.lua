@@ -113,6 +113,8 @@ function Controller:Init()
             Controller:UpdateDriveState(Payload)
         elseif Type == GameEnum.AgentEvent.UpgradeAgentSkill then
             Controller:UpdateAgentSkills(Payload)
+        elseif Type == GameEnum.AgentEvent.AscendAgent then
+            Controller:AscendAgent(Payload)
         end
     end)
 
@@ -145,14 +147,27 @@ function Controller:Init()
     end)
 end
 
+function Controller:AscendAgent(Payload: {})
+    local AgentData = LocalData:GetAgent(Payload[1])
+    AgentData.Ascensions = Payload[2]
+
+    local UI = InterfaceController:GetComponent("Agents")
+
+    UI:RefreshAscensions()
+end
+
 function Controller:ConvertItems(Payload: {})
     local Items = {}
 
     for _, ItemBuffer in Payload do
         local Id = buffer.readu16(ItemBuffer, 0)
         local Amount = buffer.readf32(ItemBuffer, 2)
+        local RealName = nil
+        if buffer.len(ItemBuffer) > 6 then
+            RealName = buffer.readstring(ItemBuffer, 6, buffer.len(ItemBuffer) - 6)
+        end
 
-        local Name = ItemsDatabase:GetFromId(Id)
+        local Name = RealName or ItemsDatabase:GetFromId(Id)
         table.insert(Items, {
             Name = Name,
             Amount = Amount,

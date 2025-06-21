@@ -51,8 +51,6 @@ end
 
 function LocalData:SetArtifacts(Data: {Types.PlayerArtifactData})
     LocalData.__Cache['Artifacts'] = Data
-
-    print('Set artifacts', Data)
 end
 
 function LocalData:GetArtifactById(Id: string): Types.PlayerArtifactData?
@@ -76,7 +74,7 @@ function LocalData:EditArtifact(Artifact: Types.PlayerArtifactData): ()
 end
 
 --
-function LocalData:GetItemById(IdGiven: string): ((Types.PlayerArtifactData | Types.PlayerDriveData)?, ('Drive' | 'Artifact' | 'Item')?)
+function LocalData:GetItemById(IdGiven: string): ((Types.PlayerArtifactData & Types.PlayerDriveData & Data.PlayerItemData)?, ('Drive' | 'Artifact' | 'Item')?)
     for _, Item in LocalData:GetItems() do
         if Item.Name == IdGiven then
             return Item, 'Item'

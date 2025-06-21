@@ -41,5 +41,31 @@ return {
 		['Basic Attack'] = {
 
         }
+	},
+
+	Ascension_Data = {
+		[1] = {
+			Description = 'Trunks ascension 1',
+		},
+
+		[2] = {
+			Description = 'Trunks ascension 2',
+		},
+
+		[3] = {
+			Description = 'Trunks ascension 3',
+		},
+
+		[4] = {
+			Description = 'Trunks ascension 4',
+		},
+
+		[5] = {
+			Description = 'Trunks ascension 5',
+		},
+
+		[6] = {
+			Description = 'Trunks ascension 6',
+		},
 	}
 }
