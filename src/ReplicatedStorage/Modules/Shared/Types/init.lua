@@ -732,6 +732,19 @@ export type PlayerProfileData = {
         TotalCurrencySpent: number,
     },
 
+	Settings: {
+		Graphics: {},
+		QOL: {},
+		Sounds: {},
+		Keybinds: {},
+	},
+
+	Quests: {
+		Daily: {},
+		Main: {},
+		Interactions: {},
+	},
+
     Agents: {
 		[number]: PlayerAgentData,
 	},

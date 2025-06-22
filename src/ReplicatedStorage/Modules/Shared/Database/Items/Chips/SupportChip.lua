@@ -2,7 +2,8 @@ return {
     DisplayName = 'Specialized Support Modules',
     Description = 'Used to level up Support Speciality agents.',
 
-    Icon = 0,
+    Type = "Upgrade",
+    Icon = 111780354674325,
     Tier = 'Common',
     Max = math.huge,
 }

@@ -331,6 +331,16 @@ function Component:CheckAvailable(): boolean
     return true
 end
 
+function Component:RefreshInformation()
+    Component:SelectAgent(States.__Current_Agent)
+
+    if States.__Last_Tab == 'Stats' then
+        local Element = UIGroups:GetElementClass("Feeding", "Feeding")
+
+        Element:UpdateProgressBar()
+    end
+end
+
 function Component:SelectAgent(AgentData: Types.ClientAgentData)
     if States.__Current_Agent == nil then
         Camera:TweenTo(RoomLocations.StatsTab.CFrame)

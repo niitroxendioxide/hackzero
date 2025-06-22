@@ -8,13 +8,20 @@ export type GearData = {
     },
 }
 
+
+export type ItemTypes = "Upgrade" | "Feeding"
 export type ItemData = {
     DisplayName: string,
     Description: string,
 
+    Type: ItemTypes,
     Tier: Types.Tier,
     Icon: number,
     Max: number,
+
+    Other: {
+        FeedExp: number,
+    }?,
 }
 
 export type PlayerItemData = {

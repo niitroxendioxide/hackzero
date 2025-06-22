@@ -2,7 +2,8 @@ return {
     DisplayName = 'Specialized Stun Modules',
     Description = 'Used to level up Stun Speciality agents.',
 
-    Icon = 0,
+    Type = "Upgrade",
+    Icon = 121117625620782,
     Tier = 'Common',
     Max = math.huge,
 }

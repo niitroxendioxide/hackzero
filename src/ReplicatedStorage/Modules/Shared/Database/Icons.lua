@@ -48,6 +48,13 @@ return {
 		['Dodge'] = 90333531186937,
 	},
 
+	Roles = {
+		Affliction = PREFIX .. 131830988316888,
+		Attack = PREFIX .. 91651511781661,
+		Stun = PREFIX .. 130565420004864,
+		Support = PREFIX .. 98271985547867,
+	},
+
 	Elements = {
 		Ice = PREFIX .. 108516110153642,
 		Fire = PREFIX .. 116710794714652,

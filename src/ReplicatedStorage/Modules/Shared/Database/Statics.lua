@@ -1,3 +1,41 @@
+local GetExpForLevel; GetExpForLevel = function(level)
+	if type(level) ~= "number" or level < 1 or level > 60 then
+		return nil, "Invalid level. Must be between 1 and 60."
+	end
+
+	if level == 1 then return 0 end
+
+	if level <= 10 then
+		return 25 * level^2 - 25 * level
+	elseif level <= 19 then
+		return GetExpForLevel(10) + 1800 * (level - 10) - 135 * (level - 10) * (level - 11) / 2
+	elseif level <= 30 then
+		if level == 20 then return 30000 end
+		local exp = 30000
+		for l = 21, level do
+			exp = exp + 4680 + 295 * (l - 21) - 5 * (l - 21) * (l - 22) / 2
+		end
+		return exp
+	elseif level <= 39 then
+		return GetExpForLevel(30) + 10800 + 600 * (level - 31) * (level - 30) / 2
+	elseif level <= 49 then
+		if level == 40 then return 225000 end
+		local exp = 225000
+		for l = 41, level do
+			exp = exp + 900 + 300 * (l - 41)
+		end
+		return exp
+	else
+		if level == 50 then return 450000 end
+		local exp = 450000
+		for l = 51, level do
+			exp = exp + 2400 + 2400 * (l - 51)
+		end
+
+		return exp
+	end
+end
+
 return {
 	GameVersion = '0.01',
 
@@ -29,13 +67,23 @@ return {
 	Drive_Trait_Chance = 25,
 
 	--
-	Experience_Increase_Per_Ascension = {
-		[1] = 150,
-		[2] = 300,
-		[3] = 600,
-		[4] = 1200,
-		[5] = 2400,
+	Ascension_Chip_Cost = {
+		[1] = 5,
+		[2] = 15,
+		[3] = 20,
+		[4] = 20,
+		[5] = 40,
 	},
+
+	Experience_For_Level = GetExpForLevel,
+	GetExperienceForMax = function(StartLevel, CurrentExperience)
+		local ExpForLevels = 0
+		for i = StartLevel + 1, 60 - StartLevel do
+			ExpForLevels += GetExpForLevel(i)
+		end
+
+		return (ExpForLevels - CurrentExperience)
+	end,
 
 	Experience_To_Ascend = {
 		[1] = 300,

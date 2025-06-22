@@ -5,13 +5,16 @@ local ServerStorage = game:GetService("ServerStorage")
 local Modules = ServerStorage.Modules
 local Services = Modules.Services
 local Shared = ReplicatedStorage.Modules.Shared
-local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+
+
+local Statics = require(Shared.Database.Statics)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local Types = require(Shared.Types)
 
 local DataService = require(Services.Data.DataService)
 local AgentDatabase = require(Shared.Database.Characters)
+local ItemDatabase = require(Shared.Database.Items)
 
 -- Artifacts
 local function AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
@@ -59,6 +62,10 @@ local function AscendAgent(Player: Player, Agent: Types.PlayerAgentDataClass): (
     Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.AscendAgent, {Agent.Name, Agent.Ascensions})
 end
 
+local function UpdateAgentLevel(Player: Player, Agent: Types.PlayerAgentDataClass): ()
+    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.LevelAgent, {Agent.Name, Agent.Level, Agent.Experience})
+end
+
 
 --[[
     Handles setting up the builds & using the data from the player artifacts & more
@@ -79,7 +86,56 @@ function Service.__HandleEvent(Player: Player, Type: number, Request: {})
         Service:UpgradeAgentSkill(Player, Request[1], Request[2])
     elseif Type == GameEnum.AgentEvent.AscendAgent then
         Service:AscendAgent(Player, Request[1], Request[2])
+    elseif Type == GameEnum.AgentEvent.LevelAgent then
+        Service:LevelAgent(Player, Request[1], Request[2])
     end
+end
+
+function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
+    local Agent = DataService:GetAgent(Player, AgentName)
+
+    if Agent.Level >= 60 then
+        return
+    end
+
+    --
+    local TotalExperience = 0
+    local MaxExperience = Statics.GetExperienceForMax(Agent.Level, Agent.Experience)
+
+    for Item, Count in Items do
+        local ItemInfo = ItemDatabase:GetItemData(Item)
+        if not ItemInfo or not ItemInfo.Other.FeedExp then continue end
+
+        local HasAmount = DataService:HasItem(Player, Item, Count)
+        if not HasAmount then
+            continue
+        end
+
+        if TotalExperience + ItemInfo.Other.FeedExp > MaxExperience then
+            continue
+        end
+
+        local Amount = Count * ItemInfo.Other.FeedExp
+
+        DataService:TakeItem(Player, Item, Count)
+        TotalExperience += Amount
+    end
+
+    local Next = Statics.Experience_For_Level(Agent.Level + 1)
+    Agent.Experience += TotalExperience
+
+    while Agent.Experience >= Next do
+        Agent.Experience -= Next
+        Agent.Level += 1
+        Next = Statics.Experience_For_Level(Agent.Level + 1)
+    end
+
+    DataService:SyncPlayerItems(Player)
+    UpdateAgentLevel(Player, Agent)
+end
+
+function Service:UpgradeDrives()
+    print('TODO Later')
 end
 
 function Service:AscendAgent(Player: Player, AgentName: string, Times: number)

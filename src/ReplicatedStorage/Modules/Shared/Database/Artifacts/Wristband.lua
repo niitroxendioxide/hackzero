@@ -3,7 +3,7 @@ local Types = require('../../Types')
 return {
 	Name = 'Wristband',
 	Tier = 'Rare',
-	Icon = 0,
+	Icon = 74743421149370,
 
 	Piece_Effects = {
 		Two_Piece = {

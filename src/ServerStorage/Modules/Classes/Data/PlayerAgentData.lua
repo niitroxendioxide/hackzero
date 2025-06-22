@@ -77,8 +77,6 @@ function PlayerAgentDataClass.SetAscensions(self: Types.PlayerAgentDataClass, Am
 end
 
 function PlayerAgentDataClass.ToData(self: Types.PlayerAgentDataClass): Types.PlayerAgentData
-    print(self.Ascensions)
-
     return table.freeze({
         Drive = self.Drive,
         Artifacts = {

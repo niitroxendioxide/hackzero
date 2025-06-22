@@ -115,6 +115,8 @@ function Controller:Init()
             Controller:UpdateAgentSkills(Payload)
         elseif Type == GameEnum.AgentEvent.AscendAgent then
             Controller:AscendAgent(Payload)
+        elseif Type == GameEnum.AgentEvent.LevelAgent then
+            Controller:LevelAgent(Payload)
         end
     end)
 
@@ -145,6 +147,18 @@ function Controller:Init()
 
         SharedData:SetData(Player, Match_Agents, Match_Drives, Match_Artifacts)
     end)
+end
+
+function Controller:LevelAgent(Payload: {})
+    local AgentData = LocalData:GetAgent(Payload[1])
+    AgentData.Level = Payload[2]
+    AgentData.Experience = Payload[3]
+
+    --print('New Agent level:', AgentData.Level, AgentData.Experience)
+
+    --
+    local UI = InterfaceController:GetComponent("Agents")
+    UI:RefreshInformation()
 end
 
 function Controller:AscendAgent(Payload: {})

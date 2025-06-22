@@ -11,7 +11,9 @@ local Items = {
 }
 
 function Items:Init()
-	for _, ItemModule in script:GetChildren() do
+	for _, ItemModule in script:GetDescendants() do
+		if not ItemModule:IsA("ModuleScript") then continue end
+
 		local Success, ItemData = pcall(require, ItemModule)
 
 		if Success then

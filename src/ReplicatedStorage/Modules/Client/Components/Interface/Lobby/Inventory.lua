@@ -24,8 +24,10 @@ local Component = ComponentClass.new("Inventory", "Lobby")
 
 local States = {
     __Selected_Item = nil,
+    ClosingConnection = nil,
 }
 local Filters = {}
+local AgentTokenDesc = "A copy of the agent: %s. Can be exchanged to promote your agent up to 6 times. Each ascension brings upgrades to the characters's gameplay or stats."
 
 --
 local function ShowItemInfo(ItemId: string?)
@@ -52,14 +54,15 @@ local function ShowItemInfo(ItemId: string?)
     or DrivesDatabase:GetDriveData(ItemInfo.Name)
 
     if string.match(ItemId, 'AgentToken') then
+        local Name = string.gsub(ItemId, "AgentToken:", "")
         OtherData = {
-            Description = 'Agent Token',
+            Description = string.format(AgentTokenDesc, Name),
             Icon = 0,
         }
     end
 
     DataFrame.ItemType.Text = ItemType
-    DataFrame.ItemName.Text = OtherData.DisplayName or ItemInfo.Name
+    DataFrame.ItemName.Text = string.gsub(OtherData.DisplayName or ItemInfo.Name, 'AgentToken:', '')
 
     DataFrame.ItemInfo.Visible = ItemType == 'Item'
     if ItemType == 'Drive' then
@@ -275,7 +278,6 @@ local function CreateAllItems()
     end
 
     for _, Item in LocalData:GetItems() do
-        print(Item.Name)
         CreateItem(Item.Name, 'Item', Item)
     end
 end
@@ -293,7 +295,7 @@ function Component:Link()
 end
 
 function Component:Init()
-
+    local MainFrame = Component:GetFrame()
     local UsedFilters = {"Artifact", "Drive", "Item"}
 
     for _, FilterName in UsedFilters do
@@ -303,33 +305,66 @@ function Component:Init()
     ShowItemInfo(nil)
 
     Component:BindToStateChange(function(State: boolean)
+        if States.ClosingConnection then
+            States.ClosingConnection:Disconnect()
+        end
+
+        MainFrame.Visible = true
+
         if not State then
+            local ClosingTween = EffectUtil:Tween(MainFrame.Bg, {0.5, 'Cubic'}, {Transparency = 1})
+            EffectUtil:Tween(MainFrame.InventoryFrame.UIScale, {0.25, 'Back'}, {Scale = 0})
+            EffectUtil:Tween(MainFrame.Return.UIScale, {0.35, 'Back'}, {Scale = 0})
+            EffectUtil:Tween(MainFrame.TextLabel.UIScale, {0.5, 'Back'}, {Scale = 0})
+
+            States.ClosingConnection = ClosingTween.Completed:Once(function()
+                MainFrame.Visible = false
+            end)
+
             local Menu = UIGroups:GetElementClass("Lobby", "MainMenu")
 
+            if not Menu then return end
             Menu:Set(true, true)
         elseif State then
+            EffectUtil:Tween(MainFrame.InventoryFrame.UIScale, {0.25, 'Back'}, {Scale = 1})
+            EffectUtil:Tween(MainFrame.Return.UIScale, {0.35, 'Back'}, {Scale = 1})
+            EffectUtil:Tween(MainFrame.TextLabel.UIScale, {0.5, 'Back'}, {Scale = 1})
+            EffectUtil:Tween(MainFrame.Bg, {0.5, 'Cubic'}, {Transparency = 0.33})
+
             CreateAllItems()
         end
     end)
 
+
     --
-    local MainFrame = Component:GetFrame()
     local ReturnHolder: Frame & {Btn: TextButton, UIStroke: UIStroke, UIScale: UIScale} = MainFrame.Return
     local ReturnButton: TextButton = ReturnHolder.Btn
 
     ReturnButton.MouseButton1Click:Connect(function()
         Component:Set(false)
+
+        ReturnHolder.UIStroke.Color = Color3.new()
     end)
 
     ReturnButton.MouseEnter:Connect(function()
+        if not self.__UI_State then
+            return
+        end
+
         ReturnHolder.UIStroke.Color = Color3.new(1, 1, 1)
         EffectUtil:Tween(ReturnHolder.UIScale, {.25, 'Cubic'}, {Scale = 1.1})
     end)
 
     ReturnButton.MouseLeave:Connect(function()
+        if not self.__UI_State then
+            return
+        end
+
         ReturnHolder.UIStroke.Color = Color3.new()
         EffectUtil:Tween(ReturnHolder.UIScale, {.25, 'Cubic'}, {Scale = 1})
     end)
+
+    Component:Set(false)
 end
 
 return Component :: Types.UIComponent

@@ -20,6 +20,11 @@ return {
         QOL = {},
     },
 
+    Quests = {
+        Daily = {},
+        Main = {},
+        Interactions = {},
+    },
     Agents = {},
     Achievements = {},
     Titles = {},

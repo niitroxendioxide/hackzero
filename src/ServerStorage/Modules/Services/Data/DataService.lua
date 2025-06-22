@@ -9,6 +9,7 @@ local Classes = Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Agent = require(ReplicatedStorage.Modules.Client.Classes.Agent)
 local Network = require(Shared.Network)
 local DataTypes = require(Shared.Types.Data)
 
@@ -403,6 +404,10 @@ function Service:CreateAgentClass(Player: Player, Name: string)
 
         if AgentData.Ascensions then
             ClassObject:SetAscensions(AgentData.Ascensions)
+        end
+
+        if AgentData.Experience then
+            ClassObject.Experience = AgentData.Experience
         end
 
         Service:SetAgentClass(Player, ClassObject)

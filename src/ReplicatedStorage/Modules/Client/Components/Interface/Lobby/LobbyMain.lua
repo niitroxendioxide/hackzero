@@ -323,6 +323,22 @@ function Component:Init(): ()
             ActivateAgentsMenu()
         end
     })
+
+    Inputs:Bind(Enum.KeyCode.K, {
+        Callback = function()
+            if UIGroups:GetActiveElement("Lobby") ~= Component then
+                ToggleTab(false)
+
+                return
+            end
+
+            local Element = UIGroups:GetElementClass("Lobby", 'Inventory')
+            if not Element or not UIStates:Get("MENU_BLOCKED") then return end
+
+            ToggleTab(false)
+            Element:Set(true)
+        end
+    })
 end
 
 function Component:IsMenuOpen()
