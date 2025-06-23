@@ -80,10 +80,13 @@ local function CreateQuestObject(Data: Data.QuestData)
         QuestInstance.Parent = QuestList
     end
 
+    QuestInstance.QuestId.Value = Data.Id
     QuestInstance.QuestName.Text = Data.Name
     QuestInstance.QuestDescription.Text = FixDescriptionText(Data.Description, Data.Goals) -- apply stuff here
     QuestInstance.QuestDescription.TextSize = ScreenUtil:GetTextSize(29)
 
+    local Maximum = 0
+    local TotalProgress = 0
     for Key, Value in Data.Progress do
         if typeof(Value) == 'table' then
             for InKey, InValue in Value do
@@ -91,18 +94,27 @@ local function CreateQuestObject(Data: Data.QuestData)
                 local NewKey = Key..InKey
                 local GoalValueTable = Data.Goals[Key] :: {[string]: number}
 
+                Maximum += GoalValueTable[InKey]
+                TotalProgress += math.min(InValue, GoalValueTable[InKey])
+
                 local Objective = QuestInstance.ObjectiveList:FindFirstChild(NewKey) or QuestAssets.QuestObjective:Clone()
                 Objective.Text = `{Key} {string.lower(InKey)}: {InValue} / <b>{GoalValueTable[InKey]}</b>`
                 Objective.Name = NewKey
                 Objective.Parent = QuestInstance.ObjectiveList
             end
         else
+            Maximum += Data.Goals[Key]
+            TotalProgress += math.min(Value, Data.Goals[Key] :: number)
+
             local Objective = QuestInstance.ObjectiveList:FindFirstChild(Key) or QuestAssets.QuestObjective:Clone()
             Objective.Text = `{Key}: {Value} / <b>{Data.Goals[Key]}</b>`
             Objective.Name = Key
             Objective.Parent = QuestInstance.ObjectiveList
         end
     end
+
+    local Percent = (TotalProgress / Maximum)
+    QuestInstance.ProgressBar.ProgressBar.Size = UDim2.fromScale(Percent, 1)
 end
 
 -- Public
@@ -195,11 +207,26 @@ function Component:Init()
 end
 
 function Component:UpdateQuests(Quests: {})
-    print(Quests)
-
+    local Ids = {}
     for _, QuestData in Quests do
+        Ids[QuestData.Id] = true
         CreateQuestObject(QuestData)
     end
+
+    for _, Object in Component:GetFrame().Quests.Pages:GetChildren() do
+        if not Object:IsA("Frame") then continue end
+        local List = Object.List:GetChildren()
+
+        for _, QuestObject in List do
+            if not QuestObject:IsA("Frame") then continue end
+
+            if not Ids[QuestObject.QuestId.Value] then
+                QuestObject:Destroy()
+            end
+        end
+    end
+
+    table.clear(Ids)
 end
 
 return Component
