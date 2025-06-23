@@ -42,9 +42,10 @@ return {
                     Objective = "Beat {objective[KillEnemies]} enemies!",
                     Goal = {KillEnemies = 10},
                     Enemies = {
-                        [1] = {"Saiyan", 3, "Template", 1},
-                        [2] = {"Template", 4, "Saiyan", 1},
-                        [3] = {"Boss", 1},
+                        -- Enemy Name, Enemy Amount, Enemy Level
+                        [1] = {"Saiyan", 3, 5, "Template", 1, 10},
+                        [2] = {"Template", 4, 25, "Saiyan", 1, 20},
+                        [3] = {"Boss", 1, 30},
                     },
                     Global = true,
 

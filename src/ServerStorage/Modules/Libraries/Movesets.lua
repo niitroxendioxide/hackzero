@@ -29,4 +29,8 @@ function Movesets:Get(Name: string, default): Types.MovesetClass
 	return Movesets.__Cache[Name] or Movesets.__Cache[default and 'Saiyan' or 'Goku']
 end
 
+function Movesets:GetAll(): {Types.MovesetClass}
+	return Movesets.__Cache
+end
+
 return Movesets

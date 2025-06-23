@@ -42,6 +42,16 @@ function MovesetClass:Assign(Type: string, Ability: Types.AbilityClass)
 	end)
 end
 
+function MovesetClass.GetAll(self: Types.MovesetClass): {Types.ServerAbilityClass}
+	local List = {}
+
+	for _, Ability in self.__Assigned do
+		table.insert(List, Ability)
+	end
+
+	return List
+end
+
 function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, IsSignal: boolean): boolean
 	Type = Type:gsub('_', ' ')
 

@@ -10,6 +10,7 @@ local DataService = require(Services.Data.DataService)
 local QuestsDatabase = require(Database.Quests)
 
 --
+export type GoalsListType = {[string]: true}
 export type QuestType = "Daily" | "Main" | "Interactions" | "World"
 export type QuestObject = {
     Created: number,
@@ -102,6 +103,46 @@ function Quests:GetAllQuestsOfType(Player: Player, Type: QuestType): {QuestObjec
     local Directory = PlayerData.Quests[Type]
 
     return Directory
+end
+
+function Quests:GetAllQuests(Player: Player): {QuestObject}
+    local PlayerData = DataService:GetDataFor(Player)
+    if not PlayerData or not PlayerData.Quests then
+        return {}
+    end
+
+    local Total = {}
+    for _, QuestDir in PlayerData.Quests do
+        for _, Quest in QuestDir do
+            table.insert(Total, Quest)
+        end
+    end
+
+    return Total
+end
+
+function Quests:GetAllQuestsWithGoals(Player: Player, Goals: GoalsListType): {[string]: {QuestObject}}
+    local PlayerData = DataService:GetDataFor(Player)
+    if not PlayerData or not PlayerData.Quests then
+        return {}
+    end
+
+    local Total = {}
+    for _, QuestDir in PlayerData.Quests do
+        for _, Quest: QuestObject in QuestDir do
+            for Goal in Quest.Goals do
+                if Goals[Goal] == true then
+                    if Total[Goal] == nil then
+                        Total[Goal] = {}
+                    end
+
+                    table.insert(Total[Goal], Quest)
+                end
+            end
+        end
+    end
+
+    return Total
 end
 
 function Quests:RemoveQuest(Player: Player, Type: QuestType, Id: string): (boolean)

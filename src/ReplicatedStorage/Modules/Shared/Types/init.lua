@@ -240,6 +240,7 @@ export type MovesetClass = {
 	__Assigned: {[AgentMovesetAbility]: AbilityClass & ServerAbilityClass},
 
 	--
+	GetAll: (self: MovesetClass) -> ({ServerAbilityClass}?),
 	Assign: (self: MovesetClass, Key: string, Ability: AbilityClass) -> (),
 	Verify: (self: MovesetClass, Agent: GenericClass, Type: string) -> boolean,
 
@@ -339,17 +340,20 @@ export type AbilityClass = {
 	SetData: (self: AbilityClass, Data: {}) -> (),
 }
 
+export type AbilityHitInfo = {
+	Enemy: ServerEnemyClass,
+	Caster: {},
+	Type: Element,
+	Damage: number,
+	Burst: boolean,
+	IsKill: boolean,
+	Hit_Type: 'Entity' | 'Structure',
+}
 export type ServerAbilityClass = {
 	__Name: string,
 	__Cache: {},
 	__Signal: RBXScriptSignal,
-	__Hit: Signal<{
-		Enemy: ServerEnemyClass,
-		Agent: GenericClass,
-		Type: Element,
-		Damage: number,
-		Burst: boolean,
-	}>,
+	__Hit: Signal<AbilityHitInfo>,
 
 	CreateHitbox: (self: ServerAbilityClass, Agent: GenericClass, Offset: Vector3, Size: Vector3, Event: (Enemy: ServerEnemyClass) -> ()) -> (),
 
@@ -418,7 +422,11 @@ export type ServerEnemyClass = {
 	EnterDazedState: (self: ServerEnemyClass) -> (),
 
 	TakeDaze: (self: ServerEnemyClass, Amount: number) -> (boolean),
-	TakeDamage: (self: ServerEnemyClass, Amount: number) -> (),
+
+	--[[
+		@return Died
+	]]
+	TakeDamage: (self: ServerEnemyClass, Amount: number) -> (boolean),
 	TakeAffliction: (self: ServerEnemyClass, Affliction: Element, Amount: number) -> (),
 
 	GetAfflictionStackedDamage: (self: ServerEnemyClass, Affliction: Element) -> (number),
@@ -871,6 +879,16 @@ export type Stage_Act = {
 
 	},
 
+	Structures: {
+		{
+			Type: string,
+			At: Vector3,
+			Loot: {
+				[string]: number,
+			},
+		}
+	}?,
+
 	Rewards: {
 		Handler: (Objectives: {[string]: boolean}) -> (Rating),
 
@@ -908,8 +926,10 @@ export type MissionClass = {
 	--[[
 		Begin the event associated to the current mission
 		@param Event : `string` the event to be started, passing none will result in it loading the "Begin" event
+		@param Players : `{StagePlayer}` The players in stage that enter the event
+		@param Ignore_Replay : `boolean?` Used to determine if the event should be re-played if it wasn't
 	]]
-	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?, Players: {StagePlayer}) -> (),
+	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?, Players: {StagePlayer}, Ignore_Replay: boolean?) -> (),
 	SummonEnemyWave: (self: MissionClass, Wave: number) -> (),
 
 	--[[

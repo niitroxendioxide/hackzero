@@ -1,5 +1,6 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local Assets = ReplicatedStorage.Assets.Destructibles
 local Client = ReplicatedStorage.Modules.Client
@@ -128,15 +129,45 @@ CrystalObjClass:OnHit(function(Object)
     Effects:CleanUp(Highlight, .2)
 
     --
-    local Value = Instance.new('NumberValue')
-    local MaxScale = Model:GetScale()
-    Value.Value = MaxScale
+    for _, Crystal in Model:GetChildren() do
+        if not Crystal:IsA('Model') then continue end
 
-    Value.Changed:Connect(function(k)
-        Model:ScaleTo(k)
+        local OriginalCFrame = Crystal:GetPivot()
+        local Rx = Rng:NextNumber(-math.pi * 0.05, math.pi * 0.05)
+        local Rz = Rng:NextNumber(-math.pi * 0.05, math.pi * 0.05)
+        local Ry = Rng:NextNumber(-math.pi * 0.1, math.pi * 0.1)
+        local Changed = OriginalCFrame * CFrame.Angles(Rx, Ry, Rz)
+        local TimeForCrystal = Rng:NextNumber(0.7, 1)
+
+        task.spawn(function()
+            local Clock = os.clock()
+
+            while os.clock() - Clock < TimeForCrystal do
+                local Angle = ((os.clock() - Clock) / TimeForCrystal) * math.pi
+                local Sine = math.sin(Angle)
+                local Val = TweenService:GetValue(Sine, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out)
+
+                Crystal:PivotTo(OriginalCFrame:Lerp(Changed, Val))
+                task.wait()
+            end
+        end)
+    end
+
+    local MainModelScale = Model:GetScale()
+    local TweenTime = Rng:NextInteger(0.4, 0.6)
+
+    task.spawn(function()
+        local Clock = os.clock()
+
+        while os.clock() - Clock < TweenTime do
+            local Angle = ((os.clock() - Clock) / TweenTime) * math.pi
+            local Sine = math.sin(Angle)
+            local Val = TweenService:GetValue(Sine, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+
+            Model:ScaleTo(math.lerp(MainModelScale, MainModelScale * 0.4, Val))
+            task.wait()
+        end
     end)
-
-    Effects:Tween(Value, {.08, 'Cubic', nil, nil, true}, {Value = .8})
 end)
 
 return CrystalObjClass

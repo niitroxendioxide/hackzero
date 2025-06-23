@@ -137,7 +137,7 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerE
 
 
 	--
-	local Dealt_Damage, Critical, Affliction, Affliction_Fill, Burst_Damage, Affliction_Triggered = DamageLibrary:Deal(Agent, Enemy, Data)
+	local Dealt_Damage, EnemyDied, Critical, Affliction, Affliction_Fill, Burst_Damage, Affliction_Triggered = DamageLibrary:Deal(Agent, Enemy, Data)
 	local Dealt_Daze, Is_Dazed = DamageLibrary:Daze(Agent, Enemy, Data.Daze)
 
 	--
@@ -182,13 +182,15 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerE
 	Replicator:DazeEnemy(Enemy, Dealt_Daze)
 
 	--
-	--[[return {
+	return {
 		Enemy = Enemy,
-		Agent = Agent,
+		Caster = Agent,
 		Type = Data.Affliction,
 		Damage = Dealt_Damage,
 		Burst = Affliction_Triggered,
-	}]]
+		IsKill = EnemyDied,
+		Hit_Type = 'Entity',
+	}
 end
 
 local function HitAgent(Caster: Types.ServerEnemyClass, Agent: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
@@ -197,27 +199,34 @@ local function HitAgent(Caster: Types.ServerEnemyClass, Agent: AgentTypes.Server
 
 	--
 	return {
+		Caster = Caster,
+		Enemy = Agent,
+		Hit_Type = 'Entity',
 	}
 end
 
 local function HitStructure(Caster, Structure, Data)
 	Structure:TakeDamage(Caster, Data.Damage)
 
-	return {}
+	return {
+		Hit_Type = 'Structure',
+	}
 end
 
 function ServerAbilityClass:Hit(Agent: any, Enemy: any, Data: Types.HitEnemyData)
-	local _Result;
+	local Result;
 
 	if tostring(Enemy) == 'ServerAgentClass' then
-		_Result = HitAgent(Agent, Enemy, Data)
+		Result = HitAgent(Agent, Enemy, Data)
 	elseif tostring(Enemy) == 'EnemyClass' then
-		_Result = HitEnemy(Agent, Enemy, Data)
+		Result = HitEnemy(Agent, Enemy, Data)
 	else
-		_Result = HitStructure(Agent, Enemy, Data)
+		Result = HitStructure(Agent, Enemy, Data)
 	end
 
-	--self.__Hit:Fire(Result)
+	if Result ~= nil then
+		self.__Hit:Fire(Result)
+	end
 end
 
 function ServerAbilityClass.ForOtherAgents(self: Types.ServerAbilityClass, Agent: AgentTypes.ServerAgentClass, Callback: (Agent: AgentTypes.ServerAgentClass, Data: {any}) -> ())

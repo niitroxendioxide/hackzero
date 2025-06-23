@@ -10,7 +10,7 @@ local Defense_Factors = require(Shared.Database.Defense)
 local RNG = Random.new()
 local DamageLibrary = {}
 
-function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.ServerEnemyClass,Data:Types.HitEnemyData): (number, boolean, string, number, number, boolean)
+function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.ServerEnemyClass,Data:Types.HitEnemyData): (number, boolean, boolean, string, number, number, boolean)
 	local EnemyStatus = Enemy.__Status
 	local AgentGear = Agent:GetGearManager()
 
@@ -81,9 +81,9 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.Serv
 		})
 	end
 
-	Enemy:TakeDamage(Final_Damage)
+	local EnemyDied = Enemy:TakeDamage(Final_Damage)
 
-	return Final_Damage, Is_Critical, Affliction_Type, Filled_Affliction, Burst_Damage, AfflictionTriggered
+	return Final_Damage, EnemyDied, Is_Critical, Affliction_Type, Filled_Affliction, Burst_Damage, AfflictionTriggered
 end
 
 

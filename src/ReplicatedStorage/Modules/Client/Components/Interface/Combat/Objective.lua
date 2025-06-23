@@ -34,15 +34,19 @@ function Component:Init()
 end
 
 function Component:CreateEvent(Event: string)
-    if State.Stage == "" or State.Act == "" or State.Observers[Event] then
-        print("invalid")
+    if State.Stage == "" or State.Act == "" then
         return
     end
 
     local EventData = Stages:GetEvent(State.Stage, State.Act, Event)
     if not EventData then
-        print("no data")
         return
+    end
+
+    if State.Observers[Event] then
+        for _, Disconnector in State.Observers[Event] do
+            Disconnector()
+        end
     end
 
     --
@@ -64,13 +68,17 @@ function Component:CreateEvent(Event: string)
             return `{Value}/{EventData.Goal[key]}` or "["..key.." not found]"
         end)
 
+        if not Object:FindFirstChild('Label') then return end
         Object.Label.Text = result
     end
 
     updateText()
 
     for Name, Value in Values do
-        table.insert(State.Observers[Event], Scope:Observer(Value):onChange(updateText))
+        local Observer = Scope:Observer(Value)
+        local disconnect = Observer:onChange(updateText)
+
+        table.insert(State.Observers[Event], disconnect)
     end
 end
 

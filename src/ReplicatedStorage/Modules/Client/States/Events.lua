@@ -15,7 +15,7 @@ local Events = {
 
 function Events:New(Name: string, Values: {[Types.Stage_Objective]: any})
     if Events.__States[Name] ~= nil then
-        return
+        return Events.__States[Name]
     end
 
     Events.__States[Name] = Fusion.scoped({Value = Fusion.Value})

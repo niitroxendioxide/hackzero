@@ -15,23 +15,23 @@ local White = Color3.new(1, 1, 1)
 
 local Gradients = {
 	['Fire'] = {Color3.fromRGB(255, 149, 0), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.new(1))}},
-		
+
 	['Ice'] = {Color3.fromRGB(164, 231, 255), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(28, 96, 255))}},
-	
+
 	['Wind'] = {Color3.fromRGB(211, 255, 214), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(94, 255, 69))}},
-	
+
 	['Energy'] = {White, Sequence{Key(0, Color3.fromRGB(7, 52, 255)), Key(1, Color3.new(1))}},
-	
+
 	['Physical'] = {Color3.fromRGB(255, 227, 128), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(255, 77, 17))}},
-	
+
 	['Default'] = {White, Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.new())}},
-	
+
 	['Enemy'] = {Color3.new(1), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.new())}},
-	
+
 	['Earth'] = {Color3.fromRGB(156, 129, 110), Sequence{Key(0, White), Key(.415, White), Key(1, Color3.fromRGB(57, 9, 0))}},
-	
+
 	['Weak'] = {White, Sequence{Key(0, White), Key(1, Color3.new())}},
-	
+
 	['Shatter'] = {White, Sequence{Key(0, Color3.fromRGB(143, 236, 255)), Key(1, White)}}
 }
 
@@ -77,27 +77,26 @@ return function(At: Vector3 | Types.EnemyClass| CFrame, Data: Types.EffectAnyDat
 		Object.ZIndex = #NumberToString - i
 		Object.Size = UDim2.fromScale(0, .39)
 		Object.Parent = Indicator.Holder.Main
-		
+
 		if Data.Critical or Burst then
 			Object.UIStroke.Color = White
 			Effects:Tween(Object.UIStroke, {.3}, {Color = Color3.new(0)})
 		end
-		
+
 		local Scale = Instance.new('UIScale')
 		Scale.Parent = Object
-		
-		Effects:Tween(Scale, {.25, 'Back', 'Out'}, {Scale = 1.5 + (Burst and 0.5 or 0)})
+
+		Effects:Tween(Scale, {.25, 'Back', 'Out'}, {Scale = 1.85 + (Burst and 0.5 or 0)})
 		task.delay(.2, function()
 			Effects:Tween(Scale, {.15, 'Quad', 'InOut'}, {Scale = 1 + (Burst and 0.5 or 0)})
 		end)
-		
+
 		Effects:Tween(Object, {.25, 'Back'}, {Size = UDim2.fromScale(X_Size, .39)})
-		
-		
+
 		task.delay((Data.VanishTime or .75) + (Burst and 0.5 or 0), function()
-			Effects:Tween(Object, {.3, 'Back', 'In'}, {Size = UDim2.fromScale(0, .39)})
+			Effects:Tween(Object, {.15, 'Back', 'In'}, {Size = UDim2.fromScale(0, .39)})
 		end)
-		
-		task.wait(1/20)
+
+		task.wait(1/30)
 	end
 end

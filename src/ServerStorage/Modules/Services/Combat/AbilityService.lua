@@ -14,6 +14,7 @@ local GameEnum = require(Shared.GameEnum)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local AgentLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local MovesetLibrary = require(ServerStorage.Modules.Libraries.Movesets)
+local QuestService = require(ServerStorage.Modules.Services.Data.QuestService)
 
 --
 local HELP_ASSIST_PROMPT_TIME = 1.25
@@ -43,6 +44,42 @@ function Service:Init()
 			end
 		end
 	end)
+
+	--
+	for _, Moveset in MovesetLibrary:GetAll() do
+		local Skills = Moveset:GetAll()
+
+		for _, Skill in Skills do
+			Skill.__Hit:Connect(function(Data: Types.AbilityHitInfo)
+				local Agent = Data.Caster :: AgentTypes.ServerAgentClass
+				if not Agent or Data.Hit_Type ~= 'Entity' then return end
+				local AgentPlayer = Agent.__Player_Assigned
+
+				if not AgentPlayer then return end
+
+				local PlayerCombatQuests = QuestService:GetPlayerQuestsWithGoals(AgentPlayer, {
+					["Kill"] = true,
+					["Damage"] = true,
+				})
+
+				if Data.IsKill then
+					local KillQuests = PlayerCombatQuests["Kill"]
+					local TargetName = Data.Enemy.__Name
+
+					for _, KillQuest in KillQuests do
+						local Kills = KillQuest.Progress.Kill
+
+						if Kills[TargetName] then
+							Kills[TargetName] += 1
+							continue
+						elseif Kills.Any then
+							Kills.Any += 1
+						end
+					end
+				end
+			end)
+		end
+	end
 end
 
 function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)

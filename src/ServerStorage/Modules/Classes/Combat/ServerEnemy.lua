@@ -298,7 +298,7 @@ function ServerEnemy:Rotate(Direction: Vector3 | AgentTypes.ServerAgentClass)
 	return self.__Movement:Rotate(Direction)
 end
 
-function ServerEnemy:TakeDamage(number: number)
+function ServerEnemy:TakeDamage(number: number): boolean
 	self.__Status:Damage(number)
 
 	if not(self.__Status:IsAlive()) and EnemyLibrary:GetEnemy(self.__EnemyId) == self then
@@ -306,11 +306,12 @@ function ServerEnemy:TakeDamage(number: number)
 
 		Replicator:RemoveEnemy(Key)
 		self.Died:Fire()
+		self:Destroy()
 
-		return self:Destroy()
+		return true
 	end
 
-	return;
+	return false;
 end
 
 function ServerEnemy:TakeDaze(number: number)

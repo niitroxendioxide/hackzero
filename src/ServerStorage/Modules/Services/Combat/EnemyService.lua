@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Heap = require(ReplicatedStorage.Modules.Shared.Utility.Heap)
 local Types = require(Shared.Types)
 local Enemies = require(Shared.Libraries.Enemies)
 local Places = require(Shared.Places)
@@ -20,7 +21,10 @@ local Service = {
 	__Limit = 240,
 	__CurrentEnemies = 1,
 	__EnemyCache = {},
-	EnemiesCleared = {} :: Types.Signal<>,
+	__Tag_Enemies = {},
+	__Enemy_Keys = Heap.new(250),
+	EnemyDied = {} :: Types.Signal<string>,
+	EventEnemiesCleared = {} :: Types.Signal<string>,
 }
 
 function Service:Init()
@@ -28,7 +32,8 @@ function Service:Init()
 		return;
 	end
 
-	Service.EnemiesCleared = Signal.new();
+	Service.EnemyDied = Signal.new();
+	Service.EventEnemiesCleared = Signal.new();
 end
 
 function Service:LoadEnemies(Player: Player)
@@ -48,7 +53,7 @@ function Service:LoadEnemies(Player: Player)
 	end
 end
 
-function Service:Spawn(Type: string)
+function Service:Spawn(Type: string, Level: number, Tag: string)
 	if not(Service:__CanSpawn()) then return end
 
 	if not EnemiesDatabase:GetEnemyData(Type) and Type ~= "any" then
@@ -65,12 +70,18 @@ function Service:Spawn(Type: string)
 	local RandomSpawn = Spawns[math.random(1, #Spawns)]
 
 	local At = Service:__GenerateLocation(RandomSpawn)
-	local Enemy = ServerEnemy.new(At.Position, Type, 1)
+	local Enemy = ServerEnemy.new(At.Position, Type, Level)
 	local Key = Service:__Add(Enemy)
 
 	Enemy.Died:Once(function()
-		Service:__Remove(Enemy)
+		Service:__Remove(Enemy, Tag)
 	end)
+
+	if Service.__Tag_Enemies[Tag] == nil then
+		Service.__Tag_Enemies[Tag] = {}
+	end
+
+	table.insert(Service.__Tag_Enemies[Tag], Enemy)
 
 	Enemy:Init(Key)
 
@@ -90,35 +101,19 @@ end
 
 --
 function Service:__CanSpawn(): boolean
-	--if Service.__CurrentEnemies + 1 > Service.__Limit then return false end
-
-	if Service.__CurrentEnemies <= 255 then return true end
-
-	for key = 0, 255 do
-		if Enemies:GetEnemy(key) == nil then
-			return true
-		end
-	end
-
-	return false
+	return not Service.__Enemy_Keys:isEmpty()
 end
 
 function Service:__Add(Enemy: Types.ServerEnemyClass): ()
-	local EnemyKey = Service.__CurrentEnemies
-
-	if Service.__CurrentEnemies < 255 then
-		Enemies:AddEnemy(EnemyKey, Enemy)
-	else
-		for key = 1, 255 do
-			if Enemies:GetEnemy(EnemyKey) == nil then
-				EnemyKey = key
-
-				Enemies:AddEnemy(EnemyKey, Enemy)
-			end
-		end
+	local EnemyKey = Service.__Enemy_Keys:extract()
+	if not EnemyKey then
+		return
 	end
 
+	Enemies:AddEnemy(EnemyKey, Enemy)
+
 	Service.__CurrentEnemies += 1
+
 	table.insert(Service.__EnemyCache, Enemy)
 
 	Replicator:AddEnemy(EnemyKey, Enemy)
@@ -126,30 +121,33 @@ function Service:__Add(Enemy: Types.ServerEnemyClass): ()
 	return EnemyKey
 end
 
-function Service:__Remove(Enemy: Types.ServerEnemyClass): ()
+function Service:__Remove(Enemy: Types.ServerEnemyClass, TagOfRemovedEnemy: string): ()
 	local Index = table.find(Service.__EnemyCache, Enemy)
 	if Index then
 		table.remove(Service.__EnemyCache, Index)
 
+		local EnemyKey = Enemy.__EnemyId
+		local EventEnemyList = Service.__Tag_Enemies[TagOfRemovedEnemy]
 		Service.__CurrentEnemies -= 1
 
-		if Service.__CurrentEnemies <= 1 then
-			Service.EnemiesCleared:Fire()
+		Service.__Enemy_Keys:insert(EnemyKey)
+
+		Service.EnemyDied:Fire(TagOfRemovedEnemy)
+
+		table.remove(EventEnemyList, table.find(EventEnemyList, Enemy))
+
+		if #EventEnemyList <= 0 then
+			Service.EventEnemiesCleared:Fire(TagOfRemovedEnemy)
 		end
 	end
-	--[[local Key = Enemies:RemoveEnemy(Enemy)
-	Enemy:Destroy()
-
-	Replicator:RemoveEnemy(Key)]]
 end
 
 function Service:__GenerateLocation(SpawnLocation: BasePart)
-	
 	local cFrame = SpawnLocation.CFrame
 	local Size = SpawnLocation.Size
-	
+
 	local RNG = Random.new()
-	
+
 	return cFrame * CFrame.new(RNG:NextNumber(-Size.X/2, Size.X/2), -Size.Y/2 + 3.15, RNG:NextNumber(-Size.Z/2, Size.Z/2))
 end
 

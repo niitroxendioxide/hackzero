@@ -38,4 +38,10 @@ function Service:Init()
 	end)
 end
 
+function Service:GetPlayerQuestsWithGoals(Player: Player, GoalKeys: Quests.GoalsListType): {[string]: {Quests.QuestObject}}
+	local Data = Quests:GetAllQuestsWithGoals(Player, GoalKeys)
+
+	return Data
+end
+
 return Service

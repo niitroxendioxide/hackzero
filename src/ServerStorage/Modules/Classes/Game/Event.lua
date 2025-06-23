@@ -89,14 +89,15 @@ function EventClass.SummonEnemyWave(self, WaveNumber: number)
 
     local Total = 0
     local CurrentWave = EnemyWaves[WaveNumber]
-    for i = 1, #CurrentWave, 2 do
+    for i = 1, #CurrentWave, 3 do
         local EnemyType = CurrentWave[i]
         local EnemyCount = CurrentWave[i + 1]
+        local EnemyLevel = CurrentWave[i + 2]
 
         Total += EnemyCount
 
         for i = 1, EnemyCount do
-            EnemyService:Spawn(EnemyType)
+            EnemyService:Spawn(EnemyType, EnemyLevel, self.__Event)
         end
     end
 
@@ -104,17 +105,23 @@ function EventClass.SummonEnemyWave(self, WaveNumber: number)
         NextWaveTime = CurrentWave[#CurrentWave]
     end
 
-    self.__Current_Wave_Connection = EnemyService.EnemiesCleared:Once(function(...: any): ()
-        -- Switch to next wave
-        self.__Current_Wave_Connection = nil
+    local ClearedEnemies = 0
+    self.__Current_Wave_Connection = EnemyService.EnemyDied:Connect(function(EnemyTag: string): ()
+        if EnemyTag ~= self.__Event then return end
 
-        self:UpdateProgress("KillEnemies", Total)
+        self:UpdateProgress("KillEnemies", 1)
 
-        if (#EnemyWaves < WaveNumber + 1) then
-            return
+        ClearedEnemies += 1
+
+        if ClearedEnemies >= Total then
+            self.__Current_Wave_Connection = nil
+
+            if (#EnemyWaves < WaveNumber + 1) then
+                return
+            end
+
+            task.delay(NextWaveTime, self.SummonEnemyWave, self, WaveNumber + 1)
         end
-
-        task.delay(NextWaveTime, self.SummonEnemyWave, self, WaveNumber + 1)
     end)
 end
 
@@ -141,6 +148,8 @@ function EventClass.UpdateProgress(self: Types.EventClass, GoalType: Types.Stage
     else
         self.__Current_State[GoalType] = Value
     end
+
+    print(self.__Current_State)
 
     for _, Player in self.__Players do
         Network:Fire("Match", Player:GetBase(), GameEnum.MatchEvents.ProgressUpd, self.__Event, GoalType, self.__Current_State[GoalType])

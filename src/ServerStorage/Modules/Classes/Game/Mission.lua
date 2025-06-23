@@ -66,7 +66,7 @@ function MissionClass.IsFinished(self: Types.MissionClass): boolean
     return self.__Is_Finished  ~= false
 end
 
-function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Players: {Types.StagePlayer})
+function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Players: {Types.StagePlayer}, Override_Replay)
     local EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
     if EventData == nil then
         return
@@ -79,7 +79,9 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
             end
         end
 
-        return
+        if not Override_Replay then
+            return
+        end
     end
 
     -- Start event
@@ -116,7 +118,8 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
             return
         end
 
-        self:BeginEvent(Next_Stage, Players)
+        local Is_Recursive = Next_Stage == Event
+        self:BeginEvent(Next_Stage, Players, Is_Recursive)
     end)
 
     self.__Current_Events[Event] = EventObject
