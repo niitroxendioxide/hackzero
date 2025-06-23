@@ -5,7 +5,7 @@ return {
         },
     },
 
-    Description = "Kill {Goals.Kill.Any} enemies",
+    Description = "Kill {Kill.Any} enemies",
 
     Rewards = {
         Gems = 45,

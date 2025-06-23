@@ -120,11 +120,19 @@ return {
 	FetchRequests = {
 		Agents = 105,
 		Parties = 205,
+		Quests = 305,
 	},
 
 	NotificationTypes = {
 		PartyInvite = 1,
 		ObtainedCharacter = 2,
+	},
+
+	QuestTypes = {
+		Daily = 1,
+		Main = 2,
+		Interactions = 3,
+		World = 4,
 	},
 
 	MatchEvents = {

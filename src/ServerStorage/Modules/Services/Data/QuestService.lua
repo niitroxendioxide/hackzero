@@ -1,10 +1,14 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
 --
 local Packages = ServerStorage.Modules.Packages
+local Shared = ReplicatedStorage.Modules.Shared
+local Network = require(Shared.Network)
 local Quests = require(Packages.Quests)
+
 
 type UnixDate = {
     Day: number,

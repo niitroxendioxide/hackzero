@@ -128,7 +128,6 @@ function Component:CreateTabButton(Name: string)
         if not Element then return end
         ToggleTab(false)
 
-        print(Element)
         Element:Set(true)
     end)
 
@@ -232,7 +231,7 @@ function Component:Init(): ()
     MainTab.UserIdLabel.Text = Player.UserId
 
     --
-    for _, ButtonName in {'Inventory', 'Agents', 'Settings', 'Map', 'Shop'} do
+    for ButtonName in IconDatabase.Buttons do
         Component:CreateTabButton(ButtonName)
     end
 

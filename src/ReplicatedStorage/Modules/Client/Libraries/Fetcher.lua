@@ -9,6 +9,8 @@ local DriveDatabase = require(Shared.Database.Drives)
 local GameEnum = require(Shared.GameEnum)
 local LocalData = require(script.Parent.LocalData)
 
+local DataTypes = require(Shared.Types.Data)
+
 local Fetcher = {
     __Requests_Queued = {},
 }
@@ -73,6 +75,25 @@ function Fetcher:FetchParties(): {any}
             Players = Party[3];
             MaxPlayers = Party[4];
             AverageLevel = Party[5];
+        })
+    end
+
+    return New
+end
+
+function Fetcher:FetchQuests(Type: string?): {DataTypes.QuestData}
+    local RetreivedData = Fetcher:SendRequest(GameEnum.FetchRequests.Quests)
+    local New = {}
+
+    for _, QuestObjData in RetreivedData do
+        table.insert(New, {
+            Rewards = QuestObjData.Rewards,
+            Progress = QuestObjData.Progress,
+            Description = QuestObjData.Description,
+            Goals = QuestObjData.Goals,
+            Name = QuestObjData.Name,
+            Id = QuestObjData.Id,
+            Type = GameEnum.KeyLookup(GameEnum.QuestTypes, QuestObjData.Type),
         })
     end
 

@@ -15,6 +15,7 @@ export type QuestObject = {
     Created: number,
     Id: string,
     Name: string,
+    Type: QuestType,
 
     Description: string,
     Goals: {
@@ -29,10 +30,6 @@ export type QuestObject = {
         [string]: {[string]: number} | number,
     }
 }
-
-local function CompressQuest(BaseQuestName: string, QuestObj: {})
-    local BaseId
-end
 
 local function CopyWithDefaultValues(Table: {})
     local NewTable = {}
@@ -72,6 +69,7 @@ function Quests:AddQuest(Player: Player, Type: QuestType, Data: {[string]: any})
         Rewards = Data.Rewards,
         Description = Data.Description,
         Name = Data.Name or Type..'Quest',
+        Type = Type,
     }
 
     table.insert(Directory, QuestObject)
@@ -98,6 +96,9 @@ function Quests:GetAllQuestsOfType(Player: Player, Type: QuestType): {QuestObjec
     if not Type then return {} end
 
     local PlayerData = DataService:GetDataFor(Player)
+    if not PlayerData or not PlayerData.Quests then
+        return {}
+    end
     local Directory = PlayerData.Quests[Type]
 
     return Directory
@@ -138,8 +139,8 @@ end
 function Quests:RefreshDailies(Player: Player)
     local PlayerDataExists = DataService:GetDataFor(Player)
     if not PlayerDataExists then return end
-    local RandomDailies = table.clone(DailyNames)
 
+    local RandomDailies = table.clone(DailyNames)
     for _, Quest in Quests:GetAllQuestsOfType(Player, "Daily") do
         Quests:RemoveQuest(Player, "Daily", Quest.Id)
     end

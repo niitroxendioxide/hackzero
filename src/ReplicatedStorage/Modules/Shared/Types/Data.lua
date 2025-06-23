@@ -39,5 +39,26 @@ export type PlayerItemDataClass = {
     ToData: (self: PlayerItemDataClass) -> (),
 }
 
+export type QuestData = {
+    Rewards: {
+        [string]: number,
+    },
+
+    Goals: {
+        [string]: number | {
+            [string]: number
+        }
+    },
+
+    Progress: {
+        [string]: {[string]: number} | number,
+    },
+
+    Id: string,
+    Description: string,
+    Type: string,
+    Name: string,
+}
+
 
 return {}

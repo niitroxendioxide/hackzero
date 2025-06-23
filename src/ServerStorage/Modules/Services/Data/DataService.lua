@@ -9,6 +9,7 @@ local Classes = Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local QuestUtil = require(ServerStorage.Modules.Libraries.QuestUtil)
 local Agent = require(ReplicatedStorage.Modules.Client.Classes.Agent)
 local Network = require(Shared.Network)
 local DataTypes = require(Shared.Types.Data)
@@ -66,6 +67,16 @@ function Service:Init()
             local Agents = Service:FetchAgents(Player)
 
             Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Agents, Agents)
+        elseif Type == GameEnum.FetchRequests.Quests then
+            local Quests = {}
+            local PlayerData = Service:GetDataFor(Player)
+            for _, QuestDir in PlayerData.Quests do
+                for _, Quest in QuestDir do
+                    table.insert(Quests, QuestUtil:Compress(Quest))
+                end
+            end
+
+            Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Quests, Quests)
         end
     end)
 
