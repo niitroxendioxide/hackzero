@@ -35,7 +35,10 @@ export type AppearanceController = {
 	__Model: Rig,
 	__TransparencyValues: {[BasePart]: number},
 	__Trove: {},
+	__Bound_Objects: {[Instance]: (self: Instance, State: boolean) -> ()},
 
+	BindObject: (self: AppearanceController, Object: Instance, Toggle: (self: Instance, State: boolean) -> ()) -> (),
+	UnbindObject: (self: AppearanceController, Object: Instance) -> (),
 	SetVisible: (self: AppearanceController, State: boolean) -> (),
 	JoinTo: (self: AppearanceController, BasePart: BasePart) -> (),
 
@@ -329,6 +332,7 @@ export type AbilityClass = {
 
 	Play: (self: AbilityClass, Agent: GenericClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
 	Begin: (self: AbilityClass, Agent: GenericClass, SequenceFrames: SequenceFrames) -> (Sequence),
+	Effect: (self: AbilityClass, EffectName: string, ...any) -> (),
 
 	--[[
 		Gets a value from the ability data

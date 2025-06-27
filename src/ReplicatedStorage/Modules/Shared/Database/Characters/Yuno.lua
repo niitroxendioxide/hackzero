@@ -1,6 +1,6 @@
 return {
 	Display_Name = 'Yuno Grinberryall',
-	Nickname = 'Meal saving prince',
+	Nickname = 'Yuno',
 	Element = 'Wind',
 	Role = 'Affliction',
 	Tier = "Mythical",

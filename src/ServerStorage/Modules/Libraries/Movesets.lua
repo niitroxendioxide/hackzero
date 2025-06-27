@@ -26,7 +26,17 @@ function Movesets:Init()
 end
 
 function Movesets:Get(Name: string, default): Types.MovesetClass
-	return Movesets.__Cache[Name] or Movesets.__Cache[default and 'Saiyan' or 'Goku']
+	if not Movesets.__Cache[Name] then
+		return Movesets.__Cache[default and 'Saiyan' or 'Template']
+	end
+
+	return Movesets.__Cache[Name]
+end
+
+function Movesets:RunFromTemplate(Move: string, ...)
+	local Template = Movesets.__Cache.Template :: Types.MovesetClass
+
+	Template:Begin(Move, ...)
 end
 
 function Movesets:GetAll(): {Types.MovesetClass}

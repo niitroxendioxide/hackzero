@@ -1,8 +1,8 @@
 return {
-	Display_Name = 'Orihime Inoue',
-	Nickname = 'Orihime',
+	Display_Name = 'Jotaro Kujo',
+	Nickname = 'Jojo',
 	Element = 'Energy',
-	Role = 'Support',
+	Role = 'Attack',
 	Tier = "Legendary",
 	Faction = "Karakura Town",
 
@@ -12,17 +12,17 @@ return {
 
 	--
 	Stats = {
-		Health = 100,
-		Attack = 70,
-		Defense = 10,
+		Health = 677,
+		Attack = 109,
+		Defense = 49,
 		Critical_Rate = 10, -- %
 		Critical_Damage = 10,
 		Penetration = 0,
 		Pen_Ratio = 0,
-		Daze = 70,
+		Daze = 119,
 		Energy_Regeneration = 0.5,
-		Affliction_Aptitude = 80,
-		Affliction_Facility = 10,
+		Affliction_Aptitude = 90,
+		Affliction_Facility = 91,
 
 
 		--
@@ -32,7 +32,9 @@ return {
 	},
 
 	Level_Stats = {
-		Attack = 12,
+		Health = 126,
+        Attack = 10.2,
+		Defense = 9.4,
 	},
 
 	Moveset_Data = {
@@ -43,27 +45,27 @@ return {
 
 	Ascension_Data = {
 		[1] = {
-			Description = 'Orihime ascension 1',
+			Description = 'Jotaro ascension 1',
 		},
 
 		[2] = {
-			Description = 'Orihime ascension 2',
+			Description = 'Jotaro ascension 2',
 		},
 
 		[3] = {
-			Description = 'Orihime ascension 3',
+			Description = 'Jotaro ascension 3',
 		},
 
 		[4] = {
-			Description = 'Orihime ascension 4',
+			Description = 'Jotaro ascension 4',
 		},
 
 		[5] = {
-			Description = 'Orihime ascension 5',
+			Description = 'Jotaro ascension 5',
 		},
 
 		[6] = {
-			Description = 'Orihime ascension 6',
+			Description = 'Jotaro ascension 6',
 		},
 	}
 }

@@ -78,6 +78,11 @@ local function CreateQuestObject(Data: Data.QuestData)
         QuestInstance = QuestAssets.QuestObject:Clone()
         QuestInstance.Name = Data.Id
         QuestInstance.Parent = QuestList
+
+        --
+        QuestInstance.ClaimBtn.Button.MouseButton1Click:Connect(function()
+            print('Claim here!')
+        end)
     end
 
     QuestInstance.QuestId.Value = Data.Id
@@ -114,7 +119,19 @@ local function CreateQuestObject(Data: Data.QuestData)
     end
 
     local Percent = (TotalProgress / Maximum)
-    QuestInstance.ProgressBar.ProgressBar.Size = UDim2.fromScale(Percent, 1)
+
+    if Percent >= 1 then
+        QuestInstance.ProgressBar.Visible = false
+        QuestInstance.ObjectiveList.Visible = false
+        QuestInstance.ProgressLabel.Visible = false
+        QuestInstance.ClaimBtn.Visible = true
+    else
+        QuestInstance.ClaimBtn.Visible = false
+        QuestInstance.ProgressLabel.Visible = true
+        QuestInstance.ObjectiveList.Visible = true
+        QuestInstance.ProgressBar.Visible = true
+        QuestInstance.ProgressBar.ProgressBar.Size = UDim2.fromScale(Percent, 1)
+    end
 end
 
 -- Public

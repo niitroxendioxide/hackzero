@@ -6,6 +6,6 @@ return table.freeze({
     TEST_AGENTS = {
         'Goku',
         'Yuno',
-        'Luffy',
+        'Jotaro3',
     }
 })

@@ -33,6 +33,7 @@ function AppearanceClass.new(ModelName: string): Types.AppearanceController
 	self.__Model = AssetsModel:Clone() :: Types.Rig
 	self.__Visible = true
 	self.__Particles = {}
+	self.__Bound_Objects = {}
 	self.__TransparencyValues = {}
 	self.__Trove = Trove.new()
 
@@ -65,6 +66,18 @@ function AppearanceClass:SetVisible(State: boolean)
 	for _, Particle in self.__Particles do
 		EffectsUtil:Toggle(Particle, State, nil, true)
 	end
+
+	for Object, Toggler in self.__Bound_Objects do
+		Toggler(Object, State)
+	end
+end
+
+function AppearanceClass:BindObject(Object: Instance, Toggle: () -> ())
+	self.__Bound_Objects[Object] = Toggle
+end
+
+function AppearanceClass:UnbindObject(Object: Instance)
+	self.__Bound_Objects[Object] = nil
 end
 
 function AppearanceClass:EditPartValue(Part: BasePart, Value: number)

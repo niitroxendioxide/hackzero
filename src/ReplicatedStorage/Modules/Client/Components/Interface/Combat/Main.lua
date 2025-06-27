@@ -157,7 +157,8 @@ function Component:Init()
 		end
 
 		--
-		Info.CharacterName.Text = (CurrentActiveCharacter :: AgentTypes.AgentClass).Name
+		local Data = CharacterDatabase:GetCharacterData((CurrentActiveCharacter :: AgentTypes.AgentClass).Name)
+		Info.CharacterName.Text = Data.Nickname
 
 		for _, Item in Icons:GetChildren() do
 			local Number = tonumber(Item.Name, 10) :: number
