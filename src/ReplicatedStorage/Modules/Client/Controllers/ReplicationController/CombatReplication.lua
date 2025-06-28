@@ -16,6 +16,7 @@ local Effects = require(Client.Libraries.Effects)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
 local InterfaceController = require(Client.Controllers.InterfaceController)
 
+local AgentsDatabase = require(Shared.Database.Characters)
 local DestructiblesDatabase = require(Shared.Database.Destructibles)
 
 
@@ -262,5 +263,32 @@ function Controller:HitDestructible(Buffer: buffer)
 	Structures.Hit(Type, Id)
 end
 
+
+-- Only runs for a local player, so it doesn\'t matter :3
+function Controller:FillMeter(Buffer: buffer)
+	local ReplicationId = Players.LocalPlayer:GetAttribute('ReplicationId') :: number
+	local MainUIHUD = InterfaceController:GetComponent("Main")
+
+	local AgentId = buffer.readu8(Buffer, 1)
+	local Meter = buffer.readu8(Buffer, 2)
+	local Percent = buffer.readu8(Buffer, 3) / 255
+
+	local AgentObject = Characters:GetAgent(ReplicationId, AgentId)
+	local Data = AgentsDatabase:GetMovesetData(AgentObject.Name)
+
+	if not Data or not Data.Passive then
+		return
+	end
+
+	local MeterName: string = nil
+	for MeterNameLoop, MeterData in Data.Passive.Meters do
+		if MeterData.Id == Meter then
+			MeterName = MeterNameLoop
+		end
+	end
+	if not MeterName then return end
+
+	MainUIHUD:UpdateAgentMeter(AgentId, MeterName, Percent)
+end
 
 return Controller

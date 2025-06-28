@@ -38,8 +38,82 @@ return {
 	},
 
 	Moveset_Data = {
+		['Passive'] = {
+			Description = 'Every hit from your basic attacks contributes to filling up your stand meter',
+			Meters = {
+				Stand = {
+					Id = 1,
+					Max = 100,
+					EmptySpeed = 2.5,
+				}
+			},
+		},
+
 		['Basic Attack'] = {
-			Cooldown = .35
+			Base = {
+				Cooldown = .35,
+				Attack_State_Time = 0.45,
+				Animation_Speed = 1.35,
+				Speed = 1.35,
+
+				Knockback_Direction = Vector3.new(0, 0, 1),
+				Knockback_Strength = 10,
+				Knockback_Time = 0.25,
+
+				Walk_Time = 0.133,
+				Forward_Impulse = 10,
+
+				Damage_Mult = {
+					[1] = 73,
+					[2] = 88,
+					[3] = 102,
+					[4] = 182,
+				},
+
+				Daze_Mult = {
+					[1] = 20,
+					[2] = 24.5,
+					[3] = 31.5,
+					[4] = 39.2,
+				},
+
+				Affliction_Buildup = {
+					[1] = 95,
+					[2] = 99,
+					[3] = 103,
+					[4] = 145,
+				}
+			},
+
+			Upgrades = {
+				Damage_Mult = {
+					[1] = 3.3,
+					[2] = 5.7,
+					[3] = 7.6,
+					[4] = 8,
+					[5] = 9,
+					[6] = 26,
+				},
+
+				Daze_Mult = {
+					[1] = 0.2,
+					[2] = 0.3,
+					[3] = 0.15,
+					[4] = 0.25,
+				},
+			},
+		},
+
+		['Special'] = {
+			Base = {
+				Cooldown = .35,
+				Attack_State_Time = 1,
+				Speed = 1,
+			},
+
+			Upgrades = {
+				
+			},
 		},
 	},
 

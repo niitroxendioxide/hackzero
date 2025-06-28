@@ -213,6 +213,10 @@ local function HitStructure(Caster, Structure, Data)
 	}
 end
 
+function ServerAbilityClass.Effect(self: Types.ServerAbilityClass, Name: string, Params: {any}, Targets: boolean | {})
+	Replicator:Effect(Name, Params, Targets)
+end
+
 function ServerAbilityClass:Hit(Agent: any, Enemy: any, Data: Types.HitEnemyData)
 	local Result;
 
@@ -227,6 +231,8 @@ function ServerAbilityClass:Hit(Agent: any, Enemy: any, Data: Types.HitEnemyData
 	if Result ~= nil then
 		self.__Hit:Fire(Result)
 	end
+
+	return Result
 end
 
 function ServerAbilityClass.ForOtherAgents(self: Types.ServerAbilityClass, Agent: AgentTypes.ServerAgentClass, Callback: (Agent: AgentTypes.ServerAgentClass, Data: {any}) -> ())

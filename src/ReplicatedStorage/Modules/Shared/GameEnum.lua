@@ -19,6 +19,7 @@ return {
 		RemoveGear = 19,
 		KillAgent = 20,
 		HitAgent = 21,
+		FillMeter = 22,
 
 		-- Enemy
 		AddEnemy = 26,
@@ -42,6 +43,7 @@ return {
 
 		--
 		ClearPlayerData = 150,
+		PlayVisualEffect = 151,
 
 		--
 		CreateDestructible = 80,
@@ -52,6 +54,11 @@ return {
 	MarketplaceRequestTypes = {
 		BuyProduct = 1,
 		BuyGamepass = 2,
+	},
+
+	Meter_States = {
+		Fill = 1,
+		Empty = 2,
 	},
 
 

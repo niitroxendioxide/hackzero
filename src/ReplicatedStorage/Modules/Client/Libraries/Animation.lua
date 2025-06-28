@@ -50,12 +50,12 @@ function AnimationLibrary:Load(Character: Model, Track: Animation)
 	return LoadedTrack
 end
 
-function AnimationLibrary:Play(Character: Model, TrackName: Animation, ...)
-	if not TrackName then
+function AnimationLibrary:Play(Character: Model, TrackObject: Animation, ...)
+	if not TrackObject then
 		return
 	end
 
-	local Track = AnimationLibrary:Load(Character, TrackName)
+	local Track = AnimationLibrary:Load(Character, TrackObject)
 	Track:Play(...)
 
 	Track.Stopped:Once(function()

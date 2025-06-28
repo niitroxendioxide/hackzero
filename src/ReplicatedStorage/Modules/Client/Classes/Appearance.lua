@@ -68,7 +68,7 @@ function AppearanceClass:SetVisible(State: boolean)
 	end
 
 	for Object, Toggler in self.__Bound_Objects do
-		Toggler(Object, State)
+		Toggler(Object, State, 1)
 	end
 end
 

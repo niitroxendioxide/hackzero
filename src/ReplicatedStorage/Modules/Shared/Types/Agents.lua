@@ -13,11 +13,14 @@ export type AnimatorController = Types.AnimatorController
 export type CharacterClass = Types.CharacterClass
 export type CharacterStats = Types.CharacterStats
 export type Heap = Heap.Heap
-type Enemy = Types.ServerEnemyClass
 type Element = Types.Element
 type AgentMovesetAbility = Types.AgentMovesetAbility
 type Rig = Types.Rig
 type Signal<T...> = Signal.ScriptSignal<T...>
+
+
+export type Enemy = Types.ServerEnemyClass
+export type ClientEnemy = Types.EnemyClass
 
 export type ProcessEventData = {
 	Agent: ServerAgentClass,
@@ -120,6 +123,19 @@ export type AgentClass =  {
 }
 
 
+
+type AgentMeter = {
+		Value: number,
+		Max: number,
+
+		Name: string,
+		FillSpeed: number,
+		EmptySpeed: number,
+		LastUpdate: number,
+
+		Fill: boolean,
+		Empty: boolean,
+}
 export type AgentStatusClass = {
 	__Ultimate: number,
 	__Energy: number,
@@ -128,10 +144,18 @@ export type AgentStatusClass = {
 	__Base_Stats: CharacterStats,
 	__Alive: boolean,
 	__Total_Effects: Heap,
+	__Meters: {AgentMeter},
 
 	__Artifact_Set: {},
 	__Card_Set: nil,
 	__Effects: {EffectObject},
+
+
+	CreateMeter: (self: AgentStatusClass, Name: string, Data: {Max: number?, EmptySpeed: number?, FillSpeed: number?, Id: number}) -> (),
+	UpdateMeter: (self: AgentStatusClass, Name: string, Amount: number) -> (),
+	GetAllMeters: (self: AgentStatusClass) -> ({AgentMeter}),
+	RemoveMeter: (self: AgentStatusClass, Name: string) -> (),
+	SetMeterUpdateType: (self: AgentStatusClass, Meter: string, Type: number, State: boolean, Handler: (() -> ())?) -> (),
 
 	GetStat: (self: AgentStatusClass, Name: Stat) -> (number),
 	Update: (self: AgentStatusClass, delta: number) -> (),
@@ -224,6 +248,9 @@ export type ServerAgentClass = {
 	Hit: (self: ServerAgentClass, Caster: Enemy, Time: number) -> (),
 	GetMarkedTarget: (self: ServerAgentClass) -> (AssistStruct?),
 
+	UpdateMeter: (self: ServerAgentClass, Name: string, Amount: number) -> (),
+	GetMeter: (self: ServerAgentClass, Name: string) -> (number, number),
+
 	--[[
 		Set to nil for no target
 		@param TargetId Number id for enemy
@@ -241,6 +268,13 @@ export type ServerAgentClass = {
 	]]
 	Walk: (self: ServerAgentClass, Time: number) -> (),
 
+	--[[
+		@param Meter The name of the meter to set the update type state to
+		@param Type The type of meter update to toggle (GameEnum.Meter_States)
+		@param State The state of the meter update
+		@param Handler (optional) What happens once the update reaches its peak point (Max or Min)
+	]]
+	SetMeterUpdateType: (self: ServerAgentClass, Meter: string, Type: number, State: boolean, Handler: (() -> ())?) -> (),
 	GetHitbox: (self: ServerAgentClass) -> (BasePart),
 	GetEnergy: (self: ServerAgentClass) -> (number),
 	GetStat: (self: ServerAgentClass, Stat: Stat) -> number,
@@ -274,7 +308,7 @@ export type ServerAgentClass = {
 	RemoveGear: (self: ServerAgentClass, GearName: string) -> (),
 	GetGearManager: (self: ServerAgentClass) -> (ServerGearManager),
 
-	AddTag: (self: ServerAgentClass, Tag: string, Time: number) -> (),
+	AddTag: (self: ServerAgentClass, Tag: string, Time: number?) -> (),
 	HasTag: (self: ServerAgentClass, Tag: string) -> (boolean),
 	RemoveTag: (self: ServerAgentClass, Tag: string) -> (),
 

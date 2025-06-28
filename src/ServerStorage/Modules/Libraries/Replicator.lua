@@ -29,6 +29,35 @@ local function GetPlayerIds(Agent: AgentTypes.ServerAgentClass): (number, number
 	return AgentId, RepId
 end
 
+function Replicator:Effect(Name: string, Data: {}, Targets: boolean | {})
+	local BufferObject = buffer.create(1 + #Name)
+	buffer.writeu8(BufferObject, 0, GameEnum.Replication.PlayVisualEffect)
+	buffer.writestring(BufferObject, 1, Name)
+
+	for Key, Value in Data do
+		if tostring(Value) == 'ServerAgentClass' then
+			local PlayerId = Value.__Player_Assigned:GetAttribute('ReplicationId')
+			local AgentId = Agents:GetIdForPlayer(PlayerId, Value)
+
+			local NewValue = buffer.create(2)
+			buffer.writeu8(NewValue, 0, AgentId)
+			buffer.writeu8(NewValue, 1, PlayerId)
+
+			Data[Key] = NewValue
+		end
+	end
+
+	print(Data)
+
+	if Targets == true then
+		Network:FireForAll('Replicate', BufferObject, table.unpack(Data))
+	elseif typeof(Targets) == 'table' then
+		for _, Target in Targets do
+			Network:Fire('Replicate', Target, BufferObject, table.unpack(Data))
+		end
+	end
+end
+
 function Replicator:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClass, Target: Player?, At: CFrame?)
 	--print(Table:printTable(AgentClass))
 	local Object = buffer.create(6)
@@ -114,6 +143,20 @@ function Replicator:KeySwitch(Player: Player, Key: string, Value: boolean, Targe
 	else
 		Network:FireForAllBut(Player, 'Replicate', Object, Value)
 	end
+end
+
+function Replicator:UpdateMeter(Agent: AgentTypes.ServerAgentClass, MeterId: number, Amount: number)
+	local Player = Agent.__Player_Assigned
+	local PlayerRepId = Player:GetAttribute("ReplicationId") :: number
+	local Id = Agents:GetIdForPlayer(PlayerRepId, Agent) :: number
+
+	local Object = buffer.create(4)
+	buffer.writeu8(Object, 0, GameEnum.Replication.FillMeter)
+	buffer.writeu8(Object, 1, Id)
+	buffer.writeu8(Object, 2, MeterId)
+	buffer.writeu8(Object, 3, math.ceil(Amount * 255))
+
+	Network:Fire('Replicate', Player, Object)
 end
 
 function Replicator:SyncVelocities(Player: Player, Target: Player, ...)

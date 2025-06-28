@@ -37,15 +37,15 @@ function Characters:SetCharacterTarget(Player: Player, Id: number, Time: number)
 	end)
 end
 
-function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: number)
-	Characters:Build(UserId)
+function Characters:Switch(ReplicationId: number, Direction: number, EnemyTargetId: number)
+	Characters:Build(ReplicationId)
 
 	--
-	local IsLocal = Players.LocalPlayer:GetAttribute("ReplicationId") == UserId
+	local IsLocal = Players.LocalPlayer:GetAttribute("ReplicationId") == ReplicationId
 	Direction = math.sign(Direction)
 
-	local CurrentCharacter = Characters:GetCurrent(UserId)
-	local Data = Characters.__Player_Data[UserId]
+	local CurrentCharacter = Characters:GetCurrent(ReplicationId)
+	local Data = Characters.__Player_Data[ReplicationId]
 	local TargetObject = EnemyTargetId and Enemies:GetEnemy(EnemyTargetId)
 	local NewCFrame = AssistUtil:CalculateSwitchCFrame(Data.List[Data.Active], Direction, TargetObject)
 
@@ -76,7 +76,7 @@ function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: num
 
 	Data.Last_Anim = Data.Last_Anim == 1 and 2 or 1
 
-	if Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
+	if Players.LocalPlayer:GetAttribute("ReplicationId") == ReplicationId then
 		InterfaceStates.Characters:set(Data)
 	end
 
@@ -84,7 +84,7 @@ function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: num
 	CurrentCharacter:SetVisible(false)
 
 
-	local NewCharacter = Characters:GetCurrent(UserId)
+	local NewCharacter = Characters:GetCurrent(ReplicationId)
 	if CurrentCharacter == NewCharacter then
 		return false
 	end
@@ -100,10 +100,10 @@ function Characters:Switch(UserId: number, Direction: number, EnemyTargetId: num
 	return true
 end
 
-function Characters:Add(UserId: number, Character: AgentTypes.AgentClass)
-	Characters:Build(UserId)
+function Characters:Add(ReplicationId: number, Character: AgentTypes.AgentClass)
+	Characters:Build(ReplicationId)
 
-	local Data = Characters.__Player_Data[UserId]
+	local Data = Characters.__Player_Data[ReplicationId]
 
 	if #Data.List >= Statics.Max_Team_Size then
 		warn('Cannot add character to team, reason: Team is already full')
@@ -113,13 +113,13 @@ function Characters:Add(UserId: number, Character: AgentTypes.AgentClass)
 
 	table.insert(Data.List, Character)
 
-	if Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
+	if Players.LocalPlayer:GetAttribute("ReplicationId") == ReplicationId then
 		InterfaceStates.Characters:set(Data)
 	end
 end
 
-function Characters:Remove(UserId: number, Name: string): any
-	local Data = Characters.__Player_Data[UserId]
+function Characters:Remove(ReplicationId: number, Name: string): any
+	local Data = Characters.__Player_Data[ReplicationId]
 
 	for key, Character in Data.List do
 		if Character.Name == Name then
@@ -129,15 +129,15 @@ function Characters:Remove(UserId: number, Name: string): any
 		end
 	end
 
-	if Players.LocalPlayer:GetAttribute("ReplicationId") == UserId then
+	if Players.LocalPlayer:GetAttribute("ReplicationId") == ReplicationId then
 		InterfaceStates.Characters:set(Data)
 	end
 
 	return;
 end
 
-function Characters:GetCurrent(UserId: number): (AgentTypes.AgentClass?, number?)
-	local Data = Characters.__Player_Data[UserId]
+function Characters:GetCurrent(ReplicationId: number): (AgentTypes.AgentClass?, number?)
+	local Data = Characters.__Player_Data[ReplicationId]
 	if not Data then
 		return nil, nil;
 	end
@@ -147,8 +147,8 @@ function Characters:GetCurrent(UserId: number): (AgentTypes.AgentClass?, number?
 	return Data.List[CurrentActive], CurrentActive
 end
 
-function Characters:GetAgent(UserId: number, Id: number): AgentTypes.AgentClass?
-	local Data = Characters.__Player_Data[UserId]
+function Characters:GetAgent(ReplicationId: number, Id: number): AgentTypes.AgentClass?
+	local Data = Characters.__Player_Data[ReplicationId]
 	if not Data then
 		return;
 	end
@@ -156,12 +156,12 @@ function Characters:GetAgent(UserId: number, Id: number): AgentTypes.AgentClass?
 	return Data.List[Id]
 end
 
-function Characters:HasCharacter(UserId: number, Name: string): boolean
-	if not Characters.__Player_Data[UserId] then
+function Characters:HasCharacter(ReplicationId: number, Name: string): boolean
+	if not Characters.__Player_Data[ReplicationId] then
 		return false
 	end
 
-	local Data = Characters.__Player_Data[UserId]
+	local Data = Characters.__Player_Data[ReplicationId]
 
 	for _, Character in Data.List do
 		if Character.Name == Name then
@@ -173,34 +173,34 @@ function Characters:HasCharacter(UserId: number, Name: string): boolean
 end
 
 --
-function Characters:Build(UserId: number)
-	if Characters.__Player_Data[UserId] then
+function Characters:Build(ReplicationId: number)
+	if Characters.__Player_Data[ReplicationId] then
 		return
 	end
 
-	Characters.__Player_Data[UserId] = {
+	Characters.__Player_Data[ReplicationId] = {
 		Active = 1,
 		List = {},
 	}
 end
 
-function Characters:GetCharacters(UserId: number): {[number]: AgentTypes.AgentClass}
-	if not Characters.__Player_Data[UserId] then
+function Characters:GetCharacters(ReplicationId: number): {[number]: AgentTypes.AgentClass}
+	if not Characters.__Player_Data[ReplicationId] then
 		return {}
 	end
 
-	return Characters.__Player_Data[UserId].List
+	return Characters.__Player_Data[ReplicationId].List
 end
 
-function Characters:GetCurrentName(UserId: number): string
-	local Current = Characters:GetCurrent(UserId)
+function Characters:GetCurrentName(ReplicationId: number): string
+	local Current = Characters:GetCurrent(ReplicationId)
 	if not Current then return '' end
 
 	return Current.Name
 end
 
-function Characters:RemoveAll(UserId: number)
-	Characters.__Player_Data[UserId] = nil
+function Characters:RemoveAll(ReplicationId: number)
+	Characters.__Player_Data[ReplicationId] = nil
 end
 
 function Characters:GetActiveAgentsHitboxes()

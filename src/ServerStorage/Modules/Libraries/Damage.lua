@@ -63,7 +63,7 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.Serv
 	})
 
 	--
-	Enemy:TakeAffliction(Data.Affliction, Filled_Affliction)
+	Enemy:TakeAffliction(Data.Affliction or 'None', Filled_Affliction)
 
 	local AfflictionTriggered = false;
 	if Enemy:GetAffliction(Data.Affliction) >= 100 then

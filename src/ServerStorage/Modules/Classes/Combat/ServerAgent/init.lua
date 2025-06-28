@@ -143,9 +143,52 @@ function ServerAgentClass.Init(self: Types.ServerAgentClass, Player: Player)
 			ReplicationClock = os.clock()
 			Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self)
 		end
+
+		for _, MeterData in self.__Status:GetAllMeters() do
+			if (os.clock() - MeterData.LastUpdate >= 1) and (MeterData.Fill or MeterData.Empty) then
+				local Change = MeterData.Fill and MeterData.FillSpeed or MeterData.Empty and -MeterData.EmptySpeed
+				local Previous = MeterData.Value
+
+				MeterData.LastUpdate = os.clock()
+				MeterData.Value = math.clamp(MeterData.Value + Change, 0, MeterData.Max)
+
+				if Previous ~= MeterData.Value then
+					local hasEmptied = (Previous > MeterData.Value and MeterData.Value <= 0)
+					if hasEmptied and MeterData.EmptiedHandler then
+						task.spawn(MeterData.EmptiedHandler)
+					elseif (Previous < MeterData.Value and MeterData.Value == MeterData.Max) and MeterData.FilledHandler then
+						task.spawn(MeterData.FilledHandler)
+					end
+				end
+
+				local Percent = MeterData.Value / MeterData.Max
+				Replicator:UpdateMeter(self, MeterData.Id, Percent)
+			end
+		end
 	end)
 
 	return self.__Character:Init()
+end
+
+function ServerAgentClass.UpdateMeter(self: Types.ServerAgentClass, Meter: string, Amount: number)
+	local MeterObject = self.__Status:UpdateMeter(Meter, Amount)
+	local Percent = MeterObject.Value / MeterObject.Max
+
+	Replicator:UpdateMeter(self, MeterObject.Id, Percent)
+end
+
+function ServerAgentClass.SetMeterUpdateType(self: Types.ServerAgentClass, Meter: string, Type: number, State: boolean, h): ()
+	self.__Status:SetMeterUpdateType(Meter, Type, State, h)
+end
+
+function ServerAgentClass.GetMeter(self: Types.ServerAgentClass, Name: string): (number, number)
+	for _, Meter in self.__Status:GetAllMeters() do
+		if Meter.Name == Name then
+			return Meter.Value, Meter.Value / Meter.Max
+		end
+	end
+
+	return 0, 0
 end
 
 function ServerAgentClass.SetActive(self: Types.ServerAgentClass, State: boolean)
@@ -272,6 +315,7 @@ function ServerAgentClass.GetMarkedTarget(self: Types.ServerAgentClass): Types.A
 	return self.__Current_Target.Data
 end
 
+
 -- # Interacting
 function ServerAgentClass:TakeDamage(Amount: number)
 	self.__Status:Damage(Amount)
@@ -307,7 +351,7 @@ function ServerAgentClass:UseEnergy(Amount: number): ()
 	Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self)
 end
 
-function ServerAgentClass:AddTag(Tag: string, Time: number)
+function ServerAgentClass:AddTag(Tag: string, Time: number?)
 	if self.__Tags[Tag] then
 		task.cancel(self.__Tags[Tag])
 	end

@@ -86,10 +86,16 @@ return {
 			},
 
 			Fire = {
-				Main = RGB(255, 157, 0),
-				Meter = RGB(255, 81, 0),
-				Gradient = Sequence{Key(0, White), Key(1, RGB(255, 72, 0))},
+				Main = RGB(255, 157, 0), -- the icon
+				Meter = RGB(255, 81, 0), -- the circle
+				Gradient = Sequence{Key(0, White), Key(1, RGB(255, 72, 0))}, -- icon gradient
 			},
+
+			Energy = {
+				Main = RGB(255, 41, 180),
+				Meter = RGB(144, 47, 255),
+				Gradient = Sequence{Key(0, White), Key(1, RGB(60, 34, 255))},
+			}
 		},
 	}
 }

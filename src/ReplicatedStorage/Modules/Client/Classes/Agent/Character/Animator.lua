@@ -9,6 +9,8 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(Shared.Types)
 local AnimLibrary = require(Client.Libraries.Animation)
 
+local NON_ZERO = 0.001
+
 --
 local Priorities = {Idle = Enum.AnimationPriority.Core, Dash = Enum.AnimationPriority.Action}
 local AnimatorClass = {} :: {[string]: (self: Types.AnimatorController, any) -> any}
@@ -18,6 +20,7 @@ function AnimatorClass.new(Character: Types.CharacterClass, Directory: string): 
 	local self = setmetatable({}, AnimatorClass)
 	self.__Tracks = {}
 	self.__State_Tracks = {}
+	self.__Movement_Tracks = {}
 	self.__Directory = Directory
 	self.__IsMoving = false
 	self.__Character = Character
@@ -43,9 +46,9 @@ function AnimatorClass:Init()
 	end
 
 	self:Play('Idle')
-	self:Play('Sprint', {Weight = 0.001, Speed = .825})
-	self:Play('Jog', {Weight = 0.001})
-	self:Play('Walk', {Weight = 0.001, Speed = 0.7})
+	self:Play('Sprint', {Weight = NON_ZERO, Speed = .825})
+	self:Play('Jog', {Weight = NON_ZERO})
+	self:Play('Walk', {Weight = NON_ZERO, Speed = 0.7})
 
 	self.__Thread = RunService.PostSimulation:Connect(function(delta: number)
 		self:Update(delta)
@@ -75,10 +78,19 @@ end
 
 function AnimatorClass:Stop(Name: string)
 	local Track = self:GetTrack(Name)
-	
+
 	Track:Stop()
 	self.__Tracks[Name] = nil
 end
+
+function AnimatorClass:AddModelMovingAnimation(Track: AnimationTrack, Weight)
+	self.__Movement_Tracks[Track] = Weight
+end
+
+function AnimatorClass:RemoveTrackFromMovement(Track: AnimationTrack)
+	self.__Movement_Tracks[Track] = nil
+end
+
 
 function AnimatorClass:Update(delta: number)
 	local Character = self.__Character
@@ -97,22 +109,21 @@ function AnimatorClass:Update(delta: number)
 		self:Play('SprintStop'..Timestamp, {Fade = 0.15})
 		self.__SinceStop = os.clock()
 	end
-	
+
 	-- Adjusting weights
 	local Speed = Character:GetMovementSpeed()
 	local CharStats = Character.__States:GetSpeeds()
-	
+
 	if SprintStop and os.clock() - self.__SinceStop > .2 then
 		if Character.__Controller.__LastMovementVelocity.Magnitude > 0.225 and not Moving then
 			SprintStop:AdjustSpeed(0)
 			SprintStop.TimePosition = .2 + math.sin(math.rad(self.__Angle)) * 0.01
-			SprintStop:AdjustWeight(math.clamp(Character.__Controller.__LastMovementVelocity.Magnitude / Speed, 0.001, 1))
+			SprintStop:AdjustWeight(math.clamp(Character.__Controller.__LastMovementVelocity.Magnitude / Speed, NON_ZERO, 1))
 		else
-			
 			SprintStop:Stop()
 		end
 	end
-	
+
 	for State, Tracks in self.__State_Tracks do
 		for _, Track_Table in Tracks do
 			local Track_Object = Track_Table[1] :: AnimationTrack
@@ -128,43 +139,45 @@ function AnimatorClass:Update(delta: number)
 			if self.__Character:GetState() == State or not Moving then
 				Track_Object:AdjustWeight(1)
 			elseif self.__Character:GetState() ~= State and Passed_Time > Time and Moving then
-				Track_Object:AdjustWeight(0.001)
+				Track_Object:AdjustWeight(NON_ZERO)
 			end
 		end
 	end
-	
-	
-	Sprint:AdjustWeight(Moving and InIdle and Speed >= CharStats.Sprint_Speed and 1 or 0.001)
-	Jog:AdjustWeight(Moving and InIdle and Speed >= CharStats.Jog_Speed and Speed < CharStats.Sprint_Speed and 1 or 0.001)
-	Walk:AdjustWeight(Moving and InIdle and Speed < CharStats.Jog_Speed and 1 or 0.001)
-	--Walk:AdjustSpeed(math.clamp(Speed/, 0.001, 1))
-	
+
+	Sprint:AdjustWeight(Moving and InIdle and Speed >= CharStats.Sprint_Speed and 1 or NON_ZERO)
+	Jog:AdjustWeight(Moving and InIdle and Speed >= CharStats.Jog_Speed and Speed < CharStats.Sprint_Speed and 1 or NON_ZERO)
+	Walk:AdjustWeight(Moving and InIdle and Speed < CharStats.Jog_Speed and 1 or NON_ZERO)
+
+	for Track, WeightGoal in self.__Movement_Tracks do
+		local Goal = Moving and InIdle and WeightGoal or NON_ZERO
+
+		Track:AdjustWeight(Goal)
+	end
+
 	if Dash then
 		local Timeleft = .35
 		local ExpectedWeight = (Moving and Dash.TimePosition > .19) or (not Dash.IsPlaying)
 		local LoweredWeight = 1 - math.max(Dash.TimePosition - Dash.Length * (1 - Timeleft), 0) / Dash.Length * Timeleft
-		
-		Dash:AdjustWeight(ExpectedWeight and 0.001 or LoweredWeight)
+
+		Dash:AdjustWeight(ExpectedWeight and NON_ZERO or LoweredWeight)
 	end
-	
+
 	Sprint:AdjustSpeed(math.clamp(Character:GetMovementSpeed() / 30 * 0.825, 0, 2.5))
-	
+
 	-- Set value
 	self.__IsMoving = Moving
 	self.__Angle += delta * 60
 end
 
 function AnimatorClass:Destroy()
-	
 	for _, Track: AnimationTrack in self.__Tracks do
 		Track:Stop()
 		Track:Destroy()
 	end
-	
+
 	if self.__Thread then
 		self.__Thread:Disconnect()
 	end
-	
 end
 
 return AnimatorClass

@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
+local GameEnum = require(Shared.GameEnum)
 local Heap = require(Shared.Utility.Heap)
 local Types = require(Shared.Types.Agents)
 
@@ -16,6 +17,7 @@ function StatusClass.new(Base: Types.CharacterStats): Types.AgentStatusClass
 	self.__Effects = {}
 
 	--
+	self.__Meters = {}
 	self.__Total_Effects = Heap.new(128)
 	self.__Ultimate = 0
 	self.__Energy = 0
@@ -31,6 +33,68 @@ function StatusClass.Update(self: Types.AgentStatusClass, delta: number)
 	local Boost_Rate = 1 + self:GetStatEffects('Energy_Regeneration')
 
 	self:GiveEnergy(Boost_Rate * Energy_Regen_Rate * delta)
+end
+
+function StatusClass.CreateMeter(self: Types.AgentStatusClass, Name: string, Data: {[string]: any})
+	local Object = {
+		Max = Data.Max or -1,
+		Value = 0,
+		Id = Data.Id,
+		FillSpeed = Data.FillSpeed or 0,
+		EmptySpeed = Data.EmptySpeed or 0,
+		Name = Name,
+		LastUpdate = os.clock(),
+
+		Fill = false,
+		Empty = false,
+	}
+
+	table.insert(self.__Meters, Object)
+end
+
+function StatusClass.SetMeterUpdateType(self: Types.AgentStatusClass, Name: string, Type: number, State: boolean, Handler: () -> ())
+	for _, Meter in self.__Meters do
+		if Meter.Name ~= Name then
+			continue
+		end
+
+		if Type == GameEnum.Meter_States.Fill then
+			Meter.Fill = State
+			Meter.FilledHandler = Handler
+		else
+			Meter.EmptiedHandler = Handler
+			Meter.Empty = State
+		end
+	end
+end
+
+function StatusClass.UpdateMeter(self: Types.AgentStatusClass, Name: string, Amount: number)
+	for Key, Meter in self.__Meters do
+		if Meter.Name ~= Name then
+			continue
+		end
+
+		Meter.LastUpdate = os.clock()
+		Meter.Value = math.clamp(Meter.Value + Amount, 0, Meter.Max)
+
+		return Meter
+	end
+
+	return
+end
+
+function StatusClass.RemoveMeter(self: Types.AgentStatusClass, Name: string): ()
+	for Key, Meter in self.__Meters do
+		if Meter.Name == Name then
+			table.remove(self.__Meters, Key)
+
+			break
+		end
+	end
+end
+
+function StatusClass.GetAllMeters(self: Types.AgentStatusClass)
+	return self.__Meters
 end
 
 function StatusClass.GiveUltimate(self: Types.AgentStatusClass, Amount: number)

@@ -33,7 +33,7 @@ function Ability:Play(Agent: Types.GenericClass)
 		end,},
 
 		{.1, function()
-			Agent:Walk(0.133)
+			Agent:Walk(Ability:FromData('Walk_Time'))
 		end,},
 
 		{.18, function()

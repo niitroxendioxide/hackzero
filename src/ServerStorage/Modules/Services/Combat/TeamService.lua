@@ -4,6 +4,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Players = game:GetService("Players")
 
 local Modules = ServerStorage.Modules
+local Shared = ReplicatedStorage.Modules.Shared
 local Classes = Modules.Classes
 local Services = Modules.Services
 
@@ -17,6 +18,7 @@ local EnemyService = require(Services.Combat.EnemyService)
 local TeleportService = require(Services.Data.TeleportService)
 local PlayersLibrary = require(Modules.Libraries.Players)
 local Replicator = require(Modules.Libraries.Replicator)
+local AgentDatabase = require(Shared.Database.Characters)
 
 --
 local Service = {}
@@ -31,6 +33,7 @@ function Service:Create(Player: Player)
             AgentDataClass = AgentData
         end
 
+        local AgentInfo = AgentDatabase:GetMovesetData(AgentData.Name)
         local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level, AgentDataClass.Skills)
 
         if AgentDataClass.Drive then
@@ -39,6 +42,14 @@ function Service:Create(Player: Player)
             end, true)
 
             AgentInstance:BindDrive(DriveFromQuery:ToData())
+        end
+
+        if AgentInfo and AgentInfo.Passive and AgentInfo.Passive.Meters then
+            local Meters = AgentInfo.Passive.Meters
+
+            for MeterName, Data in Meters do
+                AgentInstance.__Status:CreateMeter(MeterName, Data)
+            end
         end
 
         local ArtifactIds = Table:WriteValues(AgentDataClass.Artifacts)

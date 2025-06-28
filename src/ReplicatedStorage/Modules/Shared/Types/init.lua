@@ -35,10 +35,16 @@ export type AppearanceController = {
 	__Model: Rig,
 	__TransparencyValues: {[BasePart]: number},
 	__Trove: {},
-	__Bound_Objects: {[Instance]: (self: Instance, State: boolean) -> ()},
+	__Bound_Objects: {[Instance]: (self: Instance, State: boolean, ExtraState: number) -> ()},
 
-	BindObject: (self: AppearanceController, Object: Instance, Toggle: (self: Instance, State: boolean) -> ()) -> (),
+	--[[
+		@param ExtraState is always 1. Useful to identify whether the caller is the appearance controller or not.
+	]]
+	BindObject: (self: AppearanceController, Object: Instance, Toggle: (self: Instance, State: boolean, ExtraState: number) -> ()) -> (),
 	UnbindObject: (self: AppearanceController, Object: Instance) -> (),
+
+	BindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),
+	UnbindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),
 	SetVisible: (self: AppearanceController, State: boolean) -> (),
 	JoinTo: (self: AppearanceController, BasePart: BasePart) -> (),
 
@@ -50,11 +56,14 @@ export type AnimatorController = {
 	__Character: CharacterClass,
 	__Tracks: {[string]: AnimationTrack},
 	__Directory: string,
+	__Movement_Tracks: {},
 	__IsMoving: boolean,
 
 	Init: (self: AnimatorController) -> (),
 	Play: (self: AnimatorController, Track: string) -> (),
 	GetTrack: (self: AnimatorController, Track: string) -> AnimationTrack,
+	AddModelMovingAnimation: (self: AnimatorController, Track: AnimationTrack, Weight: number) -> (),
+	RemoveTrackFromMovement: (self: AnimatorController, Track: AnimationTrack) -> (),
 }
 
 export type PhysicsController = {
@@ -281,6 +290,15 @@ export type MovesetInfo = {
 	["Dodge Counter"]: AbilityInfo,
 	["Ultimate"]: AbilityInfo,
 	["Chain Attack"]: AbilityInfo,
+	["Passive"]: {
+		Meters: {
+			[string]: {
+				Max: number,
+				Id: number,
+				EmptySpeed: number?,
+			}
+		}
+	}
 }
 
 export type SequenceFrames = {{number | (self: Sequence) -> ()}}
@@ -369,6 +387,7 @@ export type ServerAbilityClass = {
 	Play: (self: ServerAbilityClass, Agent: GenericClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
 	Begin: (self: ServerAbilityClass, Agent: GenericClass, SequenceFrames: SequenceFrames) -> (),
 
+	Effect: (self: ServerAbilityClass, Name: string, Params: {any}, Targets: boolean | {}) -> (),
 	ForOtherAgents: (self: ServerAbilityClass, Agent: GenericClass, Callback: (Agent: GenericClass, Data: {IsNext: boolean}) -> ()) -> (),
 	Hit: (self: ServerAbilityClass, Agent: GenericClass, Enemy: ServerEnemyClass, Hit: HitEnemyData) -> (number),
 
@@ -621,7 +640,7 @@ export type Substats = {
 	[Artifact_Substat]: number,
 }
 
-export type AnimationDataOptions =  {Name: string?, Fade: number?, Speed: number?, Weight: number?, Priority: Enum.AnimationPriority?, Active_Time: number?}
+export type AnimationDataOptions =  {Name: string?, Fade: number?, Speed: number?, Weight: number?, Priority: Enum.AnimationPriority?, Active_Time: number?, Model: Model?}
 export type EffectAnyData = {[string]: (Instance | any)}
 export type GamePlace = "Lobby" | "Mission" | "AFK" | "Raid"
 

@@ -25,6 +25,8 @@ local peek = Fusion.peek
 local Component = ComponentClass.new(script.Name, 'HUD', {
 })
 
+local Handlers = {}
+
 --
 local function ReplicationId(): number
 	return Player:GetAttribute("ReplicationId") :: number
@@ -51,6 +53,10 @@ end
 function Component:Init()
 	local Scope = self:GetScope()
 	local Frame = self:GetFrame()
+
+	for _, MeterHandler: ModuleScript in script:GetChildren() do
+		Handlers[MeterHandler.Name] = require(MeterHandler)
+	end
 
 	--
 	local Color = Scope:Value(Color3.fromRGB(104, 133, 152))
@@ -264,6 +270,18 @@ function Component:Init()
 			Icon_Object.Position = peek(Spring_Value)
 		end
 	end))
+end
+
+function Component:UpdateAgentMeter(Id: number, MeterName: string, Amount: number)
+	local CharacterPassiveMeterHandler = Handlers[MeterName]
+	if not CharacterPassiveMeterHandler then
+		return
+	end
+
+	local Frame = self:GetFrame()
+	local Icons = Frame.Icons
+
+	CharacterPassiveMeterHandler:Update(Icons[tostring(Id)], Amount)
 end
 
 return Component

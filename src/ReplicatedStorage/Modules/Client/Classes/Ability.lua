@@ -157,9 +157,10 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed') or 1) * Agent_Speed_Mod
 
 	--
+	local Model = Data.Model or Agent:GetModel()
 	local Type = tostring(Agent) == 'AgentClass' and 'Characters.' or 'Enemies.'
 	local TrackObject = AnimLibrary:GetAnim(Type..Track)
-	local AnimTrack = AnimLibrary:Play(Agent:GetModel(), TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
+	local AnimTrack = AnimLibrary:Play(Model, TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
 	AnimTrack.Priority = Enum.AnimationPriority.Action2 or Data.Priority
 
 	if tostring(Agent) == 'AgentClass' then
