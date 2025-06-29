@@ -10,7 +10,6 @@ local JotaroEffects = Assets.Effects.Agents.Jotaro3
 
 local AnimLib = require(Client.Libraries.Animation)
 local Types = require(Shared.Types.Agents)
-local GameEnum = require(Shared.GameEnum)
 local Effects = require(Shared.Utility.Effects)
 
 --- Need
@@ -46,7 +45,7 @@ local function ToggleStandVisibility(Model: Instance, State: boolean, ExtraState
     AgentCache.Visibility = State
 
     for _, BasePart: Instance in Model:GetDescendants() do
-        if not BasePart:IsA("BasePart") and not BasePart:IsA("Texture") and not BasePart:IsA("Decal") then 
+        if not BasePart:IsA("BasePart") and not BasePart:IsA("Texture") and not BasePart:IsA("Decal") then
             continue
         end
 

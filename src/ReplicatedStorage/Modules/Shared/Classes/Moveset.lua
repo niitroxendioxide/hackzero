@@ -55,10 +55,6 @@ end
 function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, IsSignal: boolean): boolean
 	Type = Type:gsub('_', ' ')
 
-	if not self.__Assigned[Type] then
-		return false
-	end
-
 	if not self.__Last_Use[Agent] then
 		self.__Last_Use[Agent] = {}
 	end
@@ -67,13 +63,18 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, IsSignal: b
 
 	-- Run client checks for correcting skill usage
 	if not(IsSignal) and RunService:IsClient() then
-		if Type == "Special" and Agent:GetEnergy() >= Info.Base.Required_Energy then
+		if Type == "Special" and (Agent:GetEnergy() >= Info.Base.Required_Energy) then
 			Type = "EX Special"
 
 			Info = self:GetInfoForSkill('EX Special')
 		elseif Type == 'Ultimate' and Agent:GetUltBar() < 100 then
 			return false
 		end
+	end
+
+	if not self.__Assigned[Type] then
+		warn(`Moveset: "{self.Name} does not have a correct skill module assigned for: "{Type}."`)
+		return false
 	end
 
 	--
@@ -113,8 +114,6 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, IsSignal: b
 
 		--
 		return true;
-	else
-		warn(`Moveset: "{self.Name} does not have a correct skill module assigned for: "{Type}."`)
 	end
 
 	return false;

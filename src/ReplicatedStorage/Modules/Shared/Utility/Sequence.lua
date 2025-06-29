@@ -13,7 +13,7 @@ export type Sequence = {
 	Pause: (self: Sequence) -> Sequence,
 	Destroy: (self: Sequence) -> (),
 	GetSpeed: (self: Sequence) -> (),
-	
+
 	--
 	Update: (self: Sequence) -> (),
 	After: (self: Sequence, fn: (self: Sequence) -> ()) -> Sequence,

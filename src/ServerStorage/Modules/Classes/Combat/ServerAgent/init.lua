@@ -223,7 +223,7 @@ function ServerAgentClass:Rotate(...)
 end
 
 function ServerAgentClass:GetCurrentSkill()
-	return self.__Character.__States:GetCurrentSkill()
+	return self.__Character.States:GetCurrentSkill()
 end
 
 function ServerAgentClass:Look(...)

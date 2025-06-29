@@ -19,7 +19,8 @@ function Ability:Play(Agent: Types.AgentClass)
 	end
 
 	--
-	local IsStand = M1_Count >= 4
+	local StandSummoned = Agent:GetEffect("StandSummoned")
+	local IsStand = M1_Count >= 4 or StandSummoned
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
 	Ability:Begin(Agent, {
 		{0, function()
@@ -33,7 +34,7 @@ function Ability:Play(Agent: Types.AgentClass)
 			end
 
 			local StandModel = workspace.World.Effects:FindFirstChild(Agent.PlayerId..'SPstandmodel')
-			local Track = Ability:PlayAnimation(Agent, 'Goku.Abilities.M1.'..Ability:Get(Agent, 'Count'), {
+			local Track = Ability:PlayAnimation(Agent, 'Jotaro3.Abilities.M1.'..Ability:Get(Agent, 'Count'), {
 				Fade = .1,
 				Active_Time = Attack_Time + .25,
 				Model = IsStand and StandModel or nil,

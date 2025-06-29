@@ -1,5 +1,6 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local GameEnum = require(Shared.GameEnum)
@@ -30,7 +31,7 @@ end
 
 function StatusClass.Update(self: Types.AgentStatusClass, delta: number)
 	local Energy_Regen_Rate = self:GetStat('Energy_Regeneration')
-	local Boost_Rate = 1 + self:GetStatEffects('Energy_Regeneration')
+	local Boost_Rate = (1 + self:GetStatEffects('Energy_Regeneration')) * (RunService:IsStudio() and 10 or 1)
 
 	self:GiveEnergy(Boost_Rate * Energy_Regen_Rate * delta)
 end
@@ -177,6 +178,10 @@ function StatusClass.GetStat(self: Types.AgentStatusClass, n)
 end
 
 function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.EffectParameters)
+	if self.__Total_Effects:isEmpty() then
+		return
+	end
+
 	if Effect.Tag and Effect.Unique then
 		for _, Other in self.__Effects do
 			if Other.Tag ~= nil and Other.Tag == Effect.Tag then
@@ -187,7 +192,7 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 
 	local NewId = self.__Total_Effects:extract()
 
-	if typeof(Effect.Value) == 'string' and Effect.Value:find("%%") then
+	if typeof(Effect.Value) == 'string' and Effect.Value:find("%%") and Effect.Type then
 		local Number = tonumber(string.sub(Effect.Value, 1, #Effect.Value-1), 10)
 		local Stat = self.__Base_Stats[Effect.Type]
 
@@ -200,8 +205,8 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 		Id = NewId,
 		Type = Effect.Type,
 		Time = Effect.Time,
-		Value = Effect.Value,
 		Tag = Effect.Tag,
+		Value = Effect.Value,
 		Created = os.clock(),
 
 		Remove = function()

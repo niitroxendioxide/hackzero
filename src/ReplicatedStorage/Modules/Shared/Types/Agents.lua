@@ -188,7 +188,7 @@ export type AgentStatusClass = {
 
 
 -- [[Server data]]
-export type EffectParameters = {Type: Stat & AgentMovesetAbility, Value: number | string, Time: number, Tag: string, Unique: boolean?, Callback: ((Id: number) -> ())?}
+export type EffectParameters = {Type: (Stat & AgentMovesetAbility)?, Value: (number | string)?, Time: number?, Tag: string, Unique: boolean?, Callback: ((Id: number) -> ())?}
 export type EffectObject = {Remove: () -> (), Id: number, Value: number, Type: Stat & AgentMovesetAbility, Tag: string?, Time: number?, Created: number}
 export type ServerCharacterClass = {
 	Name: string,

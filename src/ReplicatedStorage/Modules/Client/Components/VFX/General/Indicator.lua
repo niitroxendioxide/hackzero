@@ -6,8 +6,9 @@ local Assets = ReplicatedStorage.Assets
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(Shared.Types)
-local GameEnum = require(Shared.GameEnum)
 local Effects = require(Shared.Utility.Effects)
+local GameEnum = require(Shared.GameEnum)
+local ScreenUtil = require(Shared.Utility.ScreenUtil)
 
 local Key = ColorSequenceKeypoint.new
 local Sequence = ColorSequence.new
@@ -64,7 +65,6 @@ return function(At: Vector3 | Types.EnemyClass| CFrame, Data: Types.EffectAnyDat
 		Effects:Tween(Indicator.Holder, {.5}, {Size = UDim2.fromScale(7, 3)})
 	end
 
-
 	for i = 1, #NumberToString do
 		local Number = string.sub(NumberToString, i, i)
 		local X_Size = tonumber(Number) == nil and 0.07 or 0.1
@@ -78,6 +78,7 @@ return function(At: Vector3 | Types.EnemyClass| CFrame, Data: Types.EffectAnyDat
 		Object.Size = UDim2.fromScale(0, .39)
 		Object.Parent = Indicator.Holder.Main
 
+		Object.UIStroke.Thickness = ScreenUtil:GetStrokeSize(Object.UIStroke.Thickness)
 		if Data.Critical or Burst then
 			Object.UIStroke.Color = White
 			Effects:Tween(Object.UIStroke, {.3}, {Color = Color3.new(0)})

@@ -371,6 +371,7 @@ export type AbilityHitInfo = {
 	IsKill: boolean,
 	Hit_Type: 'Entity' | 'Structure',
 }
+export type InputState = 'Begin' | 'End'
 export type ServerAbilityClass = {
 	__Name: string,
 	__Cache: {},
@@ -384,7 +385,7 @@ export type ServerAbilityClass = {
 	Increase: (self: ServerAbilityClass, Agent: GenericClass, Key: string, Data: {Rate: number, Limit: number}?) -> (),
 
 	Cancel: (self: ServerAbilityClass, Caster: GenericClass, Callback: () -> ()) -> (),
-	Play: (self: ServerAbilityClass, Agent: GenericClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
+	Play: (self: ServerAbilityClass, Agent: GenericClass, Type: string, State: InputState, Other: {any}) -> (),
 	Begin: (self: ServerAbilityClass, Agent: GenericClass, SequenceFrames: SequenceFrames) -> (),
 
 	Effect: (self: ServerAbilityClass, Name: string, Params: {any}, Targets: boolean | {}) -> (),

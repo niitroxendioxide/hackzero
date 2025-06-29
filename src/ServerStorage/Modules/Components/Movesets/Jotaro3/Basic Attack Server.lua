@@ -19,7 +19,8 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 
 	--
-	local IsStand = M1_Count >= 4
+	local StandSummoned = Caster:GetEffect('StandSummoned')
+	local IsStand = (M1_Count >= 4 or StandSummoned)
 
 	Ability:Begin(Caster, {
 		{0, function()
@@ -36,8 +37,8 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 					Knockback = Ability:FromData('Knockback'),
 					Affliction = IsStand and 'Energy' or 'Physical',
 					Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count, SkillLevel),
-					Stun = 0.25,
-					Daze = Ability:FromData('Daze_Mult', M1_Count, SkillLevel)
+					Stun = 0.25 + (StandSummoned and 0.15 or 0),
+					Daze = Ability:FromData('Daze_Mult', M1_Count, SkillLevel) * (StandSummoned and 1.2 or 0)
 				})
 
 				if Result.Hit_Type == 'Entity' then
@@ -50,15 +51,21 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 
 		{0.3, function()
 			local Meter = Caster:GetMeter('Stand')
-			if Meter >= 75 and not Caster:HasTag('StandSummoned') then
+			if Meter >= 75 and not StandSummoned then
+				local CreatedObject = Caster:AddEffect({
+					Tag = 'StandSummoned',
+				})
+
+				if not CreatedObject then -- effect limit! never forget !
+					return
+				end
+
 				Ability:Effect("JP3_Stand", {Caster, {State = true}}, true)
 
-				-- Function runs once the meter empties out :v
 				Caster:SetMeterUpdateType('Stand', GameEnum.Meter_States.Empty, true, function()
+					CreatedObject.Remove()
 					Ability:Effect("JP3_Stand", {Caster, {State = false}}, true)
 				end)
-
-				Caster:AddTag('StandSummoned')
 			end
 		end}
     })

@@ -58,10 +58,9 @@ return {
 
 				Knockback_Direction = Vector3.new(0, 0, 1),
 				Knockback_Strength = 10,
-				Knockback_Time = 0.25,
+				Knockback_Time = 0.1,
 
-				Walk_Time = 0.133,
-				Forward_Impulse = 10,
+				Walk_Time = 0.07,
 
 				Damage_Mult = {
 					[1] = 73,
@@ -107,14 +106,51 @@ return {
 		['Special'] = {
 			Base = {
 				Cooldown = .35,
-				Attack_State_Time = 1,
+				Attack_State_Time = .5,
 				Speed = 1,
+				Animation_Speed = 1,
+
+				Required_Energy = 50,
+
+				Damage_Mult = 9,
+				Daze_Mult = 9,
+				Affliction_Buildup = 9,
 			},
 
 			Upgrades = {
-				
 			},
 		},
+
+		['EX Special'] = {
+			Base = {
+				Cooldown = .35,
+				Attack_State_Time = 7,
+				Speed = 1,
+				Animation_Speed = 1,
+
+				Hit_Frequency = 6/60,
+				Walk_Time = 1/60,
+
+				Knockback_Direction = Vector3.new(0, 0, 1),
+				Knockback_Strength = 3,
+				Knockback_Time = 0.1,
+
+				Energy_Per_Hit = 3,
+				Required_Energy = 50,
+				DontConsumeEnergy = true,
+				Release = true,
+
+				Damage_Mult = 44,
+				Daze_Mult = 61,
+				Affliction_Buildup = 31,
+			},
+
+			Upgrades = {
+				Damage_Mult = 1,
+				Daze_Mult = 1.5,
+				Affliction_Buildup = 0.75,
+			},
+		}
 	},
 
 	Ascension_Data = {
