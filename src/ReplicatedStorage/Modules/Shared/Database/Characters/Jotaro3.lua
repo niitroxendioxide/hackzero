@@ -70,10 +70,10 @@ return {
 				},
 
 				Daze_Mult = {
-					[1] = 20,
-					[2] = 24.5,
-					[3] = 31.5,
-					[4] = 39.2,
+					[1] = 45.3,
+					[2] = 63.9,
+					[3] = 81.7,
+					[4] = 102.5,
 				},
 
 				Affliction_Buildup = {
@@ -94,12 +94,7 @@ return {
 					[6] = 26,
 				},
 
-				Daze_Mult = {
-					[1] = 0.2,
-					[2] = 0.3,
-					[3] = 0.15,
-					[4] = 0.25,
-				},
+				
 			},
 		},
 
@@ -148,7 +143,7 @@ return {
 				Release = true,
 
 				Damage_Mult = 66,
-				Daze_Mult = 75,
+				Daze_Mult = 7,
 				Affliction_Buildup = 40,
 			},
 

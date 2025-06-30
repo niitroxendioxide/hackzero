@@ -14,11 +14,11 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.ServerAgentClass): ()
 	Ability:Increase(Caster, 'Count', {Limit = 4})
-	local M1_Count = Ability:Get(Caster, 'Count')
 
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 
 	--
+	local M1_Count = Ability:Get(Caster, 'Count')
 	local StandSummoned = Caster:GetEffect('StandSummoned')
 	local IsStand = (M1_Count >= 4 or StandSummoned)
 
@@ -30,6 +30,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 		{.2, function()
 			local Pos  = IsStand and Vector3.zAxis * -4.5 or Vector3.zAxis*-3
 			local Size = IsStand and Vector3.new(5, 5, 9) or Vector3.one * 5
+			local Daze = Ability:FromData('Daze_Mult', M1_Count, SkillLevel) * (StandSummoned and 1.2 or 1)
 
 			Ability:CreateHitbox(Caster, Pos, Size, function(Target: Types.Enemy)
 				local Result = Ability:Hit(Caster, Target, {
@@ -38,7 +39,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 					Affliction = IsStand and 'Energy' or 'Physical',
 					Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count, SkillLevel),
 					Stun = 0.25 + (StandSummoned and 0.15 or 0),
-					Daze = Ability:FromData('Daze_Mult', M1_Count, SkillLevel) * (StandSummoned and 1.2 or 0)
+					Daze = Daze,
 				})
 
 				if Result.Hit_Type == 'Entity' then

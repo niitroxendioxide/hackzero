@@ -58,6 +58,9 @@ function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: str
 				self.__cache.track:Stop(0)
 			end
 
+			Caster:AddTag('Barraging', Attack_Time)
+
+			Ability:Effect('Barrage_Effect', Caster)
 			Ability:Save(Caster, 'CurrentLoop', Track)
 		end},
 
@@ -88,6 +91,8 @@ function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: str
         Ability:PlayAnimation(Caster, "Jotaro3.Abilities.Special.Barrage_End", {
             Model = StandModel,
         })
+
+		Caster:RemoveTag('Barraging')
 
         Ability:Effect("JP3_Stand", Caster, {
             At = Vector3.new(0, 0, -3),

@@ -455,7 +455,7 @@ end
 
 function Replicator:SwitchStateEnemy(EnemyId: number, State: string, Time: number)
 	local Object = buffer.create(5)
-	buffer.writeu8(Object, 0, GameEnum.Replication.EnterDaze)
+	buffer.writeu8(Object, 0, GameEnum.Replication.StateSwitchEnemy)
 	buffer.writeu8(Object, 1, EnemyId)
 	buffer.writeu8(Object, 2, table.find(GameEnum.Agent_States, State) :: number)
 	buffer.writeu16(Object, 3, Time * 100)

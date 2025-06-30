@@ -282,9 +282,9 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 	local Upgraded_Value = Upgrade[Key]
 
 	if typeof(Value) == 'table' and Sub_Key ~= nil then
-		local Added = Upgraded_Value ~= nil and Upgrade[Key][Sub_Key] or 0
+		local Added = Upgraded_Value ~= nil and Upgraded_Value[Sub_Key] or 0
 
-		return Value[Sub_Key] + Added * Level
+		return Value[Sub_Key] + (Added * Level)
 	end
 
 	if Key == "Speed" and Value == nil then

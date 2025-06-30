@@ -57,12 +57,14 @@ return function(Enemy: Types.EnemyClass)
 		local TotalDaze = peek(Enemy.__Daze)
 		local HealthValue = math.clamp(SpringVal / MaxVal, 0, 1)
 		local DazeValue = math.clamp(TotalDaze / Enemy:GetStat("Max_Daze"), 0, 1)
+
 		local IsDazed = Enemy.__Status:IsKnocked()
 
 		Gui.Meters.Health.Main.UIGradient.Offset = Vector2.new(-0.81 + HealthValue, 0)
 		Effects:Tween(Gui.Meters.Stun.Main.UIGradient, {.3, 'Quad'}, {Offset = Vector2.new(-0.81 + DazeValue, 0)})
 
-		Gui.Meters.StunPercent.Text = math.floor(((TotalDaze or 0) / Enemy:GetStat("Max_Daze")) * 100)
+		--print(DazeValue)
+		Gui.Meters.StunPercent.Text = math.floor(DazeValue * 100)
 		Gui.Meters.StunPercentBG.Text = Gui.Meters.StunPercent.Text
 
 		Gui.Meters.StunDamageBonus.Visible = IsDazed

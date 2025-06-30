@@ -99,7 +99,7 @@ end
 function Controller:DazeEnemy(Buffer: buffer)
 	local EnemyId = buffer.readu8(Buffer, 1)
 	local Amount = buffer.readu16(Buffer, 2) / 325
-	
+
 	local EnemyObject = Enemies:GetEnemy(EnemyId)
 
 	if EnemyObject == nil then

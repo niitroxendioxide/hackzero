@@ -34,7 +34,7 @@ function Ability:Play(Agent: Types.AgentClass)
 			end
 
 			local StandModel = workspace.World.Effects:FindFirstChild(Agent.PlayerId..'SPstandmodel')
-			local Track = Ability:PlayAnimation(Agent, 'Jotaro3.Abilities.M1.'..Ability:Get(Agent, 'Count'), {
+			local Track = Ability:PlayAnimation(Agent, 'Jotaro3.Abilities.M1.'..(IsStand and 'Stand_' or '')..Ability:Get(Agent, 'Count'), {
 				Fade = .1,
 				Active_Time = Attack_Time + .25,
 				Model = IsStand and StandModel or nil,

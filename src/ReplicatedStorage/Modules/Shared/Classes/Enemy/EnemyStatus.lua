@@ -49,10 +49,10 @@ function EnemyStatus:SwitchState(State: string, Time: number)
 
 	if typeof(CurrentThread) == 'thread' then
 		task.cancel(CurrentThread)
-	end	
+	end
 
 	self.__State = State
-	
+
 	self.__Threads['CurrentState'] = task.delay(Time, function()
 		self.__State = 'Idle'
 
@@ -72,7 +72,7 @@ function EnemyStatus:Daze(Amount: number): boolean
 	end
 
 	self.__Daze = math.clamp(self.__Daze + Amount, 0, self.__Max_Daze)
-	
+
 	if self.__Daze >= self.__Max_Daze then
 		return true
 	end
@@ -167,17 +167,18 @@ function EnemyStatus:GetDazeMultiplier(): number
 end
 
 function EnemyStatus:EnterDazedState(fn: (DazeValue: number) -> ())
+	--print(debug.traceback())
 	if self.__Dazed then
 		return
 	end
-	
+
 	--
 	self.__Dazed = true
-	
+
 	local Daze_Length = self:GetStat('Daze_Length')
 	local _Daze_Removed = self:GetStat('Max_Daze')
 	local Level_Mult = self.__Level * Statics.Daze_Length_Level_Multiplier
-	
+
 	self.__Daze_Thread = RunService.Heartbeat:Connect(function(delta: number)
 		if self.__Daze <= 0 then
 			self.__Dazed = false
