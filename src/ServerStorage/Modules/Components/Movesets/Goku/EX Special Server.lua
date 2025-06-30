@@ -32,7 +32,7 @@ function Ability:Play(Caster: Types.GenericClass, Skill_Name: string, State: str
 		end,},
 
 		{.317, AttackTime, function(self)
-			if Caster:GetEnergy() <= 0 then
+			if Caster:GetEnergy() <= Ability:FromData('Energy_Per_Hit') then
 				self:Destroy()
 
 				Ability:Cancel(Caster)

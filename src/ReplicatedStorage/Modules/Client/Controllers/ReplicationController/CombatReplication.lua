@@ -291,4 +291,17 @@ function Controller:FillMeter(Buffer: buffer)
 	MainUIHUD:UpdateAgentMeter(AgentId, MeterName, Percent)
 end
 
+function Controller:SetEnemySpeed(Buffer: buffer)
+	local EnemyId = buffer.readu8(Buffer, 1)
+	local Speed = buffer.readu8(Buffer, 2) / 100
+	local Time = buffer.readu8(Buffer, 3) / 10
+
+	if Time == 0 then
+		Time = nil
+	end
+
+	local EnemyObject = Enemies:GetEnemy(EnemyId)
+	EnemyObject:SetWorldSpeed(Speed, Time)
+end
+
 return Controller

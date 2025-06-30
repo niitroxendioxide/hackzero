@@ -20,12 +20,27 @@ function EnemyMovement.new(At: Vector3, Speed: number?)
 	self.__Direction = Vector3.zero
 	self.__Target = nil
 	self.__Speed = Speed or 6
+	self.__World_Speed = 1
 	self.__Moved_in_last_step = false
 	self.__Velocities = {}
-	
+	self.__Speed_Change_Thread = nil
+
 	self:CreateCollider()
 
 	return self
+end
+
+function EnemyMovement:SetWorldSpeed(Speed: number, Time: number?)
+	if self.__Speed_Change_Thread then
+		task.cancel(self.__Speed_Change_Thread)
+	end
+
+	self.__World_Speed = Speed
+
+	if not Time then return end
+	self.__Speed_Change_Thread = task.delay(Time, function()
+		self.__World_Speed = 1
+	end)
 end
 
 function EnemyMovement:CreateCollider()
@@ -37,7 +52,7 @@ function EnemyMovement:CreateCollider()
 	self.__Collider.Anchored = true
 	self.__Collider.Transparency = (RunService:IsClient() and not DEBUG_ENEMY_POSITIONS) and 1 or 0.85
 	self.__Collider.Parent = RunService:IsClient() and WorldFolder.Entities.Hitboxes or (workspace:FindFirstChild("Camera") :: Camera):FindFirstChild("Enemies")
-	
+
 	if DEBUG_ENEMY_POSITIONS and RunService:IsServer() then
 		self.__debug_collider = Instance.new('Part')
 		self.__debug_collider.CFrame = CFrame.new(self.__Position)
@@ -113,7 +128,7 @@ function EnemyMovement:Update(Delta: number)
 	local Velocity = self:GetSumOfKnockbacks()
 
 	local ConvertedDirection = CFrame.lookAlong(Position, self.__Looking):VectorToWorldSpace(self.__Direction)
-	local Movement = (ConvertedDirection * self.__Speed + Velocity) * Delta * World:GetSpeed()
+	local Movement = (ConvertedDirection * self.__Speed + Velocity) * Delta * World:GetSpeed() * self.__World_Speed
 
 	local Map = World:GetMapParams()
 	local Colliders = World:GetColliderParams()
@@ -122,14 +137,14 @@ function EnemyMovement:Update(Delta: number)
 	if Collision then
 		local ProjectedMovement = Movement - Movement:Dot(Collision.Normal) * Collision.Normal
 
-		Movement = ProjectedMovement * self.__Speed * Delta * World:GetSpeed()
+		Movement = ProjectedMovement * (self.__Speed * self.__World_Speed) * Delta * World:GetSpeed()
 	end
 
 	local EntitiesHit = workspace:Spherecast(self.__Position, 1.5, ConvertedDirection * 2, Colliders)
 	if EntitiesHit then
 		local ProjectedMovement = Movement - Movement:Dot(EntitiesHit.Normal) * EntitiesHit.Normal
 
-		Movement = ProjectedMovement * self.__Speed * Delta * World:GetSpeed()
+		Movement = ProjectedMovement * (self.__Speed * self.__World_Speed) * Delta * World:GetSpeed()
 	end
 
 	self.__Moved_in_last_step = EntitiesHit == nil
@@ -141,11 +156,11 @@ function EnemyMovement:Update(Delta: number)
 	if Cast then
 		self.__Position = Cast.Position + Vector3.yAxis * 3.15
 	end
-	
+
 	if self.__Collider then
 		self.__Collider.CFrame = CFrame.lookAlong(self.__Position, self.__Looking)
 	end
-	
+
 	if self.__Collider and self.__debug_collider then
 		self.__debug_collider.CFrame = self.__Collider.CFrame
 	end

@@ -28,6 +28,7 @@ return {
 		RotateEnemy = 29,
 		PivotEnemy = 30,
 		StateSwitchEnemy = 31,
+		SetEnemySpeed = 32,
 
 		-- Combat
 		EnemyUseSkill = 49,

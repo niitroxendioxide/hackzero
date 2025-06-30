@@ -33,10 +33,13 @@ local function ReplicationId(): number
 end
 
 local function GetEnergyNeededById(Id: number): number
-	--local Agent = CharacterLibrary:GetAgent(ReplicationId(), Id) :: AgentTypes.AgentClass
-	local CharacterInfo = CharacterDatabase:GetMovesetData('Goku') -- Agent.Name
+	local Agent = CharacterLibrary:GetAgent(ReplicationId(), Id) :: AgentTypes.AgentClass
+	local CharacterInfo = CharacterDatabase:GetMovesetData(Agent.Name) -- Agent.Name
+	if not CharacterInfo.Special or not CharacterInfo.Special.Base or not CharacterInfo.Special.Base.Required_Energy then
+		return 100
+	end
 
-	return CharacterInfo.Special.Base['Required_Energy'] :: number
+	return CharacterInfo.Special.Base.Required_Energy :: number
 end
 
 
@@ -227,7 +230,8 @@ function Component:Init()
 		local HealthSize = math.clamp(peek(HealthSprings[CurrentId]), 0, 1)
 
 		--
-		if peek(CurrentEnergySpring) > GetEnergyNeededById(CurrentId :: number) then
+		local Needed_Energy = GetEnergyNeededById(CurrentId :: number)
+		if peek(CurrentEnergySpring) > Needed_Energy then
 			Color:set(FULL_COLOR)
 		else
 			Color:set(NOT_COLOR)

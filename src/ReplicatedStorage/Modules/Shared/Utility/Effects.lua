@@ -1,10 +1,13 @@
 --
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService('TweenService')
 
 --
 local EffectUtil = {}
 
+local Client = ReplicatedStorage.Modules.Client
 local Random_Number = Random.new()
+local CameraShaker = require(Client.Utility.Libraries.CameraShaker)
 local World = require(script.Parent.Parent.World)
 local Effects_Folder = workspace:WaitForChild('World'):WaitForChild('Effects')
 
@@ -44,7 +47,7 @@ function EffectUtil:Tween(Object: Instance, Info: {number | string | boolean | n
 end
 
 function EffectUtil:CleanUp(Object: any, Time: number)
-	task.delay(Time, function()
+	return task.delay(Time, function()
 		local typeOf = typeof(Object)
 
 		if typeOf == 'Instance' or (typeOf == 'table' and Object.Destroy) then
@@ -81,7 +84,7 @@ function EffectUtil:RandomV3(): Vector3
 	return Random_Number:NextUnitVector()
 end
 
-function EffectUtil:Create<T>(Asset: T & Instance, Time: number?)
+function EffectUtil:Create<T>(Asset: T & Instance, Time: number?): (T, thread)
 	local Dir = string.split(debug.info(2, 's'), '.')
 	local Name = Dir[#Dir]
 
@@ -94,9 +97,9 @@ function EffectUtil:Create<T>(Asset: T & Instance, Time: number?)
 	local Cloned = (Asset :: Instance):Clone()
 	Cloned.Parent = Effects_Folder:FindFirstChild(Name)
 
-	EffectUtil:CleanUp(Cloned, Time or 10)
+	local DeleteThread = EffectUtil:CleanUp(Cloned, Time or 10)
 
-	return Cloned :: T
+	return Cloned :: T, DeleteThread
 end
 
 function EffectUtil:Emit(Asset: Instance, Light: boolean?): ()
@@ -123,7 +126,7 @@ function EffectUtil:Weld(Object: BasePart, Welded: BasePart)
 	Weld.Part0 = Object
 	Weld.Part1 = Welded
 	Weld.Parent = Object
-	
+
 	return Weld
 end
 
@@ -147,7 +150,17 @@ function EffectUtil:Toggle(Object: Instance, State: boolean, Filter: ((Object: P
 			Child.Enabled = State
 		end
 	end
+end
 
+function EffectUtil:ShakeCamera(Preset: string)
+	-- TODO: Add support for settings :3
+	local Camera = workspace.CurrentCamera
+	local NewCamShake = CameraShaker.new(Enum.RenderPriority.Last.Value, function(shakeCf)
+		Camera.CFrame = Camera.CFrame * shakeCf
+	end)
+
+	NewCamShake:Start()
+	NewCamShake:Shake(CameraShaker.Presets[Preset]);
 end
 
 return EffectUtil

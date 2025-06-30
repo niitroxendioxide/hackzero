@@ -5,8 +5,8 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
-local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Types = require(Shared.Types.Agents)
+local StandUtils = require(ServerStorage.Modules.Packages.Utility.StandUtils)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 
 --
@@ -27,7 +27,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time', M1_Count) / Ability:FromData('Speed'))
 		end,},
 
-		{.18, function()
+		{.2, function()
 			local Pos  = IsStand and Vector3.zAxis * -4.5 or Vector3.zAxis*-3
 			local Size = IsStand and Vector3.new(5, 5, 9) or Vector3.one * 5
 
@@ -50,23 +50,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 		end,},
 
 		{0.3, function()
-			local Meter = Caster:GetMeter('Stand')
-			if Meter >= 75 and not StandSummoned then
-				local CreatedObject = Caster:AddEffect({
-					Tag = 'StandSummoned',
-				})
-
-				if not CreatedObject then -- effect limit! never forget !
-					return
-				end
-
-				Ability:Effect("JP3_Stand", {Caster, {State = true}}, true)
-
-				Caster:SetMeterUpdateType('Stand', GameEnum.Meter_States.Empty, true, function()
-					CreatedObject.Remove()
-					Ability:Effect("JP3_Stand", {Caster, {State = false}}, true)
-				end)
-			end
+			StandUtils:CheckAndSummon(self, Caster)
 		end}
     })
 end

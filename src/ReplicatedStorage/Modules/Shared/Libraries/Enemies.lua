@@ -38,7 +38,7 @@ function EnemyLibrary:RemoveEnemy(EnemyId: number | Types.ServerEnemyClass)
 	return Id
 end
 
-function EnemyLibrary:GetEnemy(Id: number)
+function EnemyLibrary:GetEnemy(Id: number): Types.EnemyClass & Types.ServerEnemyClass
 	return EnemyLibrary.__Enemies[Id]
 end
 

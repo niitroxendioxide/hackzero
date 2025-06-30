@@ -105,19 +105,25 @@ return {
 
 		['Special'] = {
 			Base = {
-				Cooldown = .35,
-				Attack_State_Time = .5,
+				Cooldown = 1.5,
 				Speed = 1,
 				Animation_Speed = 1,
 
-				Required_Energy = 50,
+				Required_Energy = 25,
 
-				Damage_Mult = 9,
-				Daze_Mult = 9,
-				Affliction_Buildup = 9,
+				Attack_State_Time = .5,
+				S_OFF_Damage_Mult = 9,
+				S_OFF_Daze_Mult = 9,
+				S_OFF_Affliction_Buildup = 9,
+
+				S_ON_Attack_State_Time = .5,
+				S_ON_Damage_Mult = 9,
+				S_ON_Daze_Mult = 9,
+				S_ON_Affliction_Buildup = 9,
 			},
 
 			Upgrades = {
+
 			},
 		},
 
@@ -128,7 +134,8 @@ return {
 				Speed = 1,
 				Animation_Speed = 1,
 
-				Hit_Frequency = 6/60,
+				Hit_Frequency = 10/60,
+				Effect_Frequency = 6/60,
 				Walk_Time = 1/60,
 
 				Knockback_Direction = Vector3.new(0, 0, 1),
@@ -136,13 +143,13 @@ return {
 				Knockback_Time = 0.1,
 
 				Energy_Per_Hit = 3,
-				Required_Energy = 50,
+				Required_Energy = 25,
 				DontConsumeEnergy = true,
 				Release = true,
 
-				Damage_Mult = 44,
-				Daze_Mult = 61,
-				Affliction_Buildup = 31,
+				Damage_Mult = 66,
+				Daze_Mult = 75,
+				Affliction_Buildup = 40,
 			},
 
 			Upgrades = {
@@ -150,6 +157,23 @@ return {
 				Daze_Mult = 1.5,
 				Affliction_Buildup = 0.75,
 			},
+		},
+
+		['Ultimate'] = {
+			Base = {
+				Cooldown = .35,
+				Attack_State_Time = 0.3,
+				Speed = 1,
+				Animation_Speed = 1,
+
+				Duration = 4,
+				Range = 80,
+			},
+
+			Upgrades = {
+				Duration = 0.15,
+				Range = 2,
+			}
 		}
 	},
 

@@ -40,6 +40,10 @@ function EnemyClass.new(At: Vector3, Name: string, Level: number): Types.EnemyCl
 	return self
 end
 
+function EnemyClass:SetWorldSpeed(Speed: number, Time: number?)
+	self.__Movement:SetWorldSpeed(Speed, Time)
+end
+
 function EnemyClass:Destroy()
 	self.__Movement:Destroy()
 
@@ -130,7 +134,7 @@ function EnemyClass:GetDirection()
 end
 
 function EnemyClass:IsMoving()
-	return self.__Movement.__Direction.Magnitude > 0
+	return self.__Movement.__Direction.Magnitude > 0 and self.__Movement.__World_Speed > 0
 end
 
 function EnemyClass:IsWalking()

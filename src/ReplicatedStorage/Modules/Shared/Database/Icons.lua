@@ -28,6 +28,11 @@ return {
 				Color = Color3.fromRGB(255, 162, 23),
 			},
 
+			['Jotaro3'] = {
+				Id = 139304669014108,
+				Color = Color3.fromRGB(79, 50, 227),
+			},
+
 			['Vegeta'] = {
 				Id = 139304669014108,
 				Color = Color3.fromRGB(108, 59, 255),

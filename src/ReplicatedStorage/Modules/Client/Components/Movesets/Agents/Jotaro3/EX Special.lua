@@ -10,6 +10,7 @@ local Effects = require(Client.Libraries.Effects)
 
 
 --
+local RNG = Random.new()
 local Ability = AbilityClass.new(true)
 
 function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: string)
@@ -29,6 +30,7 @@ function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: str
     end
 
 	local Attack_Time = Ability:FromData('Attack_State_Time')
+	local LastEffClock = os.clock()
 	local LastHitClock = os.clock()
 	local Sequence = Ability:Begin(Caster, {
 		{0, function(self)
@@ -61,13 +63,16 @@ function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: str
 
 		{0.317, Attack_Time, function(self)
 			if (os.clock() - LastHitClock > Ability:FromData('Hit_Frequency')) then
-				LastHitClock = os.clock()
-
 				Caster:Walk(Ability:FromData("Walk_Time"))
+				LastHitClock = os.clock()
+			end
+
+			if (os.clock() - LastEffClock > Ability:FromData('Effect_Frequency')) then
+				LastEffClock = os.clock()
 
 				Ability:CreateHitbox(Caster, Vector3.zAxis*-4, vector.create(5, 5, 9), function(Target: AgentTypes.ClientEnemy)
 					Target:Hit()
-					Ability:Effect('Hit', Target)
+					Ability:Effect('Hit', Target, {Emitter = 'BarrageEtherHit', Offset = CFrame.new(RNG:NextNumber(-1.5, 1.5), RNG:NextInteger(-1, 1), -1)})
 				end)
 			end
 		end},
@@ -86,7 +91,7 @@ function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: str
 
         Ability:Effect("JP3_Stand", Caster, {
             At = Vector3.new(0, 0, -3),
-            Time = 0.1,
+            Time = 0.65,
         })
 	end)
 

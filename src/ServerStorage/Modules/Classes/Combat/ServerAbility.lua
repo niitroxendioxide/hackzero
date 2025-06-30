@@ -1,4 +1,5 @@
 --
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local ServerStorage = game:GetService('ServerStorage')
 
@@ -214,6 +215,20 @@ local function HitStructure(Caster, Structure, Data)
 end
 
 function ServerAbilityClass.Effect(self: Types.ServerAbilityClass, Name: string, Params: {any}, Targets: boolean | {})
+	if typeof(Targets) == 'function' then
+		local ActualTargets = {}
+		for _, Player in Players:GetPlayers() do
+			local CurrentAgent = AgentsLibrary:GetCurrentActive(Player:GetAttribute('ReplicationId'))
+
+			local Result = Targets(Player, CurrentAgent)
+			if Result == true then
+				table.insert(ActualTargets, Player)
+			end
+		end
+
+		Targets = ActualTargets
+	end
+
 	Replicator:Effect(Name, Params, Targets)
 end
 

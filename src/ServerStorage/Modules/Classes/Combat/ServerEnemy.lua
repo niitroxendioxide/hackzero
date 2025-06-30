@@ -51,6 +51,12 @@ function ServerEnemy:GetSkillLevel()
 	return 0
 end
 
+function ServerEnemy:SetWorldSpeed(Speed: number, Time: number?)
+	self.__Movement:SetWorldSpeed(Speed, Time)
+
+	Replicator:SetEnemySpeed(self.__EnemyId, Speed, Time)
+end
+
 function ServerEnemy:GetStat(Stat: string)
 	if Stat == 'Speed' then
 		return 1

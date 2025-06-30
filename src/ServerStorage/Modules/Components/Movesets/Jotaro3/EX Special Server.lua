@@ -18,7 +18,9 @@ function Ability:Play(Caster: Types.GenericClass, _, State: Types.InputState)
 
     if Ability:Get(Caster, 'plrSequence') or Release then
         local Sequence = Ability:Get(Caster, 'plrSequence')
-        Sequence:Destroy()
+        if Sequence then
+            Sequence:Destroy()
+        end
 
         Caster:SwitchState('Attacking', 0)
         Ability:Save(Caster, 'plrSequence', nil)
@@ -37,8 +39,8 @@ function Ability:Play(Caster: Types.GenericClass, _, State: Types.InputState)
 			Caster:SwitchState('Attacking', AttackTime)
 		end,},
 
-		{.35, AttackTime, function()
-            if Caster:GetEnergy() <= 0 then
+		{.35, AttackTime, function(self)
+            if Caster:GetEnergy() <= Ability:FromData('Energy_Per_Hit') then
 				self:Destroy()
 
 				Ability:Cancel(Caster)

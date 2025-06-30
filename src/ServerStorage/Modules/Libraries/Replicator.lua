@@ -47,8 +47,6 @@ function Replicator:Effect(Name: string, Data: {}, Targets: boolean | {})
 		end
 	end
 
-	print(Data)
-
 	if Targets == true then
 		Network:FireForAll('Replicate', BufferObject, table.unpack(Data))
 	elseif typeof(Targets) == 'table' then
@@ -488,6 +486,16 @@ function Replicator:RemoveGear(Agent: AgentTypes.ServerAgentClass, GearName: str
 	buffer.writeu8(Object, 1, RepId)
 	buffer.writeu8(Object, 2, AgentId)
 	buffer.writeu8(Object, 3, GearId)
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:SetEnemySpeed(EnemyId: number, Speed: number, Time: number?)
+	local Object = buffer.create(4)
+	buffer.writeu8(Object, 0, GameEnum.Replication.SetEnemySpeed)
+	buffer.writeu8(Object, 1, EnemyId)
+	buffer.writeu8(Object, 2, Speed * 100)
+	buffer.writeu8(Object, 3, (Time or 0) * 10)
 
 	Network:FireForAll('Replicate', Object)
 end

@@ -22,7 +22,7 @@ function AnimatorClass.new(Enemy: Types.EnemyClass, Directory: string): Types.An
 	self.__Character = Enemy
 	self.__Angle = 0
 	self.__SinceStop = os.clock()
-	
+
 	return self
 end
 
@@ -30,7 +30,7 @@ function AnimatorClass:Init()
 	if self.__Thread then
 		return
 	end
-	
+
 	self:Play('Idle')
 	self:Play('Walk', {Weight = 0.001, Speed = 0.7})
 	self:Play('WalkLeft', {Weight = 0.001, Speed = 0.6})
@@ -58,7 +58,7 @@ function AnimatorClass:Hit()
 	if self.__Tracks['Hit'] then
 		self.__Tracks['Hit']:Stop(.15)
 	end
-	
+
 	local TrackObject = AnimLibrary:GetAnim('Enemies.Hit.'..math.random(1, 1))
 	local AnimTrack = AnimLibrary:Play(self.__Character:GetModel(), TrackObject, .05, 1, 1)
 
@@ -81,7 +81,7 @@ function AnimatorClass:Update(_: number)
 	local Walk = self:GetTrack('Walk')
 	local Right = self:GetTrack('WalkRight')
 	local Left = self:GetTrack('WalkLeft')
-	
+
 	local Direction =  self.__Character:GetDirection()
 	local Forward = math.abs(Direction:Dot(Vector3.new(0, 0, 1))) >= .8
 	

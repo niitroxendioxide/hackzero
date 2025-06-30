@@ -421,7 +421,13 @@ export type EnemyClass = {
 	IsMoving: (self: EnemyClass) -> EnemyClass,
 	Rotate: (self: EnemyClass, Direction: Vector3) -> (),
 
+	SetWorldSpeed: (self: ServerEnemyClass, Speed: number, Time: number) -> (),
 	SwitchState: (self: EnemyClass, State: string, Time: number) -> (),
+}
+
+export type EnemyMovementClass = {
+	__World_Speed: number,
+	SetWorldSpeed: (self: EnemyMovementClass, number, number?) -> (),
 }
 
 export type ServerEnemyClass = {
@@ -431,6 +437,9 @@ export type ServerEnemyClass = {
 	__Name: string,
 	__Status: EnemyStatus,
 	__EnemyId: number,
+	__Movement: EnemyMovementClass,
+
+	SetWorldSpeed: (self: ServerEnemyClass, Speed: number, Time: number) -> (),
 
 	GetId: (self: ServerEnemyClass) -> (number),
 	Init: (self: ServerEnemyClass, Key: number) -> (),

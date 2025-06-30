@@ -167,13 +167,20 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 		--
 	end
 
-	if State == 'Begin' then
-		Moveset:Begin(Skill, ActiveAgent)
+	local Success, ErrorMessage = pcall(function()
+		if State == 'Begin' then
+			Moveset:Begin(Skill, ActiveAgent)
+		else
+			Moveset:Release(Skill, ActiveAgent)
+		end
+	end)
+
+	if not Success then
+		warn(`Error while executing skill: {SpacelessSkill}. Error Message: {ErrorMessage}`)
 	else
-		Moveset:Release(Skill, ActiveAgent)
+		Replicator:UseSkill(Player, SkillId, SkillId == GameEnum.Skills.Quick_Assist, EnemyId, StateId)
 	end
 
-	Replicator:UseSkill(Player, SkillId, SkillId == GameEnum.Skills.Quick_Assist, EnemyId, StateId)
 
 	return true;
 end

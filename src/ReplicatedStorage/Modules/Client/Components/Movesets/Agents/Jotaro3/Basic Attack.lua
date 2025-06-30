@@ -47,7 +47,7 @@ function Ability:Play(Agent: Types.AgentClass)
 			Agent:Walk(Ability:FromData('Walk_Time'))
 		end,},
 
-		{.18, function()
+		{.2, function()
 			local Pos  = IsStand and Vector3.zAxis * -4.5 or Vector3.zAxis*-3
 			local Size = IsStand and Vector3.new(5, 5, 9) or Vector3.one * 5
 			Ability:CreateHitbox(Agent, Pos, Size, function(Target: Types.ClientEnemy)
