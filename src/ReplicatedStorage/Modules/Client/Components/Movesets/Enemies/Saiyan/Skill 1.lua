@@ -27,7 +27,7 @@ function Ability:Play(Enemy: Types.EnemyClass)
 
 			local Track = Ability:PlayAnimation(Enemy, 'Saiyan.Abilities.Shoot', {
 				Speed = Ability:FromData('Animation_Speed'), 
-				Fade = .1, 
+				Fade = .1,
 				Active_Time = Attack_Time,
 			})
 

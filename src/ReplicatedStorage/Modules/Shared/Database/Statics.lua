@@ -105,4 +105,8 @@ return {
 		["Penetration"] = {9, 6, 3},
 		["Affliction_Aptitude"] = {9, 6, 3},
 	},
+
+	Dodge_Active_Time = 0.5,
+	Dodge_Invulnerability_Time = 0.5,
+	Dodge_Counter_React_Time = 0.75,
 }

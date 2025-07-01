@@ -101,13 +101,13 @@ function Service:GiveRewards(Data: StructureData, Caster: Types.ServerEnemyClass
     local Player: Player? = Caster.__Player_Assigned
 
     if Data.Other then
-        if Data.Other.Energy then
+        if Data.Other.Energy and Caster.GiveEnergy then
             Caster:GiveEnergy(Data.Other.Energy)
         end
     end
 
     -- do other stuff here !
-    if Data.Effects then
+    if Data.Effects and Caster.AddEffect then
         for _, Effect in Data.Effects do
             Caster:AddEffect(Effect)
         end

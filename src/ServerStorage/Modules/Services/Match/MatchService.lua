@@ -25,6 +25,7 @@ local Service = {
     __Active_Match = nil,
     __Total_Players = 0,
     __All_Loaded = false,
+    __Player_Status = {},
 }
 
 function Service:Init()
@@ -49,6 +50,8 @@ function Service:Init()
     end
 
     for _, Player in Players:GetPlayers() do
+        Service:SetPlayerLifeStatus(Player, true)
+
         Network:Fire("Match", Player, GameEnum.MatchEvents.SetupStage, MatchData.Stage, MatchData.Act)
     end
 
@@ -60,7 +63,7 @@ function Service:Init()
     Network:On("Match", Service.__HandleEvent)
 end
 
-function Service:End()
+function Service:End(Won: boolean)
     if not Service.__Active_Match or not Service.__Active_Match:IsFinished() then
         return
     end
@@ -102,9 +105,30 @@ function Service:Begin(Stage: string, Act: string)
     DestructibleService:SetupStage()
 
     --
-    MissionClass.Finished:Connect(function()
-        Service:End()
+    MissionClass.Finished:Connect(function(State: boolean)
+        Service:End(State)
     end)
+end
+
+function Service:SetPlayerLifeStatus(Player: Player, State: boolean)
+    Service.__Player_Status[Player] = State
+
+    if State == false then
+        local AllDead = true
+        for _, OtherPlayerState in Service.__Player_Status do
+            if OtherPlayerState == true then
+                AllDead = false
+            end
+        end
+
+        if not AllDead then return end
+
+        Service:Lose()
+    end
+end
+
+function Service:Lose()
+    Service.__Active_Match:Finish(false)
 end
 
 function Service:CreateMap(Stage: string): boolean
@@ -147,6 +171,8 @@ function Service.__HandleEvent(Player: Player, Type: number)
         end
     elseif Type == GameEnum.MatchEvents.MarkClientLoaded then
         Player:AddTag("MapLoaded")
+    elseif Type == GameEnum.MatchEvents.PlayerDied then
+        Service:SetPlayerLifeStatus(Player, false)
     end
 end
 

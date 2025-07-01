@@ -20,6 +20,7 @@ return {
 		KillAgent = 20,
 		HitAgent = 21,
 		FillMeter = 22,
+		ProcessDodge = 23,
 
 		-- Enemy
 		AddEnemy = 26,
@@ -101,8 +102,10 @@ return {
 	},
 
 	Boost_Effects = {
-		DODGE_FLOW_TRIGGER = 'DodgeFlowStateTrigger'
+		DODGE_FLOW_TRIGGER = 'DodgeFlowStateTrigger',
+		SWITCH_ASSIST_DODGE = 'DodgeAssistFollowup',
 	},
+
 	Agent_States = {"Attacking", "Dashing", "Idle", "Frozen", "Stunned"},
 	PartyStates = {
 		Idle = 1,
@@ -153,6 +156,7 @@ return {
 		RequestMatchLeave = 6,
 		RequestMatchRepeat = 7,
 		MarkClientLoaded = 8,
+		PlayerDied = 9,
 	},
 
 	SummonRequests = {

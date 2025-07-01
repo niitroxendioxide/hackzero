@@ -34,6 +34,8 @@ end
 
 local function GetEnergyNeededById(Id: number): number
 	local Agent = CharacterLibrary:GetAgent(ReplicationId(), Id) :: AgentTypes.AgentClass
+	if Agent == nil then return 0 end
+
 	local CharacterInfo = CharacterDatabase:GetMovesetData(Agent.Name) -- Agent.Name
 	if not CharacterInfo.Special or not CharacterInfo.Special.Base or not CharacterInfo.Special.Base.Required_Energy then
 		return 100
@@ -238,7 +240,7 @@ function Component:Init()
 		end
 
 		Info.EnergyPercent.Text = math.floor(peek(InterfaceStates.Energy[CurrentId])).."%"
-		Info.HealthCount.Text = `{HealthValue} / {Max_Health}`
+		Info.HealthCount.Text = `{math.floor(HealthValue)} / {math.floor(Max_Health)}`
 
 		local EnergyMain = Meters.Energy.Main
 		local HealthMain = Meters.Health.Main

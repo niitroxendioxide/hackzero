@@ -11,15 +11,15 @@ return {
 		Attack = 120,
 		Defense = 72,
 		Daze = 662,
-		Daze_Length = 10,
+		Daze_Length = 2,
 
 		Weakness = {'Energy'},
 		Strength = {'Physical'},
 
 		--
 		Daze_Multiplier = 200,
-		Daze_Resistance = 27,
-		Resistance = 25,
+		Daze_Resistance = 71,
+		Resistance = 35,
 
 		Movement_Speed = 10,
 	},
@@ -28,6 +28,8 @@ return {
 		Attack = 49,
 		Health = 1720,
 		Defense = 16,
+		Daze = 7.5,
+		Daze_Resistance = 0.15,
 	},
 
 	Moveset_Data = {
@@ -40,10 +42,10 @@ return {
 				Attack_State_Time = 0.66,
 
 				Agent_Stun_Time = 0.3,
-				Damage_Mult = 220,
+				Damage_Mult = 92,
 
 				Range = 60,
-				Attack_Warning = 0.25,
+				Attack_Warning = 0.1,
 			},
 
 			Upgrades = {
@@ -60,10 +62,10 @@ return {
 				Attack_State_Time = 0.817,
 
 				Agent_Stun_Time = 0.45,
-				Damage_Mult = 220,
+				Damage_Mult = 172,
 
 				Range = 6,
-				Attack_Warning = 0.15,
+				Attack_Warning = 0.05,
 			},
 
 			Upgrades = {

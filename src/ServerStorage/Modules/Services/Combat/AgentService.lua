@@ -4,8 +4,9 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
-local Types = require(Shared.Types)
+local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
@@ -24,7 +25,7 @@ local Service = {
 
 function Service:Init()
 	Network.new('Replicate', 'Unreliable')
-	Network.new('addchartest', 'Event')
+	Network.new('ReliableReplication', 'Event')
 
 	Network:On('Replicate', Service.ReplicateEvent)
 end
@@ -171,61 +172,42 @@ function Service:KeySwitch(Player: Player, bufferObj, Value: boolean)
 end
 
 function Service:CharacterSwitch(Player: Player, Buffer: buffer)
-	local Direction = buffer.readi8(Buffer, 1)
+	local AgentIndex, Direction = Math:Decodeu2u6(Buffer, 1)
+	local IsNext = Direction == 1
+
 	local Angle = math.rad(buffer.readi16(Buffer, 2) / 180)
 	local X, Z = math.sin(Angle), math.cos(Angle)
 	local RebuiltRotationVector = Vector3.new(X, 0, Z)
 
 	local Data = Service:Get(Player)
 	local Previous = Data.Characters[Data.Active]
+	local New = Data.Characters[AgentIndex]
+
+	if not New:IsAlive() then
+		return
+	end
+
 	local WasMoving = Previous:IsMoving()
 
-	local CurrentAgent = Data.Characters[Data.Active]
-	local MarkedAgentStruct = CurrentAgent:GetMarkedTarget()
+	--
+	local MarkedAgentStruct = New:GetMarkedTarget()
+	local Target = IsNext and MarkedAgentStruct ~= nil and Enemies:GetEnemy(MarkedAgentStruct.TargetId) or nil
+	local CharacterCFrame = AssistUtil:CalculateSwitchCFrame(Previous, Direction, Target)
 
-	local Target = MarkedAgentStruct ~= nil and Enemies:GetEnemy(MarkedAgentStruct.TargetId)
+	Data.Active = AgentIndex
 
-	local CharacterCFrame = AssistUtil:CalculateSwitchCFrame(CurrentAgent, Direction, Target)
-
-	Service:Stop(Player)
-
-	Data.Active += Direction
-	if Data.Active > #Data.Characters then
-		Data.Active = 1
-	elseif Data.Active < 1 then
-		Data.Active = #Data.Characters
-	end
-
-	local Count = 0
-	while not Data.Characters[Data.Active]:IsAlive() do
-		if Count > 3 then
-			warn("Handle player loss here.")
-
-			return
-		end
-
-		Data.Active += 1
-		if Data.Active > #Data.Characters then
-			Data.Active = 1
-		elseif Data.Active < 1 then
-			Data.Active = #Data.Characters
-		end
-
-		Count += 1
-	end
-
+	--
 	for _, Character in Service:GetCharacters(Player) do
-		Character:SetActive(false)
+		Character:SetActive(Character == New)
 	end
 
+	New:PivotTo(CharacterCFrame)
+	New:Rotate(RebuiltRotationVector)
 
-	local CurrentCharacter = Service:GetCurrentCharacter(Player)
-	CurrentCharacter:SetActive(true)
-	CurrentCharacter:PivotTo(CharacterCFrame)
-	CurrentCharacter:Rotate(RebuiltRotationVector)
-
-	local Force = Target and 30 or 75
-	CurrentCharacter:ApplyImpulse(CurrentCharacter:GetPivot().LookVector * Force)
+	if not Target then
+		New:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, Statics.Dodge_Active_Time)
+		New:ApplyImpulse(New:GetPivot().LookVector * 75)
+	end
 
 	if WasMoving then
 		Service:Move(Player)
@@ -236,7 +218,12 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 
 	--
 	if MarkedAgentStruct then
-		MarkedAgentStruct.Accepted:Fire()
+		if IsNext then
+			MarkedAgentStruct.Accepted:Fire()
+		else
+			MarkedAgentStruct.Accepted:DisconnectAll()
+		end
+
 		MarkedAgentStruct.TargetId = nil
 	end
 end

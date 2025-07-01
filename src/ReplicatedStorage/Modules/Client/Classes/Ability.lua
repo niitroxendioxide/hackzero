@@ -56,17 +56,18 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 	local Attack_Warnings = self:FromData('Attack_Warning')
 	local Agent_Speed_Mod = Agent:GetStat("Speed")
 
-	if typeof(Attack_Warnings) == 'number' and Attack_Warnings > 0 then
+	if typeof(Attack_Warnings) ~= 'nil' and Attack_Warnings > 0 then
 		local function PlayWarningEffect()
 			Effects:Play('Warning', Agent)
 		end
 
+		local Ping = Replicator:GetPing()
 		if typeof(Attack_Warnings) == 'table' then
 			for _, Time in Attack_Warnings do
-				AbilitySequence:Add(Time, PlayWarningEffect)
+				AbilitySequence:Add(math.max(Time - Ping, 0), PlayWarningEffect)
 			end
 		else
-			AbilitySequence:Add(Attack_Warnings, PlayWarningEffect)
+			AbilitySequence:Add(math.max(Attack_Warnings - Ping, 0), PlayWarningEffect)
 		end
 	end
 

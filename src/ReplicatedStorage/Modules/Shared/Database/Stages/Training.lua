@@ -33,7 +33,7 @@ return {
                     Goal = {KillEnemies = 1},
                     Enemies = {
                         -- Enemy Name, Enemy Count, Enemy Level
-                        [1] = {"Template", 1, 60}
+                        [1] = {"Saiyan", 1, 60}
                     },
                     Global = true,
 

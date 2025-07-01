@@ -39,7 +39,7 @@ function Agents:GetActiveAgents()
 
 	for _, PlayerAgents in Agents.__Players do
 		for _, Agent in PlayerAgents do
-			if Agent.__Active then
+			if Agent.__Active and Agent:IsAlive() then
 				table.insert(Active, Agent)
 				break
 			end
@@ -71,6 +71,18 @@ function Agents:GetAll(UserId: number): {Types.AgentClass | Types.ServerAgentCla
 	end
 
 	return table.clone(Agents.__Players[UserId])
+end
+
+function Agents:GetAlive(UserId: number): {Types.AgentClass | Types.ServerAgentClass}
+	local All = Agents:GetAll(UserId)
+
+	local List = {}
+	for _, Agent in All do
+		if not Agent:IsAlive() then continue end
+		table.insert(List, Agent)
+	end
+
+	return List
 end
 
 function Agents:GetIdForPlayer(UserId: number, AgentParameter: Types.ServerAgentClass): (number)

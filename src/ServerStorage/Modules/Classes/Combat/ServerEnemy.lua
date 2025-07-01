@@ -19,6 +19,8 @@ local EnemyDatabase = require(Shared.Database.Enemies)
 local EnemyLibrary = require(Shared.Libraries.Enemies)
 local MovesetLibrary = require(Libraries.Movesets)
 
+local asd = os.time()
+
 --
 local Rng = Random.new()
 local ServerEnemy = {} :: {new: (At: Vector3, Name: string) -> (), [string]: (self: Types.ServerEnemyClass, any) -> (any)}
@@ -91,9 +93,11 @@ function ServerEnemy:Attack()
 	local MovesetData = EnemyDatabase:GetMovesetData(self.__Name)
 	local Target = self:GetTarget()
 
-	if not Target then
+	if not Target or self.__Status:IsKnocked() or not self.__Status:IsAlive() or self.__Movement.__World_Speed <= 0 then
 		return
 	end
+
+	if os.time() - asd < 5 then return end
 
 	local Params = RaycastParams.new()
 	Params.FilterDescendantsInstances = {workspace.Camera.Destructibles}
@@ -141,12 +145,11 @@ function ServerEnemy:Attack()
 	end
 
 	if SkillToUse ~= nil then
-		Moveset:Begin(SkillToUse.Name, self)
-
 		local SplitSkillId = string.split(SkillToUse.Name, ' ')
 		local ReplicationSkillId = tonumber(SplitSkillId[2], 10)
 
 		Replicator:EnemyUseSkill(self.__EnemyId, ReplicationSkillId, 'Begin')
+		Moveset:Begin(SkillToUse.Name, self)
 	end
 end
 
@@ -202,7 +205,7 @@ function ServerEnemy:GetId(): number
 end
 
 function ServerEnemy:Stun(Time: number): ()
-	self.__Next = Time + 0.5
+	self.__Next = Time + 0.15
 	self.__LastMovement = os.clock()
 
 	--
@@ -274,7 +277,7 @@ end
 function ServerEnemy:FindRandomAggro()
 	local Agents = AgentsLibrary:GetActiveAgents()
 	local At = self.__Movement.__Position
-	local MaxDistance = 70 --math.huge
+	local MaxDistance = 120 --math.huge
 	local Chosen: AgentTypes.ServerAgentClass = nil
 
 	for _, Agent in Agents do
@@ -295,6 +298,8 @@ function ServerEnemy:FindRandomAggro()
 end
 
 function ServerEnemy:Rotate(Direction: Vector3 | AgentTypes.ServerAgentClass)
+	if self.__Movement.__World_Speed <= 0 or self.__Status:IsKnocked() then return end
+
 	if typeof(Direction) == 'CFrame' then
 		Direction = Direction.Position
 	end

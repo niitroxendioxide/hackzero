@@ -86,6 +86,28 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.Serv
 	return Final_Damage, EnemyDied, Is_Critical, Affliction_Type, Filled_Affliction, Burst_Damage, AfflictionTriggered
 end
 
+function DamageLibrary:DealEnemyToAgent(Caster: Types.ServerEnemyClass, Target: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
+	local AgentStun = Data.Stun
+	local CasterStatus = Caster.__Status
+
+	local Level_Factor = Defense_Factors[math.clamp(Target.__Level, 0, 60)]
+	local Raw_Defense = Target:GetStat('Defense')
+
+	local Pen_Ratio = CasterStatus:GetStat('Pen_Ratio') or 0
+	local Penetration = CasterStatus:GetStat('Penetration') or 0
+
+	local Attack = CasterStatus:GetStat('Attack')
+	local Defense_Mult = Level_Factor / (math.max(Raw_Defense * (1 - (Pen_Ratio / 100)) - Penetration, 0) + Level_Factor)
+
+	local Total = (Data.Damage / 100) * Attack * Defense_Mult
+
+	Target:TakeDamage(Total)
+
+	if AgentStun then
+		Target:Hit(Caster, AgentStun)
+	end
+end
+
 
 function DamageLibrary:Daze(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerEnemyClass, Base_Multiplier: number)
 	local EnemyStatus = Enemy.__Status
@@ -123,6 +145,8 @@ function DamageLibrary:CalculateAfflictionBurst(Attack: number, Type: Types.Elem
 	local Base_Divider = (100 + Agent:GetStat('Attack')/100)
 	local Taken_Damage = (Base_Divider + Stacked_Damage) / 100
 	local Dazed_State_Multiplier = EnemyStatus:IsKnocked() and EnemyStatus:GetDazeMultiplier() or 1
+
+	print(Level_Multiplier)
 
 	local Resistance_Multiplier = 1 - Resistance
 	local Daze_Multiplier = 1

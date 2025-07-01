@@ -26,17 +26,22 @@ end
 
 
 function ServerAgentClass.new(Name: string, Level: number, Skills: {}): Types.ServerAgentClass
+	Skills = Skills or {}
+
 	local self = setmetatable({}, ServerAgentClass)
 	self.Name = Name
 
 	-- Privates
 	local Appearance = CharacterDatabase:GetAppearanceData(Name)
+	if Skills and not table.isfrozen(Skills) then
+		table.freeze(Skills)
+	end
 
 	self.__Tags = {}
 	self.__Level = Level
 	self.__User = -125
 	self.__Active = false
-	self.__Skill_Levels = table.freeze(Skills)
+	self.__Skill_Levels = Skills
 	self.__Last_Hit_Time = os.clock()
 	self.__Last_Skill_Cast = os.clock()
 	self.__Character = MovementClass.new(Name, Appearance.Height)
@@ -48,7 +53,7 @@ function ServerAgentClass.new(Name: string, Level: number, Skills: {}): Types.Se
 end
 
 function ServerAgentClass.GetSkillLevel(self: Types.ServerAgentClass, SkillName: string)
-	return self.__Skill_Levels[SkillName]
+	return (self.__Skill_Levels[SkillName] or 0)
 end
 
 function ServerAgentClass:GetEnergy(): number
@@ -322,6 +327,8 @@ function ServerAgentClass:TakeDamage(Amount: number)
 
 	if not self.__Status:IsAlive() then
 		Replicator:KillAgent(self, Amount);
+
+		self:Stop()
 	else
 		Replicator:DamageAgent(self, Amount)
 	end

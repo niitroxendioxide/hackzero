@@ -7,7 +7,6 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
-local Types = require(Shared.Types.Agents)
 local AgentTypes = require(Shared.Types.Agents)
 local Statics = require(Database.Statics)
 local AssistUtil = require(Shared.Utility.Assist)
@@ -60,11 +59,10 @@ function Characters:Switch(ReplicationId: number, Direction: number, EnemyTarget
 	local Count = 0
 	while not Data.List[Data.Active]:IsAlive() do
 		if Count > 3 then
-
 			return false
 		end
 
-		Data.Active += 1
+		Data.Active += Direction
 		if Data.Active > #Data.List then
 			Data.Active = 1
 		elseif Data.Active < 1 then
@@ -74,6 +72,8 @@ function Characters:Switch(ReplicationId: number, Direction: number, EnemyTarget
 		Count += 1
 	end
 
+	local CurrentAgentDataId = Data.Active
+
 	Data.Last_Anim = Data.Last_Anim == 1 and 2 or 1
 
 	if Players.LocalPlayer:GetAttribute("ReplicationId") == ReplicationId then
@@ -81,23 +81,23 @@ function Characters:Switch(ReplicationId: number, Direction: number, EnemyTarget
 	end
 
 	--
-	CurrentCharacter:SetVisible(false)
-
-
 	local NewCharacter = Characters:GetCurrent(ReplicationId)
 	if CurrentCharacter == NewCharacter then
 		return false
 	end
 
+	CurrentCharacter:SetVisible(false)
+
 	local Animator = NewCharacter:GetAnimator()
 	NewCharacter:PivotTo(NewCFrame, not IsLocal)
-	Animator:Play('Dash'..(Data.Last_Anim == 2 and 'Right' or 'Left'), {Name = 'Dash', Speed = 1.25})
 	NewCharacter:SetVisible(true)
 
-	local Force = TargetObject and 30 or 75
-	NewCharacter:ApplyImpulse(NewCFrame.LookVector * Force)
+	if not TargetObject then
+		Animator:Play('Dash'..(Data.Last_Anim == 2 and 'Right' or 'Left'), {Name = 'Dash', Speed = 1.25})
+		NewCharacter:ApplyImpulse(NewCFrame.LookVector * 75)
+	end
 
-	return true
+	return true, CurrentAgentDataId
 end
 
 function Characters:Add(ReplicationId: number, Character: AgentTypes.AgentClass)
@@ -136,8 +136,12 @@ function Characters:Remove(ReplicationId: number, Name: string): any
 	return;
 end
 
-function Characters:GetCurrent(ReplicationId: number): (AgentTypes.AgentClass?, number?)
-	local Data = Characters.__Player_Data[ReplicationId]
+function Characters:GetCurrent(ReplicationId: number?): (AgentTypes.AgentClass?, number?)
+	if ReplicationId == nil and RunService:IsClient() then
+		ReplicationId = Players.LocalPlayer:GetAttribute('ReplicationId') :: number
+	elseif ReplicationId == nil then return end
+
+	local Data = Characters.__Player_Data[ReplicationId :: number]
 	if not Data then
 		return nil, nil;
 	end
@@ -145,6 +149,18 @@ function Characters:GetCurrent(ReplicationId: number): (AgentTypes.AgentClass?, 
 	local CurrentActive = Data.Active
 
 	return Data.List[CurrentActive], CurrentActive
+end
+
+function Characters:GetAliveCount(RepId: number?)
+	local Id = RepId or Players.LocalPlayer:GetAttribute('ReplicationId') :: number
+	local All = Characters:GetCharacters(Id)
+
+	local Counter = 0
+	for _, Agent in All do
+		Counter += Agent:IsAlive() and 1 or 0
+	end
+
+	return Counter
 end
 
 function Characters:GetAgent(ReplicationId: number, Id: number): AgentTypes.AgentClass?

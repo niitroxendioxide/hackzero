@@ -40,10 +40,16 @@ function Data:GetDriveById(Player: Player, Id: string): DefaultTypes.PlayerDrive
     return;
 end
 
-function Data:SetData(Player: Player, Agents: {}, Drives: {}, Artifacts: {})
-    Data.__Agents[Player] = Agents
-    Data.__Drives[Player] = Drives
-    Data.__Artifacts[Player] = Artifacts
+function Data:SetData(Player: Player, Agents: {}?, Drives: {}?, Artifacts: {}?)
+    if Agents then
+        Data.__Agents[Player] = Agents
+    end
+    if Drives then
+        Data.__Drives[Player] = Drives
+    end
+    if Artifacts then
+        Data.__Artifacts[Player] = Artifacts
+    end
 end
 
 return Data

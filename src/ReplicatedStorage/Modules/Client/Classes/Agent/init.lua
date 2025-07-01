@@ -127,7 +127,8 @@ function AgentClass:BlockRotation(Time: number)
 end
 
 function AgentClass:Look(Vector, Instant, Bypass)
-	if not Bypass and (self:GetState() ~= 'Idle' or (self.__Character.__States:GetLastChangeTime() < .1) and self:GetState() ~= 'Dashing') then
+	local DashCheck = (self.__Character.__States:GetLastChangeTime() < .06) and self:GetState() ~= 'Dashing'
+	if not Bypass and (self:GetState() ~= 'Idle' or DashCheck) then
 		return
 	end
 

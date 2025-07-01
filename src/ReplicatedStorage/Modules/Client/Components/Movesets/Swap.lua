@@ -21,15 +21,15 @@ function Ability:Play(Agent: Types.AgentClass, Key: string)
 
 	local Plr = Players.LocalPlayer
 	local Localplr = Plr:GetAttribute("ReplicationId")
-	local TargetId = CharacterLibrary:GetCharacterTarget(Plr)
+	local TargetId = Direction == 1 and CharacterLibrary:GetCharacterTarget(Plr) or nil
 
-	local SuccessSwitching = CharacterLibrary:Switch(Localplr, Direction, TargetId)
+	local SuccessSwitching, NewIndex = CharacterLibrary:Switch(Localplr, Direction, TargetId)
 	if not SuccessSwitching then
 		return
 	end
 
 	local NewAgent = CharacterLibrary:GetCurrent(Localplr)
-	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, Direction, NewAgent:GetRotation())
+	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, NewIndex, Direction, NewAgent:GetRotation())
 end
 
 return Ability

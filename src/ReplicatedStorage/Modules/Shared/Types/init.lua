@@ -372,6 +372,7 @@ export type AbilityHitInfo = {
 	Hit_Type: 'Entity' | 'Structure',
 }
 export type InputState = 'Begin' | 'End'
+export type SkillContext = {IsSignal: boolean?, Target: ServerEnemyClass?}
 export type ServerAbilityClass = {
 	__Name: string,
 	__Cache: {},
@@ -385,7 +386,7 @@ export type ServerAbilityClass = {
 	Increase: (self: ServerAbilityClass, Agent: GenericClass, Key: string, Data: {Rate: number, Limit: number}?) -> (),
 
 	Cancel: (self: ServerAbilityClass, Caster: GenericClass, Callback: () -> ()) -> (),
-	Play: (self: ServerAbilityClass, Agent: GenericClass, Type: string, State: InputState, Other: {any}) -> (),
+	Play: (self: ServerAbilityClass, Agent: GenericClass, Type: string, State: InputState, Context: SkillContext) -> (),
 	Begin: (self: ServerAbilityClass, Agent: GenericClass, SequenceFrames: SequenceFrames) -> (),
 
 	Effect: (self: ServerAbilityClass, Name: string, Params: {any}, Targets: boolean | {}) -> (),
@@ -944,7 +945,7 @@ export type Stage = {
 }
 
 export type MissionClass = {
-	Finished: Signal<>,
+	Finished: Signal<boolean>,
 
 	__Active: boolean,
 	__Act: string,
@@ -964,6 +965,12 @@ export type MissionClass = {
 	]]
 	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?, Players: {StagePlayer}, Ignore_Replay: boolean?) -> (),
 	SummonEnemyWave: (self: MissionClass, Wave: number) -> (),
+
+	--[[
+		@param WinStatus Whether or not the match was won
+	]]
+
+	Finish: (self: MissionClass, WinStatus: boolean) -> (),
 
 	--[[
 		Sync with all clients the current events and information

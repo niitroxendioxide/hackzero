@@ -36,6 +36,7 @@ function Service:Init()
 		for _, Agent in AgentLibrary:GetActiveAgents() do
 			if Agent:IsBeingAttacked() and not Service.__Prompt_Cooldown[Agent] then
 				Service.__Prompt_Cooldown[Agent] = true
+
 				Service:PromptAssist(Agent, HELP_ASSIST_PROMPT_TIME)
 
 				task.delay(HELP_ASSIST_PROMPT_TIME, function()
@@ -103,7 +104,7 @@ end
 
 function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: number)
 	local ReplicationId = CasterAgent.__Player_Assigned:GetAttribute("ReplicationId")
-	local AllAgents = AgentLibrary:GetAll(ReplicationId)
+	local AllAgents = AgentLibrary:GetAlive(ReplicationId)
 	local CurId = table.find(AllAgents, CasterAgent)
 	local AgentToSwitch = CurId + 1 > 3 and AllAgents[1] or AllAgents[CurId + 1]
 
@@ -169,7 +170,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 
 	local Success, ErrorMessage = pcall(function()
 		if State == 'Begin' then
-			Moveset:Begin(Skill, ActiveAgent)
+			Moveset:Begin(Skill, ActiveAgent, {Target = Enemy})
 		else
 			Moveset:Release(Skill, ActiveAgent)
 		end
@@ -178,7 +179,8 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 	if not Success then
 		warn(`Error while executing skill: {SpacelessSkill}. Error Message: {ErrorMessage}`)
 	else
-		Replicator:UseSkill(Player, SkillId, SkillId == GameEnum.Skills.Quick_Assist, EnemyId, StateId)
+		local IncludePlayer = SkillId == GameEnum.Skills.Quick_Assist or SkillId == GameEnum.Skills.Dodge_Counter
+		Replicator:UseSkill(Player, SkillId, IncludePlayer, EnemyId, StateId)
 	end
 
 

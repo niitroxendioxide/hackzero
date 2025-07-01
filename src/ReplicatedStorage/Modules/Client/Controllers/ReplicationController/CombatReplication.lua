@@ -7,6 +7,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local Structures = require(ReplicatedStorage.Modules.Client.Libraries.Structures)
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
@@ -57,9 +58,9 @@ function Controller:UseSkill(Buffer: buffer)
 	end
 
 	if State == 'Begin' then
-		CharacterMoveset:Begin(Key, ActiveAgent, true)
+		CharacterMoveset:Begin(Key, ActiveAgent, {IsSignal = true})
 	else
-		CharacterMoveset:Release(Key, ActiveAgent, true)
+		CharacterMoveset:Release(Key, ActiveAgent, {IsSignal = true})
 	end
 end
 
@@ -67,7 +68,7 @@ function Controller:EnemyUseSkill(Buffer: buffer)
 	local Skill = buffer.readu8(Buffer, 1)
 	local EnemyId = buffer.readu8(Buffer, 2)
 	local State = buffer.readu8(Buffer, 3) == 1 and 'Begin' or 'End'
-	
+
 	local Key = 'Skill '..Skill
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	local CharacterMoveset = Movesets:Get(Enemy.Name, true)
@@ -75,6 +76,20 @@ function Controller:EnemyUseSkill(Buffer: buffer)
 	CharacterMoveset:Begin(Key, Enemy, State)
 end
 
+function Controller:ProcessDodge(Buffer: buffer)
+	local PlayerId = buffer.readu8(Buffer, 1)
+	local AgentId = buffer.readu8(Buffer, 2)
+
+	local AgentObject = Characters:GetAgent(PlayerId, AgentId)
+	if not AgentObject then
+		return
+	end
+
+	AgentObject:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
+	AgentObject:AddTag('Dodge_Counter_Tag', Statics.Dodge_Counter_React_Time)
+	AgentObject:AddTag('Invulnerability', Statics.Dodge_Invulnerability_Time)
+	Effects:Play('Dodge', Statics.Dodge_Invulnerability_Time)
+end
 
 
 function Controller:DisplayDamage(Buffer: buffer)

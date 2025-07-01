@@ -232,6 +232,7 @@ function ServerCharacterClass:CreateCollider()
 	Collider.Size = Vector3.new(4, self.__Height * 1.5873015873, 3)
 	Collider.Transparency = .85
 	Collider.Color = Color3.new(0, 1)
+	Collider.Name = self.Name .. 'Collider'
 	Collider.Anchored = true
 	Collider.CanCollide = false
 	Collider.Position = self.__Position

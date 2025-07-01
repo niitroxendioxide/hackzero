@@ -121,20 +121,20 @@ function Math:CalculateStatsForAgent(AgentName: string, Level: number, Drive, Ar
 end
 
 
-function Math:Encodeu2u6(First: number, Second: number): buffer
+function Math:Encodeu2u6(First: number, Second: number, GivenBuffer: buffer?, GivenOffset: number?): buffer
     local FirstMask = bit32.band(First, 0x03)
     local SecondMask = bit32.band(Second, 0x3F)
 
     local BorResult = bit32.bor(bit32.lshift(FirstMask, 6), SecondMask)
 
-    local BufferObj = buffer.create(1)
-    buffer.writeu8(BufferObj, 0, BorResult)
+    local BufferObj = GivenBuffer or buffer.create(1)
+    buffer.writeu8(BufferObj, GivenOffset or 0, BorResult)
 
     return BufferObj
 end
 
-function Math:Decodeu2u6(obj: buffer): (number, number)
-    local Byte = buffer.readu8(obj, 0)
+function Math:Decodeu2u6(obj: buffer, offset: number?): (number, number)
+    local Byte = buffer.readu8(obj, offset or 0)
 
     local ExtractedFirst = bit32.rshift(Byte, 6)
     local ExtractedSecond = bit32.band(Byte, 0x3F)

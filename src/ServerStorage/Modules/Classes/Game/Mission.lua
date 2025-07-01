@@ -52,7 +52,7 @@ end
 
 --
 function MissionClass.Begin(self: Types.MissionClass)
-    if self.__Active then
+    if self.__Active or self.__Is_Finished then
         return
     end
 
@@ -110,8 +110,7 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
 
     EventObject.Finished:Once(function(Next_Stage: string)
         if Next_Stage == "End" then
-            self.Finished:Fire()
-            self.__Is_Finished = true
+            self:Finish(true)
 
             return
         elseif Next_Stage == "None" then
@@ -157,6 +156,18 @@ function MissionClass.DetectAreaTriggers(self: Types.MissionClass)
             end)
 
             table.insert(self.__Current_Active_Triggers, Connection);
+        end
+    end
+end
+
+function MissionClass.Finish(self: Types.MissionClass, State: boolean)
+    self.__Active = false
+    self.__Is_Finished = true
+    self.Finished:Fire(State)
+
+    for _, Event in self.__Current_Events do
+        if not Event:IsFinished() then
+            Event:Destroy()
         end
     end
 end

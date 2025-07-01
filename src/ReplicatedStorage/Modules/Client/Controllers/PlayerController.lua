@@ -39,6 +39,7 @@ local Controller = {
 	__HeldKeys = {},
 	__Trove = Trove.new(),
 	__CurrentMovementVector = Vector3.zero,
+	__Dead = false,
 }
 
 function Controller:Init(): ()
@@ -97,8 +98,17 @@ function Controller:Init(): ()
 		end
 
 		-- !selene: ignore
+		debug.profilebegin('Camera')
+
 		workspace.CurrentCamera.CameraSubject = CurrentCharacter.__Character.Humanoid
 		workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+
+		CameraLibrary:SetSubject(CurrentCharacter:GetModel())
+		CameraLibrary:Update(Delta)
+
+		debug.profileend()
+
+		if Controller.__Dead then return end
 
 		debug.profilebegin('Moving character')
 		local CharacterState = CurrentCharacter:GetState()
@@ -118,6 +128,15 @@ function Controller:Init(): ()
 
 			CurrentCharacter.__Swapped = false
 		else
+			if CharacterLibrary:GetAliveCount() <= 0 then
+				Controller.__Dead = true
+				CurrentCharacter:Stop()
+
+				Replicator:DeclareDead()
+
+				return
+			end
+
 			if not(CurrentCharacter.__Locked) and not CurrentCharacter.__Swapped then
 				CurrentCharacter.__Swapped = true
 				SwapPackage:Play(CurrentCharacter, 'Swap Forth', 'Begin')
@@ -125,9 +144,6 @@ function Controller:Init(): ()
 		end
 
 		debug.profileend()
-
-		CameraLibrary:SetSubject(CurrentCharacter:GetModel())
-		CameraLibrary:Update(Delta)
 
 		local At = CurrentCharacter:GetPivot()
 

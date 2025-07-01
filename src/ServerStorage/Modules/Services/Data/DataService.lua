@@ -115,6 +115,31 @@ function Service:FetchItems(Player: Player)
     return Data
 end
 
+function Service:ConstructAgentDataClass(GivenData: {Name: string, Level: number, Drive: string?, Artifacts: {}?, Skills: {}?, Ascensions: {}?})
+    local Now = DateTime.now().UnixTimestamp
+    local ClassObject = PlayerAgentDataClass.new(GivenData.Name, GivenData.Level, Now)
+
+    if GivenData.Drive then
+        ClassObject:SetDrive(GivenData.Drive)
+    end
+
+    if GivenData.Artifacts then
+        ClassObject:SetArtifacts(GivenData.Artifacts)
+    end
+
+    if GivenData.Skills then
+        for SkillName, SkillLevel in GivenData.Skills do
+            ClassObject:SetSkill(SkillName, SkillLevel)
+        end
+    end
+
+    if GivenData.Ascensions then
+        ClassObject:SetAscensions(GivenData.Ascensions)
+    end
+
+    return ClassObject
+end
+
 function Service:FetchArtifacts(Player: Player, Filter: ((a: Types.PlayerArtifactDataClass) -> (boolean))?)
     local Artifacts = Service:GetArtifacts(Player, Filter)
     if not Artifacts then return end

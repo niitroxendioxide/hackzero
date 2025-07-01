@@ -48,10 +48,10 @@ function Replicator:Effect(Name: string, Data: {}, Targets: boolean | {})
 	end
 
 	if Targets == true then
-		Network:FireForAll('Replicate', BufferObject, table.unpack(Data))
+		Network:FireForAll('ReliableReplication', BufferObject, table.unpack(Data))
 	elseif typeof(Targets) == 'table' then
 		for _, Target in Targets do
-			Network:Fire('Replicate', Target, BufferObject, table.unpack(Data))
+			Network:Fire('ReliableReplication', Target, BufferObject, table.unpack(Data))
 		end
 	end
 end
@@ -280,6 +280,19 @@ function Replicator:EnemyUseSkill(EnemyId: number, SkillId: number, State: strin
 	buffer.writeu8(Object, 1, SkillId)
 	buffer.writeu8(Object, 2, EnemyId)
 	buffer.writeu8(Object, 3, State == 'Begin' and 1 or 0)
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:ProcessDodge(Agent: AgentTypes.ServerAgentClass)
+	local Player = Agent.__Player_Assigned
+	local Id: number = Player:GetAttribute('ReplicationId')
+	local AgentId = Agents:GetIdForPlayer(Id, Agent)
+
+	local Object = buffer.create(4)
+	buffer.writeu8(Object, 0, GameEnum.Replication.ProcessDodge)
+	buffer.writeu8(Object, 1, Id)
+	buffer.writeu8(Object, 2, AgentId)
 
 	Network:FireForAll('Replicate', Object)
 end

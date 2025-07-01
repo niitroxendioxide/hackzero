@@ -270,7 +270,7 @@ function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: n
             table.insert(Converted, {
                 Name = Name,
                 Level = 60,
-                IsBorrowed = false,
+                IsBorrowed = true,
             })
         end
 
@@ -279,7 +279,6 @@ function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: n
 
     local PlayersTeleportData = JoinData.TeleportData.Players
     local PlayerData = PlayersTeleportData[tostring(Player.UserId)]
-
 
     TableUtil:printTable(PlayerData.Team)
     return PlayerData.Team

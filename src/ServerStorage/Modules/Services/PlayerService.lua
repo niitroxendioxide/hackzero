@@ -28,15 +28,22 @@ local AvailableIds = {}
 local DataCache = {}
 local function SyncPlayerDataWithOthers(Player: Player, AgentTeam: {}?, PlayerToSync: Player)
 	if DataCache[Player] == nil and AgentTeam ~= nil then
+		local AgentHashmap = AgentTeam[1]
+		local BorrowedAgents = AgentTeam[2]
+
 		local Agents = DataService:FetchAgents(Player)
 		local Drives = DataService:FetchDrives(Player, function(Drive)
 			if not Drive.__Equipped then return false end
-			return AgentTeam[Drive.__Equipped.Name]
+			return AgentHashmap[Drive.__Equipped.Name]
 		end)
 		local Artifacts = DataService:FetchArtifacts(Player, function(Artifact)
 			if not Artifact.__Equipped then return false end
-			return AgentTeam[Artifact.__Equipped.Name]
+			return AgentHashmap[Artifact.__Equipped.Name]
 		end)
+
+		for _, BorrowedAgent in BorrowedAgents do
+			table.insert(Agents, BorrowedAgent)
+		end
 
 		DataCache[Player] = {Agents, Drives, Artifacts}
 	end
@@ -131,13 +138,20 @@ function Service.PlayerAdded(Player: Player): ()
 
 		--
 		local Team = TeleportService:GetPlayerTeamFromData(Player)
+		local Borrowed = {}
 		local HashMap = {}
 		for _, Agent in Team do
+			if Agent.IsBorrowed then
+				local Class = DataService:ConstructAgentDataClass(Agent)
+
+				table.insert(Borrowed, Class:Compress())
+			end
+
 			HashMap[Agent.Name] = true
 		end
 
 		for _, NetPlayer in Players:GetPlayers() do
-			SyncPlayerDataWithOthers(Player, HashMap, NetPlayer)
+			SyncPlayerDataWithOthers(Player, {HashMap, Borrowed}, NetPlayer)
 		end
 
 		Service:InitializeCharacters(Player)

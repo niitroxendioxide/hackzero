@@ -7,12 +7,14 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
+local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 
 --
 local Controller = {
 	__LastRotationValue = Vector3.zAxis,
 	__LastUpdate = os.clock(),
 	__ReplicationFrequency = 5,
+	__Ping = 0,
 }
 
 function Controller:Replicate(Action: number, ...)
@@ -65,12 +67,11 @@ function Controller:Replicate(Action: number, ...)
 
 		Args = {}
 	elseif Action == GameEnum.Replication.CharacterSwitch then
-		local Vec = Args[2].Unit
+		local Vec = Args[3].Unit
 		local Angle = math.deg(math.atan2(Vec.X, Vec.Z))
 
 		Buffer = buffer.create(4)
-
-		buffer.writei8(Buffer, 1, Args[1])
+		Math:Encodeu2u6(Args[1], Args[2], Buffer, 1)
 		buffer.writei16(Buffer, 2, Angle * 180)
 
 		Args = {}
@@ -88,6 +89,10 @@ function Controller:Replicate(Action: number, ...)
 	buffer.writeu8(Buffer, 0, Action)
 
 	Network:Fire(EventName, Buffer, table.unpack(Args))
+end
+
+function Controller:GetPing(): number
+	return Controller.__Ping
 end
 
 return Controller

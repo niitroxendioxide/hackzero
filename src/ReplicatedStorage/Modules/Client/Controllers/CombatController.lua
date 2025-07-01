@@ -69,7 +69,7 @@ function Controller:HandleInput(Key: string, State: string)
 	local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
 	local CurrentAgent = Characters:GetCurrent(UserId)
 
-	if (CurrentAgent == nil) or not(Controller.__State) then
+	if (CurrentAgent == nil) or not(Controller.__State) or not CurrentAgent:IsAlive() then
 		return
 	end
 

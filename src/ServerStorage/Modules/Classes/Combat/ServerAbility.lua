@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Enemies = require(Shared.Libraries.Enemies)
 
 local Types = require(Shared.Types)
@@ -75,9 +76,21 @@ end
 
 function ServerAbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> ())
 	ServerHitboxUtil:ForAgentsInZone(Size, Enemy:GetPivot() * CFrame.new(Offset), function(Target: AgentTypes.ServerAgentClass, ...)
-		if Target:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER) then
-			print(Target.Name, 'DODGED')
+		if Target:HasTag('Invulnerability') then
+			return
+		end
+
+		local Is_Dodge = Target:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
+		if Is_Dodge or Target:HasTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE) then
+			if Is_Dodge then
+				Replicator:ProcessDodge(Target)
+			else
+				self:Effect('Dodge', {Target}, {Target.__Player_Assigned})
+			end
+
+			Target:AddTag('Invulnerability', Statics.Dodge_Invulnerability_Time)
 			Target:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
+			Target:RemoveTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE)
 
 			return
 		end
@@ -195,14 +208,14 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerE
 end
 
 local function HitAgent(Caster: Types.ServerEnemyClass, Agent: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
-	Agent:Hit(Caster, 0.35)
-	Agent:TakeDamage(Data.Damage)
+	local DealtDamage = DamageLibrary:DealEnemyToAgent(Caster, Agent, Data)
 
 	--
 	return {
 		Caster = Caster,
 		Enemy = Agent,
 		Hit_Type = 'Entity',
+		Damage = DealtDamage,
 	}
 end
 

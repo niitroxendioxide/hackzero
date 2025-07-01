@@ -5,6 +5,7 @@ local RunService = game:GetService('RunService')
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Cooldown = require(Shared.Utility.Cooldown)
@@ -52,8 +53,9 @@ function MovesetClass.GetAll(self: Types.MovesetClass): {Types.ServerAbilityClas
 	return List
 end
 
-function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, IsSignal: boolean): boolean
+function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, Context: {IsSignal: boolean?, [string]: any}): boolean
 	Type = Type:gsub('_', ' ')
+	Context = Context or {}
 
 	if not self.__Last_Use[Agent] then
 		self.__Last_Use[Agent] = {}
@@ -62,13 +64,15 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, IsSignal: b
 	local Info = self:GetInfoForSkill(Type)
 
 	-- Run client checks for correcting skill usage
-	if not(IsSignal) and RunService:IsClient() then
+	if not(Context.IsSignal) and RunService:IsClient() then
 		if Type == "Special" and (Agent:GetEnergy() >= Info.Base.Required_Energy) then
 			Type = "EX Special"
 
 			Info = self:GetInfoForSkill('EX Special')
 		elseif Type == 'Ultimate' and Agent:GetUltBar() < 100 then
 			return false
+		elseif Type == 'Basic Attack' and Agent:HasTag('Dodge_Counter_Tag') then
+			Type = 'Dodge Counter'
 		end
 	end
 
@@ -106,10 +110,10 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, IsSignal: b
 		end
 
 		if Type == 'Dodge' then
-			Agent:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, .5)
+			Agent:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, Statics.Dodge_Active_Time)
 		end
 
-		self.__Assigned[Type]:Play(Agent, Type, 'Begin')
+		self.__Assigned[Type]:Play(Agent, Type, 'Begin', Context)
 		self.__Last_Use[Agent][Type] = os.clock()
 
 		--

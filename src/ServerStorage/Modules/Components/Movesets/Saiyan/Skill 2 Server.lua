@@ -23,7 +23,8 @@ function Ability:Play(Caster: Types.ServerEnemyClass)
 		{.5, function()
 			Ability:CreateHitbox(Caster, Vector3.zAxis* -4.25, Vector3.new(4.5, 3.5, 8), function(Target: Types.GenericClass)
 				Ability:Hit(Caster, Target, {
-					Damage = 25,
+					Damage = Ability:FromData('Damage_Mult'),
+					Stun = 0.5,
 				})
 			end)
 		end,},
