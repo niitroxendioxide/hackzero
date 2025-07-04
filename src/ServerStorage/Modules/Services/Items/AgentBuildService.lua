@@ -191,7 +191,6 @@ function Service:SetAgentArtifactSlot(Player: Player, AgentName: string, Artifac
     end, true) :: Types.PlayerArtifactDataClass
 
     local Agent = DataService:GetAgent(Player, AgentName)
-
     local UnequippedAgent, ReplacedSlotId = Artifact:EquipTo(Agent)
 
     if UnequippedAgent == Agent then

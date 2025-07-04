@@ -144,7 +144,6 @@ function Controller:Init()
         end
 
         local Match_Agents = DecompressTableOfAgents(Agents)
-        print(Match_Agents)
 
         SharedData:SetData(Player, Match_Agents, Match_Drives, Match_Artifacts)
     end)

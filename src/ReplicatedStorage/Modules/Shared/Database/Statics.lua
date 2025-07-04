@@ -109,4 +109,30 @@ return {
 	Dodge_Active_Time = 0.5,
 	Dodge_Invulnerability_Time = 0.5,
 	Dodge_Counter_React_Time = 0.75,
+
+	--
+	Assist_Counter_Invulnerability_Time = 0.75,
+
+	--
+	Difficulty_Targetting_Priorities = {
+		EASY = {
+			SAME_ATTACKER = 3,
+			DIFFERENT_ATTACKER = 2.25,
+		},
+
+		MEDIUM = {
+			SAME_ATTACKER = 2.5,
+			DIFFERENT_ATTACKER = 1.75,
+		},
+
+		HARD = {
+			SAME_ATTACKER = 1.75,
+			DIFFERENT_ATTACKER = 1.3,
+		},
+
+		EXTREME = {
+			SAME_ATTACKER = 1.25,
+			DIFFERENT_ATTACKER = 1,
+		},
+	}
 }

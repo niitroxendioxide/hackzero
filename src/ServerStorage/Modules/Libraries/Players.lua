@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Stages)
 local AgentTypes = require(Shared.Types.Agents)
 
 --

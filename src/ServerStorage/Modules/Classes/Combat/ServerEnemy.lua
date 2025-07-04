@@ -18,8 +18,8 @@ local EnemyDatabase = require(Shared.Database.Enemies)
 
 local EnemyLibrary = require(Shared.Libraries.Enemies)
 local MovesetLibrary = require(Libraries.Movesets)
+local Targets = require(Libraries.Targets)
 
-local asd = os.time()
 
 --
 local Rng = Random.new()
@@ -97,8 +97,6 @@ function ServerEnemy:Attack()
 		return
 	end
 
-	if os.time() - asd < 5 then return end
-
 	local Params = RaycastParams.new()
 	Params.FilterDescendantsInstances = {workspace.Camera.Destructibles}
 	Params.FilterType = Enum.RaycastFilterType.Include
@@ -107,6 +105,10 @@ function ServerEnemy:Attack()
 	local LookAt = CFrame.lookAt(At.Position, Target:GetPivot().Position)
 	local LookAtRay = workspace:Raycast(At.Position, LookAt.LookVector * 1000, Params)
 	if LookAtRay then
+		return
+	end
+
+	if not Targets:CanAttackTarget(Target, self) then
 		return
 	end
 
@@ -145,9 +147,13 @@ function ServerEnemy:Attack()
 	end
 
 	if SkillToUse ~= nil then
+		local PlayerPing = Target.__Player_Assigned:GetNetworkPing() :: number
+		print(PlayerPing)
+
 		local SplitSkillId = string.split(SkillToUse.Name, ' ')
 		local ReplicationSkillId = tonumber(SplitSkillId[2], 10)
 
+		Targets:RefreshLastAttackedTime(Target, self)
 		Replicator:EnemyUseSkill(self.__EnemyId, ReplicationSkillId, 'Begin')
 		Moveset:Begin(SkillToUse.Name, self)
 	end

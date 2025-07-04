@@ -41,16 +41,16 @@ return {
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = .05,
-				Speed = 1.35,
+				Speed = 1.15,
 
 				Attack_State_Time = {
-					.25,
-					.25,
-					.25,
-					.25,
+					.3 ,
+					.3,
+					.3,
+					.3,
 					1,
 				},
-				Animation_Speed = 1.35,
+				Animation_Speed = 1.15,
 
 				Walk_Time = 0.133,
 				Forward_Impulse = 10,

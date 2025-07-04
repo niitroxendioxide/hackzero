@@ -27,7 +27,7 @@ local PlayerDriveDataClass = require(Classes.Data.PlayerDriveData)
 local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("AgentSkills1", ProfileTemplate)
+local DataStore = ProfileStore.New("linganguli", ProfileTemplate)
 
 --
 local ReplicatedKeys = {"Gems", "Money"}
@@ -358,6 +358,7 @@ end
 function Service:HasAgent(Player: Player, AgentName: string): (boolean)
     local PlayerData = Service:GetDataFor(Player)
 
+
     for PlayerOwnedAgentName in PlayerData.Agents do
         if PlayerOwnedAgentName == AgentName then
             return true
@@ -414,7 +415,11 @@ end
 
 function Service:CreateAgentClass(Player: Player, Name: string)
     local PlayerData = Service:GetDataFor(Player)
-    local AgentData = PlayerData.Agents[Name] or {}
+    local AgentData = PlayerData.Agents[Name]
+
+    if not AgentData then
+        return
+    end
 
     if Service.__Agents[Player] == nil then
         Service.__Agents[Player] = {}
@@ -450,7 +455,7 @@ function Service:CreateAgentClass(Player: Player, Name: string)
     end
 end
 
-function Service:GetAgent(Player: Player, Name: string)
+function Service:GetAgent(Player: Player, Name: string, CreateIfDoesntExist: boolean?)
     if not Service.__Agents[Player] then
         Service.__Agents[Player] = {}
     end
@@ -593,6 +598,10 @@ function Service:SaveItem(Player: Player, Item: DataTypes.PlayerItemDataClass)
 end
 
 function Service:GetItem(Player: Player, ItemName: string, CreateIfDoesntExist: boolean?)
+    if not Service.__Items[Player] then
+        Service.__Items[Player] = {}
+    end
+
     local Item = Service.__Items[Player][ItemName]
 
     if CreateIfDoesntExist and Item == nil then

@@ -15,9 +15,9 @@ for _, Ability in script:GetChildren() do
 
 	if Success then
 		local Ability_Name = Ability.Name:gsub(' Server', '')
-		
+
 		Required:SetData(TemplateMoveset:GetInfoForSkill(Ability_Name))
-		
+
 		TemplateMoveset:Assign(Ability_Name, Required)
 	end
 end

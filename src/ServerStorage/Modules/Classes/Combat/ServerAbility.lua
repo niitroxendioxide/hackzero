@@ -140,6 +140,8 @@ function ServerAbilityClass:Begin(Agent: AgentTypes.ServerAgentClass, Frames: Se
 		self.__Signal:Fire()
 	end)
 
+	self:Save(Agent, 'CurrentPlayerSequence', AbilitySequence)
+
 	return AbilitySequence:Start()
 end
 
@@ -307,18 +309,30 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 	return Value
 end
 
-function ServerAbilityClass.Cancel(self: Types.ServerAbilityClass, Caster: AgentTypes.ServerAgentClass, Callback: () -> ())
-	if Callback then
-		task.spawn(Callback)
-	end
-
+function ServerAbilityClass.ForceRelease(self: Types.ServerAbilityClass, Caster: AgentTypes.ServerAgentClass)
 	--
 	local SkillId = GameEnum.Skills[self.__Name]
 	if not SkillId then
 		return;
 	end
 
-	Replicator:UseSkill(Caster.__Player_Assigned, SkillId, true, 0, 2)
+	Replicator:UseSkill(Caster.__Player_Assigned, SkillId, true, 0, GameEnum.AbilityStates.End)
+end
+
+function ServerAbilityClass.Cancel(self: Types.ServerAbilityClass, Caster: AgentTypes.ServerAgentClass, Context: {ClientInstruction: boolean?})
+	local CurrentPlayerSequence = self:Get(Caster, 'CurrentPlayerSequence') :: Types.Sequence
+	if CurrentPlayerSequence then
+		CurrentPlayerSequence:Destroy()
+	end
+
+	Caster:SwitchState("Idle", 0)
+
+	local SkillId = GameEnum.Skills[self.__Name]
+	if not SkillId or Context.ClientInstruction == true then
+		return;
+	end
+
+	Replicator:UseSkill(Caster.__Player_Assigned, SkillId, true, 0, GameEnum.AbilityStates.Cancel)
 end
 
 function ServerAbilityClass:SetData(Data: {})

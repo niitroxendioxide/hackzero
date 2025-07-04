@@ -6,7 +6,6 @@ local Client = ReplicatedStorage.Modules.Client
 
 local AgentTypes = require(Shared.Types.Agents)
 local AbilityClass = require(Client.Classes.Ability)
-local Effects = require(Client.Libraries.Effects)
 
 
 --

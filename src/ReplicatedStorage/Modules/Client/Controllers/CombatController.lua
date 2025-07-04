@@ -77,6 +77,11 @@ function Controller:HandleInput(Key: string, State: string)
 		return
 	end
 
+	local CurrentSkill = CurrentAgent:GetCurrentSkill()
+	if CurrentSkill == "Basic Attack" and Key == "Dodge" then
+		CharacterMoveset:CancelSkill("Basic Attack", CurrentAgent)
+	end
+
 	local Success;
 	if State == 'Begin' then
 		Success = CharacterMoveset:Begin(Key, CurrentAgent)

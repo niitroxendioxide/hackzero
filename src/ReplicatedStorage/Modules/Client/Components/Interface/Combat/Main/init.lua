@@ -1,4 +1,3 @@
---!strict
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
 local Players = game:GetService('Players')
@@ -8,6 +7,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local InterfaceAssets = ReplicatedStorage.Assets.Interface
 
+local Places = require(ReplicatedStorage.Modules.Shared.Places)
 local EffectUtil = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local AgentTypes = require(Shared.Types.Agents)
 local ComponentClass = require(Client.Classes.Interface)
@@ -58,6 +58,10 @@ end
 function Component:Init()
 	local Scope = self:GetScope()
 	local Frame = self:GetFrame()
+
+	if not Places:CanFight() then
+		return
+	end
 
 	for _, MeterHandler: ModuleScript in script:GetChildren() do
 		Handlers[MeterHandler.Name] = require(MeterHandler)

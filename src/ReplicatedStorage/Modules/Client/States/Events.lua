@@ -5,7 +5,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Fusion = require(Client.Libraries.Fusion)
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Stages)
 local Peek = Fusion.peek
 
 --

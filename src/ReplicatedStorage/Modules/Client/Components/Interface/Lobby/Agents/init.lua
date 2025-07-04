@@ -123,7 +123,7 @@ end
 
 local function RequestChangeArtifact()
     local SelectedArtifact = States.__Current_Selected_Item
-    local SelectedAgent = States.__Current_Agent.Name.Name
+    local SelectedAgent = States.__Current_Agent.Name
 
     Network:Fire('UpdateAgent', GameEnum.AgentEvent.UpdateArtifactSlot, {
         SelectedAgent,

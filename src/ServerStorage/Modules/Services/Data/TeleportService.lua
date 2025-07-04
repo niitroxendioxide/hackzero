@@ -295,8 +295,8 @@ function Service:GetStageData(): {Stage: string, Act: string, TotalPlayers: numb
 
     if not JoinData.TeleportData then
         StageData = {
-            Stage = "Training",
-            Act = "Act1",
+            Stage = settings.STAGE.Stage,
+            Act = settings.STAGE.Act,
             TotalPlayers = 1,
         }
     else

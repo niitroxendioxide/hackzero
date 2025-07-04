@@ -85,6 +85,10 @@ function Controller:StateSwitchEnemy(Buffer: buffer)
 	local Time = buffer.readu16(Buffer, 3) / 100
 
 	local Enemy = Enemies:GetEnemy(EnemyId)
+	if not Enemy then
+		print(`Enemy [{EnemyId}] does not exist.`)
+		return
+	end
 
 	Enemy:SwitchState(NewState, Time)
 end

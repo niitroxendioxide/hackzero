@@ -34,6 +34,7 @@ function AgentClass.new(Name: string, Level: number, Skills: {}): AgentTypes.Age
 	self.__Tags = {}
 	self.__Skill_Levels = Skills
 	self.__Look_Marked = false
+	self.__Skill_Thread = nil
 	self.__Character = CharacterClass.new(Name)
 	self.__Items = ItemsClass.new(self)
 
@@ -115,6 +116,10 @@ function AgentClass:SetEnergy(Amount: number)
 	self.__Status:SetEnergy(Amount)
 end
 
+function AgentClass:ImpulseForward(Power: number, Time: number)
+	return self.__Character.__Controller:ApplyForwardImpulse(Power, Time)
+end
+
 function AgentClass:BlockRotation(Time: number)
 	if self.__Look_Marked_Thread then
 		task.cancel(self.__Look_Marked_Thread)
@@ -127,8 +132,8 @@ function AgentClass:BlockRotation(Time: number)
 end
 
 function AgentClass:Look(Vector, Instant, Bypass)
-	local DashCheck = (self.__Character.__States:GetLastChangeTime() < .06) and self:GetState() ~= 'Dashing'
-	if not Bypass and (self:GetState() ~= 'Idle' or DashCheck) then
+	local DashCheck = false --(self.__Character.__States:GetLastChangeTime() < .06) and self:GetState() ~= 'Dashing'
+	if not Bypass and (self:GetState() == 'Attacking' or DashCheck) then
 		return
 	end
 
@@ -235,8 +240,15 @@ function AgentClass:SwitchState(State: string, Time: number, Unaffected: boolean
 
 	if State == 'Attacking' then
 		self.__Character.__States:SetCurrentSkill(Ability)
-	elseif (State ~= 'Attacking' and self:GetState() == 'Attacking') then
-		self.__Character.__States:SetCurrentSkill(nil)
+
+		if self.__Skill_Thread then
+			task.cancel(self.__Skill_Thread)
+		end
+
+		self.__Skill_Thread = task.delay(Time, function()
+			self.__Character.__States:SetCurrentSkill(nil)
+			self.__Skill_Thread = nil
+		end)
 	end
 
 	local TimeMod = not Unaffected and State == 'Attacking' and self:GetStat("Speed") or 1

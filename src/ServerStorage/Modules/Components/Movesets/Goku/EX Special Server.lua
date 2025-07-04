@@ -35,7 +35,7 @@ function Ability:Play(Caster: Types.GenericClass, Skill_Name: string, State: str
 			if Caster:GetEnergy() <= Ability:FromData('Energy_Per_Hit') then
 				self:Destroy()
 
-				Ability:Cancel(Caster)
+				Ability:ForceRelease(Caster)
 			end
 
 			if (os.clock() - Clock) > Ability:FromData('Hit_Frequency') then

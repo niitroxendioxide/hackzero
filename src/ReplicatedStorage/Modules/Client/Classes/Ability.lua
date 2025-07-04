@@ -74,8 +74,11 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 	local Base_Speed = (self:FromData('Speed') or 1)
 	AbilitySequence:SetSpeed( Base_Speed * Agent_Speed_Mod)
 	AbilitySequence:After(function()
+		self:Save(Agent, "CurrentSkillSavedObjects", nil)
 		self.__Signal:Fire()
 	end)
+
+	self:Save(Agent, 'CurrentPlayerSequence', AbilitySequence)
 
 	self.__Active_Sequences[Agent] = AbilitySequence
 
@@ -157,6 +160,12 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	local Agent_Speed_Mod = Agent:GetStat("Speed")
 	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed') or 1) * Agent_Speed_Mod
 
+	local AnimCache = self:Get(Agent, "CurrentSkillSavedObjects")
+	if AnimCache == nil then
+		self:Save(Agent, "CurrentSkillSavedObjects", {})
+		AnimCache = self:Get(Agent, "CurrentSkillSavedObjects")
+	end
+
 	--
 	local Model = Data.Model or Agent:GetModel()
 	local Type = tostring(Agent) == 'AgentClass' and 'Characters.' or 'Enemies.'
@@ -167,6 +176,8 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	if tostring(Agent) == 'AgentClass' then
 		Agent:AddTrackToState('Attacking', AnimTrack, Data.Active_Time or 0.35)
 	end
+
+	table.insert(AnimCache, AnimTrack)
 
 	return AnimTrack
 end
@@ -242,6 +253,27 @@ function AbilityClass:Increase(Agent: AgentTypes.AgentClass, Key: string, Data: 
 	else
 		self:Save(Agent, Key, CurrentValue + Added)
 	end
+end
+
+function AbilityClass.Cancel(self: Types.AbilityClass, Agent: any, Context: {Hit: boolean?})
+	Context = Context or {}
+	local PlayerAnimObjects = self:Get(Agent, "CurrentSkillSavedObjects")
+
+	for _, Object in  PlayerAnimObjects or {} do
+		Object:Stop(0)
+	end
+
+	-- destroy after u  clear anims, else the value resets to nil hehe
+	local Sequence = self:Get(Agent, "CurrentPlayerSequence")
+	if Sequence then
+		Sequence:Destroy()
+	end
+
+	if not Context.Hit then
+		Agent:SwitchState("Idle", 0)
+	end
+
+	self:Save(Agent, "CurrentSkillSavedObjects", nil)
 end
 
 return AbilityClass

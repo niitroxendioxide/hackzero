@@ -29,7 +29,7 @@ return function(Enemy: Types.EnemyClass)
 
 			task.delay(.2, function()
 				BasePart.Material = Enum.Material.Neon
-				BasePart.Color = Color3.fromRGB(99, 187, 255)
+				BasePart.Color = Color3.fromRGB(56, 116, 255)
 
 				task.wait(0.05)
 				Effects:Tween(BasePart, {Effects:Random(0.15, .35)}, {

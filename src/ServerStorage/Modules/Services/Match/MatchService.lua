@@ -8,10 +8,10 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Classes = Modules.Classes
 local Services = Modules.Services
 local Database = Shared.Database
-local Assets = ReplicatedStorage.Assets
-local World = workspace:WaitForChild("World")
 
+local Map = require(ServerStorage.Modules.Libraries.Map)
 local Network = require(Shared.Network)
+local Targets = require(ServerStorage.Modules.Libraries.Targets)
 local GameEnum = require(Shared.GameEnum)
 local MissionClass = require(Classes.Game.Mission)
 local StageDatabase = require(Database.Stages)
@@ -58,8 +58,6 @@ function Service:Init()
     Service:Begin(MatchData.Stage, MatchData.Act)
 
     --
-
-    --
     Network:On("Match", Service.__HandleEvent)
 end
 
@@ -84,12 +82,18 @@ end
 
 function Service:Begin(Stage: string, Act: string)
     local CouldLoadMap = Service:CreateMap(Stage)
+    local Data = StageDatabase:GetAct(Stage, Act)
 
-    if not CouldLoadMap then
+    if not CouldLoadMap or not Data then
+        warn('Could not fetch stage data.')
+
         TeleportService:ReturnToLobby(Players:GetPlayers())
 
         return
     end
+
+    Targets:SetDifficulty('EASY')
+    Map:SetupMarkers(Data.Markers)
 
     --
     local MissionClass = MissionClass.new(Stage, Act)
@@ -134,27 +138,7 @@ end
 function Service:CreateMap(Stage: string): boolean
     local StageInformation = StageDatabase:GetStage(Stage)
 
-    local Map = Assets:WaitForChild("Maps") :: Folder
-    local Split = string.split(StageInformation.Map, "/")
-
-    for i = 1, #Split do
-        Map = Map:FindFirstChild(Split[i])
-
-        if Map == nil then
-            return false
-        end
-    end
-
-    --
-    local NewMap = Map:Clone()
-
-    for _, Object in NewMap:GetChildren() do
-        if Object:IsA("Folder") then
-            Object.Parent = World.Map
-        end
-    end
-
-    return true
+    return Map:Unpack(StageInformation.Map)
 end
 
 -- ## Private event

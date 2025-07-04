@@ -174,6 +174,24 @@ function MovesetClass:Verify(Agent: AgentTypes.AgentClass, Type: string)
 	return true
 end
 
+function MovesetClass:GetSkillModule(Name: string)
+	local NewKey = string.gsub(Name, "_", " ")
+
+	return self.__Assigned[NewKey]
+end
+
+function MovesetClass:CancelSkill(SkillKey: string, Agent, Context)
+	local SkillMod = self:GetSkillModule(SkillKey)
+
+	if SkillMod then
+		SkillMod:Cancel(Agent, Context)
+
+		if RunService:IsClient() and not Context or not Context.Hit  then
+			SkillMod:Connect(Agent, GameEnum.AbilityStates.Cancel)
+		end
+	end
+end
+
 function MovesetClass:GetInfoForSkill(Name: string)
 	if self.__Information[Name] == nil then
 		--warn('Information for moveset is nil')
@@ -187,7 +205,11 @@ end
 function MovesetClass:SetAbilityInformation(Data: {})
 	assert(#self.__Information == 0, 'Ability information is already set. Can\'t overwrite')
 
-	self.__Information = table.freeze(Data)
+	if not table.isfrozen(Data) then
+		table.freeze(Data)
+	end
+
+	self.__Information = Data
 end
 
 return MovesetClass

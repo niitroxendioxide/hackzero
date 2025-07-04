@@ -3,6 +3,11 @@ return table.freeze({
         HITBOXES = false,
     },
 
+    STAGE = {
+        Stage = 'Earth',
+        Act = 'Intro',
+    },
+
     TEST_AGENTS = {
         'Goku',
         'Jotaro3',

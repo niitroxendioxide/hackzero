@@ -43,7 +43,7 @@ function PhysicsClass.new(States: Types.StatesClass, Height: number): Types.Phys
 	self.__DelayedPosition = self.__Position
 	self.__RotationGoal = Vector3.zAxis
 
-	self.__MovementVelocity = Vector3.zero
+	self.__MovementVelocity = 0
 	self.__SurfaceVelocity = Vector3.zero
 	self.__LastMovementVelocity = Vector3.zero
 	self.__Velocity = Vector3.zero
@@ -53,6 +53,7 @@ function PhysicsClass.new(States: Types.StatesClass, Height: number): Types.Phys
 	self.__Active = false
 	self.__MovementAcceleration = 0
 	self.__Linear_Movements = {}
+	self.__Forward_Velocities = {}
 
 	-- >>
 
@@ -93,8 +94,22 @@ function PhysicsClass:Rotate(Angle: Vector3, Instant: boolean?)
 	if Instant then
 		self.__Rotation = Angle
 	end
-	
+
 	self.__RotationGoal = Angle
+end
+
+function PhysicsClass:ApplyForwardImpulse(Power: number, FadeOutTime: number, Tag: string?)
+	local Object = {self.__Rotation * Power, Power, FadeOutTime, os.clock()}
+	table.insert(self.__Forward_Velocities, Object)
+
+	return Object
+end
+
+function PhysicsClass:RemoveForwardImpulse(Obj: {})
+	local Index = table.find(self.__Forward_Velocities, Obj)
+	if Index then
+		table.remove(self.__Forward_Velocities, Index)
+	end
 end
 
 function PhysicsClass:GetPivot()
@@ -103,7 +118,7 @@ end
 
 function PhysicsClass:PivotTo(To: CFrame)
 	assert(typeof(To) == 'CFrame', 'Not a CFrame')
-	
+
 	self.__Normal = To.UpVector
 	self.__Position = To.Position
 	self.__Rotation = To.LookVector
@@ -114,7 +129,7 @@ function PhysicsClass:SetMovementVelocity(Velocity: number)
 	if self.__Moving == false then
 		self.__MovementAcceleration = 0
 	end
-	
+
 	self.__Moving = true
 	self.__MovementVelocity = Velocity
 end
@@ -126,6 +141,10 @@ function PhysicsClass:GetAdditionalVelocities()
 		Total += Object[1]
 	end
 
+	for _, Object in self.__Forward_Velocities do
+		Total += Object[1]
+	end
+
 	return Total
 end
 
@@ -134,16 +153,16 @@ function PhysicsClass:AddLinearMovement(Velocity: Vector3, Time: number)
 	local Object; Object = {Velocity, Time, task.delay(Time, function()
 		table.remove(self.__Linear_Movements, table.find(self.__Linear_Movements, Object))
 	end)}
-	
+
 	table.insert(self.__Linear_Movements, Object)
-	
+
 	return Object
 end
 
 function PhysicsClass:StopMovement()
 	if self.__Moving == true then
 		local NewVelocity =  (self.__MovementVelocity) * self.__Rotation.Unit
-		
+
 		if self.__LastMovementVelocity:Dot(NewVelocity.Unit) < 0 then
 			NewVelocity += self.__LastMovementVelocity
 		end
@@ -162,15 +181,15 @@ end
 
 function PhysicsClass:CalculateVelocityDeceleration(Velocity: Vector3, AirMod: number)
 	AirMod = AirMod or 1
-	
+
 	local AirFriction = World:GetAirFriction()
 	local SurfaceFriction = World:GetSurfaceFriction(self.__Position)
-	
+
 	return ((Velocity * (AirFriction * AirMod)) + (Velocity * SurfaceFriction)) * SurfaceFriction
 end
 
 function PhysicsClass:Update(Delta: number)
-	local TotalSpeedDeceleration =  self:CalculateVelocityDeceleration(self.__Velocity, .4)
+	local TotalSpeedDeceleration =  self:CalculateVelocityDeceleration(self.__Velocity, .5)
 	--local MovementSpeedDeceleration = self:CalculateVelocityDeceleration(self.__MovementVelocity)
 	local Collider = self:GetCollider()
 
@@ -178,16 +197,25 @@ function PhysicsClass:Update(Delta: number)
 
 	self.__MovementAcceleration = math.clamp(self.__MovementAcceleration + Delta * World.CharacterAcceleration, 0, 1)
 
-	--if not self.__Moving then
-		--self.__MovementVelocity -= MovementSpeedDeceleration * CurrentWorldSpeed * Delta
-	--end
+	for _, Object in self.__Forward_Velocities do
+		local Timepassed = (os.clock() - Object[4])
+		if Timepassed > Object[3] then
+			self:RemoveForwardImpulse(Object)
+			continue
+		end
+
+		local NewValue = Object[2] - Object[2] * (Timepassed / Object[3])
+
+		Object[1] = self.__Rotation.Unit * NewValue
+	end
 
 	local MovementVelocity = (self.__MovementVelocity * self.__MovementAcceleration * self.__Rotation.Unit * self.__States:GetVelocityMod())
-	self.__LastMovementVelocity -= self:CalculateVelocityDeceleration(self.__LastMovementVelocity) * CurrentWorldSpeed *Delta
+	self.__LastMovementVelocity -= self:CalculateVelocityDeceleration(self.__LastMovementVelocity, 3) * CurrentWorldSpeed * Delta
 	self.__Velocity -= TotalSpeedDeceleration * CurrentWorldSpeed * Delta
 	self.__Rotation = self.__Rotation:Lerp(self.__RotationGoal, 1) --Delta * 24
 
-	local Velocity = self.__Velocity + self:GetAdditionalVelocities()
+	local AddOns = self:GetAdditionalVelocities()
+	local Velocity = self.__Velocity + AddOns
 
 	--
 	local Origin = self:GetPivot() * CFrame.new(0, 0, Collider.Size.Z/2)
@@ -198,6 +226,7 @@ function PhysicsClass:Update(Delta: number)
 
 	-- Movement
 	local TotalDisplacement =  MovementVelocity + Velocity + self.__SurfaceVelocity + self.__LastMovementVelocity
+
 	if TotalDisplacement.Magnitude > .1 then
 		local Moved = (TotalDisplacement * CurrentWorldSpeed * Delta)
 

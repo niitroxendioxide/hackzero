@@ -16,10 +16,19 @@ return function(Duration: number)
 	BloomEffect.Parent = Lighting
 	ColorCorrection.Parent = Lighting
 
+	local Goals = {Saturation = -0.75, Contrast = 0.355, Brightness = -.075}
+	for _, OtherCorrections in Lighting:GetChildren() do
+		if OtherCorrections:IsA("ColorCorrectionEffect") then
+			Goals.Saturation -= OtherCorrections.Saturation
+			Goals.Contrast -= OtherCorrections.Contrast
+			Goals.Brightness -= OtherCorrections.Brightness
+		end
+	end
+
 	--
 	EffectsLib:Play('Glow', Current)
 
-	Effects:Tween(ColorCorrection, {.1}, {Saturation = -0.75, Contrast = 0.355, Brightness = -.075})
+	Effects:Tween(ColorCorrection, {.1}, Goals)
 	Effects:Tween(BloomEffect, {0.4}, {Intensity = 1.25, Size = 24, Threshold = 1})
 
 	task.wait(Duration + 0.1)

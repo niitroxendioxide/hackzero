@@ -101,6 +101,12 @@ return {
 		[Vector3.new(-1, 0, -1)] = 8,
 	},
 
+	AbilityStates = {
+		Begin = 1,
+		End = 2,
+		Cancel = 3,
+	},
+
 	Boost_Effects = {
 		DODGE_FLOW_TRIGGER = 'DodgeFlowStateTrigger',
 		SWITCH_ASSIST_DODGE = 'DodgeAssistFollowup',

@@ -55,9 +55,10 @@ local function ToggleStandVisibility(Model: Instance, State: boolean, ExtraState
             BasePart:SetAttribute("OgTransparency", OriginalTransparency)
         end
 
+        local Obj = BasePart :: Instance & {Transparency: number}
         local Goal: number = (State == true) and OriginalTransparency or 1
         if ExtraState == 2 then
-            BasePart.Transparency = Goal
+            Obj.Transparency = Goal
         else
             Effects:Tween(BasePart, {.25, 'Cubic'}, {Transparency = Goal})
         end

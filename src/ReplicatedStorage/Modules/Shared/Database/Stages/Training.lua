@@ -1,5 +1,5 @@
 --
-local Types = require("../../Types")
+local Types = require("../../Types/Stages")
 
 
 --

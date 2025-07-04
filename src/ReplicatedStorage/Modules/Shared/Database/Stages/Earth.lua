@@ -1,16 +1,95 @@
 --
-local Types = require("../../Types")
+local Types = require("../../Types/Stages")
 
 
 --
 return {
     Name = "Earth",
-    Map = "Dragon Ball/West City",
+    Map = "Dragon Ball/Destroyed West City",
 
     Acts = {
-        Act1 = {
+        Intro = {
+            Requisites = {},
+
+            Rewards = {
+                Items = {
+                    ['Meat'] = 5,
+                },
+
+                Handler = function(CompletionState): Types.Rating
+                    local Survivors = CompletionState.Rescued_All_Survivors == true and 1 or 0
+                    local AllEnemies = CompletionState.Beat_All_Enemies == true and 1 or 0
+
+                    if Survivors and AllEnemies then
+                        return 'S'
+                    elseif Survivors or AllEnemies then
+                        return 'A'
+                    end
+
+                    return 'X'
+                end,
+            },
+
+            Markers = {
+                ['FightArea'] = {
+                    Type = 'Trigger',
+                    Name = 'Spawn_Area',
+                },
+
+                ['FightArea1'] = {
+                    Type = 'Trigger',
+                    Name = 'Harder_Area',
+                },
+            },
+
+            Guide = {
+                Begin = {
+                    Objective = "Rescue all the survivors",
+                    Goal = {Rescued = true},
+                    Enemies = {},
+                    Global = true,
+
+                    Finished = function(State)
+                        return "End"
+                    end
+                },
+
+                Spawn_Area = {
+                    Objective = "Defeat {objective[KillEnemies]} enemies",
+                    Goal = {
+                        ['KillEnemies'] = 10,
+                    },
+                    Enemies = {
+                        [1] = {'Saiyan', 3, 1, 'Saiyan', 2, 3},
+                        [2] = {'Saiyan', 4, 5, 'Boss', 1, 5},
+                    },
+
+                    Finished = function()
+                        return 'None'
+                    end
+                },
+
+                Harder_Area = {
+                    Objective = "Defeat the {objective[KillEnemies]} saiyans",
+                    Goal = {
+                        ['KillEnemies'] = 10,
+                    },
+                    Enemies = {
+                        [1] = {'Saiyan', 3, 3},
+                        [2] = {'Saiyan', 4, 3},
+                        [3] = {'Saiyan', 3, 3},
+                    },
+
+                    Finished = function()
+                        return 'None'
+                    end
+                },
+            },
+        },
+
+        --[[ex = {
             Requisites = {
-                    
+
             },
 
             Rewards = {
@@ -70,6 +149,6 @@ return {
                     }
                 }
             }
-        }
+        }]]
     }
 } :: Types.Stage

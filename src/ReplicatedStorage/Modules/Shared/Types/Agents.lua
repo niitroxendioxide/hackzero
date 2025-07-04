@@ -56,6 +56,7 @@ export type AgentClass =  {
 
 	__Level: number,
 	__User: number,
+	__Skill_Thread: thread?,
 	__Player_Assigned: Player,
 	__Items: AgentItemsClass,
 	__Gear: ClientGearManager,
@@ -103,6 +104,14 @@ export type AgentClass =  {
 	RemoveEffect: (self: AgentClass, Id: number) -> (),
 
 	GetAnimator: (self: AgentClass) -> AnimatorController,
+
+	--[[
+		Not to be confused with ApplyImpulse. This method applies an impulse that keeps aiming forward the rest of the velocity, so if you change your direction, you'll still move with the force given
+
+		@param Power the strength of the initial force applied
+		@param FadeOutTime the time it will take for the velocity to reach zero (and be deleted afterwards)
+	]]
+	ImpulseForward: (self: AgentClass, Power: number, FadeOutTime: number) -> (),
 
 	--[[
 		Change the state of the agent to the specified one, this limits/allows specific methods
@@ -191,6 +200,18 @@ export type AgentStatusClass = {
 export type EffectParameters = {Type: (Stat & AgentMovesetAbility)?, Value: (number | string)?, Time: number?, Tag: string, Unique: boolean?, Callback: ((Id: number) -> ())?}
 export type EffectObject = {Remove: () -> (), Id: number, Value: number, Type: Stat & AgentMovesetAbility, Tag: string?, Time: number?, Created: number}
 export type ServerCharacterClass = {
+	__MovementVelocity: Vector3,
+	__SurfaceVelocity: Vector3,
+	__LastMovementVelocity: Vector3,
+	__Velocity: Vector3,
+	__ActiveThread: thread?,
+	__PhysicsSpeed: number,
+	__Moving: boolean,
+	__Active: boolean,
+	__MovementAcceleration: number,
+	__Linear_Movements: {},
+	__Forward_Velocities: {},
+
 	Name: string,
 	States: StatesClass,
 
@@ -203,7 +224,10 @@ export type ServerCharacterClass = {
 	GetPivot: (self: ServerCharacterClass) -> CFrame,
 	PivotTo: (self: ServerCharacterClass, Pivot: CFrame) -> (),
 
+	ApplyForwardImpulse: (self: ServerCharacterClass, Power: number, FadeOutTime: number) -> (),
 	AddLinearMovement: (self: ServerCharacterClass, Direction: Vector3, Time: number) -> (),
+
+	RemoveForwardImpulse:  (self: ServerCharacterClass, Object: {}) -> (),
 }
 
 
@@ -251,6 +275,8 @@ export type ServerAgentClass = {
 	UpdateMeter: (self: ServerAgentClass, Name: string, Amount: number) -> (),
 	GetMeter: (self: ServerAgentClass, Name: string) -> (number, number),
 
+	GetCurrentSkill: (self: ServerAgentClass) -> (string?),
+
 	--[[
 		Set to nil for no target
 		@param TargetId Number id for enemy
@@ -258,6 +284,13 @@ export type ServerAgentClass = {
 	]]
 	MarkTarget: (self: ServerAgentClass, TargetId: number?, Time: number?) -> (AssistStruct),
 
+	--[[
+		Not to be confused with ApplyImpulse. This method applies an impulse that keeps aiming forward the rest of the velocity, so if you change your direction, you'll still move with the force given
+
+		@param Power the strength of the initial force applied
+		@param FadeOutTime the time it will take for the velocity to reach zero (and be deleted afterwards)
+	]]
+	ImpulseForward: (self: ServerAgentClass, Power: number, FadeOutTime: number) -> (),
 	ApplyImpulse: (self: ServerAgentClass, Velocity: Vector3) -> (),
 	SetKey: (self: ServerAgentClass, Key: string, Value: any) -> (),
 	GetKey: (self: ServerAgentClass, Velocity: Vector3) -> (),

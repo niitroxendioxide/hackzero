@@ -8,6 +8,7 @@ local Classes = ServerStorage.Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 
 local ArtifactsFetcher = require(ServerStorage.Modules.Libraries.ArtifactsFetcher)
+local Movesets = require(ServerStorage.Modules.Libraries.Movesets)
 local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
 local Types = require(Shared.Types.Agents)
 local CharacterDatabase = require(Shared.Database.Characters)
@@ -72,13 +73,22 @@ function ServerAgentClass:GetTotalVelocity()
 	return self.__Character:GetTotalVelocity()
 end
 
+function ServerAgentClass:ImpulseForward(Power: number, Time: number)
+	return self.__Character:ApplyForwardImpulse(Power, Time)
+end
+
 function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.ServerAgentClass, Time: number)
-	local AnimObject: Animation = ReplicatedStorage.Assets.Animations.General.Hit.AgentHit1;
+	local CurrentSkill = self:GetCurrentSkill()
+	if CurrentSkill then
+		local Moveset = Movesets:Get(self.Name)
+
+		Moveset:CancelSkill(CurrentSkill, self, {ClientInstruction = true})
+	end
 
 	self.__Last_Hit_Time = os.clock()
 	self:SwitchState('Stunned', Time)
 
-	Replicator:HitAgent(self, Time, AnimObject)
+	Replicator:HitAgent(self, Time)
 end
 
 function ServerAgentClass.IsBeingAttacked(self: Types.ServerAgentClass)
@@ -272,8 +282,15 @@ function ServerAgentClass:SwitchState(State: string, Time: number, Unaffected: b
 
 	if State == 'Attacking' then
 		self.__Character.States:SetCurrentSkill(Skill)
-	elseif State ~= 'Attacking' and self.__Character.States:GetState() == 'Attacking' then
-		self.__Character.States:SetCurrentSkill(nil)
+
+		if self.__Skill_Thread then
+			task.cancel(self.__Skill_Thread)
+		end
+
+		self.__Skill_Thread = task.delay(Time, function()
+			self.__Character.States:SetCurrentSkill(nil)
+			self.__Skill_Thread = nil
+		end)
 	end
 
 	local TimeMod = not Unaffected and State == 'Attacking' and self:GetStat("Speed") or 1

@@ -4,6 +4,7 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Clock = require(Shared.Utility.Clock)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
@@ -130,8 +131,6 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 	local XZ = Vector3.new(1, 0, 1)
 
 	--
-	local State = if StateId == 1 then 'Begin' else 'End'
-
 	local LookAt = ActiveAgent:GetPivot().LookVector
 	if Enemy then
 		LookAt = CFrame.lookAt(ActiveAgent:GetPivot().Position * XZ, Enemy:GetPivot().Position * XZ).LookVector
@@ -141,11 +140,11 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 	local SpacelessSkill = string.gsub(Skill, '_', ' ')
 
 	local Info = Moveset:GetInfoForSkill(SpacelessSkill)
-	if SpacelessSkill ~= 'Dodge' then
+	if SpacelessSkill ~= 'Dodge' and StateId == GameEnum.AbilityStates.Begin then
 		ActiveAgent:Look(LookAt)
 
 		if SpacelessSkill == "EX Special" then
-			if (State == 'Begin' and ActiveAgent:GetEnergy() < Info.Base.Required_Energy) then
+			if ActiveAgent:GetEnergy() < Info.Base.Required_Energy then
 				return false;
 			end
 
@@ -153,7 +152,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 				ActiveAgent:UseEnergy(Info.Base.Required_Energy)
 			end
 		elseif SpacelessSkill == "Ultimate" then
-			if (State == 'Begin' and ActiveAgent:GetUltimate() < 100) then
+			if ActiveAgent:GetUltimate() < 100 then
 				return false;
 			end
 
@@ -164,15 +163,19 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 			Character:SetKey('Sprint', true)
 			Character:SetKey('Jog', true)
 		end
-
-		--
 	end
 
 	local Success, ErrorMessage = pcall(function()
-		if State == 'Begin' then
+		if (SkillId == GameEnum.Skills.Quick_Assist) or (SkillId == GameEnum.Skills.Dodge_Counter) then
+			ActiveAgent:AddTag('Invulnerability', Statics.Assist_Counter_Invulnerability_Time)
+		end
+
+		if StateId == GameEnum.AbilityStates.Begin then
 			Moveset:Begin(Skill, ActiveAgent, {Target = Enemy})
-		else
+		elseif StateId == GameEnum.AbilityStates.End then
 			Moveset:Release(Skill, ActiveAgent)
+		elseif StateId == GameEnum.AbilityStates.Cancel then
+			Moveset:CancelSkill(Skill, ActiveAgent, {ClientInstruction = true})
 		end
 	end)
 

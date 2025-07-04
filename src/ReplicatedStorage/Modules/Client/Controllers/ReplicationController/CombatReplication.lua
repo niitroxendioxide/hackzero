@@ -4,6 +4,7 @@ local Players = game:GetService('Players')
 
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
+local Assets = ReplicatedStorage.Assets
 
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local Structures = require(ReplicatedStorage.Modules.Client.Libraries.Structures)
@@ -30,13 +31,17 @@ function Controller:UseSkill(Buffer: buffer)
 	local StateId = buffer.readu8(Buffer, 3)
 	local UserId = buffer.readu8(Buffer,4)
 
-	local State = StateId == 1 and 'Begin' or 'End'
+	local State = GameEnum.KeyLookup(GameEnum.AbilityStates, StateId)
 	local ActiveAgent = Characters:GetCurrent(UserId)
 	local Key = GameEnum.KeyLookup(GameEnum.Skills, Skill)
 	local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
 
 	if UserId == Players.LocalPlayer:GetAttribute('ReplicationId') and Skill ~= GameEnum.Skills.Quick_Assist then
-		CharacterMoveset:Release(Key, ActiveAgent)
+		if State == "End" then
+			CharacterMoveset:Release(Key, ActiveAgent)
+		elseif State == "Cancel" then
+			CharacterMoveset:CancelSkill(Key, ActiveAgent)
+		end
 
 		return
 	end
@@ -59,8 +64,10 @@ function Controller:UseSkill(Buffer: buffer)
 
 	if State == 'Begin' then
 		CharacterMoveset:Begin(Key, ActiveAgent, {IsSignal = true})
-	else
+	elseif State == "End" then
 		CharacterMoveset:Release(Key, ActiveAgent, {IsSignal = true})
+	elseif State == "Cancel" then
+		CharacterMoveset:CancelSkill(Key, ActiveAgent)
 	end
 end
 
@@ -276,6 +283,41 @@ function Controller:HitDestructible(Buffer: buffer)
 	local Type = DestructiblesDatabase:FromId(buffer.readu8(Buffer, 2))
 
 	Structures.Hit(Type, Id)
+end
+
+function Controller:HitAgent(Buffer: buffer)
+	local AgentId = buffer.readu8(Buffer, 1)
+	local PlayerId = buffer.readu8(Buffer, 2)
+	local Time = buffer.readu8(Buffer, 3) / 10
+
+	local AgentObject = Characters:GetAgent(PlayerId, AgentId)
+	if not AgentObject then
+		return
+	end
+
+	local CharacterMoveset = Movesets:Get(AgentObject.Name)
+	local CurrentAgentSkill = AgentObject:GetCurrentSkill()
+	if CurrentAgentSkill ~= nil then
+		CharacterMoveset:CancelSkill(CurrentAgentSkill, AgentObject, {Hit = true})
+	end
+
+	AgentObject:SwitchState('Stunned', Time)
+
+	Effects:Play("Hit", AgentObject, {
+		HueShiftFilter = function(p: ParticleEmitter)
+			if p.Name == "Shorter impact 2" then
+				return -47
+			elseif p.Name == "Impact13" then
+				return -40
+			end
+
+			return -30
+		end
+	})
+
+	--
+	local HitTracks = Assets.Animations.General.Hit:GetChildren()
+	Animation:Play(AgentObject:GetModel(), HitTracks[math.random(1, #HitTracks)])
 end
 
 

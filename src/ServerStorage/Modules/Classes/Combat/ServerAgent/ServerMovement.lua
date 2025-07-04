@@ -60,6 +60,7 @@ function ServerCharacterClass.new(Name: string, Height: number): Types.ServerCha
 	self.__Active = false
 	self.__MovementAcceleration = 0
 	self.__Linear_Movements = {}
+	self.__Forward_Velocities = {}
 
 	return self
 end
@@ -138,8 +139,27 @@ function ServerCharacterClass:GetAdditionalVelocities()
 		Total += Object[1]
 	end
 
+	for _, Object in self.__Forward_Velocities do
+		Total += Object[1]
+	end
+
 	return Total
 end
+
+function ServerCharacterClass:ApplyForwardImpulse(Power: number, FadeOutTime: number, Tag: string?)
+	local Object = {self.__Rotation * Power, Power, FadeOutTime, os.clock()}
+	table.insert(self.__Forward_Velocities, Object)
+
+	return Object
+end
+
+function ServerCharacterClass:RemoveForwardImpulse(Obj: {})
+	local Index = table.find(self.__Forward_Velocities, Obj)
+	if Index then
+		table.remove(self.__Forward_Velocities, Index)
+	end
+end
+
 
 
 function ServerCharacterClass:AddLinearMovement(Velocity: Vector3, Time: number)
@@ -161,7 +181,7 @@ function ServerCharacterClass:GetTotalVelocity(): Vector3
 end
 
 function ServerCharacterClass:Update(Delta: number)
-	local TotalSpeedDeceleration =  self:CalculateVelocityDeceleration(self.__Velocity, .4)
+	local TotalSpeedDeceleration =  self:CalculateVelocityDeceleration(self.__Velocity, .5)
 	local CurrentWorldSpeed = World:GetSpeed()
 
 	self.__MovementAcceleration = math.clamp(self.__MovementAcceleration + Delta * World.CharacterAcceleration, 0, 1)
@@ -170,8 +190,21 @@ function ServerCharacterClass:Update(Delta: number)
 		self.__MovementVelocity = self.States:GetSpeed()
 	end
 
+	-- 1 dir, 2 power, 3 lifetime, 4 time, too lazy to make this an enum :v
+	for _, Object in self.__Forward_Velocities do
+		local Timepassed = (os.clock() - Object[4])
+		if Timepassed > Object[3] then
+			self:RemoveForwardImpulse(Object)
+			continue
+		end
+
+		local NewValue = Object[2] - Object[2] * (Timepassed / Object[3])
+
+		Object[1] = self.__Rotation.Unit * NewValue
+	end
+
 	local MovementVelocity = (self.__MovementVelocity * self.__MovementAcceleration * self.__Rotation.Unit * self.States:GetVelocityMod())
-	self.__LastMovementVelocity -= self:CalculateVelocityDeceleration(self.__LastMovementVelocity) * CurrentWorldSpeed *Delta
+	self.__LastMovementVelocity -= self:CalculateVelocityDeceleration(self.__LastMovementVelocity, 3) * CurrentWorldSpeed *Delta
 	self.__Velocity -= TotalSpeedDeceleration * CurrentWorldSpeed * Delta
 
 	local Velocity = self.__Velocity + self:GetAdditionalVelocities()

@@ -9,7 +9,10 @@ local Types = require(Shared.Types)
 local Effects = require(Shared.Utility.Effects)
 
 ---
-return function(Enemy: Types.EnemyClass, Data: {Emitter: string?, Offset: CFrame?})
+return function(Enemy: Types.EnemyClass,
+	Data: {Emitter: string?, Offset: CFrame?, HueShift: number?, HueShiftFilter: ((any) -> (number))?}
+)
+
 	Data = Data or {}
 
 	local CombatFolder = Assets.Effects.General.Combat
@@ -21,8 +24,12 @@ return function(Enemy: Types.EnemyClass, Data: {Emitter: string?, Offset: CFrame
 
 	local Offset = Data.Offset or CFrame.new()
 
-	local Object = Effects:Create(CombatFolder[EmitterId], 2.5)
+	local Object = Effects:Create(CombatFolder[EmitterId], 25)
 	Object.CFrame = Enemy:GetPivot() * Offset
+
+	if Data.HueShift or Data.HueShiftFilter then
+		Effects:HueShift(Object, Data.HueShift or 0, Data.HueShiftFilter)
+	end
 
 	Effects:Emit(Object)
 end

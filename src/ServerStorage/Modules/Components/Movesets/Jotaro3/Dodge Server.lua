@@ -5,16 +5,16 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Agents)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.GenericClass): ()
+function Ability:Play(Caster: Types.ServerAgentClass): ()
 	--
 	Caster:SwitchState('Dashing', .15)
-	Caster:ApplyImpulse(Caster:GetPivot().LookVector * 75)
+	Caster:ImpulseForward(75, 0.33)
 end
 
 return Ability

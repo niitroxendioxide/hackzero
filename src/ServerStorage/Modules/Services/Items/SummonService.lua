@@ -93,11 +93,11 @@ function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: nu
         for idx = 1, Amount do
             local NewAgent = Service:SummonFromBanner()
 
-            local HasAgent = DataService:GetAgent(Player, NewAgent.Name)
+            local HasAgent = DataService:HasAgent(Player, NewAgent.Name)
+
             if HasAgent then
                 local Item = DataService:GetItem(Player, 'AgentToken:'..NewAgent.Name, true)
                 Item:SetAmount(math.min(6, Item.__Amount + 1))
-                print('Hey!')
 
                 TokenUpdated = true;
 

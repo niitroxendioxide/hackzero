@@ -40,10 +40,10 @@ function Ability:Play(Caster: Types.GenericClass, _, State: Types.InputState)
 		end,},
 
 		{.35, AttackTime, function(self)
-            if Caster:GetEnergy() <= Ability:FromData('Energy_Per_Hit') then
+            if Caster:GetEnergy() <= Ability:FromData('Energy_Per_Hit') or not Caster:GetEffect('StandSummoned') then
 				self:Destroy()
 
-				Ability:Cancel(Caster)
+				Ability:ForceRelease(Caster)
 			end
 
 			if (os.clock() - Clock) < Ability:FromData('Hit_Frequency') then

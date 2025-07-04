@@ -42,14 +42,14 @@ return {
 				Attack_State_Time = 0.66,
 
 				Agent_Stun_Time = 0.3,
-				Damage_Mult = 92,
+				Damage_Mult = 45,
 
 				Range = 60,
 				Attack_Warning = 0.1,
 			},
 
 			Upgrades = {
-				Damage_Mult = 7.5,
+				Damage_Mult = 8,
 			}
 		},
 
@@ -62,7 +62,7 @@ return {
 				Attack_State_Time = 0.817,
 
 				Agent_Stun_Time = 0.45,
-				Damage_Mult = 172,
+				Damage_Mult = 102,
 
 				Range = 6,
 				Attack_Warning = 0.05,

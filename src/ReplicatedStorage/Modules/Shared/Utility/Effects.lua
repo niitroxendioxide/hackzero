@@ -62,6 +62,36 @@ function EffectUtil:CleanUp(Object: any, Time: number)
 	end)
 end
 
+function EffectUtil:HueShift(Obj: Instance, Shift: number, Filter: ((a: ParticleEmitter) -> (number))?)
+	for _, Particle: Instance in Obj:GetDescendants() do
+		if not Particle:IsA("ParticleEmitter") then
+			continue
+		end
+
+		local HueShiftVal = Filter and Filter(Particle) or Shift
+		if HueShiftVal == 0 then
+			continue
+		end
+
+		local Points = {}
+		for _, Keypoint in Particle.Color.Keypoints do
+			local Hue, S, V	= Keypoint.Value:ToHSV()
+			local New = Hue + (Shift / 360)
+			if New > 1 then
+				New -= 1
+			elseif New < 0 then
+				New += 1
+			end
+
+			local Color = Color3.fromHSV(New, S, V)
+			table.insert(Points, ColorSequenceKeypoint.new(Keypoint.Time, Color))
+		end
+
+		Particle.Color = ColorSequence.new(Points)
+		table.clear(Points)
+	end
+end
+
 function EffectUtil:MultiClean(Objects: {any}, Time: number)
 	for _, newObj in Objects do
 		EffectUtil:CleanUp(newObj, Time)

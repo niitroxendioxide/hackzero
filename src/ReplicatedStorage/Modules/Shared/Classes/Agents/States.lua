@@ -43,7 +43,9 @@ function StatesClass:GetLastChangeTime(): number
 end
 
 function StatesClass:GetVelocityMod(): number
-	return math.clamp((os.clock() - self.__Last_Change) / 0.3, 0, 1)
+	local Mod =  math.clamp((os.clock() - self.__Last_Change) / 0.3, 0, 1)
+
+	return Mod
 end
 
 function StatesClass:Switch(State: string, Time: number)
@@ -58,11 +60,15 @@ function StatesClass:Switch(State: string, Time: number)
 	end
 
 	self.__State = State
-	self.__Last_Change = os.clock()
+	if self.__State ~= 'Dashing' then
+		self.__Last_Change = os.clock()
+	end
 
 	self.__Threads['CurrentState'] = task.delay(Time, function()
 		self.__State = 'Idle'
-		self.__Last_Change = os.clock()
+		if State ~= 'Dashing' then
+			self.__Last_Change = os.clock()
+		end
 
 		self.__Threads['CurrentState'] = nil
 	end)

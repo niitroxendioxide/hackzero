@@ -7,7 +7,7 @@ local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Stages)
 local Stages = require(Database.Stages)
 local Signal = require(Shared.Utility.Signal)
 local Network = require(Shared.Network)
@@ -114,7 +114,10 @@ function EventClass.SummonEnemyWave(self, WaveNumber: number)
         ClearedEnemies += 1
 
         if ClearedEnemies >= Total then
-            self.__Current_Wave_Connection = nil
+            if self.__Current_Wave_Connection then
+                self.__Current_Wave_Connection:Disconnect()
+                self.__Current_Wave_Connection = nil
+            end
 
             if (#EnemyWaves < WaveNumber + 1) then
                 return
@@ -148,8 +151,6 @@ function EventClass.UpdateProgress(self: Types.EventClass, GoalType: Types.Stage
     else
         self.__Current_State[GoalType] = Value
     end
-
-    print(self.__Current_State)
 
     for _, Player in self.__Players do
         Network:Fire("Match", Player:GetBase(), GameEnum.MatchEvents.ProgressUpd, self.__Event, GoalType, self.__Current_State[GoalType])

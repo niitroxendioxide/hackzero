@@ -66,10 +66,12 @@ function Service:Spawn(Type: string, Level: number, Tag: string)
 		Type = EnemyNames[math.random(1, #EnemyNames)]
 	end
 
-	local Spawns = Service:GetSpawns()
-	local RandomSpawn = Spawns[math.random(1, #Spawns)]
+	local Spawn = workspace.World.Map.Triggers:FindFirstChild(Tag)
+	if not Spawn then
+		return
+	end
 
-	local At = Service:__GenerateLocation(RandomSpawn)
+	local At = Service:__GenerateLocation(Spawn)
 	local Enemy = ServerEnemy.new(At.Position, Type, Level)
 	local Key = Service:__Add(Enemy)
 

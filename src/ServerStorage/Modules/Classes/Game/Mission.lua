@@ -9,7 +9,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 local Services = Modules.Services
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Stages)
 local Stages = require(Database.Stages)
 local Signal = require(Shared.Utility.Signal)
 local Hitbox = require(Modules.Libraries.Hitbox)
