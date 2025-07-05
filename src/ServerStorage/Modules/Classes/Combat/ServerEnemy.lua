@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Libraries = ServerStorage.Modules.Libraries
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Ping = require(ServerStorage.Modules.Libraries.Ping)
 local ClockUtil = require(Shared.Utility.Clock)
 local Replicator = require(Libraries.Replicator)
 local AgentsLibrary = require(Libraries.Agents)
@@ -147,14 +148,15 @@ function ServerEnemy:Attack()
 	end
 
 	if SkillToUse ~= nil then
-		local PlayerPing = Target.__Player_Assigned:GetNetworkPing() :: number
-		print(PlayerPing)
+		local PlayerPing = Ping:Get(Target.__Player_Assigned) :: number
 
 		local SplitSkillId = string.split(SkillToUse.Name, ' ')
 		local ReplicationSkillId = tonumber(SplitSkillId[2], 10)
 
 		Targets:RefreshLastAttackedTime(Target, self)
 		Replicator:EnemyUseSkill(self.__EnemyId, ReplicationSkillId, 'Begin')
+
+		task.wait(PlayerPing)
 		Moveset:Begin(SkillToUse.Name, self)
 	end
 end

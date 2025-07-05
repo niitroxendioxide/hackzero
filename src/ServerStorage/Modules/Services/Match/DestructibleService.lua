@@ -5,6 +5,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Map = require(ServerStorage.Modules.Libraries.Map)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local StructureList = require(ServerStorage.Modules.Libraries.StructureList)
@@ -53,29 +54,32 @@ function Service:Init()
     Service.__Total_Destructibles = Heap.new(255)
 end
 
-function Service:SetupStage()
-    task.spawn(function()
-        while true do
-            if #StructureList:GetAll() < 3 then
-                local X = math.random(-50, 50)
-                local Z = math.random(-50, 50)
-                local At = Vector3.new(-114.594 + X, 1.499, 379.083 + Z)
+function Service:SetupStage(Structure_Map_Data: {})
+    if not Structure_Map_Data then
+        return
+    end
 
-                Service:Create('Crystals', At, {
-                    Effects = {
-                        {
-                            Type = 'Attack',
-                            Value = '20%',
-                            Time = 3,
-                        }
-                    },
-                    Other = {Energy = 10},
-                })
-            end
+    for _, StructureObj in Structure_Map_Data do
+        local Id = StructureObj.Id
+        if not Id then
+            warn("No given ID for destructible:", StructureObj)
 
-            task.wait(2.5)
+            continue
         end
-    end)
+
+        local Structure_Data = StructureDatabase:GetData(Id)
+        if not Structure_Data then
+            warn(`[{Id}] is not a valeid structure type.`)
+            continue
+        end
+
+        for _, Part in StructureObj.Parts do
+            local At = (Part.CFrame * CFrame.new(0, -Part.Size.Y/2, 0)).Position
+            Service:Create(Id, At, Structure_Data.Default_Structure_Data)
+        end
+    end
+
+    table.clear(Structure_Map_Data)
 end
 
 function Service:Create(Type: string, At: Vector3, StructureData: StructureData?)
@@ -98,7 +102,7 @@ function Service:Create(Type: string, At: Vector3, StructureData: StructureData?
 end
 
 function Service:GiveRewards(Data: StructureData, Caster: Types.ServerEnemyClass & AgentTypes.ServerAgentClass)
-    local Player: Player? = Caster.__Player_Assigned
+    local _Player: Player? = Caster.__Player_Assigned
 
     if Data.Other then
         if Data.Other.Energy and Caster.GiveEnergy then

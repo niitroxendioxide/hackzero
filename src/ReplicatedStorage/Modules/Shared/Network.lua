@@ -30,9 +30,9 @@ function Network.new(Name: string, Type: 'Event' | 'Function' | 'Unreliable'): (
 end
 
 function Network:GetPing()
-	local Start = tick()
-	local ServerTime = ReplicatedStorage.Ping:InvokeServer()
-	return ServerTime - Start, tick() - ServerTime
+	local Start = DateTime.now().UnixTimestampMillis --tick()
+	local ServerTime = ReplicatedStorage.Ping:InvokeServer(Start)
+	return ServerTime - Start, DateTime.now().UnixTimestampMillis - ServerTime
 end
 
 function Network:Get(Name: string, MaximumWaitTime: number?)

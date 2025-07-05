@@ -45,6 +45,10 @@ function AgentClass.GetSkillLevel(self: AgentTypes.AgentClass, Name: string)
 	return (self.__Skill_Levels[Name] or 1)
 end
 
+function AgentClass.SetColliderGroupEnabled(self: AgentTypes.AgentClass, Group: {}, State: boolean)
+	return self.__Character.__Controller:SetColliderGroupState(Group, State)
+end
+
 function AgentClass:GetId(): number
 	return self.PlayerId
 end
@@ -175,7 +179,7 @@ function AgentClass:GetPivot(Server: boolean)
 	if Server and self.__ServerLocation then
 		return self.__ServerLocation
 	end
-	
+
 	return self.__Character:GetPivot()
 end
 
@@ -235,10 +239,10 @@ function AgentClass:GetUltBar()
 end
 
 function AgentClass:SwitchState(State: string, Time: number, Unaffected: boolean?): ()
-	local ThreadChanged = string.split(debug.info(2, "s"), '.')
-	local Ability = ThreadChanged[#ThreadChanged]
-
 	if State == 'Attacking' then
+		local ThreadChanged = string.split(debug.info(2, "s"), '.')
+		local Ability = ThreadChanged[#ThreadChanged]
+
 		self.__Character.__States:SetCurrentSkill(Ability)
 
 		if self.__Skill_Thread then
@@ -252,8 +256,20 @@ function AgentClass:SwitchState(State: string, Time: number, Unaffected: boolean
 	end
 
 	local TimeMod = not Unaffected and State == 'Attacking' and self:GetStat("Speed") or 1
+	local TakenTime = Time / TimeMod
 
-	self.__Character.__States:Switch(State, Time / TimeMod)
+	self.__Character.__States:Switch(State, TakenTime)
+	if self.__c_recovery_thread then
+		task.cancel(self.__c_recovery_thread)
+	end
+
+	self.__c_recovery_thread = task.delay(TakenTime, function()
+		self._c_recovery_thread = nil
+
+		if self:IsMoving() then
+			self:Move()
+		end
+	end)
 
 	if self:IsMoving() then
 		self:Move()

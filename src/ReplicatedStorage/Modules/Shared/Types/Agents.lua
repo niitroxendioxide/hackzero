@@ -224,6 +224,7 @@ export type ServerCharacterClass = {
 	GetPivot: (self: ServerCharacterClass) -> CFrame,
 	PivotTo: (self: ServerCharacterClass, Pivot: CFrame) -> (),
 
+	SetColliderGroupState: (self: ServerCharacterClass, Group: {}, State: boolean?) -> (),
 	ApplyForwardImpulse: (self: ServerCharacterClass, Power: number, FadeOutTime: number) -> (),
 	AddLinearMovement: (self: ServerCharacterClass, Direction: Vector3, Time: number) -> (),
 

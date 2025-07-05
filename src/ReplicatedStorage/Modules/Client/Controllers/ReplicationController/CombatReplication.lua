@@ -7,6 +7,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage.Assets
 
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
+local Replicator = require(ReplicatedStorage.Modules.Client.Libraries.Replicator)
 local Structures = require(ReplicatedStorage.Modules.Client.Libraries.Structures)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
@@ -23,6 +24,7 @@ local DestructiblesDatabase = require(Shared.Database.Destructibles)
 
 
 --
+local Colliders = {}
 local Controller = {}
 
 function Controller:UseSkill(Buffer: buffer)
@@ -71,6 +73,63 @@ function Controller:UseSkill(Buffer: buffer)
 	end
 end
 
+function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
+	local State = buffer.readu8(Buffer, 1) == 1
+	local RepId = buffer.readu8(Buffer, 2) -- use this for yk.. the stuff!
+
+	if Colliders[TriggerObject] then
+
+		if State then
+			for _, Agent in Characters:GetCharacters(RepId) do
+				Agent:SetColliderGroupEnabled(Colliders[TriggerObject], nil)
+			end
+
+			for _, Obj in Colliders[TriggerObject] do
+				Obj:Destroy()
+			end
+
+			Colliders[TriggerObject] = nil
+		end
+
+		return
+	end
+
+	local Size = (TriggerObject:GetAttribute("AreaSize") or (TriggerObject.Size * 1.25)) :: Vector3
+    local Sizes = {
+        Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
+        Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, Size.Z/2 - 1),
+        Vector3.new(1, Size.Y, Size.Z + 1), CFrame.new(-Size.X/2 - 1, 0, 0),
+        Vector3.new(1, Size.Y, Size.Z + 1), CFrame.new(Size.X/2 - 1, 0, 0)
+    }
+
+	Colliders[TriggerObject] = {}
+
+	local Parent = workspace.Camera:FindFirstChild("Area_Colliders") or Instance.new("Folder")
+	Parent.Name = "Area_Colliders"
+	Parent.Parent = workspace.Camera
+
+	for i = 1, #Sizes, 2 do
+        local PartSize = Sizes[i]
+        local Offset = Sizes[i + 1]
+
+        local Part = Instance.new("Part")
+        Part.Size = PartSize
+        Part.CFrame = TriggerObject:GetPivot() * Offset
+        Part.Transparency = 1
+        Part.Color = Color3.new(0.403922, 0.133333, 0.992157)
+        Part.Name = TriggerObject.Name .. 'ColliderPart'
+		Part.CanCollide = false
+        Part.Anchored = true
+        Part.Parent = Parent
+
+        table.insert(Colliders[TriggerObject], Part)
+    end
+
+	for _, Agent in Characters:GetCharacters(RepId) do
+		Agent:SetColliderGroupEnabled(Colliders[TriggerObject], true)
+	end
+end
+
 function Controller:EnemyUseSkill(Buffer: buffer)
 	local Skill = buffer.readu8(Buffer, 1)
 	local EnemyId = buffer.readu8(Buffer, 2)
@@ -107,14 +166,14 @@ function Controller:DisplayDamage(Buffer: buffer)
 	local Amount = buffer.readf32(Buffer, 5)
 
 	local EnemyObject = Enemies:GetEnemy(EnemyId)
-	
+
 	if EnemyObject == nil then
 		Type = 'Shatter'
 		EnemyObject = Enemies.__Last_Enemy_Pos[EnemyId]
 	else
 		EnemyObject:TakeDamage(Amount)
 	end
-	
+
 	Effects:Play('Indicator', EnemyObject, {Affliction = Type, Critical = Critical, Number = math.floor(Amount), Burst = Burst})
 end
 

@@ -100,7 +100,7 @@ function Camera:Update(delta: number)
 
 	local CameraCFrame = CFrame.lookAlong(Camera.__Position, CameraRotation.LookVector) * CFrame.new(0, 0, Camera.__Zoom)
 
-	local Cast = workspace:Raycast(Camera.__Position, CameraRotation.LookVector * -Camera.__Zoom, World:GetMapParams() :: RaycastParams)
+	local Cast = workspace:Raycast(Camera.__Position, CameraRotation.LookVector * -Camera.__Zoom, World:GetMapParams(false, {}) :: RaycastParams)
 	if Cast then
 		CameraCFrame = CFrame.lookAlong(Cast.Position, CameraRotation.LookVector)
 	end

@@ -1,5 +1,4 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local Lighting = game:GetService("Lighting")
 local Players = game:GetService('Players')
 
 local Player = Players.LocalPlayer
@@ -7,7 +6,6 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Types = require(Shared.Types)
-local Places = require(Shared.Places)
 local Network = require(Shared.Network)
 local UIGroups = require(Client.Libraries.UIGroups)
 local UIEffects = require(Client.Utility.UIEffects)

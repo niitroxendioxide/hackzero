@@ -5,6 +5,18 @@ return {
 
     Element_Damage_Multipliers = {
         Fire = 1.25,
-    }
+    },
 
+    Default_Structure_Data = {
+		Effects = {
+			{
+				Type = 'Attack',
+				Value = '20%',
+				Time = 3,
+			}
+		},
+		Other = {
+            Energy = 10
+        },
+	}
 }

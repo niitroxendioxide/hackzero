@@ -50,6 +50,7 @@ end
 function DestructibleClass.Spawn(self: Destructible, Id: number)
     local Data = DestructiblesDatabase:GetData(self.__Type)
 
+    self.__Collider.CFrame *= CFrame.new(0, Data.Size.Y/2, 0)
     self.__Collider.Size = Data.Size
 
     self.__Health = Data.Health

@@ -70,9 +70,13 @@ function Service:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClas
 
 	table.insert(Data.Characters, AgentClass)
 
+	--[[table.sort(Data.Characters, function(a, b)
+		return a.Name > b.Name
+	end)]]
+
 	--
 	Replicator:AddAgent(Player, AgentClass, Target)
-	AgentLibrary:Add( Player:GetAttribute("ReplicationId") :: number, AgentClass)
+	AgentLibrary:Add(Player:GetAttribute("ReplicationId") :: number, AgentClass)
 end
 
 function Service:RemoveAgent(Player: Player, Name: string)
@@ -213,7 +217,7 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 		Service:Move(Player)
 	end
 
-	Replicator:CharacterSwitch(Player, Direction, MarkedAgentStruct and MarkedAgentStruct.TargetId)
+	Replicator:CharacterSwitch(Player, AgentIndex, Direction, MarkedAgentStruct and MarkedAgentStruct.TargetId)
 	Replicator:Rotate(Player, RebuiltRotationVector)
 
 	--

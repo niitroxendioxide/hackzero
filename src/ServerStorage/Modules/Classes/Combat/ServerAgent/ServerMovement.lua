@@ -14,12 +14,12 @@ local StatesClass = require(Shared.Classes.Agents.States)
 local TestEnv = require("../../../.testenv/settings")
 local REPLICATE_HITBOX = RunService:IsStudio() and TestEnv.REPLICATE_CONSTANTS.HITBOXES
 
-local function CastAround(Origin: CFrame, Size: number): RaycastResult?
-	local RayCount = 6
-	local Wide = math.rad(60)
-	local Params = World:GetCollisionParams() :: RaycastParams
-	for i = 1, RayCount do
-		local Angle = -Wide * 0.75 + ((Wide * 0.75) / RayCount * i)
+local function CastAround(Origin: CFrame, Size: number, Blocks: {}): RaycastResult?
+	local RayCount = 8
+	local Wide = math.rad(80)
+	local Params = World:GetCollisionParams(nil, Blocks) :: RaycastParams
+	for i = 0, RayCount do
+		local Angle = -(Wide * 0.5) + (Wide / RayCount) * i
 		local Direction = (Origin * CFrame.Angles(0, Angle, 0)).LookVector * 2.5
 
 		local Result = workspace:Spherecast(Origin.Position, 1.75, Direction, Params)--workspace:Spherecast(Origin.Position, 1, Direction, Params)
@@ -61,6 +61,7 @@ function ServerCharacterClass.new(Name: string, Height: number): Types.ServerCha
 	self.__MovementAcceleration = 0
 	self.__Linear_Movements = {}
 	self.__Forward_Velocities = {}
+	self.__Added_Colliders = {}
 
 	return self
 end
@@ -79,6 +80,14 @@ function ServerCharacterClass:Init()
 			self:Update(Delta)
 		end)
 	end
+end
+
+function ServerCharacterClass:SetColliderGroupState(Group: {}, State: boolean?)
+	if State ~= true then
+		State = nil
+	end
+
+	self.__Added_Colliders[Group] = State
 end
 
 
@@ -222,8 +231,8 @@ function ServerCharacterClass:Update(Delta: number)
 
 		local Size = self.__Collider.Size
 		local Extra = math.atan(self.__Normal:Dot(Vector3.yAxis)) + World.StepHeight
-		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams() :: RaycastParams)
-		local Collision = CastAround(Origin, Size.Z)-- workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetCollisionParams() :: RaycastParams)
+		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams(false, self.__Added_Colliders) :: RaycastParams)
+		local Collision = CastAround(Origin, Size.Z, self.__Added_Colliders)-- workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetCollisionParams() :: RaycastParams)
 
 		if CanReachFloor and (CanReachFloor.Position.Y - (self.__Position.Y - self.__Height)) < World.StepHeight then
 			if not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1 then
@@ -231,7 +240,7 @@ function ServerCharacterClass:Update(Delta: number)
 			elseif Collision then
 				local ProjectedMovement = TotalDisplacement - TotalDisplacement:Dot(Collision.Normal) * Collision.Normal
 
-				local Params = World:GetCollisionParams() :: RaycastParams
+				local Params = World:GetCollisionParams(nil, self.__Added_Colliders) :: RaycastParams
 				local Result = workspace:Raycast(Origin.Position, ProjectedMovement.Unit * 3, Params)--workspace:Spherecast(Origin.Position, 1, Direction, Params)
 				if not Result then
 					self.__Position += ProjectedMovement * CurrentWorldSpeed * Delta
@@ -240,7 +249,7 @@ function ServerCharacterClass:Update(Delta: number)
 		end
 	end
 
-	local Cast = workspace:Raycast(self:GetPivot().Position, Vector3.yAxis * -100, World:GetMapParams() :: RaycastParams)
+	local Cast = workspace:Raycast(self:GetPivot().Position, Vector3.yAxis * -100, World:GetMapParams(false, self.__Added_Colliders) :: RaycastParams)
 	if Cast then
 		self.__SurfaceVelocity = Cast.Instance.AssemblyLinearVelocity
 		self.__Position = Vector3.new(self.__Position.X, Cast.Position.Y + self.__Height, self.__Position.Z)

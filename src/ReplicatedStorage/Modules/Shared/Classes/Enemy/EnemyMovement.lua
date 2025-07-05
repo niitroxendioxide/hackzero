@@ -96,7 +96,7 @@ end
 
 function EnemyMovement:Knockback(Velocity: Vector3, Time: number)
 	local Direction = (Velocity * Time * 2) :: Vector3
-	local RayResult = workspace:Raycast(self:GetPivot().Position, Direction, World:GetMapParams() :: RaycastParams)
+	local RayResult = workspace:Raycast(self:GetPivot().Position, Direction, World:GetEntityMapParams(false) :: RaycastParams)
 
 	if RayResult then
 		return
@@ -130,7 +130,7 @@ function EnemyMovement:Update(Delta: number)
 	local ConvertedDirection = CFrame.lookAlong(Position, self.__Looking):VectorToWorldSpace(self.__Direction)
 	local Movement = (ConvertedDirection * self.__Speed + Velocity) * Delta * World:GetSpeed() * self.__World_Speed
 
-	local Map = World:GetMapParams()
+	local Map = World:GetEntityMapParams(false)
 	local Colliders = World:GetColliderParams()
 
 	local Collision = workspace:Spherecast(self.__Position, 1.5, ConvertedDirection * 2, Map)
@@ -152,7 +152,7 @@ function EnemyMovement:Update(Delta: number)
 	--
 	self.__Position += Movement
 
-	local Cast = workspace:Raycast(self.__Position, Vector3.yAxis * -100, World:GetMapParams() :: RaycastParams)
+	local Cast = workspace:Raycast(self.__Position, Vector3.yAxis * -100, World:GetEntityMapParams(false) :: RaycastParams)
 	if Cast then
 		self.__Position = Cast.Position + Vector3.yAxis * 3.15
 	end

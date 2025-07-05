@@ -18,7 +18,6 @@ local Colliders = Instance.new('Folder')
 Colliders.Name = 'Enemy_Collisions'
 Colliders.Parent = workspace:FindFirstChild('Camera')
 
-
 local Destructibles = Instance.new('Folder')
 Destructibles.Name = 'Destructibles'
 Destructibles.Parent = workspace:FindFirstChild('Camera')
@@ -28,12 +27,19 @@ local Ping = ReplicatedStorage:FindFirstChild("Ping") or Instance.new("RemoteFun
 Ping.Name = 'Ping'
 Ping.Parent = ReplicatedStorage
 
-Ping.OnServerInvoke = function(Player: Player)
+local PingLib = require(ServerStorage.Modules.Libraries.Ping)
+
+Ping.OnServerInvoke = function(Player: Player, Time: number)
 	if not Player:HasTag('Ping') then
 		Player:AddTag('Ping')
 	end
 
-	return tick()
+	local Tick = DateTime.now().UnixTimestampMillis
+	local Ping = ((Tick-Time) * 2) / 1000
+
+	PingLib:Set(Player, Ping)
+
+	return Tick
 end
 
 task.spawn(function()

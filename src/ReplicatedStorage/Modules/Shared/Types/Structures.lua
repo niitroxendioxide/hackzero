@@ -8,6 +8,20 @@ export type DestructibleData = {
         [Types.Element]: number?,
     },
 
+    Default_Structure_Data: {
+        Effect: {
+            {
+                Type: string,
+                Value: number | string,
+                Time: number,
+            }
+        }?,
+
+        Other: {
+            Energy: number?,
+        }?
+    }
+
 }
 
 export type DestructibleServerEntity = {

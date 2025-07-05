@@ -8,7 +8,6 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(Shared.Types)
 local Effects = require(Shared.Utility.Effects)
 local GameEnum = require(Shared.GameEnum)
-local ScreenUtil = require(Shared.Utility.ScreenUtil)
 
 local Key = ColorSequenceKeypoint.new
 local Sequence = ColorSequence.new

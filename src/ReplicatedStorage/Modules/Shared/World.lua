@@ -17,22 +17,43 @@ function World:GetAirFriction(): number
 	return 20
 end
 
-function World:GetMapParams(Overlap: boolean?): OverlapParams | RaycastParams
+function World:GetMapParams(Overlap: boolean?, Groups: {[{BasePart}]: boolean?}?): OverlapParams | RaycastParams
+	local List = {WorldFolder.Map}
+	for Obj in (Groups or {}) :: {} do
+		table.insert(List, Obj)
+	end
+
 	local Params = Overlap and OverlapParams.new() or RaycastParams.new()
-	Params.FilterDescendantsInstances = {WorldFolder.Map}
+	Params.FilterDescendantsInstances = List
 	Params.FilterType = Enum.RaycastFilterType.Include
 
 	return Params
 end
 
-function World:GetCollisionParams(Overlap: boolean?): OverlapParams | RaycastParams
+function World:GetEntityMapParams(Overlap: boolean?): OverlapParams | RaycastParams
+	local Params = Overlap and OverlapParams.new() or RaycastParams.new()
+	Params.FilterDescendantsInstances = {
+		WorldFolder.Map,
+		workspace.Camera:FindFirstChild("Area_Colliders"),
+	}
+	Params.FilterType = Enum.RaycastFilterType.Include
+
+	return Params
+end
+
+function World:GetCollisionParams(Overlap: boolean?, Groups: {}?): OverlapParams | RaycastParams
+	local List = {WorldFolder.Map}
+	for Obj in (Groups or {}) :: {} do
+		table.insert(List, Obj)
+	end
+
 	local Camera = workspace:FindFirstChild('Camera') :: Camera
 	local ParamsNew = Overlap and OverlapParams.new() or RaycastParams.new()
 	ParamsNew.FilterDescendantsInstances = {
-		WorldFolder.Map,
+		List,
 		WorldFolder.Entities:FindFirstChild("Destructibles"),
 		WorldFolder.Entities.Colliders, Camera:FindFirstChild('Enemy_Collisions'),
-		Camera:FindFirstChild("Destructibles")
+		Camera:FindFirstChild("Destructibles"),
 	}
 
 	ParamsNew.FilterType = Enum.RaycastFilterType.Include
@@ -74,7 +95,7 @@ local function GetFrictionBetweenMaterial(Material)
 end
 
 function World:GetSurfaceFriction(At: Vector3): number
-	local Params = World:GetMapParams() :: RaycastParams
+	local Params = World:GetMapParams(false, {}) :: RaycastParams
 	local Raycast = workspace:Raycast(At, Vector3.yAxis*-25, Params)
 
 	if Raycast then

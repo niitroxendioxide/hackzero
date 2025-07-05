@@ -64,8 +64,9 @@ function Service:Init()
 					["Damage"] = true,
 				})
 
-				if Data.IsKill then
+				if Data.IsKill and PlayerCombatQuests["Kill"] then
 					local KillQuests = PlayerCombatQuests["Kill"]
+
 					local TargetName = Data.Enemy.__Name
 
 					for _, KillQuest in KillQuests do

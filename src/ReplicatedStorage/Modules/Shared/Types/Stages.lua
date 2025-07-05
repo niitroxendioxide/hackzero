@@ -54,6 +54,8 @@ Events that happen in that stage, the first one is loaded and then the next one 
 export type Marker = {
     Type: 'Trigger' | 'ItemBox' | 'Destructible',
 	Name: string?, -- Rename, if you want to, can just keep the same.
+
+	Destructible_Id: string?,
 	ItemList: {
 		[string]: number,
 	}?
@@ -119,7 +121,7 @@ export type MissionClass = {
 		@param Players : `{StagePlayer}` The players in stage that enter the event
 		@param Ignore_Replay : `boolean?` Used to determine if the event should be re-played if it wasn't
 	]]
-	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?, Players: {StagePlayer}, Ignore_Replay: boolean?) -> (),
+	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?, Players: {StagePlayer}, Ignore_Replay: boolean?, Trigger: BasePart?) -> (),
 	SummonEnemyWave: (self: MissionClass, Wave: number) -> (),
 
 	--[[
@@ -145,7 +147,9 @@ export type MissionClass = {
 export type EventClass = {
 	Finished: Signal<string>,
 
+	__Current_Barrier_State: boolean,
 	__Players: {StagePlayer},
+	__Current_Barriers: {BasePart},
 	__Finish_Status: boolean,
 	__Event: string,
 	__Stage: string,
@@ -158,14 +162,15 @@ export type EventClass = {
 
 	AddPlayer: (self: EventClass, Player: StagePlayer) -> (),
 
-	Start: (self: EventClass) -> (),
+	Start: (self: EventClass, Trigger: BasePart?) -> (),
 	SummonEnemyWave: (self: EventClass, Wave: number) -> (),
 	Destroy: (self: EventClass) -> (),
 
 	HasGoal: (self: EventClass, Type: Stage_Objective) -> (boolean),
 	IsFinished: (self: EventClass) -> (),
 	GetPlayerObjects: (self: EventClass) -> ({Player}),
-
+	CreateEventAreaModel: (self: EventClass, Trigger: BasePart) -> (),
+	SetBarrierCollision: (self: EventClass, State: boolean) -> (),
 	--[[
 		Update the progress in teh current mission
 		@param Type : `Goal` the goal type to be updated
@@ -184,7 +189,7 @@ export type StagePlayer = {
 	GetId: (self: StagePlayer) -> number,
 	GetTeam: (self: StagePlayer) -> {Agents.ServerAgentClass},
 	GetBase: (self: StagePlayer) -> Player,
-	GetFromAgent: (self: StagePlayer, Agent: Agents.ServerAgentClass) -> (),
+	GetAgents: (self: StagePlayer) -> (),
 }
 
 return 0

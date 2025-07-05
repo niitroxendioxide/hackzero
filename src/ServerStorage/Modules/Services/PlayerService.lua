@@ -9,6 +9,7 @@ local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 
+local Characters = require(ReplicatedStorage.Modules.Shared.Database.Characters)
 local Network = require(ReplicatedStorage.Modules.Shared.Network)
 local Notifications = require(Modules.Packages.Notifications)
 local TeamService = require(script.Parent.Combat.TeamService)
@@ -42,6 +43,15 @@ local function SyncPlayerDataWithOthers(Player: Player, AgentTeam: {}?, PlayerTo
 		end)
 
 		for _, BorrowedAgent in BorrowedAgents do
+			local BorrowedBuffer = BorrowedAgent[1]
+			local GivenId = buffer.readu8(BorrowedBuffer, 0)
+			for key = #Agents, 1, -1 do
+				local Agent = Agents[key]
+				if buffer.readu8(Agent[1], 0) == GivenId then
+					table.remove(Agents, key)
+				end
+			end
+
 			table.insert(Agents, BorrowedAgent)
 		end
 

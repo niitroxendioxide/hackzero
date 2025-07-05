@@ -12,8 +12,9 @@ local Stages = require(Database.Stages)
 local Signal = require(Shared.Utility.Signal)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
+local Replicator = require(Modules.Libraries.Replicator)
 local EnemyService = require(Modules.Services.Combat.EnemyService)
-local CutscenesLibrary = require(Modules.Libraries.Cutscenes)
+local ServerCutscenesLibrary = require(Modules.Libraries.Cutscenes)
 
 --
 local EventClass = {}
@@ -32,11 +33,13 @@ function EventClass.new(Stage: string, Act: string, Event: string)
     self.__Current_Time = 0;
     self.__Current_Goals = {};
     self.__Current_State = {};
+    self.__Current_Barriers = {};
+    self.__Current_Barrier_State = false;
 
     return self
 end
 
-function EventClass.Start(self: Types.EventClass)
+function EventClass.Start(self: Types.EventClass, Trigger: BasePart?)
     if self.__Finish_Status then
         return
     end
@@ -53,7 +56,7 @@ function EventClass.Start(self: Types.EventClass)
     --
     if EventData.Cutscene then
         local PlayersToUse = self:GetPlayerObjects()
-        local OneLoaded = CutscenesLibrary:AttemptGroup(PlayersToUse, EventData.Cutscene)
+        local OneLoaded = ServerCutscenesLibrary:AttemptGroup(PlayersToUse, EventData.Cutscene)
 
         OneLoaded:Wait()
     end
@@ -75,15 +78,91 @@ function EventClass.Start(self: Types.EventClass)
     self.__Current_Goals = EventData.Goal
 
     --
-    self:SummonEnemyWave(1)
+    if #EventData.Enemies > 0 then
+        if Trigger then
+            self:CreateEventAreaModel(Trigger)
+        end
+
+        self:SummonEnemyWave(1)
+    end
 end
 
-function EventClass.SummonEnemyWave(self, WaveNumber: number)
+function EventClass.SetBarrierCollision(self: Types.EventClass, State: boolean)
+    if not self.__Current_Barriers then
+        return
+    end
+
+    self.__Current_Barrier_State = State
+
+    for k, Object in self.__Current_Barriers do
+        if k == 1 then
+            Object.CanQuery = false
+            continue
+        end
+        Object.CanQuery = State
+    end
+
+
+    for _, StagePlayer in self.__Players do
+        local Team = StagePlayer:GetTeam()
+
+        for _, Agent in Team do
+            Agent:SetColliderGroupEnabled(self.__Current_Barriers, State)
+        end
+
+        Replicator:SetColliderArea(StagePlayer:GetBase(), State, self.__Current_Barriers[1])
+    end
+end
+
+function EventClass.CreateEventAreaModel(self: Types.EventClass, Trigger: BasePart)
+    if #self.__Current_Barriers > 0 then
+        self:SetBarrierCollision(true)
+
+        return
+    end
+
+    self.__Current_Barriers = {Trigger}
+
+    local Size = (Trigger:GetAttribute("AreaSize") or (Trigger.Size * 1.25)) :: Vector3
+    local Sizes = {
+        Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
+        Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, Size.Z/2 - 1),
+        Vector3.new(1, Size.Y, Size.Z + 1), CFrame.new(-Size.X/2 - 1, 0, 0),
+        Vector3.new(1, Size.Y, Size.Z + 1), CFrame.new(Size.X/2 - 1, 0, 0)
+    }
+
+    local Parent = workspace.Camera:FindFirstChild("Area_Colliders") or Instance.new("Folder")
+	Parent.Name = "Area_Colliders"
+	Parent.Parent = workspace.Camera
+
+    for i = 1, #Sizes, 2 do
+        local PartSize = Sizes[i]
+        local Offset = Sizes[i + 1]
+
+        local Part = Instance.new("Part")
+        Part.Size = PartSize
+        Part.CFrame = Trigger:GetPivot() * Offset
+        Part.Transparency = 0.8
+        Part.Color = Color3.new(0.403922, 0.133333, 0.992157)
+        Part.Name = Trigger.Name .. 'ColliderPart'
+        Part.Anchored = true
+        Part.CanQuery = false
+        Part.Parent = Parent
+
+        table.insert(self.__Current_Barriers, Part)
+    end
+
+    self:SetBarrierCollision(true)
+end
+
+function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number)
     local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
     local EnemyWaves = EventData.Enemies
     local NextWaveTime = 0.5
 
     if #EnemyWaves <= 0 or WaveNumber > #EnemyWaves then
+        self:SetBarrierCollision(false)
+
         return
     end
 
@@ -189,6 +268,7 @@ function EventClass.Destroy(self: Types.EventClass)
     local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
 
     local Next_Stage = EventData.Finished(self:GetCorrectedState())
+    self:SetBarrierCollision(false)
 
     self.__Finish_Status = true
     self.Finished:Fire(Next_Stage)
@@ -196,13 +276,27 @@ end
 
 function EventClass.AddPlayer(self: Types.EventClass, Player: Types.StagePlayer)
     if self.__Finish_Status then return end
+
     for _, OtherPlayer in self.__Players do
-        if OtherPlayer:GetBase() == Player then
+        if OtherPlayer:GetBase() == Player:GetBase() then
             return
         end
     end
 
     Network:Fire("Match", Player:GetBase(), GameEnum.MatchEvents.BeginEvent, self.__Event)
+
+    if self.__Current_Barrier_State then
+        local Team = Player:GetTeam()
+
+        for _, Agent in Team do
+            Agent:SetColliderGroupEnabled(self.__Current_Barriers, self.__Current_Barrier_State)
+        end
+
+        for _, Player in self.__Players do
+            Replicator:SetColliderArea(Player:GetBase(), self.__Current_Barrier_State, self.__Current_Barriers[1])
+        end
+
+    end
 
     table.insert(self.__Players, Player)
 end

@@ -121,6 +121,26 @@ function Math:CalculateStatsForAgent(AgentName: string, Level: number, Drive, Ar
 end
 
 
+--[[
+    Encode two numbers into an unsigned 8 bit integer
+
+    @param First The 6 bit number to be encoded into an u8
+    @param Second The 2 bit number to be encoded into an u8
+    @param GivenBuffer? Optional parameter to override the creation of a new buffer
+    @param GivenOffset? Optional parameter to override the usage of the zero offset
+
+    ```lua
+        -- On the server
+        local Buffer = Math:Encodeu2u6(64, 2)
+        Event:Fire(Player, Buffer)
+
+        -- On some client
+        local Amount, Type = Math:Decodeu2u6(Buffer)
+        print(Amount, Type) -- 64, 2
+    ```
+
+    @return Buffer The buffer in which the numbers were encoded
+]]
 function Math:Encodeu2u6(First: number, Second: number, GivenBuffer: buffer?, GivenOffset: number?): buffer
     local FirstMask = bit32.band(First, 0x03)
     local SecondMask = bit32.band(Second, 0x3F)

@@ -18,7 +18,7 @@ function PlayerClass.new(Player: Player, Team: {AgentTypes.ServerAgentClass}): T
     return self
 end
 
-function PlayerClass.GetId(self: Types.StagePlayer)
+function PlayerClass.GetId(self: Types.StagePlayer): number
     return self.__Designated_Id
 end
 

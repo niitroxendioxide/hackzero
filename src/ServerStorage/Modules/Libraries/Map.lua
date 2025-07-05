@@ -90,18 +90,38 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker})
     Triggers.Name = 'Triggers'
     Triggers.Parent = Map
 
+    local MapData = {}
+
     for MarkerId, MarkerObj in MarkerData do
         local ObjName = MarkerObj.Name or MarkerId
 
-        local Part = Map.Markers:FindFirstChild(MarkerId)
-        if not Part then continue end
-
-        Part.Name = ObjName
-
         if MarkerObj.Type == 'Trigger' then
+            local Part = Map.Markers:FindFirstChild(MarkerId)
+            if not Part then continue end
+
+            Part.CanQuery = false
+            Part.CanCollide = false
+
+            Part.Name = ObjName
+
             Part.Parent = Triggers
+        elseif MarkerObj.Type == 'Destructible' then
+            local PartList = {}
+
+            for _, Object in Map.Markers:GetChildren() do
+                if Object.Name == ObjName then
+                    table.insert(PartList, Object)
+                end
+            end
+
+            table.insert(MapData, {
+                Id = MarkerObj.Destructible_Id,
+                Parts = PartList,
+            })
         end
     end
+
+    return MapData
 end
 
 return MapLoader

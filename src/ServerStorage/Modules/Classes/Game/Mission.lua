@@ -66,7 +66,7 @@ function MissionClass.IsFinished(self: Types.MissionClass): boolean
     return self.__Is_Finished  ~= false
 end
 
-function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Players: {Types.StagePlayer}, Override_Replay)
+function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Players: {Types.StagePlayer}, Override_Replay, Trigger: BasePart?)
     local EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
     if EventData == nil then
         return
@@ -118,12 +118,12 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
         end
 
         local Is_Recursive = Next_Stage == Event
-        self:BeginEvent(Next_Stage, Players, Is_Recursive)
+        self:BeginEvent(Next_Stage, Players, Is_Recursive, Is_Recursive and Trigger or nil)
     end)
 
     self.__Current_Events[Event] = EventObject
 
-    EventObject:Start()
+    EventObject:Start(Trigger)
 
 end
 
@@ -150,7 +150,7 @@ function MissionClass.DetectAreaTriggers(self: Types.MissionClass)
                     end
 
                     if not ReachPlace then
-                        self:BeginEvent(Area.Name,{PlayersLibrary:GetFromAgent(Agent) :: Types.StagePlayer})
+                        self:BeginEvent(Area.Name, {PlayersLibrary:GetFromAgent(Agent) :: Types.StagePlayer}, false, Area)
                     end
                 end)
             end)

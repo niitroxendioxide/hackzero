@@ -13,6 +13,16 @@ local Ability = AbilityClass.new(true)
 
 function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: string)
 
+    Ability:Begin(Caster, {
+        {0, function()
+
+        end},
+
+        {0.25, function()
+
+        end},
+    })
+
 end
 
 return Ability

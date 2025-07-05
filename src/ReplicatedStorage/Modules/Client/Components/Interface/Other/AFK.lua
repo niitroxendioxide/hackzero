@@ -8,11 +8,9 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local Assets = ReplicatedStorage.Assets
-local World = workspace:FindFirstChild("World")
 
 local Types = require(Shared.Types)
 local Network = require(Shared.Network)
-local EffectUtil = require(Shared.Utility.Effects)
 local IconDatabase = require(Database.Icons)
 local ComponentClass = require(Client.Classes.Interface)
 

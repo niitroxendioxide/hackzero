@@ -46,6 +46,7 @@ return {
 		--
 		ClearPlayerData = 150,
 		PlayVisualEffect = 151,
+		SetColliderArea = 152,
 
 		--
 		CreateDestructible = 80,

@@ -78,6 +78,7 @@ export type PhysicsController = {
 	__MovementVelocity: Vector3,
 	__Moving: boolean,
 	__Forward_Velocities: {},
+	__Added_Colliders: {[{BasePart}]: boolean?},
 
 	__Collider: BasePart,
 
@@ -87,6 +88,7 @@ export type PhysicsController = {
 
 	CreateCollider: (self: PhysicsController) -> (),
 	GetCollider: (self: PhysicsController) -> BasePart,
+	SetColliderGroupState: (self: PhysicsController, Group: {}, State: boolean?) -> (),
 
 	PivotTo: (self: PhysicsController, PivotCFrame: CFrame) -> (),
 	GetPivot: (self: PhysicsController) -> CFrame,

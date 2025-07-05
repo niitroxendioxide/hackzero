@@ -5,7 +5,7 @@ local Players = game:GetService("Players")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
+local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local CharacterLibrary = require(Client.Libraries.Characters)
 local AgentClass = require(Client.Classes.Agent)
 local GameEnum = require(Shared.GameEnum)
@@ -163,17 +163,16 @@ function Controller:SyncVelocities(Buffer: buffer, V, LM, SV, MV)
 end
 
 function Controller:CharacterSwitch(Buffer: buffer)
-	local Direction = buffer.readi8(Buffer, 1)
+	local Index, Direction = Math:Decodeu2u6(Buffer, 1)
 	local UserId = buffer.readu8(Buffer, 2)
 	local EnemyTargetId = buffer.readu8(Buffer, 3)
 
 	local Previous = CharacterLibrary:GetCurrent(UserId)
 	local Moving = Previous:IsMoving()
-	local EnemyTarget =  EnemyTargetId > 0 and Enemies:GetEnemy( EnemyTargetId)
 
 	--local CFrameClient = Previous:GetPivot()
 
-	CharacterLibrary:Switch(UserId, Direction, EnemyTarget)
+	CharacterLibrary:SwitchToIndex(UserId, Index, Direction, EnemyTargetId)
 
 	if Moving then
 		local Current = CharacterLibrary:GetCurrent(UserId)

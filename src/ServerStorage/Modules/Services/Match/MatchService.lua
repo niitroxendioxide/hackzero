@@ -93,7 +93,7 @@ function Service:Begin(Stage: string, Act: string)
     end
 
     Targets:SetDifficulty('EASY')
-    Map:SetupMarkers(Data.Markers)
+    local Marker_Data = Map:SetupMarkers(Data.Markers)
 
     --
     local MissionClass = MissionClass.new(Stage, Act)
@@ -106,7 +106,7 @@ function Service:Begin(Stage: string, Act: string)
 
     Network:FireForAll("Match", GameEnum.MatchEvents.MatchBegin)
 
-    DestructibleService:SetupStage()
+    DestructibleService:SetupStage(Marker_Data)
 
     --
     MissionClass.Finished:Connect(function(State: boolean)

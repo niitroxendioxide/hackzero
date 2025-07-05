@@ -7,6 +7,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Types = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 local AgentTypes = require(Shared.Types.Agents)
 local Statics = require(Database.Statics)
 local AssistUtil = require(Shared.Utility.Assist)
@@ -40,7 +41,6 @@ function Characters:Switch(ReplicationId: number, Direction: number, EnemyTarget
 	Characters:Build(ReplicationId)
 
 	--
-	local IsLocal = Players.LocalPlayer:GetAttribute("ReplicationId") == ReplicationId
 	Direction = math.sign(Direction)
 
 	local CurrentCharacter = Characters:GetCurrent(ReplicationId)
@@ -73,31 +73,53 @@ function Characters:Switch(ReplicationId: number, Direction: number, EnemyTarget
 	end
 
 	local CurrentAgentDataId = Data.Active
+	local Result = Characters:HandleSwitchFor(ReplicationId, CurrentCharacter, NewCFrame, false, TargetObject ~= nil)
+
+	return Result, CurrentAgentDataId
+end
+
+function Characters:SwitchToIndex(RepId: number, Idx: number, Direction: number, EnemyTargetId: number?): boolean
+	local Data = Characters.__Player_Data[RepId]
+
+	local Previous = Characters:GetCurrent(RepId)
+	local TargetObject = EnemyTargetId and Enemies:GetEnemy(EnemyTargetId)
+	local NewCFrame = AssistUtil:CalculateSwitchCFrame(Data.List[Data.Active], 1, TargetObject)
+
+	Data.Active = Idx
+
+	--
+	local Result = Characters:HandleSwitchFor(RepId, Previous, NewCFrame, true, TargetObject ~= nil)
+
+	return Result
+end
+
+function Characters:HandleSwitchFor(RepId: number, Previous: Types.AgentClass, At: CFrame, Snap: boolean?, HasTarget: boolean?)
+	local Data = Characters.__Player_Data[RepId]
 
 	Data.Last_Anim = Data.Last_Anim == 1 and 2 or 1
 
-	if Players.LocalPlayer:GetAttribute("ReplicationId") == ReplicationId then
+	if Players.LocalPlayer:GetAttribute("ReplicationId") == RepId then
 		InterfaceStates.Characters:set(Data)
 	end
 
 	--
-	local NewCharacter = Characters:GetCurrent(ReplicationId)
-	if CurrentCharacter == NewCharacter then
+	local NewCharacter = Characters:GetCurrent(RepId)
+	if Previous == NewCharacter then
 		return false
 	end
 
-	CurrentCharacter:SetVisible(false)
+	Previous:SetVisible(false)
 
 	local Animator = NewCharacter:GetAnimator()
-	NewCharacter:PivotTo(NewCFrame, not IsLocal)
+	NewCharacter:PivotTo(At, Snap)
 	NewCharacter:SetVisible(true)
 
-	if not TargetObject then
+	if not HasTarget then
 		Animator:Play('Dash'..(Data.Last_Anim == 2 and 'Right' or 'Left'), {Name = 'Dash', Speed = 1.25})
-		NewCharacter:ApplyImpulse(NewCFrame.LookVector * 75)
+		NewCharacter:ApplyImpulse(At.LookVector * 75)
 	end
 
-	return true, CurrentAgentDataId
+	return true
 end
 
 function Characters:Add(ReplicationId: number, Character: AgentTypes.AgentClass)
@@ -112,6 +134,10 @@ function Characters:Add(ReplicationId: number, Character: AgentTypes.AgentClass)
 	end
 
 	table.insert(Data.List, Character)
+
+	--[[table.sort(Data.List, function(a, b)
+		return a.Name > b.Name
+	end)]]
 
 	if Players.LocalPlayer:GetAttribute("ReplicationId") == ReplicationId then
 		InterfaceStates.Characters:set(Data)

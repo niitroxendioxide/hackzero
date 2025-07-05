@@ -22,7 +22,7 @@ function CharacterClass.new(Character: string)
 		elseif key == 'Humanoid' then
 			return rawget(self, '__Appearance').__Model:FindFirstChild('Humanoid')
 		end
-		
+
 		return CharacterClass[key]
 	end,})
 	self.__Tags = {}
@@ -30,9 +30,9 @@ function CharacterClass.new(Character: string)
 	self.__States = States.new(Character)
 	self.__Controller = Physics.new(self.__States)
 	self.__Animator = Animator.new(self, Character)
-	
+
 	self.Name = Character
-	
+
 	return self
 end
 
@@ -50,9 +50,9 @@ end
 
 function CharacterClass:Init()
 	self.__Controller:Run()
-	
+
 	self.__Appearance:JoinTo(self.__Controller:GetCollider())
-	
+
 	self.__Animator:Init()
 end
 
@@ -88,7 +88,7 @@ function CharacterClass:PivotTo(At: CFrame, IgnoreModel: boolean?): ()
 	if not IgnoreModel then
 		self.__Appearance.__Model:PivotTo(At)
 	end
-	
+
 	return self.__Controller:PivotTo(At)
 end
 
@@ -97,13 +97,13 @@ function CharacterClass:Look(Direction: Vector3, ...)
 	if Direction.Magnitude <= 0 then
 		return
 	end
-	
+
 	return self.__Controller:Rotate(Direction, ...)
 end
 
 function CharacterClass:SetVisible(State: boolean?)
 	State = if State == nil then not self.__Appearance.__Visible else State
-	
+
 	return self.__Appearance:SetVisible(State)
 end
 
@@ -116,12 +116,10 @@ function CharacterClass:IsMoving(): ()
 end
 
 function CharacterClass:Destroy()
-	
 	self.__States:Destroy()
 	self.__Animator:Destroy()
 	self.__Controller:Destroy()
 	self.__Appearance:Destroy()
-	
 end
 
 function CharacterClass:AddEffect(...)

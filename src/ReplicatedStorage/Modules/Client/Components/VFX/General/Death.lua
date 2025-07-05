@@ -45,18 +45,20 @@ return function(Enemy: Types.EnemyClass)
 
 	--
 	local Highlight = Instance.new('Highlight')
+	Highlight.DepthMode = Enum.HighlightDepthMode.Occluded
 	Highlight.Parent = Duplicate
 	Highlight.FillColor = Color3.new(1,1,1)
+	Highlight.OutlineColor = Color3.new(1, 1, 1)
 	Highlight.FillTransparency = 1
 	Highlight.OutlineTransparency = 1
-	
+
 	Effects:Tween(Highlight, {.15}, {FillTransparency = 0, OutlineTransparency = 0})
-	
+
 	task.wait(.25)
 	Highlight:Destroy()
-	
+
 	local DeathEffect = Effects:Create(Assets.Effects.General.Combat.Death, 2.5)
 	DeathEffect:PivotTo(At)
-	
+
 	Effects:Emit(DeathEffect)
 end

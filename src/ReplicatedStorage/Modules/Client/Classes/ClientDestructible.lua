@@ -28,7 +28,7 @@ type ClientDestructible = {
 
 local function CreateColliderAt(Position: Vector3, Size: Vector3)
     local Newpart = Instance.new("Part")
-    Newpart.Position = Position
+    Newpart.Position = Position + (Vector3.yAxis * Size.Y/2)
     Newpart.Size = Size
     Newpart.Anchored = true
     Newpart.CanCollide = true

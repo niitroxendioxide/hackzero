@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
@@ -165,14 +166,23 @@ function Replicator:SyncVelocities(Player: Player, Target: Player, ...)
 	Network:Fire('Replicate', Target, Object, ...)
 end
 
-function Replicator:CharacterSwitch(Player: Player, Direction: number, TargetId: number)
+function Replicator:CharacterSwitch(Player: Player, Index: number, Direction: number, TargetId: number)
 	local Object = buffer.create(4)
 	buffer.writeu8(Object, 0, GameEnum.Replication.CharacterSwitch)
-	buffer.writei8(Object, 1, Direction)
+	Math:Encodeu2u6(Index, Direction, Object, 1)
 	buffer.writeu8(Object, 2,  Player:GetAttribute("ReplicationId") :: number)
 	buffer.writeu8(Object, 3, TargetId or 0)
 
 	Network:FireForAllBut(Player, 'Replicate', Object)
+end
+
+function Replicator:SetColliderArea(Player: Player, State: boolean, Trigger)
+	local Object = buffer.create(3)
+	buffer.writeu8(Object, 0, GameEnum.Replication.SetColliderArea)
+	buffer.writeu8(Object, 1, State and 1 or 0)
+	buffer.writeu8(Object, 2, Player:GetAttribute("ReplicationId") :: number)
+
+	Network:FireForAll("ReliableReplication", Object, Trigger)
 end
 
 function Replicator:AddEffect(Agent: AgentTypes.ServerAgentClass, EffectParameters: AgentTypes.EffectParameters)

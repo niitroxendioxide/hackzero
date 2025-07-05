@@ -41,7 +41,7 @@ end
 
 function PlayersLibrary:GetFromAgent(Agent: AgentTypes.ServerAgentClass): Types.StagePlayer?
     for _, Player in PlayersLibrary.__Cache do
-        if Player:GetBase().UserId == Agent.__User then
+        if Player:GetBase() == Agent.__Player_Assigned then
             return Player
         end
     end

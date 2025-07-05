@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local ArtifactsFetcher = require(ServerStorage.Modules.Libraries.ArtifactsFetcher)
 local Movesets = require(ServerStorage.Modules.Libraries.Movesets)
+local Ping = require(ServerStorage.Modules.Libraries.Ping)
 local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
 local Types = require(Shared.Types.Agents)
 local CharacterDatabase = require(Shared.Database.Characters)
@@ -53,6 +54,10 @@ function ServerAgentClass.new(Name: string, Level: number, Skills: {}): Types.Se
 	return self
 end
 
+function ServerAgentClass.SetColliderGroupEnabled(self: Types.ServerAgentClass, Group: {}, State: boolean)
+	return self.__Character:SetColliderGroupState(Group, State)
+end
+
 function ServerAgentClass.GetSkillLevel(self: Types.ServerAgentClass, SkillName: string)
 	return (self.__Skill_Levels[SkillName] or 0)
 end
@@ -78,6 +83,7 @@ function ServerAgentClass:ImpulseForward(Power: number, Time: number)
 end
 
 function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.ServerAgentClass, Time: number)
+	local Ping = Ping:Get(self.__Player_Assigned)
 	local CurrentSkill = self:GetCurrentSkill()
 	if CurrentSkill then
 		local Moveset = Movesets:Get(self.Name)
@@ -86,7 +92,8 @@ function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.Server
 	end
 
 	self.__Last_Hit_Time = os.clock()
-	self:SwitchState('Stunned', Time)
+
+	task.delay(Ping / 2, self.SwitchState, self, "Stunned", Time)
 
 	Replicator:HitAgent(self, Time)
 end
@@ -277,10 +284,10 @@ function ServerAgentClass:GetState()
 end
 
 function ServerAgentClass:SwitchState(State: string, Time: number, Unaffected: boolean?)
-	local Path = string.split(debug.info(2, "s"), '.')
-	local Skill = Path[#Path]
-
 	if State == 'Attacking' then
+		local Path = string.split(debug.info(2, "s"), '.')
+		local Skill = Path[#Path]
+
 		self.__Character.States:SetCurrentSkill(Skill)
 
 		if self.__Skill_Thread then

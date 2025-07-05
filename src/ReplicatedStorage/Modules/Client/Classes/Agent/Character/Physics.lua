@@ -10,15 +10,28 @@ local Types = require(Shared.Types)
 --local Signal = require(Shared.Utility.Signal)
 
 --
-local function CastAround(Origin: CFrame, Size: number): RaycastResult?
-	local RayCount = 6
-	local Wide = math.rad(60)
-	local Params = World:GetCollisionParams() :: RaycastParams
-	for i = 1, RayCount do
-		local Angle = -Wide * 0.75 + ((Wide * 0.75) / RayCount * i)
+local function CastAround(Origin: CFrame, Size: number, Blocks: {}): RaycastResult?
+	local RayCount = 8
+	local Wide = math.rad(80)
+	local Params = World:GetCollisionParams(nil, Blocks) :: RaycastParams
+	for i = 0, RayCount do
+		local Angle = -(Wide * 0.5) + (Wide / RayCount) * i
 		local Direction = (Origin * CFrame.Angles(0, Angle, 0)).LookVector * 2.5
+		local Result = workspace:Spherecast(Origin.Position, 1.75, Direction, Params)
 
-		local Result = workspace:Spherecast(Origin.Position, 1.75, Direction, Params)--workspace:Spherecast(Origin.Position, 1, Direction, Params)
+		if workspace:GetAttribute("DebugMovement") then
+			local Part = Instance.new("Part")
+			Part.Color = Result and Color3.new(0, 1) or Color3.new(1)
+			Part.Anchored = true
+			Part.CanCollide = false
+			Part.CanQuery = false
+			Part.Size = Vector3.new(0.1, 0.1, 5)
+			Part.CFrame = CFrame.lookAlong(Origin.Position, Direction.Unit) * CFrame.new(0, 0, -2.5)
+			Part.Parent = workspace.World.Effects
+
+			task.delay(1/60, Part.Destroy, Part)
+		end
+
 		if Result then
 			return Result
 		end
@@ -54,6 +67,7 @@ function PhysicsClass.new(States: Types.StatesClass, Height: number): Types.Phys
 	self.__MovementAcceleration = 0
 	self.__Linear_Movements = {}
 	self.__Forward_Velocities = {}
+	self.__Added_Colliders = {}
 
 	-- >>
 
@@ -80,6 +94,14 @@ function PhysicsClass:Run()
 
 		self:Update(Delta)
 	end)
+end
+
+function PhysicsClass.SetColliderGroupState(self: Types.PhysicsController, Group: {}, State: boolean?)
+	if State ~= true then
+		State = nil
+	end
+
+	self.__Added_Colliders[Group] = State
 end
 
 function PhysicsClass:Pause()
@@ -231,8 +253,8 @@ function PhysicsClass:Update(Delta: number)
 		local Moved = (TotalDisplacement * CurrentWorldSpeed * Delta)
 
 		local Extra = math.atan(self.__Normal:Dot(Vector3.yAxis)) + World.StepHeight
-		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams():: RaycastParams)
-		local Collision = CastAround(Origin, Collider.Size.Z)
+		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams(false, self.__Added_Colliders):: RaycastParams)
+		local Collision = CastAround(Origin, Collider.Size.Z, self.__Added_Colliders)
 
 		if CanReachFloor and (CanReachFloor.Position.Y - (self.__Position.Y - self.__Height)) < World.StepHeight then
 			if not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1 then
@@ -240,7 +262,7 @@ function PhysicsClass:Update(Delta: number)
 			elseif Collision then
 				local ProjectedMovement = TotalDisplacement - TotalDisplacement:Dot(Collision.Normal) * Collision.Normal
 
-				local Params = World:GetCollisionParams() :: RaycastParams
+				local Params = World:GetCollisionParams(nil, self.__Added_Colliders) :: RaycastParams
 				local Result = workspace:Raycast(Origin.Position, ProjectedMovement.Unit * 3, Params)--workspace:Spherecast(Origin.Position, 1, Direction, Params)
 				if not Result then
 					self.__Position += ProjectedMovement * CurrentWorldSpeed * Delta
@@ -249,7 +271,7 @@ function PhysicsClass:Update(Delta: number)
 		end
 	end
 
-	local Cast = workspace:Raycast(self:GetPivot().Position, Vector3.yAxis * -100, World:GetMapParams() :: RaycastParams)
+	local Cast = workspace:Raycast(self:GetPivot().Position, Vector3.yAxis * -100, World:GetMapParams(false, self.__Added_Colliders) :: RaycastParams)
 	if Cast then
 		self.__Normal = Cast.Normal
 		self.__SurfaceVelocity = Cast.Instance.AssemblyLinearVelocity

@@ -40,6 +40,11 @@ return {
                     Type = 'Trigger',
                     Name = 'Harder_Area',
                 },
+
+                ['CrystalDestructible'] = {
+                    Type = "Destructible",
+                    Destructible_Id = "Crystals",
+                }
             },
 
             Guide = {

@@ -8,7 +8,6 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Types = require(Shared.Types)
-local Inputs = require(Client.Libraries.Inputs)
 
 --
 local Controller = {

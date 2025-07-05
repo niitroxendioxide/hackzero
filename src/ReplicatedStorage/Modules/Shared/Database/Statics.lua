@@ -134,5 +134,5 @@ return {
 			SAME_ATTACKER = 1.25,
 			DIFFERENT_ATTACKER = 1,
 		},
-	}
+	},
 }

@@ -269,7 +269,7 @@ function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: n
         for _, Name in AgentsToTest do
             table.insert(Converted, {
                 Name = Name,
-                Level = 60,
+                Level = settings.BORROWED_AGENT_LEVEL,
                 IsBorrowed = true,
             })
         end
