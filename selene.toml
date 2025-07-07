@@ -2,7 +2,7 @@ std = "roblox"
 
 [rules]
 global_usage = "allow"
-
+ 
 
 [files]
 exclude = ["**/ProfileStore.lua"]

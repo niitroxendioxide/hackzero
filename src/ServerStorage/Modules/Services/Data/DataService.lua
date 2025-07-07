@@ -20,7 +20,7 @@ local Clock = require(Shared.Utility.Clock)
 
 local ProfileTemplate = require(Database.Data.ProfileTemplate)
 local CharacterDatabase = require(Database.Characters)
-
+ 
 local PlayerItemDataClass = require(Classes.Data.PlayerItemData)
 local PlayerAgentDataClass = require(Classes.Data.PlayerAgentData)
 local PlayerDriveDataClass = require(Classes.Data.PlayerDriveData)
@@ -37,6 +37,7 @@ local Service = {
     __Artifacts = {},
     __Drives = {},
     __Items = {},
+
 }
 
 local function RecursiveSearch(Data: {}, Key: string): ({}, string)
