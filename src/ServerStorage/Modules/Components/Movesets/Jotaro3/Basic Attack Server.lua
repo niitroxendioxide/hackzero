@@ -22,6 +22,8 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 	local StandSummoned = Caster:GetEffect('StandSummoned')
 	local IsStand = (M1_Count >= 4 or StandSummoned)
 
+	--Caster:UpdateMeter('Stand', 100)
+
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time', M1_Count) / Ability:FromData('Speed'))

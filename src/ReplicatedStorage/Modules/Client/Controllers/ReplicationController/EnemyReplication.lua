@@ -86,7 +86,6 @@ function Controller:StateSwitchEnemy(Buffer: buffer)
 
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	if not Enemy then
-		print(`Enemy [{EnemyId}] does not exist.`)
 		return
 	end
 

@@ -12,8 +12,9 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.GenericClass): ()
-	Ability:Increase(Caster, 'Count', {Limit = 5})
+	Ability:Increase(Caster, 'Count', {Limit = 4})
 	local M1_Count = Ability:Get(Caster, 'Count')
+	print(M1_Count)
 
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 
@@ -27,8 +28,11 @@ function Ability:Play(Caster: Types.GenericClass): ()
 			Caster:Walk(Ability:FromData("Walk_Time"))
 		end,},
 
-		{.17, function()
-			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.ServerEnemyClass)
+		{Ability:FromData("Hit_Times", M1_Count), function()
+			local Size = M1_Count == 4 and Vector3.one * 10 or Vector3.one*5
+			local Offset = M1_Count == 4 and Vector3.zero or Vector3.zAxis * -3
+
+			Ability:CreateHitbox(Caster, Offset, Size, function(Target: Types.ServerEnemyClass)
 				Ability:Hit(Caster, Target, {
 					Damage = Ability:FromData('Damage_Mult', M1_Count, SkillLevel),
 					Affliction = 'Physical',

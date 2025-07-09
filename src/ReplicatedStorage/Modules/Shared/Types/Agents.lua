@@ -257,6 +257,7 @@ export type ServerAgentClass = {
 	__Skill_Levels: SkillLevels,
 	__Last_Skill_Cast: number,
 	__Last_Hit_Time: number,
+	__Last_Hit_Caster: number,
 	__Current_Target: {Data: AssistStruct, Thread: thread}?,
 	__Gear: ServerGearManager,
 

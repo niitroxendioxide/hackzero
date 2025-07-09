@@ -21,7 +21,7 @@ function Ability:Play(Caster: Types.AgentClass)
 
 	Animator:Play('Dash'..(Ability:Get(Caster, 'Side') == 1 and 'Right' or 'Left'), {Name = 'Dash'})
 	Caster:SwitchState('Dashing', .3)
-	Caster:ImpulseForward(75, 0.33)
+	Caster:ImpulseForward(35, 0.33)
 end
 
 return Ability

@@ -31,7 +31,7 @@ end
 
 function StatusClass.Update(self: Types.AgentStatusClass, delta: number)
 	local Energy_Regen_Rate = self:GetStat('Energy_Regeneration')
-	local Boost_Rate = (1 + self:GetStatEffects('Energy_Regeneration')) * (RunService:IsStudio() and 10 or 1)
+	local Boost_Rate = (1 + self:GetStatEffects('Energy_Regeneration')) * (RunService:IsStudio() and 50 or 1)
 
 	self:GiveEnergy(Boost_Rate * Energy_Regen_Rate * delta)
 end

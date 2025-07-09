@@ -109,16 +109,26 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	local AllAgents = AgentLibrary:GetAlive(ReplicationId)
 	local CurId = table.find(AllAgents, CasterAgent)
 	local AgentToSwitch = CurId + 1 > 3 and AllAgents[1] or AllAgents[CurId + 1]
+	local AgentPerpetratorId = CasterAgent.__Last_Hit_Caster
+
+	if AgentPerpetratorId == nil then
+		return
+	end
+
+	local EnemyExists = Enemies:GetEnemy(AgentPerpetratorId)
+	if not EnemyExists or AgentToSwitch == CurId then
+		return
+	end
 
 	--
 	local Player = CasterAgent.__Player_Assigned
-	local Prompt = CasterAgent:MarkTarget(1, Time)
-	Replicator:PromptAssist(Player, AgentToSwitch, Time, 1)
+	local Prompt = CasterAgent:MarkTarget(AgentPerpetratorId, Time)
+	Replicator:PromptAssist(Player, AgentToSwitch, Time, AgentPerpetratorId)
 
 	Prompt.Accepted:Once(function()
 		CasterAgent:MarkTarget(nil)
 
-		Service:PlaySkill(Player, GameEnum.Skills.Quick_Assist, 1, 1)
+		Service:PlaySkill(Player, GameEnum.Skills.Quick_Assist, AgentPerpetratorId, 1)
 	end)
 end
 
@@ -172,6 +182,13 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 		end
 
 		if StateId == GameEnum.AbilityStates.Begin then
+			if not Moveset:HasSkill(Skill) and SpacelessSkill == "Dodge" then
+				print("Using template dodge :3")
+				MovesetLibrary:RunFromTemplate("Dodge", ActiveAgent)
+
+				return
+			end
+
 			Moveset:Begin(Skill, ActiveAgent, {Target = Enemy})
 		elseif StateId == GameEnum.AbilityStates.End then
 			Moveset:Release(Skill, ActiveAgent)

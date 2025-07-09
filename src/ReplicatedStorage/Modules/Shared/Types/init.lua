@@ -146,6 +146,7 @@ export type StatesClass = {
 	__Character: string,
 	__Keys: {Running: boolean, Sprinting: boolean},
 	__State: State,
+	__Last_Change: number,
 
 	GetKey: (self: StatesClass, Key: string) -> boolean,
 	SetKey: (self: StatesClass, Key: string, State: boolean) -> (),

@@ -61,7 +61,9 @@ function CharacterClass:GetState()
 end
 
 function CharacterClass:Move()
-	return self.__Controller:SetMovementVelocity(self:GetMovementSpeed())
+	local Speed = self:GetMovementSpeed()
+
+	return self.__Controller:SetMovementVelocity(Speed)
 end
 
 function CharacterClass:Stop()

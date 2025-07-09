@@ -65,6 +65,12 @@ function Controller:UseSkill(Buffer: buffer)
 	end
 
 	if State == 'Begin' then
+		if not CharacterMoveset:HasSkill(Key) and Key == "Dodge" then
+			Movesets:RunFromTemplate(Key, ActiveAgent, {IsSignal = true})
+
+			return
+		end
+
 		CharacterMoveset:Begin(Key, ActiveAgent, {IsSignal = true})
 	elseif State == "End" then
 		CharacterMoveset:Release(Key, ActiveAgent, {IsSignal = true})
@@ -78,10 +84,9 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 	local RepId = buffer.readu8(Buffer, 2) -- use this for yk.. the stuff!
 
 	if Colliders[TriggerObject] then
-
-		if State then
+		if not State then
 			for _, Agent in Characters:GetCharacters(RepId) do
-				Agent:SetColliderGroupEnabled(Colliders[TriggerObject], nil)
+				Agent:SetColliderGroupEnabled(Colliders[TriggerObject], false)
 			end
 
 			for _, Obj in Colliders[TriggerObject] do
@@ -91,6 +96,10 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 			Colliders[TriggerObject] = nil
 		end
 
+		return
+	end
+
+	if not TriggerObject then
 		return
 	end
 
@@ -376,7 +385,7 @@ function Controller:HitAgent(Buffer: buffer)
 
 	--
 	local HitTracks = Assets.Animations.General.Hit:GetChildren()
-	Animation:Play(AgentObject:GetModel(), HitTracks[math.random(1, #HitTracks)])
+	--Animation:Play(AgentObject:GetModel(), HitTracks[math.random(1, #HitTracks)])
 end
 
 

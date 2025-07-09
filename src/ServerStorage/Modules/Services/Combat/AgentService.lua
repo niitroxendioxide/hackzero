@@ -69,11 +69,6 @@ function Service:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClas
 	end
 
 	table.insert(Data.Characters, AgentClass)
-
-	--[[table.sort(Data.Characters, function(a, b)
-		return a.Name > b.Name
-	end)]]
-
 	--
 	Replicator:AddAgent(Player, AgentClass, Target)
 	AgentLibrary:Add(Player:GetAttribute("ReplicationId") :: number, AgentClass)
@@ -194,8 +189,9 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 	local WasMoving = Previous:IsMoving()
 
 	--
-	local MarkedAgentStruct = New:GetMarkedTarget()
+	local MarkedAgentStruct = Previous:GetMarkedTarget()
 	local Target = IsNext and MarkedAgentStruct ~= nil and Enemies:GetEnemy(MarkedAgentStruct.TargetId) or nil
+
 	local CharacterCFrame = AssistUtil:CalculateSwitchCFrame(Previous, Direction, Target)
 
 	Data.Active = AgentIndex
@@ -210,7 +206,7 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 
 	if not Target then
 		New:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, Statics.Dodge_Active_Time)
-		New:ApplyImpulse(New:GetPivot().LookVector * 75)
+		New:ApplyImpulse(New:GetPivot().LookVector * Statics.Switch_Character_Dash_Strength)
 	end
 
 	if WasMoving then

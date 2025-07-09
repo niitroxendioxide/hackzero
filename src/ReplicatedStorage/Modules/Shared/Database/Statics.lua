@@ -110,7 +110,12 @@ return {
 	Dodge_Invulnerability_Time = 0.5,
 	Dodge_Counter_React_Time = 0.75,
 
+	Switch_Character_Dash_Strength = 35,
+
 	--
+	Dash_Speed_Buff = 0.5,
+	Dash_Speed_Buff_Vanish_Time = 1,
+
 	Assist_Counter_Invulnerability_Time = 0.75,
 
 	--

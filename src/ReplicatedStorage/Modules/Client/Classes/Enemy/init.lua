@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Enemies = require(ReplicatedStorage.Modules.Shared.Database.Enemies)
 local ClockUtil = require(Shared.Utility.Clock)
 
 local EnemyStatus = require(Shared.Classes.Enemy.EnemyStatus)
@@ -22,12 +23,13 @@ EnemyClass.__tostring = function(_)
 end
 
 function EnemyClass.new(At: Vector3, Name: string, Level: number): Types.EnemyClass
+	local EnemyDBData = Enemies:GetEnemyData(Name)
 	local self = setmetatable({}, EnemyClass)
 	self.Name = Name or 'EnemyTemplate'
 
 	--
 	self.__Status = EnemyStatus.new(self.Name, Level)
-	self.__Movement = MovementClass.new(At)
+	self.__Movement = MovementClass.new(At, nil, EnemyDBData.Appearance.Height)
 	self.__Animator = AnimatorClass.new(self, self.Name)
 	self.__Appearance = AppearanceClass.new(self.Name)
 	self.__EnemyId = 0

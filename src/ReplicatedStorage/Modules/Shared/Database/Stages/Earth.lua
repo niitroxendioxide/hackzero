@@ -65,8 +65,8 @@ return {
                         ['KillEnemies'] = 10,
                     },
                     Enemies = {
-                        [1] = {'Saiyan', 3, 1, 'Saiyan', 2, 3},
-                        [2] = {'Saiyan', 4, 5, 'Boss', 1, 5},
+                        [1] = {'Saiyan', 3, 1, 'Saiyan', 2, 1},
+                        [2] = {'Saiyan', 4, 2, 'Boss', 1, 2},
                     },
 
                     Finished = function()

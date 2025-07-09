@@ -41,18 +41,25 @@ return {
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = .05,
-				Speed = 1.15,
+				Speed = 1.25,
 
 				Attack_State_Time = {
-					.3 ,
-					.3,
-					.3,
-					.3,
+					.63 ,
+					.525,
+					.67,
+					1.3,
 					1,
 				},
-				Animation_Speed = 1.15,
+				Animation_Speed = 1.25,
 
-				Walk_Time = 0.133,
+				Hit_Times = {
+					0.4,
+					0.233,
+					0.617,
+					0.85
+				},
+
+				Walk_Time = 0.3,
 				Forward_Impulse = 10,
 
 				Knockback_Direction = Vector3.new(0, 0, 1),
@@ -106,7 +113,7 @@ return {
 				Speed = 1,
 
 				Required_Energy = 60,
-				Walk_Time = 0.183,
+				Walk_Time = 0.3,
 
 				Attack_State_Time = 0.5,
 				Animation_Speed = 1,
@@ -121,7 +128,7 @@ return {
 				DontConsumeEnergy = true,
 				Release = true,
 				Hit_Frequency = 14/60,
-				Walk_Time = 2/60,
+				Walk_Time = 5/60,
 				Energy_Per_Hit = 3,
 
 				Damage_Mult = 248,

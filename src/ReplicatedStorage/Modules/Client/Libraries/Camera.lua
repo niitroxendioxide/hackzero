@@ -23,12 +23,13 @@ local Settings = {
 local Camera = {
 	__Rotation = Vector2.zero,
 	__Position = Vector3.zero,
-	__Zoom = 15,
+	__Zoom = 22,
 	__Track_Type = 1,
 	__Subject = nil,
 	__Inited = false,
 	__UsedBy = nil,
 	__Target_Part = "Head",
+	__Focused = true,
 }
 
 function Camera:RotateTo(GivenCFrame: CFrame)
@@ -49,7 +50,15 @@ function Camera:Init()
 
 	end)
 
-	UserInputService.InputChanged:Connect(function(_, Gp)
+	UserInputService.WindowFocusReleased:Connect(function()
+		Camera.__Focused = false
+	end)
+
+	UserInputService.WindowFocused:Connect(function()
+		Camera.__Focused = true
+	end)
+
+	UserInputService.InputChanged:Connect(function(Input, Gp)
 		if Gp then
 			return
 		end
@@ -81,22 +90,27 @@ function Camera:Update(delta: number)
 	end
 
 	local Model = Camera.__Subject
+	if not Camera.__Focused then
+		workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+
+		return
+	end
 
 	local CameraObject = workspace.CurrentCamera
 	local CameraRotation = CFrame.Angles(0, -Camera.__Rotation.X, 0) * CFrame.Angles(-Camera.__Rotation.Y, 0, 0)
 	local CameraPosition;
 
-	if Camera.__Track_Type == 1 then
-		CameraPosition = Model:FindFirstChild(self.__Target_Part).Position + Settings.Offset
-	else
+	--if Camera.__Track_Type == 1 then
+		--CameraPosition = Model:FindFirstChild(self.__Target_Part).Position + Settings.Offset
+	--else
 		local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
 		local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
 		local Goal = Vector3.new(Root.X, Torso:Lerp(Root, 0.5).Y, Root.Z)
 
 		CameraPosition = Goal + Settings.Offset
-	end
+	--end
 
-	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * 14)
+	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * 24)
 
 	local CameraCFrame = CFrame.lookAlong(Camera.__Position, CameraRotation.LookVector) * CFrame.new(0, 0, Camera.__Zoom)
 

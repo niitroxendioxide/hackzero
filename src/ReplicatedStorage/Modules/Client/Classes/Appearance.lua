@@ -43,6 +43,10 @@ function AppearanceClass.new(ModelName: string): Types.AppearanceController
 	for _, Child: Instance in self.__Model:GetDescendants() do
 		if Child:IsA('BasePart') or Child:IsA('Texture') or Child:IsA('Decal') then
 			self.__TransparencyValues[Child] = Child.Transparency
+
+			if Child:IsA("BasePart") then
+				Child.CollisionGroup = "Characters"
+			end
 		end
 	end
 

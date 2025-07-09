@@ -38,7 +38,7 @@ function Controller:Replicate(Action: number, ...)
 	elseif Action == GameEnum.Replication.Rotate then
 		local Rotation = Args[1]
 
-		if Rotation == Controller.__LastRotationValue or (Rotation - Controller.__LastRotationValue).Magnitude < 0.005 then
+		if Rotation == Controller.__LastRotationValue then
 			return
 		end
 

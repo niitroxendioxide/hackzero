@@ -14,7 +14,7 @@ function World:GetSpeed(): number
 end
 
 function World:GetAirFriction(): number
-	return 20
+	return 7
 end
 
 function World:GetMapParams(Overlap: boolean?, Groups: {[{BasePart}]: boolean?}?): OverlapParams | RaycastParams

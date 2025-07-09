@@ -14,7 +14,7 @@ local Ability = AbilityClass.new()
 function Ability:Play(Caster: Types.ServerAgentClass): ()
 	--
 	Caster:SwitchState('Dashing', .15)
-	Caster:ImpulseForward(75, 0.33)
+	Caster:ImpulseForward(35, 0.33)
 end
 
 return Ability

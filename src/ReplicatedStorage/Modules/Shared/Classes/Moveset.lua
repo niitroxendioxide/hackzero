@@ -159,11 +159,21 @@ function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass)
 	return false;
 end
 
+function MovesetClass:HasSkill(Type: string)
+	Type = Type:gsub('_', ' ')
+
+	if not self.__Assigned[Type] then
+		return false
+	end
+
+	return true
+end
+
 function MovesetClass:Verify(Agent: AgentTypes.AgentClass, Type: string)
 	local Info = self:GetInfoForSkill(Type)
 	local CooldownKey = self.Name..Type..Agent.Name..Agent:GetId()
 
-	if Agent:GetState() ~= 'Idle' and not(Info.AllowedStates and Info.AllowedStates[Agent:GetState()]) then
+	if not string.match(Type, "Swap") and (Agent:GetState() ~= 'Idle' and not(Info.AllowedStates and Info.AllowedStates[Agent:GetState()])) then
 		return false
 	end
 

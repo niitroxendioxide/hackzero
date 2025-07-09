@@ -13,12 +13,13 @@ local DEBUG_ENEMY_POSITIONS = false
 local EnemyMovement = {}
 EnemyMovement.__index = EnemyMovement
 
-function EnemyMovement.new(At: Vector3, Speed: number?)
+function EnemyMovement.new(At: Vector3, Speed: number?, Height: number?)
 	local self = setmetatable({}, EnemyMovement)
 	self.__Position = At or Vector3.zero
 	self.__Looking = Vector3.zAxis
 	self.__Direction = Vector3.zero
 	self.__Target = nil
+	self.__Height = Height or 3.15
 	self.__Speed = Speed or 6
 	self.__World_Speed = 1
 	self.__Moved_in_last_step = false
@@ -154,7 +155,7 @@ function EnemyMovement:Update(Delta: number)
 
 	local Cast = workspace:Raycast(self.__Position, Vector3.yAxis * -100, World:GetEntityMapParams(false) :: RaycastParams)
 	if Cast then
-		self.__Position = Cast.Position + Vector3.yAxis * 3.15
+		self.__Position = Cast.Position + Vector3.yAxis * self.__Height
 	end
 
 	if self.__Collider then

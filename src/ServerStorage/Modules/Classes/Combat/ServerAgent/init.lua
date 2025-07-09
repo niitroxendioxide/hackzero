@@ -82,7 +82,7 @@ function ServerAgentClass:ImpulseForward(Power: number, Time: number)
 	return self.__Character:ApplyForwardImpulse(Power, Time)
 end
 
-function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.ServerAgentClass, Time: number)
+function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.Enemy, Time: number)
 	local Ping = Ping:Get(self.__Player_Assigned)
 	local CurrentSkill = self:GetCurrentSkill()
 	if CurrentSkill then
@@ -91,6 +91,7 @@ function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.Server
 		Moveset:CancelSkill(CurrentSkill, self, {ClientInstruction = true})
 	end
 
+	self.__Last_Hit_Caster = Caster:GetId()
 	self.__Last_Hit_Time = os.clock()
 
 	task.delay(Ping / 2, self.SwitchState, self, "Stunned", Time)
@@ -254,9 +255,8 @@ end
 
 function ServerAgentClass.Walk(self: Types.ServerAgentClass, Time: number)
 	local Speed = self.__Character.States:GetSpeed(true)
-	local Direction = self:GetPivot().LookVector * Speed
 
-	return self.__Character:AddLinearMovement(Direction, Time)
+	return self:ImpulseForward(Speed * 1.5, Time)
 end
 
 function ServerAgentClass:GetPivot(...)

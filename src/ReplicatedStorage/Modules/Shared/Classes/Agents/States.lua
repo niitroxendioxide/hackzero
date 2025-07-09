@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Types = require(Shared.Types)
 local Characters = require(Database.Characters)
 local GameEnum = require(Shared.GameEnum)
@@ -21,6 +22,8 @@ function StatesClass.new(Character: string): Types.StatesClass
 	self.__Threads = {}
 	self.__Last_Change = os.clock()
 	self.__Current_Skill = ''
+	self.__Current_State_Max_Time = 0.001
+	self.__Last_Dash_State = os.clock()
 
 	self.__Keys = {
 		Sprint = false,
@@ -45,7 +48,7 @@ end
 function StatesClass:GetVelocityMod(): number
 	local Mod =  math.clamp((os.clock() - self.__Last_Change) / 0.3, 0, 1)
 
-	return Mod
+	return 1--Mod
 end
 
 function StatesClass:Switch(State: string, Time: number)
@@ -60,6 +63,7 @@ function StatesClass:Switch(State: string, Time: number)
 	end
 
 	self.__State = State
+	self.__Current_State_Max_Time = Time
 	if self.__State ~= 'Dashing' then
 		self.__Last_Change = os.clock()
 	end
@@ -68,6 +72,8 @@ function StatesClass:Switch(State: string, Time: number)
 		self.__State = 'Idle'
 		if State ~= 'Dashing' then
 			self.__Last_Change = os.clock()
+		else
+			self.__Last_Dash_State = os.clock()
 		end
 
 		self.__Threads['CurrentState'] = nil
@@ -95,16 +101,24 @@ function StatesClass:GetSpeed(Ignore_States: boolean)
 
 	--
 	if (self.__State ~= 'Idle' and self.__State ~= 'Dashing') and not Ignore_States then
-		return 0
+		local Max = self:GetKey("Sprint") and CharStats.Sprint_Speed or self:GetKey("Jog") and CharStats.Jog_Speed or CharStats.Walk_Speed
+		local Time = 1 - math.min((os.clock() - self.__Last_Change) / self.__Current_State_Max_Time, 1) * 0.9
+
+		return Max * Time
 	end
 
-	if self:GetKey('Sprint') then
-		return CharStats.Sprint_Speed
+	local TimePassed = (os.clock() - self.__Last_Dash_State)
+	local DashSpeedBoost = Statics.Dash_Speed_Buff
+	local DashBoostEffect = self.__State == "Dashing" and DashSpeedBoost or (1 - math.min(TimePassed, Statics.Dash_Speed_Buff_Vanish_Time)) * DashSpeedBoost
+
+	if self:GetKey('Sprint') or Ignore_States then
+		return CharStats.Sprint_Speed + (CharStats.Sprint_Speed * DashBoostEffect * (Ignore_States and 0 or 1))
 	elseif self:GetKey('Jog') then
-		return CharStats.Jog_Speed
+		return CharStats.Jog_Speed + (CharStats.Jog_Speed * DashBoostEffect)
 	end
 
-	return CharStats.Walk_Speed or 16
+	local WalkSpeed = CharStats.Walk_Speed or 16
+	return WalkSpeed + (WalkSpeed * DashBoostEffect)
 end
 
 function StatesClass:Destroy()

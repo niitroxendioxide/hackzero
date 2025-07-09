@@ -201,9 +201,8 @@ end
 
 function AgentClass:Walk(Time: number)
 	local Speed = self.__Character.__States:GetSpeed(true)
-	local Direction = self:GetPivot().LookVector * Speed
 
-	return self.__Character.__Controller:AddLinearMovement(Direction, Time)
+	return self:ImpulseForward(Speed * 1.5, Time)--self.__Character.__Controller:AddLinearMovement(Direction, Time)
 end
 
 function AgentClass:PivotTo(...)

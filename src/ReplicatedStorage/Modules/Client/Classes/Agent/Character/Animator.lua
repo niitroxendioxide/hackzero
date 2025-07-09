@@ -162,7 +162,7 @@ function AnimatorClass:Update(delta: number)
 		Dash:AdjustWeight(ExpectedWeight and NON_ZERO or LoweredWeight)
 	end
 
-	Sprint:AdjustSpeed(math.clamp(Character:GetMovementSpeed() / 30 * 0.825, 0, 2.5))
+	Sprint:AdjustSpeed(math.clamp(Character:GetMovementSpeed() / 26, 0, 2.5))
 
 	-- Set value
 	self.__IsMoving = Moving

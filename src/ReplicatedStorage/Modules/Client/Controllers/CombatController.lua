@@ -83,10 +83,15 @@ function Controller:HandleInput(Key: string, State: string)
 	end
 
 	local Success;
-	if State == 'Begin' then
-		Success = CharacterMoveset:Begin(Key, CurrentAgent)
-	else
-		Success = CharacterMoveset:Release(Key, CurrentAgent)
+
+	if CharacterMoveset:HasSkill(Key) then
+		if State == 'Begin' then
+			Success = CharacterMoveset:Begin(Key, CurrentAgent)
+		else
+			Success = CharacterMoveset:Release(Key, CurrentAgent)
+		end
+	elseif Key == "Dodge" then
+		Movesets:RunFromTemplate("Dodge", CurrentAgent)
 	end
 
 	--

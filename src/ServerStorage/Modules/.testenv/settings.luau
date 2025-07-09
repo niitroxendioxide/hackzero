@@ -4,8 +4,8 @@ return table.freeze({
     },
 
     STAGE = {
-        Stage = 'Earth',
-        Act = 'Intro',
+        Stage = 'Training',
+        Act = 'Act1',
     },
 
     BORROWED_AGENT_LEVEL = 60,

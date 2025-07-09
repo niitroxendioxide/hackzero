@@ -35,4 +35,11 @@ function Movesets:Get(Name: string, default): Types.MovesetClass
 	return Movesets.__Cache[Name] or Movesets.__Cache[default and 'Saiyan' or 'Goku']
 end
 
+function Movesets:RunFromTemplate(Move: string, ...)
+	local Template = Movesets.__Cache.Template :: Types.MovesetClass
+
+	Template:Begin(Move, ...)
+end
+
+
 return Movesets

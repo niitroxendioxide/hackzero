@@ -136,7 +136,7 @@ end
 function EffectUtil:Emit(Asset: Instance, Light: boolean?): ()
 	local WorldSpeed = World:GetSpeed() :: number
 
-	local GraphicSettings = UserSettings().GameSettings.SavedQualityLevel.Value
+	local GraphicSettings = 10 --UserSettings().GameSettings.SavedQualityLevel.Value
 	for _, Objects in Asset:GetDescendants() do
 		if Objects:IsA('ParticleEmitter') then
 
@@ -181,6 +181,10 @@ function EffectUtil:Toggle(Object: Instance, State: boolean, Filter: ((Object: P
 			Child.Enabled = State
 		end
 	end
+end
+
+function EffectUtil:Quad(p0, p1, p2, t)
+	return (1 - t)^2 * p0 + 2 * (1 - t) * t * p1 + t^2 * p2
 end
 
 function EffectUtil:ShakeCamera(Preset: string)

@@ -60,7 +60,7 @@ return {
 				Knockback_Strength = 10,
 				Knockback_Time = 0.1,
 
-				Walk_Time = 0.07,
+				Walk_Time = 0.1575,
 
 				Damage_Mult = {
 					[1] = 73,
@@ -149,7 +149,7 @@ return {
 
 				Hit_Frequency = 10/60,
 				Effect_Frequency = 6/60,
-				Walk_Time = 1/60,
+				Walk_Time = 3/60,
 
 				Knockback_Direction = Vector3.new(0, 0, 1),
 				Knockback_Strength = 8,
