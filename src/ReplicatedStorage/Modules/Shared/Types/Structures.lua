@@ -30,6 +30,7 @@ export type DestructibleServerEntity = {
     __Type: string,
     __Position: Vector3,
     __Collider: BasePart,
+    __Rotation: number,
     __Health: number,
     __Id: number,
 

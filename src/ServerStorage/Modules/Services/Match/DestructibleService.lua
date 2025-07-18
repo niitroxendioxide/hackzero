@@ -74,7 +74,7 @@ function Service:SetupStage(Structure_Map_Data: {})
         end
 
         for _, Part in StructureObj.Parts do
-            local At = (Part.CFrame * CFrame.new(0, -Part.Size.Y/2, 0)).Position
+            local At = (Part.CFrame * CFrame.new(0, -Part.Size.Y/2, 0))
             Service:Create(Id, At, Structure_Data.Default_Structure_Data)
         end
     end
@@ -82,22 +82,25 @@ function Service:SetupStage(Structure_Map_Data: {})
     table.clear(Structure_Map_Data)
 end
 
-function Service:Create(Type: string, At: Vector3, StructureData: StructureData?)
+function Service:Create(Type: string, At: CFrame, StructureData: StructureData?)
     --
-    local Crystals = Destructible.new(Type, At)
+    local Rotation = math.atan2(At.LookVector.X, At.LookVector.Y)
+    print(Rotation)
 
-    local CrystalId = Service.__Total_Destructibles:extract()
-    Crystals:Spawn(CrystalId)
+    local DestructibleInstance = Destructible.new(Type, At.Position, Rotation)
 
-    Crystals.Destroyed:Connect(function(Caster: Types.ServerEnemyClass & AgentTypes.ServerAgentClass)
-        Replicate(GameEnum.Replication.DestroyDestructible, Crystals:Compress(true))
+    local DestructibleId = Service.__Total_Destructibles:extract()
+    DestructibleInstance:Spawn(DestructibleId)
+
+    DestructibleInstance.Destroyed:Connect(function(Caster: Types.ServerEnemyClass & AgentTypes.ServerAgentClass)
+        Replicate(GameEnum.Replication.DestroyDestructible, DestructibleInstance:Compress(true))
 
         --
         if not StructureData then return end
         Service:GiveRewards(StructureData, Caster)
     end)
 
-    local Objbuffer = Crystals:Compress()
+    local Objbuffer = DestructibleInstance:Compress()
     Replicate(GameEnum.Replication.CreateDestructible, Objbuffer)
 end
 

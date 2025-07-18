@@ -114,6 +114,8 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker})
                 end
             end
 
+            print(PartList)
+
             table.insert(MapData, {
                 Id = MarkerObj.Destructible_Id,
                 Parts = PartList,

@@ -16,13 +16,14 @@ local DestructiblesDatabase = require(Shared.Database.Destructibles)
 type Destructible = DestructibleTypes.DestructibleServerEntity
 
 --
-local function CreateColliderAt(Position: Vector3)
+local function CreateColliderAt(Position: Vector3, Rotation: number)
     local Newpart = Instance.new("Part")
     Newpart.Position = Position
+    Newpart.CFrame = Newpart.CFrame * CFrame.Angles(0, Rotation, 0)
     Newpart.Size = Vector3.one * 2
     Newpart.Anchored = true
     Newpart.CanCollide = true
-    Newpart.Transparency = 1
+    Newpart.Transparency = .5
     Newpart.Color = Color3.new(0, 0, 1)
     Newpart.Name = "DestructibleCollider"
     Newpart.Parent = workspace.Camera.Destructibles
@@ -34,12 +35,13 @@ end
 local DestructibleClass = {}
 DestructibleClass.__index =  DestructibleClass;
 
-function DestructibleClass.new(Type: string, Position: Vector3)
+function DestructibleClass.new(Type: string, Position: Vector3, Rotation: number?)
     local self = setmetatable({}, DestructibleClass)
     self.Destroyed = Signal.new()
 
     self.__Position = Position or Vector3.new()
-    self.__Collider = CreateColliderAt(self.__Position)
+    self.__Rotation = Rotation or 0
+    self.__Collider = CreateColliderAt(self.__Position, self.__Rotation)
     self.__Health = 0
     self.__Type = Type
     self.__Id = 0
@@ -73,12 +75,13 @@ function DestructibleClass.Compress(self: Destructible, OnlyId: boolean)
         return  Obj
     end
 
-    local Object = buffer.create(12)
+    local Object = buffer.create(14)
     buffer.writeu8(Object, 0, self.__Id)
     buffer.writeu8(Object, 1, DestructiblesDatabase:GetId(self.__Type))
     buffer.writef32(Object, 2, self.__Position.X)
     buffer.writef32(Object, 6, self.__Position.Z)
     buffer.writei16(Object, 10, math.floor(self.__Position.Y * 10))
+    buffer.writei16(Object, 12, math.deg(self.__Rotation) * 100)
 
     return Object
 end

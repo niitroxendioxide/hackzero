@@ -22,13 +22,16 @@ function EnemyStatus.new(Name: string, Level: number)
 
 	self.EnteredDazeState = Signal.new()
 
+	local EnemyData = EnemyDatabase:GetEnemyData(Name)
+
 	--
 	self.__State = 'Idle'
 	self.__Level = Level or 60
 	self.__Daze = 0
 	self.__Dazed = false
 	self.__Stats = EnemyDatabase:GetStatsAtLevel(Name, self.__Level)
-	self.__Health = self.__Stats.Health
+	self.__Health = Statics.Get_Health_By_Level(self.__Level, EnemyData.Level_Stats.Health)
+	self.__Max_Health = self.__Health
 	self.__Max_Daze = self.__Stats.Daze
 	self.__Effects = {}
 	self.__Threads = {}
@@ -95,7 +98,7 @@ end
 
 function EnemyStatus:GetStat(Name: string)
 	if Name == 'Max_Health' then
-		return self:GetStat('Health')
+		return self.__Max_Health --self:GetStat('Health')
 	elseif Name == 'Max_Daze' then
 		return self.__Max_Daze
 	end

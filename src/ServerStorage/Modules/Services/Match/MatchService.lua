@@ -15,6 +15,7 @@ local Targets = require(ServerStorage.Modules.Libraries.Targets)
 local GameEnum = require(Shared.GameEnum)
 local MissionClass = require(Classes.Game.Mission)
 local StageDatabase = require(Database.Stages)
+local AbilityService = require(Services.Combat.AbilityService)
 local TeleportService = require(Services.Data.TeleportService);
 local DestructibleService = require(Services.Match.DestructibleService)
 
@@ -72,9 +73,17 @@ function Service:End(Won: boolean)
 
     ---
     local List = {"B", "A", "S"}
+    local Rank = Won and List[math.random(1, #List)] or "X"
+
     local EndResult = {
-        Status = GameEnum.MatchResults.Victory,
-        Rank = List[math.random(1, #List)],
+        Status = Won and GameEnum.MatchResults.Victory or GameEnum.MatchResults.Loss,
+        Rank = Rank,
+
+        Stats = {
+            Total_Damage = AbilityService.__Total_Damage
+        },
+
+        Items = Handler.Rewards,
     }
 
     Network:FireForAll("Match", GameEnum.MatchEvents.MatchEnded, EndResult)

@@ -328,12 +328,14 @@ function Controller:CreateDestructible(Buffer: buffer)
 	local X = buffer.readf32(Buffer, 3)
 	local Z = buffer.readf32(Buffer, 7)
 	local Y = buffer.readi16(Buffer, 11) / 10
+	local Rotation = math.rad(buffer.readi16(Buffer, 13) / 100)
 
 	local Position = Vector3.new(X, Y, Z)
 
 	Structures.Create(Type, {
 		Id = Id,
 		At = Position,
+		Rotation = Rotation,
 	})
 end
 

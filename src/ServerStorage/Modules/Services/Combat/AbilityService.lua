@@ -25,6 +25,7 @@ local Service = {
 	__Movesets = {},
 	__Prompts = {},
 	__Prompt_Cooldown = {},
+	__Total_Damage = 0
 }
 
 function Service:Init()
@@ -58,6 +59,7 @@ function Service:Init()
 				local AgentPlayer = Agent.__Player_Assigned
 
 				if not AgentPlayer then return end
+				Service.__Total_Damage += Data.Damage
 
 				local PlayerCombatQuests = QuestService:GetPlayerQuestsWithGoals(AgentPlayer, {
 					["Kill"] = true,

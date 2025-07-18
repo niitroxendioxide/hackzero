@@ -41,9 +41,25 @@ return {
                     Name = 'Harder_Area',
                 },
 
+                ['FightArea2'] = {
+                    Type = 'Trigger',
+                    Name = 'Inbetween_Area',
+                },
+
+                ['FightArea3'] = {
+                    Type = 'Trigger',
+                    Name = 'Last_Area',
+                },
+
                 ['CrystalDestructible'] = {
                     Type = "Destructible",
                     Destructible_Id = "Crystals",
+                },
+
+                ['DestructibleWall'] = {
+                    Type = "Destructible",
+                    Destructible_Id = "Reinforced_Wall",
+
                 }
             },
 

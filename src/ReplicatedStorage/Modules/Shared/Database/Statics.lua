@@ -112,6 +112,13 @@ return {
 
 	Switch_Character_Dash_Strength = 35,
 
+	Get_Health_By_Level = function(Level: number, Health: number)
+		local TotalAdded = math.max(Level - 1, 0)
+		local Total = math.max(Level // 5, 1)
+
+		return Health + (math.exp(Total/12)/2.71828 * Health * TotalAdded)
+	end,
+
 	--
 	Dash_Speed_Buff = 0.5,
 	Dash_Speed_Buff_Vanish_Time = 1,

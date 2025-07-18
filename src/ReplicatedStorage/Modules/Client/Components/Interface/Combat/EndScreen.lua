@@ -210,7 +210,7 @@ function EndScreen:Set(State: boolean)
     end
 end
 
-type ServerData = {Status: number, Rank: string}
+type ServerData = {Status: number, Rank: string, Items: {[string]: number}, Stats: {[string]: number}}
 
 
 function EndScreen:ShowData(ServerData: ServerData)
@@ -235,7 +235,14 @@ function EndScreen:ShowData(ServerData: ServerData)
             ColorSequenceKeypoint.new(1, Color3.new(1,1,1))
         }
     end
-    
+
+    for ItemName, ItemCount in ServerData.Items do
+        -- show items here :3
+    end
+
+    for StatName, StatValue in ServerData.Stats do
+
+    end
 end
 
 return EndScreen

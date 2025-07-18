@@ -14,5 +14,5 @@ return table.freeze({
         'Goku',
         'Jotaro3',
         'Yuno',
-    }
+    },
 })
