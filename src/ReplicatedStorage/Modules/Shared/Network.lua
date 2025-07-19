@@ -103,6 +103,7 @@ function Network:Fire(Name: string, ...)
 	else
 		local Args = {...};
 		local Plr = table.remove(Args, 1);
+		assert(typeof(Plr) == "Instance" and Plr:IsA("Player"), `Invalid player given for argument #1. Expected Player, given: <{typeof(Plr)}> {Plr}`)
 
 		if not Plr:HasTag("Ping") then
 			return

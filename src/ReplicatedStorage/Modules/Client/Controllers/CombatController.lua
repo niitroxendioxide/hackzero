@@ -31,9 +31,19 @@ function Controller:Init()
 	Movesets:Init()
 
 	--
-	Network:On("Cutscene", function(Type: number, CutscenName: string)
+	Network:On("Cutscene", function(Type: number, CutsceneName: string)
 		if Type == GameEnum.CutsceneStatus.Received then
-			CutsceneLibrary:Start(CutscenName)
+			local CutsceneTimeoutTime = CutsceneLibrary:GetTimeoutTime(CutsceneName)
+
+			CutsceneLibrary:Start(CutsceneName)
+
+			Network:Fire("Cutscene", GameEnum.CutsceneStatus.Received, {
+				TimeoutTime = CutsceneTimeoutTime
+			})
+
+			CutsceneLibrary:WaitCurrent()
+
+			Network:Fire("Cutscene", GameEnum.CutsceneStatus.Finished)
 		end
 	end)
 

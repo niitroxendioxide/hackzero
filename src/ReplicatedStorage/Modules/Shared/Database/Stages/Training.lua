@@ -18,6 +18,10 @@ return {
             },
 
             Rewards = {
+                Items = {
+                    ["Gold"] = 2500,
+                },
+
                 Handler = function(Objectives): Types.Rating
                     if Objectives.Main == true then
                         return "SSS"
@@ -27,13 +31,30 @@ return {
                 end
             },
 
+            Markers = {
+                ['CutsceneArea'] = {
+                    Type = 'Trigger',
+                    Name = 'CutsceneTest',
+                },
+
+                ['FightArea1'] = {
+                    Type = 'Chest',
+                    Name = 'LootChest1',
+                    ItemList = {
+                        ["Gold"] = 2500,
+                    },
+                },
+            },
+
             Guide = {
+
+
                 Begin = {
                     Objective = "Test out new skills",
                     Goal = {KillEnemies = 1},
                     Enemies = {
                         -- Enemy Name, Enemy Count, Enemy Level
-                        [1] = {"Saiyan", 1, 1}
+                        --[1] = {"Saiyan", 1, 60}
                     },
                     Global = true,
 

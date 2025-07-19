@@ -76,7 +76,7 @@ end
 
 function ServerAbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> ())
 	ServerHitboxUtil:ForAgentsInZone(Size, Enemy:GetPivot() * CFrame.new(Offset), function(Target: AgentTypes.ServerAgentClass, ...)
-		if Target:HasTag('Invulnerability') then
+		if Target:HasTag('Invulnerability') or Target:GetCurrentSkill() == "Ultimate" then
 			return
 		end
 

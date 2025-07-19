@@ -1,5 +1,6 @@
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage.Assets
@@ -76,21 +77,26 @@ function MapLoader:Unpack(MapPath: string, SpawnToUse: string?)
     return true
 end
 
-function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker})
+function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destructibles: {}, Chests: {}}?
     local Map = World:WaitForChild("Map")
     if not Map:FindFirstChild('Markers') then
         return
     end
 
     for _, Part in Map.Markers:GetChildren() do
-        Part:ClearAllChildren()
+        if not RunService:IsStudio() then
+            Part:ClearAllChildren()
+        end
     end
 
     local Triggers = Map:FindFirstChild('Triggers') or Instance.new('Folder')
     Triggers.Name = 'Triggers'
     Triggers.Parent = Map
 
-    local MapData = {}
+    local MapData = {
+        Destructibles = {},
+        Chests = {},
+    }
 
     for MarkerId, MarkerObj in MarkerData do
         local ObjName = MarkerObj.Name or MarkerId
@@ -114,9 +120,20 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker})
                 end
             end
 
-            print(PartList)
+            table.insert(MapData.Destructibles, {
+                Id = MarkerObj.Destructible_Id,
+                Parts = PartList,
+            })
+        elseif MarkerObj.Type == 'Chest' then
+            local PartList = {}
 
-            table.insert(MapData, {
+            for _, Object in Map.Markers:GetChildren() do
+                if Object.Name == ObjName then
+                    table.insert(PartList, Object)
+                end
+            end
+
+            table.insert(MapData.Chests, {
                 Id = MarkerObj.Destructible_Id,
                 Parts = PartList,
             })

@@ -1,4 +1,5 @@
 ---
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService("RunService")
 
@@ -30,6 +31,9 @@ return function(Caster: Types.AgentClass, Type: string, Time: number): ()
     end
 
     task.spawn(function()
+        if Caster.__Player_Assigned ~= Players.LocalPlayer then
+            return
+        end
 
         for i = 1, 3 do
             local Bubble = Assets.Effects.General.Distortion.Bubble:Clone()

@@ -136,7 +136,6 @@ end
 ]]
 function CutscenesServer.AttemptGroup(self: ServerCutsceneLibrary, Group: {Player}, CutsceneName: string): RBXScriptSignal
     local Signal = Signal.new()
-    print(Group)
 
     --
     for _, Player in Group do

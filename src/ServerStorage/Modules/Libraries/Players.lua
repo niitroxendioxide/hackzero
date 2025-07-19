@@ -58,4 +58,10 @@ function PlayersLibrary:GetAll()
     return List
 end
 
-return PlayersLibrary
+return PlayersLibrary :: {
+    Get: (self: {any}, Player: Player) -> (Types.StagePlayer),
+    Remove: (self: {any}, Player: Player) -> (),
+    Add: (self: {any}, Player: Player, Class: Types.StagePlayer) -> (),
+    GetAll: (self: {any}) -> ({Types.StagePlayer}),
+    GetFromAgent: (self: {any}, Agent: AgentTypes.ServerAgentClass) -> (Types.StagePlayer?),
+}

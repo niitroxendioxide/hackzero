@@ -67,6 +67,19 @@ function CutsceneLibrary:Start(Name: string, Data: {any}?): (boolean, string?)
     return true;
 end
 
+--[[
+    @param CutsceneName The cutscene to get the timeout time for
+    @return TimeoutTime The time for the automatic stop of the cutscene
+]]
+function CutsceneLibrary:GetTimeoutTime(CutsceneName: string): number
+    local Exists = CutsceneLibrary:Find(CutsceneName)
+    if not Exists then
+        return 0
+    end
+
+    return Exists.__Time
+end
+
 function CutsceneLibrary:Find(Name: string): Types.CutsceneClass?
     return CutsceneLibrary.__Cache[Name]
 end

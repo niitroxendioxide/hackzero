@@ -254,6 +254,13 @@ return {
 		GiveItem = 2,
 	},
 
+	Difficulties = {
+		Easy = "EASY",
+		Medium = "MEDIUM",
+		Hard = "HARD",
+		Challenge = "EXTREME"
+	},
+
 	KeyLookup = function(Table: {}, val: number)
 		for Key, Value in Table do
 			if Value == val then

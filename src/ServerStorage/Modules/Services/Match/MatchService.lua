@@ -9,12 +9,16 @@ local Classes = Modules.Classes
 local Services = Modules.Services
 local Database = Shared.Database
 
+local Types = require(ReplicatedStorage.Modules.Client.Libraries.Fusion.Types)
+local LootService = require(script.Parent.LootService)
+local Stages = require(ReplicatedStorage.Modules.Shared.Types.Stages)
 local Map = require(ServerStorage.Modules.Libraries.Map)
 local Network = require(Shared.Network)
 local Targets = require(ServerStorage.Modules.Libraries.Targets)
 local GameEnum = require(Shared.GameEnum)
 local MissionClass = require(Classes.Game.Mission)
 local StageDatabase = require(Database.Stages)
+local PlayersLibrary = require(Modules.Libraries.Players)
 local AbilityService = require(Services.Combat.AbilityService)
 local TeleportService = require(Services.Data.TeleportService);
 local DestructibleService = require(Services.Match.DestructibleService)
@@ -75,18 +79,32 @@ function Service:End(Won: boolean)
     local List = {"B", "A", "S"}
     local Rank = Won and List[math.random(1, #List)] or "X"
 
-    local EndResult = {
-        Status = Won and GameEnum.MatchResults.Victory or GameEnum.MatchResults.Loss,
-        Rank = Rank,
+    local Raw_Rewards = Handler.Rewards.Items
+    local Completion_Rewards = {}
 
-        Stats = {
-            Total_Damage = AbilityService.__Total_Damage
-        },
+    for _, Object in Raw_Rewards do
+        table.insert(Completion_Rewards, {Object.Type, Object.Amount, Object.Extra})
+    end
 
-        Items = Handler.Rewards,
-    }
+    local WinStatus = Won and GameEnum.MatchResults.Victory or GameEnum.MatchResults.Loss
 
-    Network:FireForAll("Match", GameEnum.MatchEvents.MatchEnded, EndResult)
+    for _, StagePlayer in PlayersLibrary:GetAll() do
+        local Items = table.clone(Completion_Rewards)
+        print(StagePlayer:GetObtainedLoot())
+
+        local PlayerEndResult = {
+            Status = WinStatus,
+            Rank = Rank,
+
+            Stats = {
+                Total_Damage = AbilityService.__Total_Damage
+            },
+
+            Items = Items,
+        }
+
+        Network:Fire("Match", StagePlayer:GetBase(), GameEnum.MatchEvents.MatchEnded, PlayerEndResult)
+    end
 end
 
 function Service:Begin(Stage: string, Act: string)
@@ -101,7 +119,8 @@ function Service:Begin(Stage: string, Act: string)
         return
     end
 
-    Targets:SetDifficulty('EASY')
+    Targets:SetDifficulty(GameEnum.Difficulties.Easy)
+
     local Marker_Data = Map:SetupMarkers(Data.Markers)
 
     --
@@ -115,11 +134,24 @@ function Service:Begin(Stage: string, Act: string)
 
     Network:FireForAll("Match", GameEnum.MatchEvents.MatchBegin)
 
-    DestructibleService:SetupStage(Marker_Data)
+    DestructibleService:SetupStage(Marker_Data.Destructibles)
+    LootService:SetupChests(Marker_Data.Chests)
 
     --
     MissionClass.Finished:Connect(function(State: boolean)
         Service:End(State)
+    end)
+
+    --
+
+    LootService.OnLootboxOpened:Connect(function(Player, Loot)
+        local StagePlayerObject = PlayersLibrary:Get(Player) :: Stages.StagePlayer
+
+        for ItemName, ItemData in Loot.Items do
+            StagePlayerObject:AddLoot(ItemName, ItemData)
+        end
+
+        print(StagePlayerObject:GetObtainedLoot())
     end)
 end
 

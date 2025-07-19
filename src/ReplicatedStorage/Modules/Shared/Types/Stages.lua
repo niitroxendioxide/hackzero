@@ -80,7 +80,9 @@ export type Stage_Act = {
 	Rewards: {
 		Handler: (Objectives: {[string]: boolean}) -> (Rating),
 
-		[Reward_Type]: string | number,
+		Items: {
+			{Type: LootType, Amount: number, Extra: {any}}
+		},
 	},
 
     Markers: {
@@ -181,15 +183,36 @@ export type EventClass = {
 	GetCorrectedState: (self: EventClass) -> (),
 }
 
+export type LootExtraData = {
+	Slot: number?,
+
+	Artifact_Name: string?,
+	Drive_Name: string?,
+}
+
+export type LootType = "Item" | "Artifact" | "Drive" | "Gold" | "Gems"
+export type LootObject = {
+	Type: LootType,
+	Amount: number,
+	Extra: LootExtraData,
+}
+
 export type StagePlayer = {
 	__Player_Object: Player,
 	__Designated_Id: number,
 	__Team: {Agents.ServerAgentClass},
+	__Loot_Obtained: {any},
+	__Match_Inventory: {any},
 
 	GetId: (self: StagePlayer) -> number,
 	GetTeam: (self: StagePlayer) -> {Agents.ServerAgentClass},
 	GetBase: (self: StagePlayer) -> Player,
 	GetAgents: (self: StagePlayer) -> (),
+	GetObtainedLoot: (self: StagePlayer) -> ({LootObject}),
+
+	AddLoot: (self: StagePlayer, ItemName: LootType, Data: {Amount: number, Extra: LootExtraData}) -> (),
+	AddModifier: (self: StagePlayer) -> (),
+	AddMatchItem: (self: StagePlayer) -> (),
 }
 
 return 0

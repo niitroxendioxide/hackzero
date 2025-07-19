@@ -13,7 +13,9 @@ return {
 
             Rewards = {
                 Items = {
-                    ['Meat'] = 5,
+                    {
+                        Type = "Item",
+                    },
                 },
 
                 Handler = function(CompletionState): Types.Rating

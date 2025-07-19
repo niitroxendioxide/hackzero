@@ -185,7 +185,6 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 
 		if StateId == GameEnum.AbilityStates.Begin then
 			if not Moveset:HasSkill(Skill) and SpacelessSkill == "Dodge" then
-				print("Using template dodge :3")
 				MovesetLibrary:RunFromTemplate("Dodge", ActiveAgent)
 
 				return

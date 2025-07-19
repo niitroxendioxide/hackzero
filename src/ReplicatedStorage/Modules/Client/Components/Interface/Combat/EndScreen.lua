@@ -6,6 +6,7 @@ local Players = game:GetService('Players')
 local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
+local Assets = ReplicatedStorage.Assets
 
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
 local ComponentClass = require(Client.Classes.Interface)
@@ -236,12 +237,18 @@ function EndScreen:ShowData(ServerData: ServerData)
         }
     end
 
-    for ItemName, ItemCount in ServerData.Items do
-        -- show items here :3
+    for ItemName, ItemData in ServerData.Items do
+        local ItemAmount = typeof(ItemData) == "table" and 1 or ItemData
+        local ItemAsset = Assets.Interface.EndScreen.Item:Clone()
+        ItemAsset.ItemCount.Text = `x{ItemAmount}`
+        ItemAsset.ItemName.Text = ItemName
+        ItemAsset.Parent = Main.DropItemList
     end
 
     for StatName, StatValue in ServerData.Stats do
-
+        local StatAsset = Assets.Interface.EndScreen.StatText:Clone()
+        StatAsset.Text = `{StatName}: <b>{StatValue}</b>`
+        StatAsset.Parent = Main.StatsList
     end
 end
 

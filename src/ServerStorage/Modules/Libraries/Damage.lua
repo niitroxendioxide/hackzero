@@ -31,7 +31,7 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.Serv
 	local Level = Agent.__Level
 	local Damage_Bonus_Mult = 1 + Agent:GetMultBonus(Data.Affliction :: Types.Element) + Agent:GetMultBonus(Data.Attack_Type)
 
-	local Is_Critical = RNG:NextNumber(0, 100) < Crit_Rate
+	local Is_Critical = RNG:NextNumber(0, 100) <= Crit_Rate
 
 	-- Enemy
 	local Level_Factor = Defense_Factors[math.clamp(Level, 0, 60)]
