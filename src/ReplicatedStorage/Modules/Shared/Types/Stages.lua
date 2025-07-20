@@ -8,6 +8,22 @@ export type Goal = {
 }
 export type EventHandlerState = {Dead: boolean, [string | Stage_Objective]: any}
 export type Action = "KickPlayer"
+
+--[[
+
+## Stage Key Event
+Events that happen in that stage, the first one is loaded and then the next one is changed to after the first one finishes, etc
+
+### Objective description tags:
+- {objective[n]} where `n` is the type of objective, returns the value of the objective
+- {player} refers to the name of the player
+- {time} updates the time as it changes
+
+### Finished:
+- Handler, which is passed a `Goal` type for the state at which the event was finished, be it completed or time limit, or death, etc.
+- Handler returns a string that indicates the next stage
+
+]]
 export type Stage_Key_Event = {
 
 	--[[
@@ -36,28 +52,20 @@ export type Stage_Key_Event = {
 	TimeLimit: number?,
 }
 
+
 --[[
-
-## Stage Key Event
-Events that happen in that stage, the first one is loaded and then the next one is changed to after the first one finishes, etc
-
-### Objective description tags:
-- {objective[n]} where `n` is the type of objective, returns the value of the objective
-- {player} refers to the name of the player
-- {time} updates the time as it changes
-
-### Finished:
-- Handler, which is passed a `Goal` type for the state at which the event was finished, be it completed or time limit, or death, etc.
-- Handler returns a string that indicates the next stage
-
+	Item obtainable in game, this item stays in your inventory, meaning you can take it
+	from the match to use out, be it upgrades, artifacts, gold, etc.
 ]]
+export type LootItem = {Type: LootType, Amount: number, Extra: LootExtraData?}
+
 export type Marker = {
-    Type: 'Trigger' | 'ItemBox' | 'Destructible',
+    Type: 'Trigger' | 'Chest' | 'Destructible',
 	Name: string?, -- Rename, if you want to, can just keep the same.
 
 	Destructible_Id: string?,
 	ItemList: {
-		[string]: number,
+		LootItem
 	}?
 }
 
@@ -67,21 +75,11 @@ export type Stage_Act = {
 
 	},
 
-	Structures: {
-		{
-			Type: string,
-			At: Vector3,
-			Loot: {
-				[string]: number,
-			},
-		}
-	}?,
-
 	Rewards: {
 		Handler: (Objectives: {[string]: boolean}) -> (Rating),
 
 		Items: {
-			{Type: LootType, Amount: number, Extra: {any}}
+			LootItem
 		},
 	},
 
@@ -194,7 +192,7 @@ export type LootType = "Item" | "Artifact" | "Drive" | "Gold" | "Gems"
 export type LootObject = {
 	Type: LootType,
 	Amount: number,
-	Extra: LootExtraData,
+	Extra: LootExtraData?,
 }
 
 export type StagePlayer = {
@@ -210,7 +208,7 @@ export type StagePlayer = {
 	GetAgents: (self: StagePlayer) -> (),
 	GetObtainedLoot: (self: StagePlayer) -> ({LootObject}),
 
-	AddLoot: (self: StagePlayer, ItemName: LootType, Data: {Amount: number, Extra: LootExtraData}) -> (),
+	AddLoot: (self: StagePlayer, LootType: LootType, Data: {Amount: number, Extra: LootExtraData}) -> (),
 	AddModifier: (self: StagePlayer) -> (),
 	AddMatchItem: (self: StagePlayer) -> (),
 }

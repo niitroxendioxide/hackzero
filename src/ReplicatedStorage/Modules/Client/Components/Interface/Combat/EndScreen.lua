@@ -34,8 +34,6 @@ local function LightingEffects(State: boolean)
     ColorCorrection.Parent = Lighting
     ColorCorrection.Name = "ENDSCREENCC"
 
-    print("Testing one thing")
-
     local Blur = Lighting:FindFirstChild("ENDSCREENBLUR") or Instance.new("BlurEffect")
     Blur.Parent = Lighting
     Blur.Name = "ENDSCREENBLUR"
@@ -237,8 +235,11 @@ function EndScreen:ShowData(ServerData: ServerData)
         }
     end
 
-    for ItemName, ItemData in ServerData.Items do
-        local ItemAmount = typeof(ItemData) == "table" and 1 or ItemData
+    for _, ItemData in ServerData.Items do
+        local ItemName = ItemData[1]
+        local ItemAmount = ItemData[2]
+        local ExtraData = ItemData[3]
+
         local ItemAsset = Assets.Interface.EndScreen.Item:Clone()
         ItemAsset.ItemCount.Text = `x{ItemAmount}`
         ItemAsset.ItemName.Text = ItemName
@@ -247,7 +248,7 @@ function EndScreen:ShowData(ServerData: ServerData)
 
     for StatName, StatValue in ServerData.Stats do
         local StatAsset = Assets.Interface.EndScreen.StatText:Clone()
-        StatAsset.Text = `{StatName}: <b>{StatValue}</b>`
+        StatAsset.Text = `{string.gsub(StatName, "_", " ")}: <b>{math.floor(StatValue)}</b>`
         StatAsset.Parent = Main.StatsList
     end
 end

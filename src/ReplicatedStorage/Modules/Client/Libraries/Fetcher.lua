@@ -5,7 +5,6 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
 local Network = require(Shared.Network)
 local AgentDatabase = require(Shared.Database.Characters)
-local DriveDatabase = require(Shared.Database.Drives)
 local GameEnum = require(Shared.GameEnum)
 local LocalData = require(script.Parent.LocalData)
 

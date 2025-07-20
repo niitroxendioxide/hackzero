@@ -1,6 +1,5 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(Shared.Types)

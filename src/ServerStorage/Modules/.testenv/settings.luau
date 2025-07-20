@@ -8,7 +8,7 @@ return table.freeze({
         Act = 'Act1',
     },
 
-    BORROWED_AGENT_LEVEL = 1,
+    BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {
         'Goku',

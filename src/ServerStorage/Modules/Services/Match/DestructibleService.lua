@@ -5,10 +5,8 @@ local ServerStorage = game:GetService("ServerStorage")
 local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Map = require(ServerStorage.Modules.Libraries.Map)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
-local StructureList = require(ServerStorage.Modules.Libraries.StructureList)
 local GameEnum = require(Shared.GameEnum)
 local Heap = require(Shared.Utility.Heap)
 local Network = require(Shared.Network)

@@ -32,7 +32,7 @@ function PlayerClass.AddLoot(self: Types.StagePlayer, Type: string, Data: {Amoun
     table.insert(self.__Loot_Obtained, {
         Type = Type,
         Amount = Data.Amount,
-        Other = Data.Extra
+        Extra = Data.Extra
     })
 end
 

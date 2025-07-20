@@ -9,7 +9,6 @@ local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 
-local Characters = require(ReplicatedStorage.Modules.Shared.Database.Characters)
 local Network = require(ReplicatedStorage.Modules.Shared.Network)
 local Notifications = require(Modules.Packages.Notifications)
 local TeamService = require(script.Parent.Combat.TeamService)

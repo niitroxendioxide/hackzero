@@ -10,7 +10,6 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local QuestUtil = require(ServerStorage.Modules.Libraries.QuestUtil)
-local Agent = require(ReplicatedStorage.Modules.Client.Classes.Agent)
 local Network = require(Shared.Network)
 local DataTypes = require(Shared.Types.Data)
 

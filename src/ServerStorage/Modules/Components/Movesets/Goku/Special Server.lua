@@ -13,7 +13,7 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.GenericClass, ...)
 	--
-	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
+	local _SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 
 	Ability:Begin(Caster, {
 		{0, function(_: Types.Sequence)

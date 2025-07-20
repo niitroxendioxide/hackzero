@@ -1,5 +1,5 @@
 --
-local Players = game:GetService("Players")
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -306,6 +306,7 @@ function EventClass.GetPlayerObjects(self: Types.EventClass): {Player}
     for _, Player in self.__Players do
         table.insert(List, Player:GetBase())
     end
+
     return List
 end
 

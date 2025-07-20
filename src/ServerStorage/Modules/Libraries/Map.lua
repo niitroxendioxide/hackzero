@@ -115,7 +115,7 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
             local PartList = {}
 
             for _, Object in Map.Markers:GetChildren() do
-                if Object.Name == ObjName then
+                if Object.Name == MarkerId then
                     table.insert(PartList, Object)
                 end
             end
@@ -128,13 +128,16 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
             local PartList = {}
 
             for _, Object in Map.Markers:GetChildren() do
-                if Object.Name == ObjName then
+                print(ObjName, Object.Name)
+                if Object.Name == MarkerId then
                     table.insert(PartList, Object)
                 end
             end
 
+            print(PartList)
+
             table.insert(MapData.Chests, {
-                Id = MarkerObj.Destructible_Id,
+                ItemList = MarkerObj.ItemList,
                 Parts = PartList,
             })
         end

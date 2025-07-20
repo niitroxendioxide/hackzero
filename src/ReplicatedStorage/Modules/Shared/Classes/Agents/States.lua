@@ -46,9 +46,9 @@ function StatesClass:GetLastChangeTime(): number
 end
 
 function StatesClass:GetVelocityMod(): number
-	local Mod =  math.clamp((os.clock() - self.__Last_Change) / 0.3, 0, 1)
+	--local Mod =  math.clamp((os.clock() - self.__Last_Change) / 0.3, 0, 1)
 
-	return 1--Mod
+	return 1
 end
 
 function StatesClass:Switch(State: string, Time: number)

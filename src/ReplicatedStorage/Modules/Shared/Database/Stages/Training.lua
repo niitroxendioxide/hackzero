@@ -9,17 +9,11 @@ return {
 
     Acts = {
         Act1 = {
-            Requisites = {
-                
-            },
-
-            Structures = {
-                
-            },
+            Requisites = {},
 
             Rewards = {
                 Items = {
-                    ["Gold"] = 2500,
+                    {Type = "Gold", Amount = 1500},
                 },
 
                 Handler = function(Objectives): Types.Rating
@@ -37,13 +31,18 @@ return {
                     Name = 'CutsceneTest',
                 },
 
-                ['FightArea1'] = {
+                ['LootChest'] = {
                     Type = 'Chest',
                     Name = 'LootChest1',
                     ItemList = {
-                        ["Gold"] = 2500,
+                        {Type = "Gold", Amount = 2500},
                     },
                 },
+
+                ['EndArea'] = {
+                    Type = 'Trigger',
+                    Name = "End",
+                }
             },
 
             Guide = {
@@ -51,15 +50,14 @@ return {
 
                 Begin = {
                     Objective = "Test out new skills",
-                    Goal = {KillEnemies = 1},
+                    Goal = {ReachPlace = "End"},
                     Enemies = {
-                        -- Enemy Name, Enemy Count, Enemy Level
-                        --[1] = {"Saiyan", 1, 60}
+                        [1] = {"Saiyan", 1, 1}
                     },
                     Global = true,
 
                     Finished = function(State: Types.EventHandlerState): string
-                        return "Begin"
+                        return "End"
                     end
                 },
 

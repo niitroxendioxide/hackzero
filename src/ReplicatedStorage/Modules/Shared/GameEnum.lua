@@ -52,6 +52,13 @@ return {
 		CreateDestructible = 80,
 		DestroyDestructible = 81,
 		HitDestructible = 82,
+
+		CreateChest = 83,
+	},
+
+	InteractionType = {
+		Chest = 1,
+		NPC = 2,
 	},
 
 	MarketplaceRequestTypes = {
@@ -74,6 +81,10 @@ return {
 		Ultimate = 6,
 		Special = 7,
 		EX_Special = 8,
+	},
+
+	ChestInteractions = {
+		Open = 1,
 	},
 
 	Afflictions = {

@@ -9,7 +9,6 @@ local Classes = Modules.Classes
 local Services = Modules.Services
 local Database = Shared.Database
 
-local Types = require(ReplicatedStorage.Modules.Client.Libraries.Fusion.Types)
 local LootService = require(script.Parent.LootService)
 local Stages = require(ReplicatedStorage.Modules.Shared.Types.Stages)
 local Map = require(ServerStorage.Modules.Libraries.Map)
@@ -90,14 +89,32 @@ function Service:End(Won: boolean)
 
     for _, StagePlayer in PlayersLibrary:GetAll() do
         local Items = table.clone(Completion_Rewards)
-        print(StagePlayer:GetObtainedLoot())
+        for _, Item in StagePlayer:GetObtainedLoot() do
+            if Item.Type == "Gold" or Item.Type == "Gems" then
+                local Found = false
+                for _, ExistingItem in Items do
+                    if ExistingItem[1] == Item.Type then
+                        ExistingItem[2] += Item.Amount
+                        Found = true
+                    end
+                end
+
+                if Found then continue end
+            end
+
+            table.insert(Items, {
+                Item.Type,
+                Item.Amount,
+                Item.Extra,
+            })
+        end
 
         local PlayerEndResult = {
             Status = WinStatus,
             Rank = Rank,
 
             Stats = {
-                Total_Damage = AbilityService.__Total_Damage
+                Total_Damage = AbilityService.__Total_Damage,
             },
 
             Items = Items,
@@ -143,6 +160,7 @@ function Service:Begin(Stage: string, Act: string)
     end)
 
     --
+    if not LootService.OnLootboxOpened then return end
 
     LootService.OnLootboxOpened:Connect(function(Player, Loot)
         local StagePlayerObject = PlayersLibrary:Get(Player) :: Stages.StagePlayer

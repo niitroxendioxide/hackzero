@@ -7,7 +7,6 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage.Assets
 
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
-local Replicator = require(ReplicatedStorage.Modules.Client.Libraries.Replicator)
 local Structures = require(ReplicatedStorage.Modules.Client.Libraries.Structures)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
@@ -387,7 +386,7 @@ function Controller:HitAgent(Buffer: buffer)
 
 	--
 	local HitTracks = Assets.Animations.General.Hit:GetChildren()
-	--Animation:Play(AgentObject:GetModel(), HitTracks[math.random(1, #HitTracks)])
+	Animation:Play(AgentObject:GetModel(), HitTracks[math.random(1, #HitTracks)])
 end
 
 

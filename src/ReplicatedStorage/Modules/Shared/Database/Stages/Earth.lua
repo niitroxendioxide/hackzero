@@ -15,6 +15,7 @@ return {
                 Items = {
                     {
                         Type = "Item",
+                        Amount = 1,
                     },
                 },
 
