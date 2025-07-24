@@ -62,6 +62,16 @@ function ServerAgentClass.GetSkillLevel(self: Types.ServerAgentClass, SkillName:
 	return (self.__Skill_Levels[SkillName] or 0)
 end
 
+function ServerAgentClass.SetLimitArea(self: Types.ServerAgentClass, BasePart: BasePart)
+	assert(typeof(BasePart) == 'Instance'or typeof(BasePart) == 'nil', "Invalid area given for the Agent\'s limit")
+
+	self.__Limit_Area = BasePart
+end
+
+function ServerAgentClass.GetLimitArea(self: Types.ServerAgentClass)
+	return self.__Limit_Area
+end
+
 function ServerAgentClass:GetEnergy(): number
 	return self.__Status:GetEnergy()
 end

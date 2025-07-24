@@ -14,7 +14,6 @@ local Ability = AbilityClass.new()
 function Ability:Play(Caster: Types.GenericClass): ()
 	Ability:Increase(Caster, 'Count', {Limit = 4})
 	local M1_Count = Ability:Get(Caster, 'Count')
-	print(M1_Count)
 
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 

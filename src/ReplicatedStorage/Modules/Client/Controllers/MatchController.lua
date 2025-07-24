@@ -3,6 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
+
+local LocalData = require(Client.Libraries.LocalData)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 
@@ -36,6 +38,7 @@ end
 function Controller:SetupStage(StageName: string, ActName: string)
     local Component = InterfaceController:GetComponent("Objective")
 
+    LocalData:SetStageData(StageName, ActName)
     Component:SetStage(StageName, ActName)
 end
 

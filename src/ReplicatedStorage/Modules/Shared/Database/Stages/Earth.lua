@@ -62,8 +62,7 @@ return {
                 ['DestructibleWall'] = {
                     Type = "Destructible",
                     Destructible_Id = "Reinforced_Wall",
-
-                }
+                },
             },
 
             Guide = {
@@ -81,11 +80,24 @@ return {
                 Spawn_Area = {
                     Objective = "Defeat {objective[KillEnemies]} enemies",
                     Goal = {
-                        ['KillEnemies'] = 10,
+                        ['KillEnemies'] = 6,
                     },
+                    Dialogue = {{
+                        Speaker = "Agency",
+                        Text = "Who are these guys?!",
+                        NextDialogue = 4,
+                    }, {
+                        Speaker = "Agency",
+                        Text = "Could it be that someone has altered this timeline?",
+                        NextDialogue = 4,
+                    }, {
+                        Speaker = "Agency",
+                        Text = "Why would they want to mess with this already desolated place?",
+                        NextDialogue = 4,
+                    }},
                     Enemies = {
-                        [1] = {'Saiyan', 3, 1, 'Saiyan', 2, 1},
-                        [2] = {'Saiyan', 4, 2, 'Boss', 1, 2},
+                        [1] = {'Saiyan', 3, 1},
+                        [2] = {'Saiyan', 3, 1},
                     },
 
                     Finished = function()
@@ -96,12 +108,39 @@ return {
                 Harder_Area = {
                     Objective = "Defeat the {objective[KillEnemies]} saiyans",
                     Goal = {
-                        ['KillEnemies'] = 10,
+                        ['KillEnemies'] = 7,
                     },
                     Enemies = {
                         [1] = {'Saiyan', 3, 3},
                         [2] = {'Saiyan', 4, 3},
-                        [3] = {'Saiyan', 3, 3},
+                    },
+
+                    Finished = function()
+                        return 'None'
+                    end
+                },
+
+                Inbetween_Area = {
+                    Objective = "These should be the last enemies",
+                    Goal = {
+                        ['KillEnemies'] = 5,
+                    },
+                    Enemies = {
+                        [1] = {'Saiyan', 5, 2},
+                    },
+
+                    Finished = function()
+                        return 'None'
+                    end
+                },
+
+                Last_Area = {
+                    Objective = "Defeat their boss!",
+                    Goal = {
+                        ['KillEnemies'] = 1,
+                    },
+                    Enemies = {
+                        [1] = {'Boss', 1, 1},
                     },
 
                     Finished = function()
@@ -110,69 +149,5 @@ return {
                 },
             },
         },
-
-        --[[ex = {
-            Requisites = {
-
-            },
-
-            Rewards = {
-                Handler = function(Objectives): Types.Rating
-                    if Objectives.Main == true then
-                        return "SSS"
-                    end
-
-                    return "X"
-                end
-            },
-            Guide = {
-                Begin = {
-                    Objective = "Go check out what\'s going on at that one street",
-                    Goal = {ReachPlace = "FirstFightZone"},
-                    Enemies = {},
-                    Global = true,
-
-                    Finished = function(State: Types.EventHandlerState): string
-                        if State.ReachPlace == true then
-                            return "FirstFightZone"
-                        end
-
-                        return "Second"
-                    end
-                },
-
-                FirstFightZone = {
-                    Objective = "Beat {objective[KillEnemies]} enemies!",
-                    Goal = {KillEnemies = 10},
-                    Enemies = {
-                        -- Enemy Name, Enemy Amount, Enemy Level
-                        [1] = {"Saiyan", 3, 5, "Template", 1, 10},
-                        [2] = {"Template", 4, 25, "Saiyan", 1, 20},
-                        [3] = {"Boss", 1, 30},
-                    },
-                    Global = true,
-
-                    Finished = function(State: Types.EventHandlerState)
-                        return "End"
-                    end
-                },
-
-                Second = {
-                    Objective = "Do something idk",
-                    Goal = {ReachPlace = ""},
-                    Enemies = {},
-
-                    Finished = function(State: Types.EventHandlerState): (string)
-                        return "End"
-                    end
-                },
-
-                Death = {
-                    Actions = {
-                        ["KickPlayer"] = "all",
-                    }
-                }
-            }
-        }]]
     }
 } :: Types.Stage

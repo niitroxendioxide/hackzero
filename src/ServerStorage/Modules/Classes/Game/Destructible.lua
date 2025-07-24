@@ -95,7 +95,7 @@ function DestructibleClass.TakeDamage(self: Destructible, Perpetrator: Types.Gen
         self.Destroyed:Fire(Perpetrator)
         self:Destroy()
 
-        return
+        return true
     end
 
     -- hit structure, very hardcoded but whatever man
@@ -106,6 +106,8 @@ function DestructibleClass.TakeDamage(self: Destructible, Perpetrator: Types.Gen
     buffer.copy(NewBuffer, 1, BufferObj, 0, BufferLen)
 
     Network:FireForAll("Replicate", NewBuffer)
+
+    return false
 end
 
 function DestructibleClass.GetCollider(self: Destructible)

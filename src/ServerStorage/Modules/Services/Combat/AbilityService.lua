@@ -14,6 +14,7 @@ local GameEnum = require(Shared.GameEnum)
 
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local AgentLibrary = require(ServerStorage.Modules.Libraries.Agents)
+local MatchStats = require(ServerStorage.Modules.Libraries.MatchStats)
 local MovesetLibrary = require(ServerStorage.Modules.Libraries.Movesets)
 local QuestService = require(ServerStorage.Modules.Services.Data.QuestService)
 
@@ -65,6 +66,8 @@ function Service:Init()
 					["Kill"] = true,
 					["Damage"] = true,
 				})
+
+				MatchStats:AddToStat(AgentPlayer, "Kills", Data.IsKill and 1 or 0)
 
 				if Data.IsKill and PlayerCombatQuests["Kill"] then
 					local KillQuests = PlayerCombatQuests["Kill"]

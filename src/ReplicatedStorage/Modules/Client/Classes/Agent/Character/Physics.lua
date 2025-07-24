@@ -5,40 +5,10 @@ local RunService = game:GetService('RunService')
 --
 local Shared = ReplicatedStorage.Modules.Shared
 
+local PhysicsHelper = require(Shared.Libraries.PhysicsHelper)
 local World = require(Shared.World)
 local Types = require(Shared.Types)
 --local Signal = require(Shared.Utility.Signal)
-
---
-local function CastAround(Origin: CFrame, Size: number, Blocks: {}): RaycastResult?
-	local RayCount = 8
-	local Wide = math.rad(80)
-	local Params = World:GetCollisionParams(nil, Blocks) :: RaycastParams
-	for i = 0, RayCount do
-		local Angle = -(Wide * 0.5) + (Wide / RayCount) * i
-		local Direction = (Origin * CFrame.Angles(0, Angle, 0)).LookVector * 2.5
-		local Result = workspace:Spherecast(Origin.Position, 1.75, Direction, Params)
-
-		if workspace:GetAttribute("DebugMovement") then
-			local Part = Instance.new("Part")
-			Part.Color = Result and Color3.new(0, 1) or Color3.new(1)
-			Part.Anchored = true
-			Part.CanCollide = false
-			Part.CanQuery = false
-			Part.Size = Vector3.new(0.1, 0.1, 5)
-			Part.CFrame = CFrame.lookAlong(Origin.Position, Direction.Unit) * CFrame.new(0, 0, -2.5)
-			Part.Parent = workspace.World.Effects
-
-			task.delay(1/60, Part.Destroy, Part)
-		end
-
-		if Result then
-			return Result
-		end
-	end
-
-	return;
-end
 
 --
 local PhysicsClass = {} :: {[string]: (self: Types.PhysicsController, any) -> any, new: () -> Types.PhysicsController}
@@ -254,7 +224,7 @@ function PhysicsClass:Update(Delta: number)
 
 		local Extra = math.atan(self.__Normal:Dot(Vector3.yAxis)) + World.StepHeight
 		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams(false, self.__Added_Colliders):: RaycastParams)
-		local Collision = CastAround(Origin, Collider.Size.Z, self.__Added_Colliders)
+		local Collision = PhysicsHelper:CalculateCharacterCollisions(Origin, TotalDisplacement, Delta, self.__Added_Colliders)
 
 		if CanReachFloor and (CanReachFloor.Position.Y - (self.__Position.Y - self.__Height)) < World.StepHeight then
 			if not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1 then
@@ -306,11 +276,11 @@ end
 
 function PhysicsClass:Destroy(): ()
 	local Collider = self.__Collider
-	
+
 	if Collider then
 		Collider:Destroy()
 	end
-	
+
 	if self.__ActiveThread then
 		self.__ActiveThread:Disconnect()
 	end

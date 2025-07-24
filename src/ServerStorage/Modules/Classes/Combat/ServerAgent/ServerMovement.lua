@@ -5,6 +5,7 @@ local RunService = game:GetService('RunService')
 --
 local Shared = ReplicatedStorage.Modules.Shared
 
+local PhysicsHelper = require(Shared.Libraries.PhysicsHelper)
 local World = require(Shared.World)
 local Types = require(Shared.Types.Agents)
 
@@ -13,23 +14,6 @@ local StatesClass = require(Shared.Classes.Agents.States)
 -- DEBUG
 local TestEnv = require("../../../.testenv/settings")
 local REPLICATE_HITBOX = RunService:IsStudio() and TestEnv.REPLICATE_CONSTANTS.HITBOXES
-
-local function CastAround(Origin: CFrame, Size: number, Blocks: {}): RaycastResult?
-	local RayCount = 8
-	local Wide = math.rad(80)
-	local Params = World:GetCollisionParams(nil, Blocks) :: RaycastParams
-	for i = 0, RayCount do
-		local Angle = -(Wide * 0.5) + (Wide / RayCount) * i
-		local Direction = (Origin * CFrame.Angles(0, Angle, 0)).LookVector * 2.5
-
-		local Result = workspace:Spherecast(Origin.Position, 1.75, Direction, Params)--workspace:Spherecast(Origin.Position, 1, Direction, Params)
-		if Result then
-			return Result
-		end
-	end
-
-	return;
-end
 
 --
 local ServerCharacterClass = {}
@@ -229,10 +213,9 @@ function ServerCharacterClass:Update(Delta: number)
 	if TotalDisplacement.Magnitude > .1 then
 		local Moved = (TotalDisplacement * CurrentWorldSpeed * Delta)
 
-		local Size = self.__Collider.Size
 		local Extra = math.atan(self.__Normal:Dot(Vector3.yAxis)) + World.StepHeight
 		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams(false, self.__Added_Colliders) :: RaycastParams)
-		local Collision = CastAround(Origin, Size.Z, self.__Added_Colliders)-- workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetCollisionParams() :: RaycastParams)
+		local Collision = PhysicsHelper:CalculateCharacterCollisions(Origin, TotalDisplacement, Delta, self.__Added_Colliders)
 
 		if CanReachFloor and (CanReachFloor.Position.Y - (self.__Position.Y - self.__Height)) < World.StepHeight then
 			if not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1 then

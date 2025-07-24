@@ -12,8 +12,11 @@ local Database = Shared.Database
 local LootService = require(script.Parent.LootService)
 local Stages = require(ReplicatedStorage.Modules.Shared.Types.Stages)
 local Map = require(ServerStorage.Modules.Libraries.Map)
+local MatchStats = require(ServerStorage.Modules.Libraries.MatchStats)
 local Network = require(Shared.Network)
 local Targets = require(ServerStorage.Modules.Libraries.Targets)
+local AchievementService = require(ServerStorage.Modules.Services.Data.AchievementService)
+local DataService = require(ServerStorage.Modules.Services.Data.DataService)
 local GameEnum = require(Shared.GameEnum)
 local MissionClass = require(Classes.Game.Mission)
 local StageDatabase = require(Database.Stages)
@@ -109,13 +112,26 @@ function Service:End(Won: boolean)
             })
         end
 
+        local PlayerStats = {
+            Total_Damage = AbilityService.__Total_Damage,
+        }
+
+        local BasePlayer: Player = StagePlayer:GetBase()
+        for StatName, Value in (MatchStats:GetAllPlayerStats(BasePlayer) or {}) do
+            PlayerStats[StatName] = Value
+        end
+
+        local Key = "Stats.TotalMissions"
+        local TotalMissions = DataService:Get(BasePlayer, Key) or 0
+
+        DataService:Set(BasePlayer, Key, TotalMissions + 1)
+        AchievementService:Give(BasePlayer, "Beginner_Agent")
+
         local PlayerEndResult = {
             Status = WinStatus,
             Rank = Rank,
 
-            Stats = {
-                Total_Damage = AbilityService.__Total_Damage,
-            },
+            Stats = PlayerStats,
 
             Items = Items,
         }

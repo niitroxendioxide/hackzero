@@ -13,7 +13,6 @@ local Ability = AbilityClass.new(true)
 function Ability:Play(Agent: Types.GenericClass)
 	Ability:Increase(Agent, 'Count', {Limit = 4})
 	local M1_Count = Ability:Get(Agent, 'Count')
-	print(M1_Count)
 
 	if Ability:Get(Agent, 'M1_Track') then
 		Ability:Get(Agent, 'M1_Track'):Stop(0.225)

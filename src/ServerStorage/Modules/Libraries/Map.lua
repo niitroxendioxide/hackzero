@@ -1,10 +1,12 @@
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage.Assets
 
+local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Types = require(Shared.Types.Stages)
 local World = workspace:WaitForChild('World')
 
@@ -84,12 +86,14 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
     end
 
     for _, Part in Map.Markers:GetChildren() do
-        if not RunService:IsStudio() then
-            Part:ClearAllChildren()
+        if RunService:IsStudio() and settings.REPLICATE_CONSTANTS.MARKERS then
+            break
         end
+
+        Part:ClearAllChildren()
     end
 
-    local Triggers = Map:FindFirstChild('Triggers') or Instance.new('Folder')
+    local Triggers = Map:FindFirstChild( 'Triggers') or Instance.new('Folder')
     Triggers.Name = 'Triggers'
     Triggers.Parent = Map
 
@@ -128,7 +132,6 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
             local PartList = {}
 
             for _, Object in Map.Markers:GetChildren() do
-                print(ObjName, Object.Name)
                 if Object.Name == MarkerId then
                     table.insert(PartList, Object)
                 end

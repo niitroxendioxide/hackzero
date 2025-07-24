@@ -10,6 +10,7 @@ return {
         TotalDaze = 0,
         TotalKills = 0,
         TotalPulls = 0,
+        TotalMissions = 0,
         TotalGemsSpent = 0,
         TotalMoneySpent = 0,
     },

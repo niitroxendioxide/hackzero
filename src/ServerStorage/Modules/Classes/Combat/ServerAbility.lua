@@ -19,6 +19,7 @@ local ServerHitboxUtil = require(ServerStorage.Modules.Libraries.Hitbox)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local DamageLibrary = require(ServerStorage.Modules.Libraries.Damage)
 local AgentsLibrary = require(ServerStorage.Modules.Libraries.Agents)
+local MatchStats = require(ServerStorage.Modules.Libraries.MatchStats)
 local WorldCamera = workspace:WaitForChild('Camera')
 
 --
@@ -87,6 +88,8 @@ function ServerAbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Off
 			else
 				self:Effect('Dodge', {Target}, {Target.__Player_Assigned})
 			end
+
+			MatchStats:AddToStat(Target.__Player_Assigned, "Dodges", 1)
 
 			Target:AddTag('Invulnerability', Statics.Dodge_Invulnerability_Time)
 			Target:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
@@ -222,7 +225,10 @@ local function HitAgent(Caster: Types.ServerEnemyClass, Agent: AgentTypes.Server
 end
 
 local function HitStructure(Caster, Structure, Data)
-	Structure:TakeDamage(Caster, Data.Damage)
+	local IsKill = Structure:TakeDamage(Caster, Data.Damage)
+	if IsKill and Caster.__Player_Assigned then
+		MatchStats:AddToStat(Caster.__Player_Assigned, "Structures_Destroyed", 1)
+	end
 
 	return {
 		Hit_Type = 'Structure',

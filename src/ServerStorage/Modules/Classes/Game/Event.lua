@@ -1,5 +1,3 @@
---
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -15,6 +13,15 @@ local GameEnum = require(Shared.GameEnum)
 local Replicator = require(Modules.Libraries.Replicator)
 local EnemyService = require(Modules.Services.Combat.EnemyService)
 local ServerCutscenesLibrary = require(Modules.Libraries.Cutscenes)
+
+--
+local function ReplicateEvent(Player: Player, EventName: string)
+    local Obj = buffer.create(1 + #EventName)
+    buffer.writeu8(Obj, 0, GameEnum.Replication.PlayEventDialogue)
+    buffer.writestring(Obj, 1, EventName)
+
+    Network:Fire("Replicate", Player, Obj)
+end
 
 --
 local EventClass = {}
@@ -77,6 +84,11 @@ function EventClass.Start(self: Types.EventClass, Trigger: BasePart?)
 
     self.__Current_Goals = EventData.Goal
 
+    if EventData.Dialogue then
+        for _, StagePlayer in self:GetPlayerObjects() do
+            ReplicateEvent(StagePlayer, self.__Event)
+        end
+    end
     --
     if #EventData.Enemies > 0 then
         if Trigger then
@@ -107,6 +119,7 @@ function EventClass.SetBarrierCollision(self: Types.EventClass, State: boolean)
         local Team = StagePlayer:GetTeam()
 
         for _, Agent in Team do
+            Agent:SetLimitArea(State and self.__Current_Barriers[1] or nil)
             Agent:SetColliderGroupEnabled(self.__Current_Barriers, State)
         end
 

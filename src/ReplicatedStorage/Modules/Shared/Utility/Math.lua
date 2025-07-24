@@ -162,4 +162,21 @@ function Math:Decodeu2u6(obj: buffer, offset: number?): (number, number)
     return ExtractedFirst, ExtractedSecond
 end
 
+function Math:IsPointInBox(Point: CFrame | Vector3, Box: BasePart, SizeModifier: number?)
+    if typeof(Point) == "CFrame" then
+        Point = Point.Position
+    end
+
+    local BoxCFrame = Box:GetPivot()
+    local BoxSize = Box.Size * (SizeModifier or 1)
+
+    local Offset = BoxCFrame:PointToObjectSpace(Point)
+
+    local HalfSize = BoxSize / 2
+
+    return (math.abs(Offset.X) <= HalfSize.X and
+           math.abs(Offset.Y) <= HalfSize.Y and
+           math.abs(Offset.Z) <= HalfSize.Z)
+end
+
 return Math

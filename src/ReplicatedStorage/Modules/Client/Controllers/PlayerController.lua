@@ -126,6 +126,8 @@ function Controller:Init(): ()
 				CurrentCharacter:Stop()
 			end
 
+			Player.Character:PivotTo(CurrentCharacter:GetPivot())
+
 			CurrentCharacter.__Swapped = false
 		else
 			if CharacterLibrary:GetAliveCount() <= 0 then

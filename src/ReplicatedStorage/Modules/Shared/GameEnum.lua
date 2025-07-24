@@ -54,6 +54,7 @@ return {
 		HitDestructible = 82,
 
 		CreateChest = 83,
+		PlayEventDialogue = 84,
 	},
 
 	InteractionType = {

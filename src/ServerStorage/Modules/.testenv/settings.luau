@@ -1,11 +1,12 @@
 return table.freeze({
     REPLICATE_CONSTANTS = {
-        HITBOXES = false,
+        HITBOXES = true,
+        MARKERS = false,
     },
 
     STAGE = {
         Stage = 'Training',
-        Act = 'Act1',
+        Act = 'Intro',
     },
 
     BORROWED_AGENT_LEVEL = 60,

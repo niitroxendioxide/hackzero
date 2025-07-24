@@ -35,6 +35,7 @@ function AgentClass.new(Name: string, Level: number, Skills: {}): AgentTypes.Age
 	self.__Skill_Levels = Skills
 	self.__Look_Marked = false
 	self.__Skill_Thread = nil
+	self.__Limit_Area = nil
 	self.__Character = CharacterClass.new(Name)
 	self.__Items = ItemsClass.new(self)
 
@@ -49,8 +50,18 @@ function AgentClass.SetColliderGroupEnabled(self: AgentTypes.AgentClass, Group: 
 	return self.__Character.__Controller:SetColliderGroupState(Group, State)
 end
 
-function AgentClass:GetId(): number
+function AgentClass.GetId(self: AgentTypes.AgentClass): number
 	return self.PlayerId
+end
+
+function AgentClass.SetLimitArea(self: AgentTypes.AgentClass, BasePart: BasePart)
+	assert(typeof(BasePart) == 'Instance' or typeof(BasePart) == 'nil', "Invalid area given for the Agent\'s limit")
+
+	self.__Limit_Area = BasePart
+end
+
+function AgentClass.GetLimitArea(self: AgentTypes.AgentClass)
+	return self.__Limit_Area
 end
 
 function AgentClass:SetLevel(Amount: number)

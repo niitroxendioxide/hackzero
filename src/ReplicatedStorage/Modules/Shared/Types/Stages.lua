@@ -36,6 +36,12 @@ export type Stage_Key_Event = {
 	Objective: string,
 	Goal: Goal,
 
+	Dialogue: {{
+		Speaker: string,
+		Text: string,
+		NextDialogue: number?,
+	}}?,
+
 	Active_Triggers: {string},
 
 	Finished: (State: EventHandlerState) -> (string),

@@ -8,7 +8,7 @@ return {
     Map = "General/Training",
 
     Acts = {
-        Act1 = {
+        Intro = {
             Requisites = {},
 
             Rewards = {
@@ -46,8 +46,6 @@ return {
             },
 
             Guide = {
-
-
                 Begin = {
                     Objective = "Test out new skills",
                     Goal = {ReachPlace = "End"},

@@ -26,7 +26,7 @@ local PlayerDriveDataClass = require(Classes.Data.PlayerDriveData)
 local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("linganguli", ProfileTemplate)
+local DataStore = ProfileStore.New("newdata", ProfileTemplate)
 
 --
 local ReplicatedKeys = {"Gems", "Money"}

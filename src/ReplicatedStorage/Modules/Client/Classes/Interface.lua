@@ -89,7 +89,7 @@ function ComponentClass:Set(Visible: boolean?, Raw: boolean)
 end
 
 function ComponentClass:Bind()
-	local Object = self:Link()
+	local Object = self:Link(Players.LocalPlayer)
 
 	self.__Main_Frame = Object
 

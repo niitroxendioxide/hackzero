@@ -6,6 +6,7 @@ local Data = require(ReplicatedStorage.Modules.Shared.Types.Data)
 --
 local LocalData = {
     __Cache = {},
+    __Stage_Data = {},
 }
 
 function LocalData:SetAgents(Data: {Types.ClientAgentData}): ()
@@ -16,6 +17,19 @@ end
 
 function LocalData:GetAgents(): {Types.ClientAgentData}
     return LocalData.__Cache["Agents"] or {}
+end
+
+function LocalData:SetStageData(Stage: string, Act: string)
+    LocalData.__Stage_Data.Stage = Stage
+    LocalData.__Stage_Data.Act = Act
+end
+
+--[[
+    @return Stage (string)
+    @return Act (string)
+]]
+function LocalData:GetStageData(): (string, string)
+    return LocalData.__Stage_Data.Stage, LocalData.__Stage_Data.Act
 end
 
 function LocalData:GetAgent(Name: string): Types.ClientAgentData?

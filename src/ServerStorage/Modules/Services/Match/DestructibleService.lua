@@ -83,7 +83,6 @@ end
 function Service:Create(Type: string, At: CFrame, StructureData: StructureData?)
     --
     local Rotation = math.atan2(At.LookVector.X, At.LookVector.Y)
-    print(Rotation)
 
     local DestructibleInstance = Destructible.new(Type, At.Position, Rotation)
 

@@ -62,7 +62,11 @@ export type AgentClass =  {
 	__Gear: ClientGearManager,
 	__Locked: boolean,
 	__Skill_Levels: SkillLevels,
+	__Limit_Area: BasePart?,
+	
 	GetId: (self: AgentClass) -> (number),
+	SetLimitArea: (self: AgentClass, Part: BasePart) -> (),
+	GetLimitArea: (self: AgentClass) -> (BasePart),
 
 	Init: (self: AgentClass) -> (),
 	Move: (self: AgentClass) -> (),
@@ -260,10 +264,14 @@ export type ServerAgentClass = {
 	__Last_Hit_Caster: number,
 	__Current_Target: {Data: AssistStruct, Thread: thread}?,
 	__Gear: ServerGearManager,
+	__Limit_Area: BasePart?,
+
 
 	__Active: boolean,
 	__Character: ServerCharacterClass,
 
+	SetLimitArea: (self: AgentClass, Part: BasePart) -> (),
+	GetLimitArea: (self: AgentClass) -> (BasePart),
 	GetId: (self: ServerAgentClass) -> (number),
 	Init: (self: ServerAgentClass) -> (),
 	Stop: (self: ServerAgentClass) -> (),

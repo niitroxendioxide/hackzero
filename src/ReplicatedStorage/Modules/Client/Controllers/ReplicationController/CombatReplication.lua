@@ -7,6 +7,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage.Assets
 
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
+local LocalData = require(ReplicatedStorage.Modules.Client.Libraries.LocalData)
 local Structures = require(ReplicatedStorage.Modules.Client.Libraries.Structures)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
@@ -17,6 +18,7 @@ local Enemies = require(Shared.Libraries.Enemies)
 local Effects = require(Client.Libraries.Effects)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
 local InterfaceController = require(Client.Controllers.InterfaceController)
+local StageDatabase = require(Shared.Database.Stages)
 
 local AgentsDatabase = require(Shared.Database.Characters)
 local DestructiblesDatabase = require(Shared.Database.Destructibles)
@@ -84,7 +86,10 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 
 	if Colliders[TriggerObject] then
 		if not State then
+			Effects:Play("Barrier", TriggerObject.Name..'barrier', Colliders[TriggerObject], TriggerObject.Position, false)
+
 			for _, Agent in Characters:GetCharacters(RepId) do
+				Agent:SetLimitArea(nil)
 				Agent:SetColliderGroupEnabled(Colliders[TriggerObject], false)
 			end
 
@@ -103,6 +108,7 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 	end
 
 	local Size = (TriggerObject:GetAttribute("AreaSize") or (TriggerObject.Size * 1.25)) :: Vector3
+
     local Sizes = {
         Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
         Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, Size.Z/2 - 1),
@@ -133,7 +139,10 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
         table.insert(Colliders[TriggerObject], Part)
     end
 
+	Effects:Play("Barrier", TriggerObject.Name..'barrier', Colliders[TriggerObject], TriggerObject.Position, true)
+
 	for _, Agent in Characters:GetCharacters(RepId) do
+		Agent:SetLimitArea(TriggerObject)
 		Agent:SetColliderGroupEnabled(Colliders[TriggerObject], true)
 	end
 end
@@ -415,6 +424,24 @@ function Controller:FillMeter(Buffer: buffer)
 	if not MeterName then return end
 
 	MainUIHUD:UpdateAgentMeter(AgentId, MeterName, Percent)
+end
+
+function Controller:PlayEventDialogue(Buffer: buffer)
+	local EventName = buffer.readstring(Buffer, 1, buffer.len(Buffer)-1)
+
+	local Stage, Act = LocalData:GetStageData()
+	local EventData = StageDatabase:GetEvent(Stage, Act, EventName)
+
+	local Dialogue = InterfaceController:GetComponent("Dialogue")
+
+	for _, DialogueObject in EventData.Dialogue do
+		Dialogue:ShowDialogue(DialogueObject)
+
+		if DialogueObject.NextDialogue then
+			task.wait(DialogueObject.NextDialogue)
+		end
+	end
+
 end
 
 function Controller:SetEnemySpeed(Buffer: buffer)
