@@ -66,6 +66,56 @@ return {
                         PlayCutscene = 'CutsceneWhenWallBreaks',
                     },
                 },
+
+                ['RefugeeNPC1'] = {
+                    Type = "NPC",
+                    Dialogue = {
+                        {
+                            Speaker = "Refugee",
+                            Text = "H-hello... can I help you?",
+                            Options = {
+                                "I'm here to save you guys"
+                            },
+                        },
+
+                        {
+                            Speaker = "Refugee",
+                            Text = "Oh.. you\'re chill? :D",
+
+                            Options = {
+                                "Yeah!",
+                                "Maybe."
+                            },
+                        },
+
+                        {
+                            Speaker = "Refugee",
+                            Text = "Thanks for helping. Please tell my friend over there to follow us too"
+                        }
+                    },
+                },
+
+                ['RefugeeNPC2'] = {
+                    Type = "NPC",
+                    Dialogue = {
+                        {
+                            Speaker = "Refugee",
+                            Text = "PLEASE DO NOT HURT ME :C",
+                            NextDialogue = 3,
+                        },
+
+                        {
+                            Speaker = "Refugee",
+                            Text = "Huh.. Oh, you want me to follow you?",
+                        },
+
+                        {
+                            Speaker = "Happy Refugee",
+                            Text = "Understood",
+                            NextDialogue = 1.25,
+                        }
+                    },
+                },
             },
 
             Guide = {

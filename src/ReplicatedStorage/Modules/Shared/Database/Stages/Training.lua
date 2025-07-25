@@ -45,6 +45,10 @@ return {
                         {
                             Speaker = "Training Place NPC",
                             Text = "Hello! I am a dialogue guy... haha",
+                            Options = {
+                                "Buddy.",
+                                "What!"
+                            },
                         },
 
                         {
@@ -76,7 +80,7 @@ return {
                         {
                             Speaker = "Agency",
                             Text = "Welcome to the training area!",
-                            NextDialogue = 10,
+                            NextDialogue = 3,
                         },
 
                         {

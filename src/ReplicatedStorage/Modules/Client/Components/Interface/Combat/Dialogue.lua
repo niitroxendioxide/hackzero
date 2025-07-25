@@ -1,6 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = ReplicatedStorage.Modules.Client
+local Assets = ReplicatedStorage.Assets
+
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
 local BaseClass = require(Client.Classes.Interface)
@@ -8,6 +10,10 @@ local BaseClass = require(Client.Classes.Interface)
 local Component = BaseClass.new("Dialogue", "Cutscenes")
 local Threads = {}
 local Tweens = {} :: {Tween}
+local Connections = {}
+
+type Main = Frame & {Options: Frame & {UIListLayout: UIListLayout}}
+type Dialoguebox = {Speaker: TextLabel, Label: TextLabel}
 
 function Component:Link(Player: Player)
     local PlayerGui = Player.PlayerGui
@@ -20,20 +26,21 @@ end
 
 function Component:Init()
     Component.Completed = Signal.new()
+    Component.ButtonPressed = Signal.new() :: Signal.ScriptSignal<string>
 end
 
-function Component:ShowDialogue(Data: {Speaker: string, Text: string, NextDialogue: number})
+function Component:ShowDialogue(Data: {Speaker: string, Text: string, NextDialogue: number, Options: {string}})
     self:Set(true)
 
     local CurrentFrame = self:GetFrame()
-    local DialogueBox = CurrentFrame.Area :: {Speaker: TextLabel, Label: TextLabel}
+    local DialogueBox = CurrentFrame.Area :: Dialoguebox
 
     for _, Thread in Threads do
         task.cancel(Thread)
     end
 
     for _, Tween: Tween in Tweens do
-        Tween:Cancel()
+        Tween:Cancel()  
     end
 
     Threads = {}
@@ -70,7 +77,7 @@ function Component:ShowDialogue(Data: {Speaker: string, Text: string, NextDialog
 
     local NextTime = Data.NextDialogue or 7
 
-    table.insert(Threads, task.delay(NextTime + 0.25, function()
+    local function Destroy()
         table.insert(Tweens, Effects:Tween(CurrentFrame.DotsWhite, {.15, 'Quad'}, {ImageTransparency = 1}))
         table.insert(Tweens, Effects:Tween(CurrentFrame.DotsDark, {.175, 'Quad'}, {ImageTransparency = 1}))
         table.insert(Tweens, Effects:Tween(CurrentFrame.Bg, {.3, 'Quad'}, {ImageTransparency = 1}))
@@ -82,6 +89,56 @@ function Component:ShowDialogue(Data: {Speaker: string, Text: string, NextDialog
         Effects:Tween(DialogueBox.Label.UIStroke, {.3, 'Quad'}, {Transparency = 1})
 
         Component.Completed:Fire()
+    end
+
+    if Data.Options then
+        for Id, Option in Data.Options do
+            Component:CreateOptionButton(Option, Id)
+        end
+
+        Component.ButtonPressed:Wait()
+        table.insert(Threads, task.delay(0.25, Destroy))
+    else
+        table.insert(Threads, task.delay(NextTime + 0.25, Destroy))
+    end
+end
+
+function Component:ClearOptions()
+    local CurrentFrame = self:GetFrame() :: Main
+
+    for _, Connection in Connections do
+        Connection:Disconnect()
+    end
+
+    for _, Option in CurrentFrame.Options:GetChildren() do
+        if Option:IsA("TextButton") then
+            Option:Destroy()
+        end
+    end
+end
+
+function Component:CreateOptionButton(Text: string, Id: number)
+    local CurrentFrame = self:GetFrame() :: Main
+
+    local Option = Assets.Interface.Dialogue.Option:Clone()
+    Option.Label.Text = Text
+    Option.Number.Label.Text = Id
+    Option.Parent = CurrentFrame.Options
+
+    table.insert(Connections, Option.MouseButton1Click:Once(function()
+        Component.ButtonPressed:Fire(Text)
+
+        Component:ClearOptions()
+    end))
+
+    table.insert(Connections, Option.MouseEnter:Connect(function()
+        Effects:Tween(Option.Bg, {.25, 'Quad'}, {BackgroundTransparency = 0.75})
+        Effects:Tween(Option.Bg.UIStroke, {.17, 'Sine'}, {Transparency = 0.25})
+    end))
+
+    table.insert(Connections, Option.MouseLeave:Connect(function()
+        Effects:Tween(Option.Bg, {.25, 'Quad'}, {BackgroundTransparency = 0.9})
+        Effects:Tween(Option.Bg.UIStroke, {.17, 'Sine'}, {Transparency = 0.5})
     end))
 end
 
@@ -90,8 +147,10 @@ function Component:PlaySequence(Sequence: {{}})
         for _, DialogueObject in Sequence do
             Component:ShowDialogue(DialogueObject)
 
-            local Time = DialogueObject.NextDialogue or 4
-            task.wait(Time)
+            if not DialogueObject.Options then
+                local Time = DialogueObject.NextDialogue or 4
+                task.wait(Time)
+            end
         end
     end)
 end
