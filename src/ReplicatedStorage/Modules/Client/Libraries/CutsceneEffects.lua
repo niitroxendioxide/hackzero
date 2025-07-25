@@ -6,6 +6,8 @@ local Shared = ReplicatedStorage.Modules.Shared
 local EffectUtil = require(Shared.Utility.Effects)
 local Util = {}
 
+local OriginalScreenTransparency = {}
+
 --[[
     Hides the player HUD
     @param Time Automatically show it again after x seconds
@@ -21,10 +23,44 @@ function Util:HideHUD(Time: number?): (() -> ())?
         return
     end
 
-    EffectUtil:Tween(Screen, {.25}, {GroupTransparency = 1})
+
+    for _, Object in Screen:GetDescendants() do
+        if Object:IsDescendantOf(Screen.Dialogues) then
+            continue
+        end
+
+        if Object:IsA("Frame") then
+            if not OriginalScreenTransparency[Object] then
+                OriginalScreenTransparency[Object] = {Object.BackgroundTransparency, 'BackgroundTransparency'}
+            end
+
+            EffectUtil:Tween(Object, {.25}, {BackgroundTransparency = 1})
+        elseif Object:IsA("ImageLabel") or Object:IsA("ViewportFrame") then
+            if not OriginalScreenTransparency[Object] then
+                OriginalScreenTransparency[Object] = {Object.ImageTransparency, 'ImageTransparency'}
+            end
+
+            EffectUtil:Tween(Object, {.25}, {ImageTransparency = 1})
+        elseif Object:IsA("TextLabel") then
+            if not OriginalScreenTransparency[Object] then
+                OriginalScreenTransparency[Object] = {Object.TextTransparency, 'TextTransparency'}
+            end
+
+            EffectUtil:Tween(Object, {.25}, {TextTransparency = 1})
+        elseif Object:IsA("UIStroke") then
+            if not OriginalScreenTransparency[Object] then
+                OriginalScreenTransparency[Object] = {Object.Transparency, 'Transparency'}
+            end
+
+            EffectUtil:Tween(Object, {.25}, {Transparency = 1})
+        end
+
+    end
 
     local function Show()
-        EffectUtil:Tween(Screen, {.25}, {GroupTransparency = 0})
+        for Object, TransparencyValue in OriginalScreenTransparency do
+            EffectUtil:Tween(Object, {.25}, {[TransparencyValue[2]] = TransparencyValue[1]})
+        end
     end
 
     if Time then

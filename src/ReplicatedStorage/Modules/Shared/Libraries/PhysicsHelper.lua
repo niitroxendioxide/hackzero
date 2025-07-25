@@ -5,6 +5,8 @@ local Shared = ReplicatedStorage.Modules.Shared
 local World = require(Shared.World)
 local PhysicsHelper = {}
 
+local ENEMY_SIZE_RADIUS = 2.25
+
 function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir: Vector3, Delta: number, Blocks: {}): RaycastResult?
     local hasResult = nil
 	local SideCount = 8
@@ -35,6 +37,43 @@ function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir:
 			if Result then
 				hasResult = Result
 			end
+		end
+	end
+
+	return hasResult;
+end
+
+function PhysicsHelper:CalculateEnemyCollisions(Origin: CFrame, MovementDir: Vector3, Delta: number): RaycastResult?
+    local hasResult = nil
+	local MapParams = World:GetEntityMapParams(false)
+	if MovementDir.Magnitude <= 0 then
+		return
+	end
+
+	local DebugOn = (workspace:GetAttribute("DebugMovement") and RunService:IsClient() and RunService:IsStudio())
+	for i = 0, 1.5, 1.5 do
+		local OriginPoint = (Origin * CFrame.new(0, i, 0))
+		local Length = 2 + MovementDir.Magnitude * 0.1 * Delta * 4
+		local Direction = (CFrame.lookAlong(OriginPoint.Position, MovementDir)).LookVector * Length
+
+		local Result = workspace:Spherecast(OriginPoint.Position, ENEMY_SIZE_RADIUS, Direction, MapParams)
+
+		if DebugOn then
+			local Part = Instance.new("Part")
+			Part.Color = Result and Color3.new(0, 1) or Color3.new(1)
+			Part.Anchored = true
+			Part.CanCollide = false
+			Part.CanQuery = false
+			Part.Shape = Enum.PartType.Ball
+			Part.Size = Vector3.one * ENEMY_SIZE_RADIUS
+			Part.CFrame = CFrame.lookAlong(OriginPoint.Position, Direction.Unit) * CFrame.new(0, 0, -Length/2)
+			Part.Parent = workspace.World.Effects
+
+			task.delay(Delta, Part.Destroy, Part)
+		end
+
+		if Result then
+			hasResult = Result
 		end
 	end
 

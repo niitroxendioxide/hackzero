@@ -310,9 +310,10 @@ function ServerAgentClass:SwitchState(State: string, Time: number, Unaffected: b
 		end)
 	end
 
+	local TimeExtra = Ping:Get(self.__Player_Assigned)
 	local TimeMod = not Unaffected and State == 'Attacking' and self:GetStat("Speed") or 1
 
-	self.__Character.States:Switch(State, Time / TimeMod)
+	self.__Character.States:Switch(State, (Time + TimeExtra) / TimeMod)
 
 	if self:IsMoving() then
 		self:Move()

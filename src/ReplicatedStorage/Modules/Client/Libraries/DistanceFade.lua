@@ -380,7 +380,7 @@ local function SetUpSurface(targetPart, normal, obj)
 	surfaceGui.Enabled = false --set true whenever in range
 	local resolution = obj.Settings.EffectResolution
 	local tiles = CreateGrid(resolution, surfaceGui)
-	ApplyCircularGradient(tiles, resolution)
+	ApplyCircularGradient(tiles)
 
 	return surfacePart, surfaceGui
 end

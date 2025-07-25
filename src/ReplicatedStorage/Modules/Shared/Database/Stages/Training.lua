@@ -39,6 +39,26 @@ return {
                     },
                 },
 
+                ['NPCTest1'] = {
+                    Type = "NPC",
+                    Dialogue = {
+                        {
+                            Speaker = "Training Place NPC",
+                            Text = "Hello! I am a dialogue guy... haha",
+                        },
+
+                        {
+                            Speaker = "Training Place NPC",
+                            Text = "So. why do you want to talk to me?",
+                        },
+
+                        {
+                            Speaker = "Training Place NPC",
+                            Text = "You can\'t answer lol!"
+                        }
+                    },
+                },
+
                 ['EndArea'] = {
                     Type = 'Trigger',
                     Name = "End",
@@ -51,6 +71,18 @@ return {
                     Goal = {ReachPlace = "End"},
                     Enemies = {
                         [1] = {"Saiyan", 1, 1}
+                    },
+                    Dialogue = {
+                        {
+                            Speaker = "Agency",
+                            Text = "Welcome to the training area!",
+                            NextDialogue = 10,
+                        },
+
+                        {
+                            Speaker = "Agency",
+                            Text = "You can test out your skills here. For free!",
+                        }
                     },
                     Global = true,
 

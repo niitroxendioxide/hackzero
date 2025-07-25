@@ -10,6 +10,7 @@ local Services = Modules.Services
 local Database = Shared.Database
 
 local LootService = require(script.Parent.LootService)
+local NPCService = require(script.Parent.NPCService)
 local Stages = require(ReplicatedStorage.Modules.Shared.Types.Stages)
 local Map = require(ServerStorage.Modules.Libraries.Map)
 local MatchStats = require(ServerStorage.Modules.Libraries.MatchStats)
@@ -169,6 +170,7 @@ function Service:Begin(Stage: string, Act: string)
 
     DestructibleService:SetupStage(Marker_Data.Destructibles)
     LootService:SetupChests(Marker_Data.Chests)
+    NPCService:SetupNPCS(Marker_Data.NPCS)
 
     --
     MissionClass.Finished:Connect(function(State: boolean)

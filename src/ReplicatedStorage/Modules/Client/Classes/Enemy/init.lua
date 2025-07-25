@@ -170,6 +170,7 @@ end
 function EnemyClass:Init(Key: number)
 	self.__EnemyId = Key
 	--
+	self.__Appearance:Tilt(90)
 	self.__Appearance:JoinTo(self.__Movement.__Collider)
 	self.__Animator:Init()
 

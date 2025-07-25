@@ -137,7 +137,7 @@ function Service:Stop(Player: Player)
 end
 
 function Service:Rotate(Player: Player, Buffer: buffer)
-	local Angle = math.rad(buffer.readi16(Buffer, 1) / 180)
+	local Angle = buffer.readi16(Buffer, 1) / 5133
 	local X, Z = math.sin(Angle), math.cos(Angle)
 	local Rebuilt = Vector3.new(X, 0, Z)
 

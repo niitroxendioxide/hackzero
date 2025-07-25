@@ -15,7 +15,7 @@ local ChestsLibrary = {}
 local Chests = {}
 
 function ChestsLibrary:CreateWithBase(BasePart: BasePart, Id: number)
-    local Prompt = Prompts:CreatePromptOnPart(BasePart, GameEnum.InteractionType.Chest)
+    local Prompt = Prompts:CreatePromptOnPart(BasePart, GameEnum.InteractionType.Chest, "Open", "Chest")
 
     Prompt:SetAttribute("ChestId", Id)
 

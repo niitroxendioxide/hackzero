@@ -62,6 +62,9 @@ return {
                 ['DestructibleWall'] = {
                     Type = "Destructible",
                     Destructible_Id = "Reinforced_Wall",
+                    Broken = {
+                        PlayCutscene = 'CutsceneWhenWallBreaks',
+                    },
                 },
             },
 

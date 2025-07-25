@@ -54,7 +54,8 @@ return {
 		HitDestructible = 82,
 
 		CreateChest = 83,
-		PlayEventDialogue = 84,
+		CreateNPC = 84,
+		PlayEventDialogue = 85,
 	},
 
 	InteractionType = {
@@ -86,6 +87,11 @@ return {
 
 	ChestInteractions = {
 		Open = 1,
+	},
+
+	NPCInteractions = {
+		Talk = 1,
+		End = 2,
 	},
 
 	Afflictions = {

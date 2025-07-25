@@ -67,6 +67,8 @@ function MapLoader:Unpack(MapPath: string, SpawnToUse: string?)
 
     if SpawnObjectExists then
         SpawnObjectExists.Name = "MatchSpawnPlace"
+        SpawnObjectExists.CanCollide = false
+        SpawnObjectExists.CanQuery = false
         SpawnObjectExists.Parent = workspace
     end
 
@@ -88,7 +90,7 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
     for _, Part in Map.Markers:GetChildren() do
         if RunService:IsStudio() and settings.REPLICATE_CONSTANTS.MARKERS then
             break
-        end
+        end 
 
         Part:ClearAllChildren()
     end
@@ -100,6 +102,7 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
     local MapData = {
         Destructibles = {},
         Chests = {},
+        NPCS = {},
     }
 
     for MarkerId, MarkerObj in MarkerData do
@@ -137,12 +140,13 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
                 end
             end
 
-            print(PartList)
-
             table.insert(MapData.Chests, {
                 ItemList = MarkerObj.ItemList,
                 Parts = PartList,
             })
+        elseif MarkerObj.Type == 'NPC' then
+            local Part = Map.Markers:FindFirstChild(MarkerId)
+            table.insert(MapData.NPCS, Part)
         end
     end
 

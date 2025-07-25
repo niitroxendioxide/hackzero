@@ -1,20 +1,44 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Prompts = {}
 
-function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number)
+local All = {}
+local States = {}
+
+function Prompts:SetState(Prompt: ProximityPrompt, State: boolean)
+    States[Prompt] = State
+end
+
+function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number, ActionText: string, ObjectText: string)
     local Attachment = Instance.new("Attachment")
     Attachment.Name = "PromptAttachment"
     Attachment.Parent = BasePart
 
     local Prompt = Instance.new("ProximityPrompt")
     Prompt.RequiresLineOfSight = false
-    Prompt.ActionText = "Open"
-    Prompt.ObjectText = "Chest"
+    Prompt.ActionText = ActionText or "Interact"
+    Prompt.ObjectText = ObjectText or GameEnum.KeyLookup(GameEnum.InteractionType, Type)
     Prompt.MaxActivationDistance = 25
     Prompt.Parent = Attachment
+
+    States[Prompt] = true
+    table.insert(All, Prompt)
 
     Prompt:SetAttribute("Type", Type)
 
     return Prompt
+end
+
+function Prompts:DisableAll()
+    for _, Prompt in All do
+        Prompt.Enabled = false
+    end
+end
+
+function Prompts:EnableAll()
+    for _, Prompt in All do
+        Prompt.Enabled = States[Prompt]
+    end
 end
 
 return Prompts

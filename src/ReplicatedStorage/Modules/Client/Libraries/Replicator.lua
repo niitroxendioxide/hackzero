@@ -13,7 +13,7 @@ local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Controller = {
 	__LastRotationValue = Vector3.zAxis,
 	__LastUpdate = os.clock(),
-	__ReplicationFrequency = 5,
+	__ReplicationFrequency = 1/60,
 	__Ping = 0,
 }
 
@@ -45,11 +45,10 @@ function Controller:Replicate(Action: number, ...)
 		Controller.__LastRotationValue = Rotation
 
 		local Vec = Args[1].Unit
-		local Angle = math.deg(math.atan2(Vec.X, Vec.Z))
-
+		local Angle = math.atan2(Vec.X, Vec.Z)
 
 		Buffer = buffer.create(3)
-		buffer.writei16(Buffer, 1, Angle * 180)
+		buffer.writei16(Buffer, 1, Angle * 5133)
 
 		Args = {}
 	elseif Action == GameEnum.Replication.PivotTo then

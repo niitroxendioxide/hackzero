@@ -36,6 +36,7 @@ function AppearanceClass.new(ModelName: string): Types.AppearanceController
 	self.__Bound_Objects = {}
 	self.__TransparencyValues = {}
 	self.__Trove = Trove.new()
+	self.__Tilt = 0
 
 	-- Saving values
 	self.__Model.Parent = World.Entities.Appearances
@@ -57,6 +58,9 @@ function AppearanceClass:GetModel()
 	return self.__Model
 end
 
+function AppearanceClass:Tilt(number: number)
+	self.__Tilt = number
+end
 
 function AppearanceClass:SetVisible(State: boolean)
 	self.__Visible = State
@@ -114,6 +118,8 @@ function AppearanceClass:JoinTo(BasePart: BasePart)
 
 	Att0.Parent = Root
 	Att1.Parent = BasePart
+
+	Att0.Rotation = Vector3.new(0, 0, self.__Tilt)
 
 
 	AlignPosition.Attachment0, AlignPosition.Attachment1 = Att0, Att1

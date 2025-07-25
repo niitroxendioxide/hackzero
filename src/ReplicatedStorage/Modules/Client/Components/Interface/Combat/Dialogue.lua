@@ -2,10 +2,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = ReplicatedStorage.Modules.Client
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
+local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
 local BaseClass = require(Client.Classes.Interface)
 
 local Component = BaseClass.new("Dialogue", "Cutscenes")
 local Threads = {}
+local Tweens = {} :: {Tween}
 
 function Component:Link(Player: Player)
     local PlayerGui = Player.PlayerGui
@@ -17,7 +19,7 @@ function Component:Link(Player: Player)
 end
 
 function Component:Init()
-
+    Component.Completed = Signal.new()
 end
 
 function Component:ShowDialogue(Data: {Speaker: string, Text: string, NextDialogue: number})
@@ -30,6 +32,10 @@ function Component:ShowDialogue(Data: {Speaker: string, Text: string, NextDialog
         task.cancel(Thread)
     end
 
+    for _, Tween: Tween in Tweens do
+        Tween:Cancel()
+    end
+
     Threads = {}
 
     if DialogueBox.Speaker.Text ~= Data.Speaker then
@@ -39,6 +45,11 @@ function Component:ShowDialogue(Data: {Speaker: string, Text: string, NextDialog
         Effects:Tween(DialogueBox.Label.UIScale, {.325, 'Back'}, {Scale = 1})
         Effects:Tween(DialogueBox.Speaker.UIScale, {.25, 'Back'}, {Scale = 1})
     end
+
+    table.insert(Tweens, Effects:Tween(CurrentFrame.DotsWhite, {.15, 'Quad'}, {ImageTransparency = 0.5}))
+    table.insert(Tweens, Effects:Tween(CurrentFrame.DotsDark, {.175, 'Quad'}, {ImageTransparency = 0.5}))
+    table.insert(Tweens, Effects:Tween(CurrentFrame.Bg, {.175, 'Quad'}, {ImageTransparency = 0.45}))
+    table.insert(Tweens, Effects:Tween(CurrentFrame.Line, {.175, 'Quad'}, {Size = UDim2.new(0.35, 0, 0, 2)}))
 
     DialogueBox.Visible = true
     DialogueBox.Speaker.TextTransparency = 0
@@ -60,11 +71,29 @@ function Component:ShowDialogue(Data: {Speaker: string, Text: string, NextDialog
     local NextTime = Data.NextDialogue or 7
 
     table.insert(Threads, task.delay(NextTime + 0.25, function()
+        table.insert(Tweens, Effects:Tween(CurrentFrame.DotsWhite, {.15, 'Quad'}, {ImageTransparency = 1}))
+        table.insert(Tweens, Effects:Tween(CurrentFrame.DotsDark, {.175, 'Quad'}, {ImageTransparency = 1}))
+        table.insert(Tweens, Effects:Tween(CurrentFrame.Bg, {.3, 'Quad'}, {ImageTransparency = 1}))
+        table.insert(Tweens, Effects:Tween(CurrentFrame.Line, {.175, 'Quad'}, {Size = UDim2.new(0, 0, 0, 2)}))
+
         Effects:Tween(DialogueBox.Speaker, {0.45, 'Quad'}, {TextTransparency = 1})
         Effects:Tween(DialogueBox.Label, {0.45, 'Quad'}, {TextTransparency = 1})
         Effects:Tween(DialogueBox.Speaker.UIStroke, {.3, 'Quad'}, {Transparency = 1})
         Effects:Tween(DialogueBox.Label.UIStroke, {.3, 'Quad'}, {Transparency = 1})
+
+        Component.Completed:Fire()
     end))
+end
+
+function Component:PlaySequence(Sequence: {{}})
+    task.spawn(function()
+        for _, DialogueObject in Sequence do
+            Component:ShowDialogue(DialogueObject)
+
+            local Time = DialogueObject.NextDialogue or 4
+            task.wait(Time)
+        end
+    end)
 end
 
 return Component

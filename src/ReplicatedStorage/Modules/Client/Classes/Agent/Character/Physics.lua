@@ -206,6 +206,7 @@ function PhysicsClass:Update(Delta: number)
 	self.__Velocity -= TotalSpeedDeceleration * CurrentWorldSpeed * Delta
 	self.__Rotation = self.__Rotation:Lerp(self.__RotationGoal, 1) --Delta * 24
 
+
 	local AddOns = self:GetAdditionalVelocities()
 	local Velocity = self.__Velocity + AddOns
 

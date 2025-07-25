@@ -24,7 +24,7 @@ return function(Enemy: Types.EnemyClass)
 	local Gui = Billboard.BillboardGui
 
 	Billboard.Parent = Enemy:GetHitbox()
-	Billboard.Position = Vector3.yAxis * 5.85
+	Billboard.Position = Vector3.xAxis * 5
 
 	--
 	local Affliction_Spring = Scope:Spring(Enemy.__Affliction, 25, 0.65)

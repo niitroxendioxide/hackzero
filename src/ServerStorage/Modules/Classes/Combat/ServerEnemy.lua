@@ -199,7 +199,12 @@ function ServerEnemy:Init(Key: number)
 		end
 
 		if (os.clock() - self.__LastMovement > self.__Next) and self:GetState() == 'Idle' then
-			self:Move(Vector3.new(Rng:NextInteger(-1, 1), 0, Rng:NextInteger(-1, 1)))
+			local Frontback = -1 --Rng:NextInteger(-1, 1)
+			if self:GetTarget() and (self:GetTarget():GetPivot().Position - self:GetPivot().Position).Magnitude >= 45 then
+				Frontback = -1
+			end
+
+			self:Move(Vector3.new(Rng:NextInteger(-1, 1), 0, Frontback))
 		end
 
 		self.__Movement:Update(delta)

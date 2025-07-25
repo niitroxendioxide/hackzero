@@ -36,11 +36,7 @@ export type Stage_Key_Event = {
 	Objective: string,
 	Goal: Goal,
 
-	Dialogue: {{
-		Speaker: string,
-		Text: string,
-		NextDialogue: number?,
-	}}?,
+	Dialogue: {DialogueObject}?,
 
 	Active_Triggers: {string},
 
@@ -58,6 +54,11 @@ export type Stage_Key_Event = {
 	TimeLimit: number?,
 }
 
+export type DialogueObject = {
+	Speaker: string,
+	Text: string,
+	NextDialogue: number?,
+}
 
 --[[
 	Item obtainable in game, this item stays in your inventory, meaning you can take it
@@ -66,13 +67,15 @@ export type Stage_Key_Event = {
 export type LootItem = {Type: LootType, Amount: number, Extra: LootExtraData?}
 
 export type Marker = {
-    Type: 'Trigger' | 'Chest' | 'Destructible',
+    Type: 'Trigger' | 'Chest' | 'Destructible' | 'NPC' | 'Switch',
 	Name: string?, -- Rename, if you want to, can just keep the same.
 
 	Destructible_Id: string?,
 	ItemList: {
 		LootItem
-	}?
+	}?,
+
+	Dialogue: {DialogueObject}?,
 }
 
 export type Rating = "X" | "B" | "A" | "S" | "SSS"

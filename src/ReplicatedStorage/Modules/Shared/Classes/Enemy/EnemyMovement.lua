@@ -3,11 +3,12 @@ local RunService = game:GetService('RunService')
 
 --
 local Shared = ReplicatedStorage.Modules.Shared
+local PhysicsHelper = require(ReplicatedStorage.Modules.Shared.Libraries.PhysicsHelper)
 local World = require(Shared.World)
 local WorldFolder = workspace:FindFirstChild("World")
 
 --
-local DEBUG_ENEMY_POSITIONS = false
+local DEBUG_ENEMY_POSITIONS = true
 
 --
 local EnemyMovement = {}
@@ -47,29 +48,32 @@ end
 function EnemyMovement:CreateCollider()
 	self.__Collider = Instance.new('Part')
 	self.__Collider.CFrame = CFrame.new(self.__Position)
-	self.__Collider.Size = Vector3.new(4, 5, 4)
+	self.__Collider.Size = Vector3.new(6, 4, 4)
 	self.__Collider.Color = RunService:IsServer() and Color3.new(1) or Color3.new(0, 1)
 	self.__Collider.CanCollide = false
 	self.__Collider.Anchored = true
+	self.__Collider.Shape = Enum.PartType.Cylinder
 	self.__Collider.Transparency = (RunService:IsClient() and not DEBUG_ENEMY_POSITIONS) and 1 or 0.85
 	self.__Collider.Parent = RunService:IsClient() and WorldFolder.Entities.Hitboxes or (workspace:FindFirstChild("Camera") :: Camera):FindFirstChild("Enemies")
 
 	if DEBUG_ENEMY_POSITIONS and RunService:IsServer() then
 		self.__debug_collider = Instance.new('Part')
 		self.__debug_collider.CFrame = CFrame.new(self.__Position)
-		self.__debug_collider.Size = Vector3.new(2, 7, 2)
-		self.__debug_collider.Color = Color3.new(1, 1, 0)
+		self.__debug_collider.Size = Vector3.new(7, 1, 1)
+		self.__debug_collider.Color = Color3.new(1, 0.172549, 0.172549)
 		self.__debug_collider.CanCollide = false
 		self.__debug_collider.Anchored = true
+		self.__debug_collider.Shape = Enum.PartType.Cylinder
 		self.__debug_collider.Parent = workspace
 	end
 
 	self.__Enemy_Collider = Instance.new('Part')
-	self.__Enemy_Collider.CFrame = CFrame.new(self.__Position)
-	self.__Enemy_Collider.Size = Vector3.new(4, 5, 2)
+	self.__Enemy_Collider.CFrame = CFrame.new(self.__Position) * CFrame.Angles(0, 0, math.pi/2)
+	self.__Enemy_Collider.Size = Vector3.new(6, 3, 3)
 	self.__Enemy_Collider.Color = Color3.new(0, 0, 1)
 	self.__Enemy_Collider.CanCollide = false
 	self.__Enemy_Collider.Anchored = false
+	self.__Enemy_Collider.Shape = Enum.PartType.Cylinder
 	self.__Enemy_Collider.Transparency = 1
 	self.__Enemy_Collider.Parent = RunService:IsClient() and WorldFolder.Entities.Colliders or (workspace:FindFirstChild("Camera") :: Camera):FindFirstChild("Enemy_Collisions")
 
@@ -131,10 +135,10 @@ function EnemyMovement:Update(Delta: number)
 	local ConvertedDirection = CFrame.lookAlong(Position, self.__Looking):VectorToWorldSpace(self.__Direction)
 	local Movement = (ConvertedDirection * self.__Speed + Velocity) * Delta * World:GetSpeed() * self.__World_Speed
 
-	local Map = World:GetEntityMapParams(false)
-	local Colliders = World:GetColliderParams()
+	--local Map = World:GetEntityMapParams(false)
+	local Colliders = World:GetEnemyColliderParams()
 
-	local Collision = workspace:Spherecast(self.__Position, 1.5, ConvertedDirection * 2, Map)
+	local Collision = PhysicsHelper:CalculateEnemyCollisions(self:GetPivot(), Movement, Delta)
 	if Collision then
 		local ProjectedMovement = Movement - Movement:Dot(Collision.Normal) * Collision.Normal
 
@@ -159,7 +163,7 @@ function EnemyMovement:Update(Delta: number)
 	end
 
 	if self.__Collider then
-		self.__Collider.CFrame = CFrame.lookAlong(self.__Position, self.__Looking)
+		self.__Collider.CFrame = CFrame.lookAlong(self.__Position, self.__Looking) * CFrame.Angles(0, 0, math.pi/2)
 	end
 
 	if self.__Collider and self.__debug_collider then

@@ -235,11 +235,11 @@ function Replicator:PivotEnemy(Id: number, At: Vector3 | CFrame, TargetPlayer: P
 	buffer.writei16(Object, 10, At.Y * 100)
 
 	if TargetPlayer then
-		Network:Fire('Replicate', TargetPlayer, Object)
+		Network:Fire('ReliableReplication', TargetPlayer, Object)
 		return
 	end
 
-	Network:FireForAll('Replicate', Object)
+	Network:FireForAll('ReliableReplication', Object)
 end
 
 
@@ -253,11 +253,11 @@ function Replicator:MoveEnemy(Id: number, Direction: Vector3, TargetPlayer: Play
 	buffer.writei8(Object, 3, Direction.Z * 100)
 
 	if TargetPlayer then
-		Network:Fire('Replicate', TargetPlayer, Object)
+		Network:Fire('ReliableReplication', TargetPlayer, Object)
 		return
 	end
 
-	Network:FireForAll('Replicate', Object)
+	Network:FireForAll('ReliableReplication', Object)
 end
 
 function Replicator:RotateEnemy(Id: number, Target: AgentTypes.ServerAgentClass | Vector3, TargetPlayer: Player?)
@@ -269,11 +269,11 @@ function Replicator:RotateEnemy(Id: number, Target: AgentTypes.ServerAgentClass 
 	buffer.writef32(Object, 6, At.Z)
 
 	if TargetPlayer then
-		Network:Fire('Replicate', TargetPlayer, Object)
+		Network:Fire('ReliableReplication', TargetPlayer, Object)
 		return
 	end
 
-	Network:FireForAll('Replicate', Object)
+	Network:FireForAll('ReliableReplication', Object)
 end
 
 function Replicator:RemoveEnemy(Key: number)
@@ -291,7 +291,7 @@ function Replicator:EnemyUseSkill(EnemyId: number, SkillId: number, State: strin
 	buffer.writeu8(Object, 2, EnemyId)
 	buffer.writeu8(Object, 3, State == 'Begin' and 1 or 0)
 
-	Network:FireForAll('Replicate', Object)
+	Network:FireForAll('ReliableReplication', Object)
 end
 
 function Replicator:ProcessDodge(Agent: AgentTypes.ServerAgentClass)
@@ -316,9 +316,9 @@ function Replicator:UseSkill(Player: Player, SkillId: number, IncludePlayer: boo
 	buffer.writeu8(Object, 4,  Player:GetAttribute("ReplicationId") :: number)
 
 	if IncludePlayer then
-		Network:FireForAll('Replicate', Object)
+		Network:FireForAll('ReliableReplication', Object)
 	else
-		Network:FireForAllBut(Player, 'Replicate', Object)
+		Network:FireForAllBut(Player, 'ReliableReplication', Object)
 	end
 
 end
