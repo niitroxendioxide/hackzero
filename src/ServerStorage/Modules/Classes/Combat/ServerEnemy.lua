@@ -338,6 +338,10 @@ function ServerEnemy:TakeDamage(number: number): boolean
 	return false;
 end
 
+function ServerEnemy:Kill()
+	self:TakeDamage(9e12)
+end
+
 function ServerEnemy:TakeDaze(number: number)
 	return self.__Status:Daze(number)
 end

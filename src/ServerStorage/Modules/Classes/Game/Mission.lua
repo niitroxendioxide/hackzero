@@ -63,7 +63,7 @@ function MissionClass.Begin(self: Types.MissionClass)
 end
 
 function MissionClass.IsFinished(self: Types.MissionClass): boolean
-    return self.__Is_Finished  ~= false
+    return self.__Is_Finished
 end
 
 function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Players: {Types.StagePlayer}, Override_Replay, Trigger: BasePart?)
@@ -131,33 +131,39 @@ function MissionClass.DetectAreaTriggers(self: Types.MissionClass)
     local World = workspace:FindFirstChild("World") :: Folder
     local Map = World:FindFirstChild("Map")
 
-    if Map:FindFirstChild("Triggers") then
-        for _, Area in Map.Triggers:GetChildren() do
-            local Connection; Connection = RunService.Heartbeat:Connect(function()
-                Hitbox:ForAgentsInZone(Area.Size, Area.CFrame, function(Agent)
-                    local ReachPlace = false;
-
-                    for EventName, Event: Types.EventClass in self.__Current_Events do
-                        if Event:HasGoal("ReachPlace") then
-                            Event:UpdateProgress("ReachPlace", Area.Name)
-                            ReachPlace = true
-
-                            Connection:Disconnect()
-                        elseif Event:HasGoal("AllReachPlace") then
-                            ReachPlace = true
-                            Event:UpdateProgress("ReachPlace", Area.Name)
-                        end
-                    end
-
-                    if not ReachPlace then
-                        self:BeginEvent(Area.Name, {PlayersLibrary:GetFromAgent(Agent) :: Types.StagePlayer}, false, Area)
-                    end
-                end)
-            end)
-
-            table.insert(self.__Current_Active_Triggers, Connection);
-        end
+    if not Map:FindFirstChild("Triggers") then
+        return
     end
+
+    for _, Area in Map.Triggers:GetChildren() do
+        self:AddTrigger(Area)
+    end
+end
+
+function MissionClass.AddTrigger(self: Types.MissionClass, Area: BasePart)
+    local Connection; Connection = RunService.Heartbeat:Connect(function()
+        Hitbox:ForAgentsInZone(Area.Size, Area.CFrame, function(Agent)
+            local ReachPlace = false;
+
+            for EventName, Event: Types.EventClass in self.__Current_Events do
+                if Event:HasGoal("ReachPlace") then
+                    Event:UpdateProgress("ReachPlace", Area.Name)
+                    ReachPlace = true
+
+                    Connection:Disconnect()
+                elseif Event:HasGoal("AllReachPlace") then
+                    ReachPlace = true
+                    Event:UpdateProgress("ReachPlace", Area.Name)
+                end
+            end
+
+            if not ReachPlace then
+                self:BeginEvent(Area.Name, {PlayersLibrary:GetFromAgent(Agent) :: Types.StagePlayer}, false, Area)
+            end
+        end)
+    end)
+
+    table.insert(self.__Current_Active_Triggers, Connection);
 end
 
 function MissionClass.Finish(self: Types.MissionClass, State: boolean)

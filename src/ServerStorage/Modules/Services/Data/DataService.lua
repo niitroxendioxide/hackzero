@@ -282,7 +282,7 @@ function Service:Set(Player: Player, GivenKey: string, Value: any)
     local Data = Service:GetDataFor(Player)
     local Dir, Key = RecursiveSearch(Data, GivenKey)
 
-    if typeof(Value) ~= typeof(Dir[Key]) then
+    if typeof(Value) ~= typeof(Dir[Key]) and typeof(Dir[Key]) ~= 'nil' then
         return warn("Invalid type given for key:", GivenKey, `value expected: {typeof(Dir[Key])}, given: {typeof(Value)}`)
     end
 

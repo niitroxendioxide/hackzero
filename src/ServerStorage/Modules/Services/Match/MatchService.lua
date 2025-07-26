@@ -74,6 +74,8 @@ function Service:End(Won: boolean)
         return
     end
 
+    Service.__Active_Match = nil
+
     ---
     local Handler = StageDatabase:GetAct(Service.__Current_Stage, Service.__Current_Act)
 
@@ -128,6 +130,7 @@ function Service:End(Won: boolean)
         DataService:Set(BasePlayer, Key, TotalMissions + 1)
         AchievementService:Give(BasePlayer, "Beginner_Agent")
 
+
         local PlayerEndResult = {
             Status = WinStatus,
             Rank = Rank,
@@ -153,12 +156,18 @@ function Service:Begin(Stage: string, Act: string)
         return
     end
 
+    if Service.__Active_Match then
+        print(debug.traceback())
+        return
+    end
+
     Targets:SetDifficulty(GameEnum.Difficulties.Easy)
 
     local Marker_Data = Map:SetupMarkers(Data.Markers)
 
     --
     local MissionClass = MissionClass.new(Stage, Act)
+    Map:AssignCurrentMission(MissionClass)
 
     Service.__Current_Stage = Stage
     Service.__Current_Act = Act
@@ -168,12 +177,15 @@ function Service:Begin(Stage: string, Act: string)
 
     Network:FireForAll("Match", GameEnum.MatchEvents.MatchBegin)
 
+    NPCService.__Stage = Stage
+    NPCService.__Act = Act
+
     DestructibleService:SetupStage(Marker_Data.Destructibles)
     LootService:SetupChests(Marker_Data.Chests)
     NPCService:SetupNPCS(Marker_Data.NPCS)
 
     --
-    MissionClass.Finished:Connect(function(State: boolean)
+    MissionClass.Finished:Once(function(State: boolean)
         Service:End(State)
     end)
 
@@ -186,8 +198,6 @@ function Service:Begin(Stage: string, Act: string)
         for ItemName, ItemData in Loot.Items do
             StagePlayerObject:AddLoot(ItemName, ItemData)
         end
-
-        print(StagePlayerObject:GetObtainedLoot())
     end)
 end
 

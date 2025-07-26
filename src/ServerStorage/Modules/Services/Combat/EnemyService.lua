@@ -105,6 +105,22 @@ function Service:GetSpawns(): {Instance}
 	return Spawns:GetChildren()
 end
 
+function Service:KillAll(Tag: string?)
+	print(Tag)
+
+	if Tag then
+		for _, Enemy in Service.__Tag_Enemies[Tag] do
+			Enemy:Kill()
+		end
+	else
+		for Tag in Service.__Tag_Enemies do
+			for _, Enemy in Service.__Tag_Enemies[Tag] do
+				Enemy:Kill()
+			end
+		end
+	end
+end
+
 --
 function Service:__CanSpawn(): boolean
 	return not Service.__Enemy_Keys:isEmpty()

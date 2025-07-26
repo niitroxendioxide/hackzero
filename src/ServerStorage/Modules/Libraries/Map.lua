@@ -90,8 +90,7 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
     for _, Part in Map.Markers:GetChildren() do
         if RunService:IsStudio() and settings.REPLICATE_CONSTANTS.MARKERS then
             break
-        end 
-
+        end
         Part:ClearAllChildren()
     end
 
@@ -109,15 +108,7 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
         local ObjName = MarkerObj.Name or MarkerId
 
         if MarkerObj.Type == 'Trigger' then
-            local Part = Map.Markers:FindFirstChild(MarkerId)
-            if not Part then continue end
-
-            Part.CanQuery = false
-            Part.CanCollide = false
-
-            Part.Name = ObjName
-
-            Part.Parent = Triggers
+            MapLoader:SetupTrigger(Map, MarkerId, ObjName, Triggers)
         elseif MarkerObj.Type == 'Destructible' then
             local PartList = {}
 
@@ -151,6 +142,40 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
     end
 
     return MapData
+end
+
+function MapLoader:CreateTriggerFromData(Data: {Id: string, Name: string})
+    local Map = World:WaitForChild("Map")
+    local Triggers = Map:FindFirstChild("Triggers")
+    if not Triggers then
+        return
+    end
+
+    local Mission = MapLoader.__Mission_Object :: Types.MissionClass
+
+    local TriggerPart = MapLoader:SetupTrigger(Map, Data.Id, Data.Name, Triggers)
+    Mission:AddTrigger(TriggerPart)
+end
+
+function MapLoader:AssignCurrentMission(Mission)
+    MapLoader.__Mission_Object = Mission
+end
+
+function MapLoader:SetupTrigger(Map: Folder & {Markers: Folder}, MarkerId: string, ObjName: string, Triggers: Folder)
+    local Part = Map.Markers:FindFirstChild(MarkerId)
+    if not Part then
+        print(Part, 'not found!', MarkerId)
+        return 
+    end
+
+    Part.CanQuery = false
+    Part.CanCollide = false
+
+    Part.Name = ObjName
+
+    Part.Parent = Triggers
+
+    return Part
 end
 
 return MapLoader

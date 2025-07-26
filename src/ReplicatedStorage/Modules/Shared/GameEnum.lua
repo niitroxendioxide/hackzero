@@ -92,6 +92,7 @@ return {
 	NPCInteractions = {
 		Talk = 1,
 		End = 2,
+		Event = 3,
 	},
 
 	Afflictions = {

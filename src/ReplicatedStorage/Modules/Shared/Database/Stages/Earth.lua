@@ -90,7 +90,7 @@ return {
 
                         {
                             Speaker = "Refugee",
-                            Text = "Thanks for helping. Please tell my friend over there to follow us too"
+                            Text = "Thanks for helping. Please tell my friend over there to follow us too",
                         }
                     },
                 },
@@ -101,19 +101,21 @@ return {
                         {
                             Speaker = "Refugee",
                             Text = "PLEASE DO NOT HURT ME :C",
-                            NextDialogue = 3,
+                            NextDialogue = 2,
                         },
 
                         {
                             Speaker = "Refugee",
                             Text = "Huh.. Oh, you want me to follow you?",
-                        },
+                            NextDialogue = 2,
 
-                        {
-                            Speaker = "Happy Refugee",
-                            Text = "Understood",
-                            NextDialogue = 1.25,
-                        }
+                            Enables = {
+                                Trigger = {
+                                    Id = 'FightArea15',
+                                    Name = 'BossBattle1'
+                                },
+                            },
+                        },
                     },
                 },
             },
@@ -198,6 +200,20 @@ return {
 
                     Finished = function()
                         return 'None'
+                    end
+                },
+
+                BossBattle1 = {
+                    Objective = "Testing text 1111",
+                    Goal = {
+                        KillEnemies = 1,
+                    },
+                    Enemies = {
+                        [1] = {'Boss', 1, 1},
+                    },
+
+                    Finished = function()
+                        return 'End'
                     end
                 },
             },

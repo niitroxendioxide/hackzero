@@ -149,6 +149,7 @@ export type MissionClass = {
 	]]
 	DetectAreaTriggers: (self: MissionClass) -> (),
 	CleanUpTriggers: (self: MissionClass) -> (),
+	AddTrigger: (self: MissionClass, Area: BasePart) -> (),
 
 	IsFinished: (self: MissionClass) -> (boolean),
 }
