@@ -31,6 +31,7 @@ function EnemyStatus.new(Name: string, Level: number)
 	self.__Dazed = false
 	self.__Stats = EnemyDatabase:GetStatsAtLevel(Name, self.__Level)
 	self.__Health = Statics.Get_Health_By_Level(self.__Level, EnemyData.Level_Stats.Health)
+
 	self.__Max_Health = self.__Health
 	self.__Max_Daze = self.__Stats.Daze
 	self.__Effects = {}

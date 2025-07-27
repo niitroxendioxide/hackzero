@@ -10,7 +10,7 @@ local ENEMY_SIZE_RADIUS = 2.25
 function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir: Vector3, Delta: number, Blocks: {}): RaycastResult?
     local hasResult = nil
 	local SideCount = 8
-	local Wide = math.rad(130)
+	local Wide = math.rad(90)
 	local Params = World:GetCollisionParams(nil, Blocks) :: RaycastParams
 	for i = -1.5, 1.5, 1.5 do
 		for x = 0, SideCount do

@@ -30,15 +30,16 @@ ServerEnemy.__tostring = function()
 	return 'EnemyClass'
 end
 
-function ServerEnemy.new(At: Vector3, Name: string, Level: number)
+function ServerEnemy.new(At: Vector3, Name: string, Level: number)	
 	local EnemyDBData = EnemyDatabase:GetEnemyData(Name)
+
 	local self = setmetatable({}, ServerEnemy)
 	self.Died = Signal.new()
 
 	--
 	self.__Name = Name or 'Default'
-	self.__Movement = MovementClass.new(At, nil, EnemyDBData.Appearance.Height)
 	self.__Level = Level or 1
+	self.__Movement = MovementClass.new(At, nil, EnemyDBData.Appearance.Height)
 	self.__Status = EnemyStatus.new(self.__Name, self.__Level)
 
 	self.__LastMovement = os.clock()

@@ -8,7 +8,7 @@ local World = require(Shared.World)
 local WorldFolder = workspace:FindFirstChild("World")
 
 --
-local DEBUG_ENEMY_POSITIONS = true
+local DEBUG_ENEMY_POSITIONS = false
 
 --
 local EnemyMovement = {}

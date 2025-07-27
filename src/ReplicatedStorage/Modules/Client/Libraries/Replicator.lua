@@ -13,7 +13,7 @@ local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Controller = {
 	__LastRotationValue = Vector3.zAxis,
 	__LastUpdate = os.clock(),
-	__ReplicationFrequency = 1/60,
+	__ReplicationFrequency = 1/2,
 	__Ping = 0,
 }
 

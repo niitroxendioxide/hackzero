@@ -396,9 +396,11 @@ export type AgentItemsClass = {
     BindDrive: (self: AgentItemsClass, Drive: Drive) -> (),
 }
 
+export type GearType = "AGENT" | "COMPANION"
 export type GearObject = {
 	Name: string,
 	Amount: number,
+	Type: GearType,
 }
 
 export type ServerGearManager = {

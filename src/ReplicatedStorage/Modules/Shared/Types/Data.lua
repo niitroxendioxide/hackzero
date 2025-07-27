@@ -9,6 +9,33 @@ export type GearData = {
 }
 
 
+export type CompanionAttack = {
+    Description: string,
+}
+
+
+export type CompanionPassive = {
+    Description: string,
+}
+
+export type CompanionStats = {
+    Defense: number,
+    Attack: number,
+    Speed: number,
+}
+
+export type CompanionData = {
+    Name: string,
+    Tier: Types.Tier,
+    MaxLevel: number,
+
+    Passive: CompanionPassive?,
+    Attack: CompanionAttack?,
+
+    Stats: CompanionStats,
+    LevelStats: CompanionStats,
+}
+
 export type ItemTypes = "Upgrade" | "Feeding"
 export type ItemData = {
     DisplayName: string,

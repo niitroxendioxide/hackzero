@@ -20,7 +20,6 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.Serv
 		Target = Enemy,
 	})
 
-
 	-- Agent
 	local Attack = Agent:GetStat('Attack')
 	local Crit_Rate = Agent:GetStat('Critical_Rate')
