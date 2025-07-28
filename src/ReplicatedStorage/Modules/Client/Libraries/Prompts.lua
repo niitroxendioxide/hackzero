@@ -19,6 +19,7 @@ function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number, ActionText
     Prompt.ActionText = ActionText or "Interact"
     Prompt.ObjectText = ObjectText or GameEnum.KeyLookup(GameEnum.InteractionType, Type)
     Prompt.MaxActivationDistance = 25
+    Prompt.ClickablePrompt = false
     Prompt.Parent = Attachment
 
     States[Prompt] = true

@@ -68,7 +68,7 @@ function EnemyMovement:CreateCollider()
 	end
 
 	self.__Enemy_Collider = Instance.new('Part')
-	self.__Enemy_Collider.CFrame = CFrame.new(self.__Position) * CFrame.Angles(0, 0, math.pi/2)
+	self.__Enemy_Collider.CFrame = CFrame.new(self.__Position)-- * CFrame.Angles(0, 0, math.pi/2)
 	self.__Enemy_Collider.Size = Vector3.new(6, 3, 3)
 	self.__Enemy_Collider.Color = Color3.new(0, 0, 1)
 	self.__Enemy_Collider.CanCollide = false

@@ -84,7 +84,9 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, Context: {I
 	local CooldownKey = self.Name..Type..Agent.Name..Agent:GetId()
 
 	if typeof(self.__Assigned[Type]) == 'table' and self.__Assigned[Type].Play then
-		if not self:Verify(Agent, Type) then
+		local Verified = self:Verify(Agent, Type)
+
+		if not Verified then
 			return false
 		end
 
@@ -172,11 +174,16 @@ function MovesetClass:Verify(Agent: AgentTypes.AgentClass, Type: string)
 	local Info = self:GetInfoForSkill(Type)
 	local CooldownKey = self.Name..Type..Agent.Name..Agent:GetId()
 
+	if RunService:IsServer() then
+		print(Agent:GetState(), Info.AllowedStates)
+	end
+
 	if not string.match(Type, "Swap") and (Agent:GetState() ~= 'Idle' and not(Info.AllowedStates and Info.AllowedStates[Agent:GetState()])) then
 		return false
 	end
 
 	if Cooldown:IsOn(CooldownKey) then
+
 		return false
 	end
 

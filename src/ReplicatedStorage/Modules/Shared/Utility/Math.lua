@@ -179,4 +179,27 @@ function Math:IsPointInBox(Point: CFrame | Vector3, Box: BasePart, SizeModifier:
            math.abs(Offset.Z) <= HalfSize.Z)
 end
 
+function Math:EncodeCFrame(At: CFrame, Buffer: buffer, Offset: number?)
+    Offset = Offset or 1
+
+    local Angle = math.atan2(At.LookVector.X, At.LookVector.Z)
+    buffer.writef32(Buffer, (Offset::number) + 0, At.X)
+    buffer.writef32(Buffer, (Offset::number) + 4, At.Z)
+    buffer.writei16(Buffer, (Offset::number) + 8, At.Y * 100)
+    buffer.writei16(Buffer, (Offset::number) + 10, Angle * 5100)
+end
+
+function Math:DecodeCFrame(Buffer: buffer, Offset: number)
+    Offset = Offset or 1
+
+    local X = buffer.readf32(Buffer, (Offset::number) + 0)
+    local Z = buffer.readf32(Buffer, (Offset::number) + 4)
+    local Y = buffer.readi16(Buffer, (Offset::number) + 8) / 100
+    local Angle = buffer.readi16(Buffer, (Offset::number) + 10) / 5100
+
+    local Rebuilt = CFrame.new(X, Y, Z) * CFrame.Angles(0, Angle, 0)
+
+    return Rebuilt, (Offset::number) + 12
+end
+
 return Math

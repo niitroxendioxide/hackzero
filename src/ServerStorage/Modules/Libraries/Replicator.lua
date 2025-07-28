@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Companions = require(ReplicatedStorage.Modules.Shared.Types.Companions)
 local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
@@ -521,6 +522,25 @@ function Replicator:SetEnemySpeed(EnemyId: number, Speed: number, Time: number?)
 	buffer.writeu8(Object, 3, (Time or 0) * 10)
 
 	Network:FireForAll('Replicate', Object)
+end
+
+
+function Replicator:CreateCompanion(CompanionObject: Companions.CompanionClass)
+	local Object = buffer.create(14)
+	buffer.writeu8(Object, 0, GameEnum.Replication.CreateCompanion)
+	buffer.writeu8(Object, 1, CompanionObject.__Key)
+	Math:EncodeCFrame(CompanionObject:GetPivot(), Object, 2)
+
+	Network:FireForAll("ReliableReplication", Object)
+end
+
+function Replicator:MoveCompanion(CompanionObject: Companions.CompanionClass, Goal: CFrame)
+	local Object = buffer.create(14)
+	buffer.writeu8(Object, 0, GameEnum.Replication.MoveCompanion)
+	buffer.writeu8(Object, 1, CompanionObject.__Key)
+	Math:EncodeCFrame(Goal, Object, 2)
+
+	Network:FireForAll("ReliableReplication", Object)
 end
 
 return Replicator

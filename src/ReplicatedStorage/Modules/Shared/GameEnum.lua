@@ -56,6 +56,8 @@ return {
 		CreateChest = 83,
 		CreateNPC = 84,
 		PlayEventDialogue = 85,
+		CreateCompanion = 86,
+		MoveCompanion = 87,
 	},
 
 	InteractionType = {

@@ -1,15 +1,16 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local ServerStorage = game:GetService("ServerStorage")
 
 
 local Shared = ReplicatedStorage.Modules.Shared
-local Classes = Shared.Classes.Companion
 
+local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local Types = require(Shared.Types.Companions)
 local AgentTypes = require(Shared.Types.Agents)
-local MovementClass = require(Classes.Movement)
-local StatsClass = require(Classes.Stats)
+local MovementClass = require(script.Movement)
+local StatsClass = require(script.Stats)
 
 ---
 local CompanionClass = {}
@@ -28,13 +29,29 @@ function CompanionClass.new(Name: string, Level: number)
 end
 
 function CompanionClass.Init(self: Types.CompanionClass, Key: number)
-
     self.__Movement:CreateCollider()
 
+    self.__Key = Key
+    Replicator:CreateCompanion(self)
+
+    local Clock = os.clock()
     self.__Connection = RunService.Heartbeat:Connect(function(Delta: number)
         self.__Movement:Update(Delta)
+
+        if os.clock() - Clock > 1/6 then
+            Clock = os.clock()
+            Replicator:MoveCompanion(self, self.__Movement:GetPivot())
+        end
     end)
 
+end
+
+function CompanionClass.PivotTo(self: Types.CompanionClass, At: CFrame)
+    return self.__Movement:PivotTo(At)
+end
+
+function CompanionClass.GetPivot(self: Types.CompanionClass)
+    return self.__Movement:GetPivot()
 end
 
 function CompanionClass.Follow(self: Types.CompanionClass, Agent: AgentTypes.ServerAgentClass)

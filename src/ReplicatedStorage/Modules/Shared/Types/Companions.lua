@@ -1,5 +1,20 @@
 local Agents = require(script.Parent.Agents)
+local Default = require(script.Parent)
 
+
+export type ClientCompanionClass = {
+    __Key: number?,
+    __Collider: BasePart,
+    __Appearance: Default.AppearanceController,
+    __Goal: CFrame,
+    __Connection: RBXScriptConnection?,
+    __Alpha: number,
+
+    GetId: (self: ClientCompanionClass) -> (number?),
+
+    Init: (self: ClientCompanionClass, Key: number) -> (),
+    Move: (self: ClientCompanionClass, Position: vector) -> (),
+}
 
 export type CompanionClass = {
     __Connection: RBXScriptConnection,
@@ -17,6 +32,8 @@ export type CompanionClass = {
     AddGear: (self: CompanionClass, Gear: Agents.GearObject) -> (),
     GetOwner: (self: CompanionClass) -> (Agents.AgentClass | Agents.ServerAgentClass),
     RemoveGear: (self: CompanionClass, Gear: Agents.GearObject) -> (),
+    PivotTo: (self: CompanionClass, At: CFrame) -> (),
+    GetPivot: (self: CompanionClass) -> (CFrame),
 
     --[[
         Set the area for the companion to wander around
@@ -59,6 +76,8 @@ export type CompanionMovementClass = {
     CreateCollider: (self: CompanionMovementClass) -> (BasePart),
     GetCollider: (self: CompanionMovementClass) -> (BasePart),
     GetPivot: (self: CompanionMovementClass) -> (CFrame),
+    GetGoal: (self: CompanionMovementClass) -> (CFrame),
+    PivotTo: (self: CompanionMovementClass, At: CFrame) -> (),
 }
 
 return 0

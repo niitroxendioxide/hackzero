@@ -11,11 +11,11 @@ local AbilityClass = require(Client.Classes.Ability)
 local Ability = AbilityClass.new(true)
 
 function Ability:Play(Agent: Types.GenericClass)
-	Ability:Increase(Agent, 'Count', {Limit = 4})
+	Ability:Increase(Agent, 'Count', {Limit = 6})
 	local M1_Count = Ability:Get(Agent, 'Count')
 
 	if Ability:Get(Agent, 'M1_Track') then
-		Ability:Get(Agent, 'M1_Track'):Stop(0.225)
+		Ability:Get(Agent, 'M1_Track'):Stop(0.15)
 	end
 
 	--
@@ -42,15 +42,6 @@ function Ability:Play(Agent: Types.GenericClass)
 				Ability:Effect('Hit', Target)
 			end)
 		end,},
-
-		{.767, function()
-			if M1_Count < 5 then return end
-
-			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.EnemyClass)
-				Target:Hit()
-				Ability:Effect('Hit', Target)
-			end)
-		end,}
 	})
 
 end

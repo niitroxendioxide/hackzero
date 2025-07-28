@@ -12,7 +12,7 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.GenericClass): ()
-	Ability:Increase(Caster, 'Count', {Limit = 4})
+	Ability:Increase(Caster, 'Count', {Limit = 6})
 	local M1_Count = Ability:Get(Caster, 'Count')
 
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
@@ -28,8 +28,8 @@ function Ability:Play(Caster: Types.GenericClass): ()
 		end,},
 
 		{Ability:FromData("Hit_Times", M1_Count), function()
-			local Size = M1_Count == 4 and Vector3.one * 10 or Vector3.one*5
-			local Offset = M1_Count == 4 and Vector3.zero or Vector3.zAxis * -3
+			local Size = Vector3.one*5
+			local Offset = Vector3.zAxis * -3
 
 			Ability:CreateHitbox(Caster, Offset, Size, function(Target: Types.ServerEnemyClass)
 				Ability:Hit(Caster, Target, {
@@ -42,21 +42,6 @@ function Ability:Play(Caster: Types.GenericClass): ()
 				})
 			end)
 		end,},
-
-		{.767, function()
-			if M1_Count < 5 then return end
-
-			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.ServerEnemyClass)
-				Ability:Hit(Caster, Target, {
-					Damage = Ability:FromData('Damage_Mult', M1_Count + 1),
-					Affliction = 'Physical',
-					Stun = .325,
-					Daze = Ability:FromData('Daze_Mult', M1_Count + 1),
-					Knockback = Ability:FromData('Knockback'),
-					Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count)
-				})
-			end)
-		end,}
 	})
 end
 

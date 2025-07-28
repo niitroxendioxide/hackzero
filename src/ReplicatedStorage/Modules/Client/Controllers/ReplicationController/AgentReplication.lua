@@ -5,7 +5,9 @@ local Players = game:GetService("Players")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
+local Companion = require(ReplicatedStorage.Modules.Client.Classes.Companion)
+local Companions = require(ReplicatedStorage.Modules.Client.Libraries.Companions)
+local Math = require(Shared.Utility.Math)
 local CharacterLibrary = require(Client.Libraries.Characters)
 local AgentClass = require(Client.Classes.Agent)
 local GameEnum = require(Shared.GameEnum)
@@ -91,7 +93,7 @@ function Controller:RemoveAgent(Buffer: buffer)
 end
 
 function Controller:Rotate(Buffer: buffer)
-	local Angle = math.rad(buffer.readi16(Buffer, 1) / 180)
+	local Angle = math.rad(buffer.readi16(Buffer, 1) / 5133)
 	local X, Z = math.sin(Angle), math.cos(Angle)
 	local Rebuilt = Vector3.new(X, 0, Z)
 
@@ -198,6 +200,27 @@ function Controller:UpdateUltBar(Buffer: buffer)
 
 	Agent:SetUltBar(UltAmount)
 	InterfaceStates.UltBar[AgentId]:set(UltAmount)
+end
+
+function Controller:CreateCompanion(Buffer: buffer)
+	local Id = buffer.readu8(Buffer, 1)
+	local At = Math:DecodeCFrame(Buffer, 2)
+	local CompanionClass = Companion.new("Template", At)
+	CompanionClass:Init(Id)
+
+	Companions:Add(CompanionClass, Id)
+end
+
+function Controller:MoveCompanion(Buffer: buffer)
+	local CompanionId = buffer.readu8(Buffer, 1)
+	local At = Math:DecodeCFrame(Buffer, 2)
+
+	local Class = Companions:Get(CompanionId)
+	if not Class then
+		return
+	end
+
+	Class:Move(At)
 end
 
 

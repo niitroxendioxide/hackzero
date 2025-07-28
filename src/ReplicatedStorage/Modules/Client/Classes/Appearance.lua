@@ -12,16 +12,18 @@ local Trove = require(Shared.Utility.Trove)
 local EffectsUtil = require(Shared.Utility.Effects)
 
 --
-local AppearanceClass = {} :: {[string]: (self: Types.AppearanceController, any) -> (), new: (ModelName: string) -> Types.AppearanceController}
+local AppearanceClass = {} :: {[string]: (self: Types.AppearanceController, any) -> (), new: (ModelName: string, Directory: string?) -> Types.AppearanceController}
 AppearanceClass.__index = AppearanceClass
 
-function AppearanceClass.new(ModelName: string): Types.AppearanceController
-	if not Assets:FindFirstChild(ModelName, true) then
+function AppearanceClass.new(ModelName: string, Directory: string?): Types.AppearanceController
+	local FolderToLookIn = Directory and Assets:FindFirstChild(Directory) or Assets
+
+	if not FolderToLookIn:FindFirstChild(ModelName, true) then
 		ModelName = "Template"
 	end
 
 	local World = workspace:FindFirstChild('World')
-	local AssetsModel = Assets:FindFirstChild(ModelName, true)
+	local AssetsModel = FolderToLookIn:FindFirstChild(ModelName, true)
 
 	if AssetsModel:IsA('Folder') then
 		local RandomObj = AssetsModel:GetChildren()

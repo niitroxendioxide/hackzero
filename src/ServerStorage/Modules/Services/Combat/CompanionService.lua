@@ -18,6 +18,7 @@ function Service:CreateCompanion()
 
     New:Init(1)
     New:Follow(AgentList[1])
+    New:PivotTo(AgentList[1]:GetPivot())
 end
 
 return Service
