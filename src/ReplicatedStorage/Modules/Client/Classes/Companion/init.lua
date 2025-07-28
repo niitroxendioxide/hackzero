@@ -3,6 +3,7 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
+local World = require(ReplicatedStorage.Modules.Shared.World)
 local Appearance = require(script.Parent.Appearance)
 local Types = require(Shared.Types.Companions)
 
@@ -50,7 +51,15 @@ function ClientCompanionClass.Init(self: Types.ClientCompanionClass, Key: number
 end
 
 function ClientCompanionClass.Move(self: Types.ClientCompanionClass, At: CFrame): ()
-    self.__Goal = At
+    local CorrectedCFrame = At
+
+    local Cast = workspace:Raycast(At.Position, At.UpVector * -10, World:GetMapParams())
+    if Cast then
+        CorrectedCFrame = CFrame.lookAlong(Cast.Position + Cast.Normal, CorrectedCFrame.LookVector)
+    end
+
+    self.__Goal = CorrectedCFrame
+
 
     Effects:Tween(self.__Collider, {1/6}, {CFrame = self.__Goal})
 end

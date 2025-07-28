@@ -46,9 +46,9 @@ function StatesClass:GetLastChangeTime(): number
 end
 
 function StatesClass:GetVelocityMod(): number
-	--local Mod =  math.clamp((os.clock() - self.__Last_Change) / 0.3, 0, 1)
+	local Mod =  math.clamp((os.clock() - self.__Last_Change - 0.3) / 0.1, 0, 1)
 
-	return 1
+	return Mod
 end
 
 function StatesClass:Switch(State: string, Time: number)
@@ -64,15 +64,16 @@ function StatesClass:Switch(State: string, Time: number)
 
 	self.__State = State
 	self.__Current_State_Max_Time = Time
-	if self.__State ~= 'Dashing' then
+
+	if self.__State == 'Attacking' then
 		self.__Last_Change = os.clock()
 	end
 
 	self.__Threads['CurrentState'] = task.delay(Time, function()
 		self.__State = 'Idle'
-		if State ~= 'Dashing' then
+		if State == 'Attacking' then
 			self.__Last_Change = os.clock()
-		else
+		elseif State == "Dashing" then
 			self.__Last_Dash_State = os.clock()
 		end
 

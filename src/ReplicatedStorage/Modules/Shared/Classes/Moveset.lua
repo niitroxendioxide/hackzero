@@ -173,11 +173,6 @@ end
 function MovesetClass:Verify(Agent: AgentTypes.AgentClass, Type: string)
 	local Info = self:GetInfoForSkill(Type)
 	local CooldownKey = self.Name..Type..Agent.Name..Agent:GetId()
-
-	if RunService:IsServer() then
-		print(Agent:GetState(), Info.AllowedStates)
-	end
-
 	if not string.match(Type, "Swap") and (Agent:GetState() ~= 'Idle' and not(Info.AllowedStates and Info.AllowedStates[Agent:GetState()])) then
 		return false
 	end

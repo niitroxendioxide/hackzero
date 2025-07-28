@@ -263,10 +263,33 @@ function ServerAgentClass:Look(...)
 	return self:Rotate(...)
 end
 
-function ServerAgentClass.Walk(self: Types.ServerAgentClass, Time: number)
+function ServerAgentClass.Walk(self: Types.ServerAgentClass, Time: number, Mod: number?)
+	Mod = Mod or 1
 	local Speed = self.__Character.States:GetSpeed(true)
 
-	return self:ImpulseForward(Speed * 1.5, Time)
+	if self.__current_walking_object then
+		self.__Character:RemoveForwardImpulse(self.__current_walking_object)
+	end
+
+	local Object = self:ImpulseForward(Speed * 1.5 * Mod, Time)
+	self.__current_walking_object = Object
+
+	return Object--self.__Character.__Controller:AddLinearMovement(Direction, Time)
+end
+
+function ServerAgentClass.WalkBack(self: Types.ServerAgentClass, Time: number, Mod: number?)
+	Mod = Mod or 1
+
+	if self.__current_walking_object then
+		self.__Character:RemoveForwardImpulse(self.__current_walking_object)
+	end
+
+	local Speed = self.__Character.States:GetSpeed(true)
+
+	local Object = self:ImpulseForward(Speed * -1 * Mod, Time)
+	self.__current_walking_object = Object
+
+	return Object
 end
 
 function ServerAgentClass:GetPivot(...)
@@ -310,7 +333,7 @@ function ServerAgentClass:SwitchState(State: string, Time: number, Unaffected: b
 		end)
 	end
 
-	local TimeExtra = Ping:Get(self.__Player_Assigned)
+	--local TimeExtra = Ping:Get(self.__Player_Assigned)
 	local TimeMod = not Unaffected and State == 'Attacking' and self:GetStat("Speed") or 1
 
 	self.__Character.States:Switch(State, (Time) / TimeMod)

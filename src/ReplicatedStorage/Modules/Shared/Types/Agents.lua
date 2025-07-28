@@ -63,6 +63,7 @@ export type AgentClass =  {
 	__Locked: boolean,
 	__Skill_Levels: SkillLevels,
 	__Limit_Area: BasePart?,
+	__current_walking_object: any?,
 	
 	GetId: (self: AgentClass) -> (number),
 	SetLimitArea: (self: AgentClass, Part: BasePart) -> (),
@@ -84,7 +85,12 @@ export type AgentClass =  {
 		Walk forward for the specified time
 		@param Time the time to walk for
 	]]
-	Walk: (self: AgentClass, Time: number) -> (),
+	Walk: (self: AgentClass, Time: number, Power: number?) -> (),
+	--[[
+		Walk backwards for the specified time
+		@param Time the time to walk backwards for
+	]]
+	WalkBack: (self: AgentClass, Time: number, Power: number?) -> (),
 	ApplyImpulse: (self: AgentClass, Impulse: Vector3) -> (),
 
 	SetKey: (self: AgentClass, Key: string, State: boolean) -> (),
@@ -265,6 +271,7 @@ export type ServerAgentClass = {
 	__Current_Target: {Data: AssistStruct, Thread: thread}?,
 	__Gear: ServerGearManager,
 	__Limit_Area: BasePart?,
+	__current_walking_object: any?,
 
 
 	__Active: boolean,
@@ -309,7 +316,13 @@ export type ServerAgentClass = {
 		Walk forward for the specified time
 		@param Time the time to walk for
 	]]
-	Walk: (self: ServerAgentClass, Time: number) -> (),
+	Walk: (self: ServerAgentClass, Time: number, Power: number?) -> (),
+
+	--[[
+		Walk backwards for the specified time
+		@param Time the time to walk backwards for
+	]]
+	WalkBack: (self: ServerAgentClass, Time: number, Power: number?) -> (),
 
 	--[[
 		@param Meter The name of the meter to set the update type state to

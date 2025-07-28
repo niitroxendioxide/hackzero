@@ -148,7 +148,7 @@ end
 
 function AgentClass:Look(Vector, Instant, Bypass)
 	local DashCheck = false --(self.__Character.__States:GetLastChangeTime() < .06) and self:GetState() ~= 'Dashing'
-	if not Bypass and (self:GetState() == 'Attacking' or DashCheck) then
+	if not Bypass and (self:GetState() == 'Attacking' or DashCheck) then --self.__Character.__States:Get
 		return
 	end
 
@@ -210,10 +210,33 @@ function AgentClass:IsMoving()
 	return self.__Character:IsMoving()
 end
 
-function AgentClass:Walk(Time: number)
+function AgentClass:Walk(Time: number, Mod: number?)
+	Mod = Mod or 1
 	local Speed = self.__Character.__States:GetSpeed(true)
 
-	return self:ImpulseForward(Speed * 1.5, Time)--self.__Character.__Controller:AddLinearMovement(Direction, Time)
+	if self.__current_walking_object then
+		self.__Character.__Controller:RemoveForwardImpulse(self.__current_walking_object)
+	end
+
+	local Object = self:ImpulseForward(Speed * 1.5 * Mod, Time)
+	self.__current_walking_object = Object
+
+	return Object--self.__Character.__Controller:AddLinearMovement(Direction, Time)
+end
+
+function AgentClass:WalkBack(Time: number, Mod: number?)
+	Mod = Mod or 1
+
+	if self.__current_walking_object then
+		self.__Character.__Controller:RemoveForwardImpulse(self.__current_walking_object)
+	end
+
+	local Speed = self.__Character.__States:GetSpeed(true)
+
+	local Object = self:ImpulseForward(Speed * -1 * Mod, Time)
+	self.__current_walking_object = Object
+
+	return Object
 end
 
 function AgentClass:PivotTo(...)

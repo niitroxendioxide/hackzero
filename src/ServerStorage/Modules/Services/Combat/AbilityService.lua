@@ -146,8 +146,6 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	local XZ = Vector3.new(1, 0, 1)
 
-	print(SkillId, 'from player: ', Player.Name)
-
 	--
 	local LookAt = ActiveAgent:GetPivot().LookVector
 	if Enemy then

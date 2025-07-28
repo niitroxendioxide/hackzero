@@ -48,7 +48,7 @@ function ServerAbilityClass:Play(Agent: AgentTypes.ServerAgentClass)
 	self:Begin(Agent, {})
 end
 
-function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & Types.ServerEnemyClass, Offset, Size, Event)
+function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & Types.ServerEnemyClass, Offset, Size, Event, Time: number?, Repeat: boolean?)
 	local At = Caster:GetPivot()
 	ServerHitboxUtil:ForStructuresInZone(Size,  At * CFrame.new(Offset), function(Structure)
 		Event(Structure)
@@ -56,50 +56,102 @@ function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & T
 
 	--
 	if tostring(Caster) == 'EnemyClass' then
-		return self:CreateAgentHitbox(Caster, Offset, Size, Event)
+		return self:CreateAgentHitbox(Caster, Offset, Size, Event, Time, Repeat)
 	elseif tostring(Caster) == 'ServerAgentClass' then
-		return self:CreateEnemyHitbox(Caster, Offset, Size, Event)
+		return self:CreateEnemyHitbox(Caster, Offset, Size, Event, Time, Repeat)
 	end
 
 	return;
 end
 
-function ServerAbilityClass:CreateEnemyHitbox(Agent: AgentTypes.ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> ())
-	local EnemyHitboxes = Enemies:GetHitboxes()
-	local AreaParts = Hitbox:GetPartsInArea({WorldCamera.Enemies}, Size, Agent:GetPivot() * CFrame.new(Offset))
+function ServerAbilityClass:CreateEnemyHitbox(Agent: AgentTypes.ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> (), Time: number?, Repeat: boolean?)
+	local Targets = {}
 
-	for _, Part in  AreaParts do
-		local Enemy = EnemyHitboxes[Part]
+	local function Process()
+		local EnemyHitboxes = Enemies:GetHitboxes()
+		local AreaParts = Hitbox:GetPartsInArea({WorldCamera.Enemies}, Size, Agent:GetPivot() * CFrame.new(Offset))
 
-		task.spawn(Event, Enemy)
+		for _, Part in AreaParts do
+			local Enemy = EnemyHitboxes[Part]
+
+			if Targets[Enemy] == true then
+				continue
+			end
+
+			if not Repeat then
+				Targets[Enemy] = true
+			end
+
+			task.spawn(Event, Enemy)
+		end
+	end
+
+	if Time then
+		local Began = os.clock()
+
+		task.spawn(function()
+			while os.clock() - Began < Time do
+				Process()
+
+				task.wait(1/24)
+			end
+		end)
+	else
+		task.spawn(Process)
 	end
 end
 
-function ServerAbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> ())
-	ServerHitboxUtil:ForAgentsInZone(Size, Enemy:GetPivot() * CFrame.new(Offset), function(Target: AgentTypes.ServerAgentClass, ...)
-		if Target:HasTag('Invulnerability') or Target:GetCurrentSkill() == "Ultimate" then
-			return
-		end
+function ServerAbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> (), Time: number?, Repeat: boolean?)
+	local Targets = {}
 
-		local Is_Dodge = Target:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
-		if Is_Dodge or Target:HasTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE) then
-			if Is_Dodge then
-				Replicator:ProcessDodge(Target)
-			else
-				self:Effect('Dodge', {Target}, {Target.__Player_Assigned})
+	local function Process()
+		ServerHitboxUtil:ForAgentsInZone(Size, Enemy:GetPivot() * CFrame.new(Offset), function(Target: AgentTypes.ServerAgentClass, ...)
+			if Targets[Target] then
+				return
 			end
 
-			MatchStats:AddToStat(Target.__Player_Assigned, "Dodges", 1)
+			if not Repeat then
+				Targets[Target] = true
+			end
 
-			Target:AddTag('Invulnerability', Statics.Dodge_Invulnerability_Time)
-			Target:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
-			Target:RemoveTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE)
+			if Target:HasTag('Invulnerability') or Target:GetCurrentSkill() == "Ultimate" then
+				return
+			end
 
-			return
-		end
+			local Is_Dodge = Target:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
+			if Is_Dodge or Target:HasTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE) then
+				if Is_Dodge then
+					Replicator:ProcessDodge(Target)
+				else
+					self:Effect('Dodge', {Target}, {Target.__Player_Assigned})
+				end
 
-		Event(Target, ...)
-	end)
+				MatchStats:AddToStat(Target.__Player_Assigned, "Dodges", 1)
+
+				Target:AddTag('Invulnerability', Statics.Dodge_Invulnerability_Time)
+				Target:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
+				Target:RemoveTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE)
+
+				return
+			end
+
+			Event(Target, ...)
+		end)
+	end
+
+	if Time then
+		local Began = os.clock()
+
+		task.spawn(function()
+			while os.clock() - Began < Time do
+				Process()
+
+				task.wait()
+			end
+		end)
+	else
+		task.spawn(Process)
+	end
 end
 
 function ServerAbilityClass:Save(Agent: AgentTypes.AgentClass, Key: string, Value: any)

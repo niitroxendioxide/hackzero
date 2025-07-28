@@ -111,7 +111,7 @@ function AppearanceClass:UnbindParticles(Part: Instance)
 end
 
 function AppearanceClass:JoinTo(BasePart: BasePart)
-	local Root =  self.__Model:FindFirstChild('HumanoidRootPart')
+	local Root =  self.__Model:FindFirstChild('HumanoidRootPart') or self.__Model.PrimaryPart
 
 	local AlignPosition =  Instance.new('AlignPosition')
 	local AlignOrientation = Instance.new('AlignOrientation')
