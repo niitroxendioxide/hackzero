@@ -1,0 +1,39 @@
+---
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService("RunService")
+
+
+local Assets = ReplicatedStorage.Assets.Effects
+local Shared = ReplicatedStorage.Modules.Shared
+
+local Types = require(Shared.Types.Agents)
+local Effects = require(Shared.Utility.Effects)
+
+---
+return function(Caster: Types.AgentClass, Angle: number, Offset: CFrame, Reverse: boolean): ()
+    Offset = Offset or CFrame.new(0, -0.069, 0)
+    Angle = Angle or 0
+
+    local AngleOffset = typeof(Angle) == 'number' and CFrame.Angles(0, 0, math.rad(Angle)) or Angle
+    local SlashEffect = Effects:Create(Assets.Agents.Tanjiro[Reverse and 'Reverse' or 'Slash'], 2.5)
+    SlashEffect:PivotTo(Caster:GetPivot() * Offset * AngleOffset)
+    SlashEffect:ScaleTo(1.25)
+
+    if Reverse then
+        for _, Emitter: ParticleEmitter in SlashEffect:GetDescendants() do
+            if not Emitter:IsA("ParticleEmitter") then continue end
+
+            Effects:ReverseEmitter(Emitter)
+        end
+    end
+
+    Effects:Emit(SlashEffect)
+    Effects:CleanUp(SlashEffect, 1.5)
+
+    --
+    local Connection = RunService.Heartbeat:Connect(function(Delta: number)
+        SlashEffect:PivotTo(Caster:GetPivot() * Offset * AngleOffset)
+    end)
+
+    Effects:CleanUp(Connection, 1.5)
+end

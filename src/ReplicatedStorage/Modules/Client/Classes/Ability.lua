@@ -9,8 +9,9 @@ local AnimLibrary = require(Client.Libraries.Animation)
 
 local Effects = require(Client.Libraries.Effects)
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Abilities)
 local AgentTypes = require(Shared.Types.Agents)
+local DefaultTypes = require(Shared.Types)
 local Signal = require(Shared.Utility.Signal)
 local Hitbox = require(Shared.Utility.Hitbox)
 local Enemies = require(Shared.Libraries.Enemies)
@@ -46,7 +47,7 @@ function AbilityClass.new(Holdable: boolean): Types.AbilityClass
 	return self
 end
 
-function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
+function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.SequenceFrames, DontPlay: boolean?): Types.Sequence
 	if self.__Active_Sequences[Agent] then
 		self.__Active_Sequences[Agent]:Destroy()
 	end
@@ -82,7 +83,11 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 
 	self.__Active_Sequences[Agent] = AbilitySequence
 
-	return AbilitySequence:Start()
+	if not DontPlay then
+		AbilitySequence:Start()
+	end
+
+	return AbilitySequence
 end
 
 function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
@@ -122,9 +127,13 @@ function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?
 	local Upgraded_Value = Upgrade[Key]
 
 	if typeof(Value) == 'table' and Sub_Key ~= nil then
-		local Added = Upgraded_Value ~= nil and Upgrade[Key][Sub_Key] or 0
+		local Added = Upgraded_Value ~= nil and Upgrade[Key][Sub_Key]
 
-		return Value[Sub_Key] + Added * Level
+		if Added then
+			return Value[Sub_Key] + Added * Level
+		else
+			return Value[Sub_Key]
+		end
 	end
 
 	if Key == "Speed" and Value == nil then
@@ -150,11 +159,11 @@ function AbilityClass:Play(Agent: AgentTypes.AgentClass)
 	self:Begin(Agent, {})
 end
 
-function AbilityClass:IsHeld(Caster: Types.GenericClass)
+function AbilityClass:IsHeld(Caster: Types.Caster)
 	return self.__Held[Caster]
 end
 
-function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string, Data: Types.AnimationDataOptions)
+function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string, Data: DefaultTypes.AnimationDataOptions)
 	Data = Data or {}
 
 	local Agent_Speed_Mod = Agent:GetStat("Speed")
@@ -183,7 +192,7 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 end
 
 --
-function AbilityClass:CreateHitbox(Caster: AgentTypes.AgentClass | Types.EnemyClass, Offset, Size, Event)
+function AbilityClass:CreateHitbox(Caster: Types.Caster, Offset, Size, Event)
 	if tostring(Caster) == 'EnemyClass' then
 		return self:CreateAgentHitbox(Caster, Offset, Size, Event)
 	elseif tostring(Caster) == 'AgentClass' then
@@ -193,7 +202,7 @@ function AbilityClass:CreateHitbox(Caster: AgentTypes.AgentClass | Types.EnemyCl
 	return;
 end
 
-function AbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> ())
+function AbilityClass:CreateAgentHitbox(Enemy: Types.Caster, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.Target) -> ())
 	Hitbox:ForAgentsInZone(CharactersLib, Size, Enemy:GetPivot() * CFrame.new(Offset), function(Agent, ...)
 		if Agent:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER) then
 			Agent:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
@@ -208,7 +217,7 @@ function AbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: V
 end
 
 
-function AbilityClass:CreateEnemyHitbox(Agent: AgentTypes.AgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> ())
+function AbilityClass:CreateEnemyHitbox(Agent: Types.Caster, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.Target) -> ())
 	local World = workspace:FindFirstChild('World') :: Folder
 
 	local EnemyHitboxes = Enemies:GetHitboxes()
@@ -252,6 +261,45 @@ function AbilityClass:Increase(Agent: AgentTypes.AgentClass, Key: string, Data: 
 		self:Save(Agent, Key, 1)
 	else
 		self:Save(Agent, Key, CurrentValue + Added)
+	end
+end
+
+function AbilityClass.UseAttackData(self: Types.AbilityClass, Sequence: Types.Sequence, Caster: Types.Caster, Data: {[number]: number}, Hitbox_Data: Types.HitboxAttackData)
+
+	--
+	local Walk_Event_Time = Data[GameEnum.AttackData.Movement_Time]
+
+	if Walk_Event_Time and Walk_Event_Time > 0 then
+		local Movement_Length = Data[GameEnum.AttackData.Movement_Length]
+		local Movement_Strength = Data[GameEnum.AttackData.Movement_Strength]
+
+		Sequence:Add(Walk_Event_Time, function()
+			local Length = (typeof(Movement_Length) == 'number' and math.abs(Movement_Length) > 0 and Movement_Length) or self:FromData("Walk_Time") or 0.15
+			local Power = (typeof(Movement_Strength) == 'number' and Movement_Strength > 0 and Movement_Strength) or 1
+
+			local Direction = math.sign(Length)
+			local TimeToWalk = math.abs(Length)
+
+			if Direction == -1 then
+				Caster:WalkBack(TimeToWalk, Power)
+			else
+				Caster:Walk(TimeToWalk, Power)
+			end
+		end)
+	end
+
+	local End_Lag = Data[GameEnum.AttackData.End_Lag]
+	if End_Lag and End_Lag > 0 then
+		Caster:SwitchState("Attacking", End_Lag)
+	end
+
+	--
+	local Hit_Event_Time = Data[GameEnum.AttackData.Hit_Time]
+
+	if Hit_Event_Time and Hit_Event_Time > 0 and Hitbox_Data then
+		Sequence:Add(Hit_Event_Time, function()
+			self:CreateHitbox(Caster, Hitbox_Data.Offset, Hitbox_Data.Size, Hitbox_Data.Hit_Function)
+		end)
 	end
 end
 

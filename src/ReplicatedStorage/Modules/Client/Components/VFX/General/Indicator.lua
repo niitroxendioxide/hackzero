@@ -18,6 +18,8 @@ local Gradients = {
 
 	['Ice'] = {Color3.fromRGB(164, 231, 255), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(28, 96, 255))}},
 
+	['Water'] = {Color3.fromRGB(164, 231, 255), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(28, 96, 255))}},
+
 	['Wind'] = {Color3.fromRGB(211, 255, 214), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(94, 255, 69))}},
 
 	['Energy'] = {White, Sequence{Key(0, Color3.fromRGB(7, 52, 255)), Key(1, Color3.new(1))}},

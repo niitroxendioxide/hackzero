@@ -2,15 +2,16 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Abilities)
 local AgentTypes = require(Shared.Types.Agents)
+local DefaultTypes = require(Shared.Types)
 local Defense_Factors = require(Shared.Database.Defense)
 
 --
 local RNG = Random.new()
 local DamageLibrary = {}
 
-function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.ServerEnemyClass,Data:Types.HitEnemyData): (number, boolean, boolean, string, number, number, boolean)
+function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:AgentTypes.Enemy,Data: Types.HitEnemyData): (number, boolean, boolean, string, number, number, boolean)
 	local EnemyStatus = Enemy.__Status
 	local AgentGear = Agent:GetGearManager()
 
@@ -28,7 +29,7 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.Serv
 	local Pen_Ratio = Agent:GetStat('Pen_Ratio')
 	local Affliction_Aptitude = Agent:GetStat('Affliction_Aptitude')
 	local Level = Agent.__Level
-	local Damage_Bonus_Mult = 1 + Agent:GetMultBonus(Data.Affliction :: Types.Element) + Agent:GetMultBonus(Data.Attack_Type)
+	local Damage_Bonus_Mult = 1 + Agent:GetMultBonus(Data.Affliction :: DefaultTypes.Element) + Agent:GetMultBonus(Data.Attack_Type)
 
 	local Is_Critical = RNG:NextNumber(0, 100) <= Crit_Rate
 
@@ -85,7 +86,7 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:Types.Serv
 	return Final_Damage, EnemyDied, Is_Critical, Affliction_Type, Filled_Affliction, Burst_Damage, AfflictionTriggered
 end
 
-function DamageLibrary:DealEnemyToAgent(Caster: Types.ServerEnemyClass, Target: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
+function DamageLibrary:DealEnemyToAgent(Caster: AgentTypes.Enemy, Target: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
 	local AgentStun = Data.Stun
 	local CasterStatus = Caster.__Status
 
@@ -108,7 +109,7 @@ function DamageLibrary:DealEnemyToAgent(Caster: Types.ServerEnemyClass, Target: 
 end
 
 
-function DamageLibrary:Daze(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerEnemyClass, Base_Multiplier: number)
+function DamageLibrary:Daze(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Base_Multiplier: number)
 	local EnemyStatus = Enemy.__Status
 
 	-- Values
@@ -132,7 +133,7 @@ local VALUES = {
 	Fire = 0.5,
 }
 
-function DamageLibrary:CalculateAfflictionBurst(Attack: number, Type: Types.Element, Defense: number, Resistance: number, Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerEnemyClass)
+function DamageLibrary:CalculateAfflictionBurst(Attack: number, Type: DefaultTypes.Element, Defense: number, Resistance: number, Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy)
 	local EnemyStatus = Enemy.__Status
 
 	local Damage_Taken_Mult = EnemyStatus:GetDamageTakenMultiplier()

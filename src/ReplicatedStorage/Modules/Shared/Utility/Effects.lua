@@ -133,6 +133,24 @@ function EffectUtil:Create<T>(Asset: T & Instance, Time: number?): (T, thread)
 	return Cloned :: T, DeleteThread
 end
 
+local FACES = {
+	[Enum.NormalId.Front] = Enum.NormalId.Back,
+	[Enum.NormalId.Back] = Enum.NormalId.Front,
+	[Enum.NormalId.Left] = Enum.NormalId.Right,
+	[Enum.NormalId.Right] = Enum.NormalId.Left,
+	[Enum.NormalId.Bottom] = Enum.NormalId.Top,
+	[Enum.NormalId.Top] = Enum.NormalId.Bottom,
+}
+
+function EffectUtil:ReverseEmitter(Particle: ParticleEmitter)
+	local Face = FACES[Particle.EmissionDirection]
+	if not Face then
+		return
+	end
+
+	Particle.EmissionDirection = Face
+end
+
 function EffectUtil:Emit(Asset: Instance, Light: boolean?): ()
 	local WorldSpeed = World:GetSpeed() :: number
 

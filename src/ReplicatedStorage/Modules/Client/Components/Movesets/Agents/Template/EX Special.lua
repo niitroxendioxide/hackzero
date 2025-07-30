@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Client.Classes.Ability)
 local Effects = require(Client.Libraries.Effects)
 
@@ -12,7 +12,7 @@ local Effects = require(Client.Libraries.Effects)
 --
 local Ability = AbilityClass.new(true)
 
-function Ability:Play(Caster: Types.GenericClass, Binding: string, State: string)
+function Ability:Play(Caster: Types.Caster, Binding: string, State: string)
 	--
 	local PreviousSequence = Ability:Get(Caster, "CurrentSequence")
 	if State ~= 'Begin' then
@@ -51,7 +51,7 @@ function Ability:Play(Caster: Types.GenericClass, Binding: string, State: string
 
 				Caster:Walk(Ability:FromData("Walk_Time"))
 
-				Ability:CreateHitbox(Caster, Vector3.zAxis*-3.4, Vector3.one * 5.75, function(Target: Types.EnemyClass)
+				Ability:CreateHitbox(Caster, Vector3.zAxis*-3.4, Vector3.one * 5.75, function(Target: Types.Target)
 					Target:Hit()
 					Ability:Effect('Hit', Target)
 				end)

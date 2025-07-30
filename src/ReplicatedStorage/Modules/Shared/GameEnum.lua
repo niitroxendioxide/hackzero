@@ -97,6 +97,14 @@ return {
 		Event = 3,
 	},
 
+	AttackData = {
+		Movement_Time = 1,
+		Hit_Time = 2,
+		End_Lag = 3,
+		Movement_Length = 4,
+		Movement_Strength = 5,
+	},
+
 	Afflictions = {
 		Physical = 0,
 		Fire = 1,
@@ -104,6 +112,7 @@ return {
 		Wind = 3,
 		Energy = 4,
 		Earth = 5,
+		Water = 6,
 		Default = 70,
 	},
 

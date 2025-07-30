@@ -19,6 +19,8 @@ return function(Enemy: Types.EnemyClass,
 	local EmitterId = Data.Emitter or 'Hit'
 
 	if not CombatFolder:FindFirstChild(EmitterId) then
+		print("Not found effect")
+
 		return
 	end
 

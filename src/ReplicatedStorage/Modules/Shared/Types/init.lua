@@ -212,7 +212,7 @@ export type BoundKeybind = {
 -- [[ DATA ]]
 export type Role = 'Attack' | 'Element' | 'Support' | 'Stun'
 export type Stat = 'Daze_Resistance' | 'Speed' | 'Max_Health' | 'Max_Daze' | 'Health' | 'Attack' | 'Defense' | 'Critical_Rate' | 'Critical_Damage' | 'Penetration' | 'Pen_Ratio' | 'Daze' | 'Energy_Regeneration' | 'Affliction_Aptitude' | 'Affliction_Facility'
-export type Element = 'Physical' | 'Energy' | 'Fire' | 'Ice' | 'Electric' | 'Wind' | 'Rock' | 'None'
+export type Element = 'Physical' | 'Energy' | 'Fire' | 'Ice' | 'Electric' | 'Wind' | 'Rock' | 'None' | 'Water'
 export type CharacterStats = {[Stat]: number, Jog_Speed: number, Sprint_Speed: number, Walk_Speed: number}
 
 export type EnemyStats = {
@@ -253,25 +253,10 @@ export type CharacterAppearanceData = {
 	Height: number,
 }
 
-export type AgentMovesetAbility = "Basic Attack" | "Special Attack" | "Chain Attack" | "Dodge" | "Dodge Counter" | "Quick Assist" | "Ultimate" | "Passive"
-export type MovesetClass = {
-	__Assigned: {[AgentMovesetAbility]: AbilityClass & ServerAbilityClass},
-
-	--
-	GetAll: (self: MovesetClass) -> ({ServerAbilityClass}?),
-	Assign: (self: MovesetClass, Key: string, Ability: AbilityClass) -> (),
-	Verify: (self: MovesetClass, Agent: GenericClass, Type: string) -> boolean,
-
-	Begin: (self: MovesetClass, Key: AgentMovesetAbility, Agent: GenericClass) -> (),
-	Release: (self: MovesetClass, Key: AgentMovesetAbility, Agent: GenericClass) -> (),
-	CancelSkill: (self: MovesetClass, Key: AgentMovesetAbility, Agent: GenericClass, Context: {ClientInstruction: boolean?}?) -> (),
-
-	GetInfoForSkill: (self: MovesetClass, Name: string) -> {},
-	SetAbilityInformation: (self: MovesetClass, Data: {}) -> (),
-}
-
 export type Mults = "Daze_Mult" | "Damage_Mult" | "Affliction_Buildup"
-export type AbilityDataKey = "Attack_State_Time" | "Speed" | "Animation_Speed" | "Attack_State_Time" | "Required_Energy" | Mults | string
+export type AgentMovesetAbility = "Basic Attack" | "Special Attack" | "Chain Attack" | "Dodge" | "Dodge Counter" | "Quick Assist" | "Ultimate" | "Passive"
+
+export type AbilityDataKey = "Attack_State_Time" | "Speed" | "Animation_Speed" | "Attack_State_Time" | "Required_Energy" | "Attack_Data" | Mults | string
 export type AbilityInfo = {
 	Upgrade_Requirements: {
 		[string]: number,
@@ -308,102 +293,6 @@ export type MovesetInfo = {
 	}
 }
 
-export type SequenceFrames = {{number | (self: Sequence) -> ()}}
-export type Sequence = {
-	__cache: {[any]: any},
-	__frames: SequenceFrames,
-
-	--
-	Start: (self: Sequence) -> Sequence,
-	Pause: (self: Sequence) -> Sequence,
-	Destroy: (self: Sequence) -> (),
-	GetSpeed: (self: Sequence) -> (),
-
-	--
-	Update: (self: Sequence) -> (),
-	After: (self: Sequence, fn: (self: Sequence) -> ()) -> Sequence,
-}
-
-export type AbilityClass = {
-	__Cache: {},
-	__Signal: RBXScriptSignal,
-	__Cooldown: any,
-	__Name: string,
-	Name: string,
-
-	--[[
-		Play an animation using any character controller, example:
-
-		```lua
-			local Path = "Characters.Goku.Abilities.Special.Default"
-			Ability:PlayAnimation(CasterAgent, Path, {Fade = 0.15, Speed = 1.125})
-		```
-
-		@param Agent The agent to play an animation for
-		@param Track The path to the animation track, i.e "Characters.Goku.Abilities.M1.1"; Starts from the Assets.Animations directory
-		@param Data The properties of the track, FadeIn, Speed and Weight (all numbers, by default: 0, 1, 1)
-	]]
-	PlayAnimation: (self: AbilityClass, Agent: GenericClass, Track: string, Data: {
-		Fade: number?,
-		Speed: number?,
-		Weight: number?,
-		Active_Time: number?,
-	}) -> (),
-	CreateHitbox: (self: AbilityClass, Agent: GenericClass, Offset: Vector3, Size: Vector3, Event: (Enemy: EnemyClass) -> ()) -> (),
-
-	Save: (self: AbilityClass, Agent: GenericClass, Key: string, Value: any) -> (),
-	Get: <T>(self: AbilityClass, Agent: GenericClass, Key: string) -> T,
-	Increase: (self: AbilityClass, Agent: GenericClass, Key: string, Data: {Rate: number, Limit: number}?) -> (),
-
-	Play: (self: AbilityClass, Agent: GenericClass, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
-	Begin: (self: AbilityClass, Agent: GenericClass, SequenceFrames: SequenceFrames) -> (Sequence),
-	Effect: (self: AbilityClass, EffectName: string, ...any) -> (),
-
-	--[[
-		Gets a value from the ability data
-		@param Key The key to get from the ability data
-
-		@return The value of the given key, can also be nil
-	]]
-	FromData: (self: AbilityClass, Key: AbilityDataKey) -> (any),
-	SetData: (self: AbilityClass, Data: {}) -> (),
-}
-
-export type AbilityHitInfo = {
-	Enemy: ServerEnemyClass,
-	Caster: {},
-	Type: Element,
-	Damage: number,
-	Burst: boolean,
-	IsKill: boolean,
-	Hit_Type: 'Entity' | 'Structure',
-}
-export type InputState = 'Begin' | 'End'
-export type SkillContext = {IsSignal: boolean?, Target: ServerEnemyClass?}
-export type ServerAbilityClass = {
-	__Name: string,
-	__Cache: {},
-	__Signal: RBXScriptSignal,
-	__Hit: Signal<AbilityHitInfo>,
-
-	CreateHitbox: (self: ServerAbilityClass, Agent: GenericClass, Offset: Vector3, Size: Vector3, Event: (Enemy: ServerEnemyClass) -> ()) -> (),
-
-	Save: (self: ServerAbilityClass, Caster: any, Key: string, Value: any) -> (),
-	Get: (self: ServerAbilityClass, Caster: any, Key: string) -> any,
-	Increase: (self: ServerAbilityClass, Caster: any, Key: string, Data: {Rate: number, Limit: number}?) -> (),
-
-	ForceRelease: (self: ServerAbilityClass, Caster: GenericClass) -> (),
-
-	Play: (self: ServerAbilityClass, Agent: GenericClass, Type: string, State: InputState, Context: SkillContext) -> (),
-	Begin: (self: ServerAbilityClass, Agent: GenericClass, SequenceFrames: SequenceFrames) -> (),
-
-	Effect: (self: ServerAbilityClass, Name: string, Params: {any}, Targets: boolean | {}) -> (),
-	ForOtherAgents: (self: ServerAbilityClass, Agent: GenericClass, Callback: (Agent: GenericClass, Data: {IsNext: boolean}) -> ()) -> (),
-	Hit: (self: ServerAbilityClass, Agent: GenericClass, Enemy: ServerEnemyClass, Hit: HitEnemyData) -> (number),
-
-	FromData: (self: ServerAbilityClass, Key: AbilityDataKey, SubKey: string?, Level: number?) -> (any),
-	SetData: (self: ServerAbilityClass, Data: {}) -> (),
-}
 
 export type EnemyClass = {
 	Name: string,
@@ -517,23 +406,6 @@ export type EnemyStatus = {
 	GetAffliction: (self: EnemyStatus, Type: Element) -> (number),
 	GetAfflictionStackedDamage: (self: EnemyStatus, Type: Element) -> (number),
 	EnterDazedState: (self: EnemyStatus, fn: (DazeValue: number) -> ()) -> (),
-}
-
-export type HitEnemyData = {
-	Damage: number,
-	Stun: number,
-	Daze: number,
-	Affliction: Element,
-	Attack_Type: AgentMovesetAbility,
-	Affliction_Buildup: number?,
-	DontChargeEnergy: boolean,
-	DontChargeUlt: boolean,
-
-	Knockback: {number | number | number}?,
-}
-
-export type AbilityHitRequest = HitEnemyData & {
-
 }
 
 export type UIComponent = {

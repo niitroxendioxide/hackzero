@@ -21,7 +21,7 @@ function Ability:Play(Agent: Types.GenericClass)
 	--
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
 	Ability:Begin(Agent, {
-		{0, function(_: Types.Sequence)
+		{0, function()
 			Agent:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
 
 			local Track = Ability:PlayAnimation(Agent, 'Goku.Abilities.M1.'..Ability:Get(Agent, 'Count'), {

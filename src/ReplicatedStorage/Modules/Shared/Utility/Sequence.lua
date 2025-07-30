@@ -51,13 +51,12 @@ function Sequence:Start()
 	return self
 end
 
-function Sequence:Add(Time: number, ...)
+function Sequence.Add(self: Sequence, Time: number, ...)
 	if typeof(Time) ~= 'number' then
 		return warn('Invalid time parameter given. Value is not a number', debug.info(2, 's'))
 	end
 
 	table.insert(self.__frames, table.pack(Time, ...))
-
 	return;
 end
 

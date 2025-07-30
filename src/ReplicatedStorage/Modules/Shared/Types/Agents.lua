@@ -80,6 +80,8 @@ export type AgentClass =  {
 	PivotTo: (self: AgentClass) -> CFrame,
 	IsMoving: (self: AgentClass) -> boolean,
 	IsAlive: (self: AgentClass) -> boolean,
+	GetUltBar: (self: AgentClass) -> (number),
+	BlockRotation: (self: AgentClass, Time: number) -> (),
 
 	--[[
 		Walk forward for the specified time

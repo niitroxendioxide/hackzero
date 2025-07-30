@@ -8,7 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Enemies = require(Shared.Libraries.Enemies)
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Abilities)
 local AgentTypes = require(Shared.Types.Agents)
 local Signal = require(Shared.Utility.Signal)
 local Hitbox = require(Shared.Utility.Hitbox)
@@ -48,7 +48,7 @@ function ServerAbilityClass:Play(Agent: AgentTypes.ServerAgentClass)
 	self:Begin(Agent, {})
 end
 
-function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & Types.ServerEnemyClass, Offset, Size, Event, Time: number?, Repeat: boolean?)
+function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & AgentTypes.Enemy, Offset, Size, Event, Time: number?, Repeat: boolean?)
 	local At = Caster:GetPivot()
 	ServerHitboxUtil:ForStructuresInZone(Size,  At * CFrame.new(Offset), function(Structure)
 		Event(Structure)
@@ -64,7 +64,7 @@ function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & T
 	return;
 end
 
-function ServerAbilityClass:CreateEnemyHitbox(Agent: AgentTypes.ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.ServerEnemyClass) -> (), Time: number?, Repeat: boolean?)
+function ServerAbilityClass:CreateEnemyHitbox(Agent: AgentTypes.ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.Enemy) -> (), Time: number?, Repeat: boolean?)
 	local Targets = {}
 
 	local function Process()
@@ -101,7 +101,7 @@ function ServerAbilityClass:CreateEnemyHitbox(Agent: AgentTypes.ServerAgentClass
 	end
 end
 
-function ServerAbilityClass:CreateAgentHitbox(Enemy: Types.ServerEnemyClass, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> (), Time: number?, Repeat: boolean?)
+function ServerAbilityClass:CreateAgentHitbox(Enemy: AgentTypes.Enemy, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> (), Time: number?, Repeat: boolean?)
 	local Targets = {}
 
 	local function Process()
@@ -184,7 +184,7 @@ function ServerAbilityClass:Get(Agent: AgentTypes.AgentClass, Key: string)
 	return self.__Cache[Agent][Key]
 end
 
-function ServerAbilityClass:Begin(Agent: AgentTypes.ServerAgentClass, Frames: Sequence.SequenceFrames): Types.Sequence
+function ServerAbilityClass:Begin(Agent: AgentTypes.ServerAgentClass, Frames: Sequence.SequenceFrames, DontStart: boolean): Types.Sequence
 	local Sequence_Speed = self:FromData('Speed') or 1
 	local Agent_Speed = Agent:GetStat("Speed")
 
@@ -197,12 +197,16 @@ function ServerAbilityClass:Begin(Agent: AgentTypes.ServerAgentClass, Frames: Se
 
 	self:Save(Agent, 'CurrentPlayerSequence', AbilitySequence)
 
-	return AbilitySequence:Start()
+	if not DontStart then
+		AbilitySequence:Start()
+	end
+
+	return AbilitySequence
 end
 
 
 -- Hit functions
-local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerEnemyClass, Data: Types.HitEnemyData)
+local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Data: Types.HitEnemyData)
 	local AgentPivot = Agent:GetPivot()
 	local _EnemyPivot = Enemy:GetPivot()
 
@@ -264,7 +268,7 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: Types.ServerE
 	}
 end
 
-local function HitAgent(Caster: Types.ServerEnemyClass, Agent: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
+local function HitAgent(Caster: AgentTypes.Enemy, Agent: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
 	local DealtDamage = DamageLibrary:DealEnemyToAgent(Caster, Agent, Data)
 
 	--
@@ -323,6 +327,45 @@ function ServerAbilityClass:Hit(Agent: any, Enemy: any, Data: Types.HitEnemyData
 	return Result
 end
 
+function ServerAbilityClass.UseAttackData(self: Types.ServerAbilityClass, Sequence: Types.Sequence, Caster: Types.Caster, Data: {[number]: number}, Hitbox_Data: Types.HitboxAttackData)
+
+	--
+	local Walk_Event_Time = Data[GameEnum.AttackData.Movement_Time]
+
+	if Walk_Event_Time and Walk_Event_Time > 0 then
+		local Movement_Length = Data[GameEnum.AttackData.Movement_Length]
+		local Movement_Strength = Data[GameEnum.AttackData.Movement_Strength]
+
+		Sequence:Add(Walk_Event_Time, function()
+			local Length = (typeof(Movement_Length) == 'number' and math.abs(Movement_Length) > 0 and Movement_Length) or self:FromData("Walk_Time") or 0.15
+			local Power = (typeof(Movement_Strength) == 'number' and Movement_Strength > 0 and Movement_Strength) or 1
+
+			local Direction = math.sign(Length)
+			local TimeToWalk = math.abs(Length)
+
+			if Direction == -1 then
+				Caster:WalkBack(TimeToWalk, Power)
+			else
+				Caster:Walk(TimeToWalk, Power)
+			end
+		end)
+	end
+
+	local End_Lag = Data[GameEnum.AttackData.End_Lag]
+	if End_Lag and End_Lag > 0 then
+		Caster:SwitchState("Attacking", End_Lag)
+	end
+
+	--
+	local Hit_Event_Time = Data[GameEnum.AttackData.Hit_Time]
+
+	if Hit_Event_Time and Hit_Event_Time > 0 and Hitbox_Data then
+		Sequence:Add(Hit_Event_Time, function()
+			self:CreateHitbox(Caster, Hitbox_Data.Offset, Hitbox_Data.Size, Hitbox_Data.Hit_Function)
+		end)
+	end
+end
+
 function ServerAbilityClass.ForOtherAgents(self: Types.ServerAbilityClass, Agent: AgentTypes.ServerAgentClass, Callback: (Agent: AgentTypes.ServerAgentClass, Data: {any}) -> ())
 	local Player = Agent.__Player_Assigned
 	local RepId = Player:GetAttribute("ReplicationId") :: number
@@ -355,9 +398,13 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 	local Upgraded_Value = Upgrade[Key]
 
 	if typeof(Value) == 'table' and Sub_Key ~= nil then
-		local Added = Upgraded_Value ~= nil and Upgraded_Value[Sub_Key] or 0
+		local Added = Upgraded_Value ~= nil and Upgrade[Key][Sub_Key]
 
-		return Value[Sub_Key] + (Added * Level)
+		if Added then
+			return Value[Sub_Key] + (Added * Level)
+		else
+			return Value[Sub_Key]
+		end
 	end
 
 	if Key == "Speed" and Value == nil then

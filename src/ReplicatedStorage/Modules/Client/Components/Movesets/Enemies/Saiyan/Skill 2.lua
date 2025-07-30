@@ -24,7 +24,7 @@ function Ability:Play(Enemy: Types.EnemyClass)
     local TrackId = "Punch"..Ability:Get(Enemy, "Counter")
 
 	Ability:Begin(Enemy, {
-		{0, function(_: Types.Sequence)
+		{0, function()
 			Enemy:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
 
 			local Track = Ability:PlayAnimation(Enemy, 'Saiyan.Abilities.'..TrackId, {

@@ -65,6 +65,7 @@ return {
 		Ice = PREFIX .. 108516110153642,
 		Fire = PREFIX .. 116710794714652,
 		Physical = PREFIX .. 127260334479901,
+		Water = PREFIX .. 127260334479901,
 		Electric = PREFIX .. 83449523980359,
 		Energy = PREFIX .. 108516110153642,
 		Earth = PREFIX .. 108516110153642,
@@ -73,6 +74,12 @@ return {
 
 		Colors = {
 			Ice = {
+				Main = RGB(66, 164, 255),
+				Meter = RGB(107, 243, 255),
+				Gradient = Sequence{Key(0, White), Key(0.5, White), Key(1, RGB(0, 5, 98))}
+			},
+
+			Water = {
 				Main = RGB(66, 164, 255),
 				Meter = RGB(107, 243, 255),
 				Gradient = Sequence{Key(0, White), Key(0.5, White), Key(1, RGB(0, 5, 98))}

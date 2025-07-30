@@ -5,7 +5,7 @@ local RunService = game:GetService('RunService')
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Abilities)
 local AgentTypes = require(Shared.Types.Agents)
 local Cooldown = require(Shared.Utility.Cooldown)
 local GameEnum = require(Shared.GameEnum)
@@ -52,7 +52,7 @@ function MovesetClass.GetAll(self: Types.MovesetClass): {Types.ServerAbilityClas
 	return List
 end
 
-function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, Context: {IsSignal: boolean?, [string]: any}): boolean
+function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSignal: boolean?, [string]: any}): boolean
 	Type = Type:gsub('_', ' ')
 	Context = Context or {}
 
@@ -68,7 +68,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, Context: {I
 			Type = "EX Special"
 
 			Info = self:GetInfoForSkill('EX Special')
-		elseif Type == 'Ultimate' and Agent:GetUltBar() < 100 then
+		elseif Type == 'Ultimate' and (Agent :: AgentTypes.AgentClass):GetUltBar() < 100 then
 			return false
 		elseif Type == 'Basic Attack' and Agent:HasTag('Dodge_Counter_Tag') then
 			Type = 'Dodge Counter'
@@ -92,6 +92,10 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, Context: {I
 
 		if Cooldown:IsOn(CooldownKey) then return false end
 
+		if not Info.Base then
+			error("Skill data is invalid. Make sure to have both Base{} and Upgrade{}")
+		end
+
 		Cooldown:Add(CooldownKey, Info.Base.Cooldown)
 
 		--local LastUse = self.__Last_Use[Agent][Type] or os.clock()
@@ -105,7 +109,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.GenericClass, Context: {I
 			end
 
 			-- #TODO: FIX WTV THIS IS
-			if Agent.BlockRotation ~= nil then
+			if (Agent :: AgentTypes.AgentClass).BlockRotation ~= nil then
 				Agent:BlockRotation(.075)
 			end
 		end
