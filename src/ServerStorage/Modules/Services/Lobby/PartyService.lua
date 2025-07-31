@@ -26,19 +26,32 @@ local Service = {
     __Invites = {},
 }
 
+local function NotifyJoinForParty(Party: string, Joined: Player): ()
+    local PartyClass = Service:GetParty(Party)
+    local PlayerClass = Service:GetClass(Joined)
+
+    for _, PartyUser in PartyClass:GetRawPlayers() do
+        if PartyUser == Joined then continue end
+
+        local Sent = {Joined.UserId, PartyClass:GetPlayerCompressedTeam(PlayerClass)}
+
+        Network:Fire("Party", PartyUser, GameEnum.PartyManaging.PlayerJoined, Sent)
+    end
+end
+
 --
 function Service:Init()
     Network.new("Party", "Event")
     Network:On("Party", Service.OnPartyEvent)
 end
-    
+
 function Service:ClearPlayer(Player: Player)
     if Service.__Player_Classes[Player] then
         Service.__Player_Classes[Player] = nil
     end
 end
 
-function Service.OnPartyEvent(Player: Player, Type: number, ...)
+function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
     --print("Server received party request:", GameEnum.KeyLookup(GameEnum.PartyManaging, Type))
 
     if Type == GameEnum.PartyManaging.Create then
@@ -55,6 +68,8 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...)
         end
 
         Service:JoinParty(Player, Request[1])
+
+        NotifyJoinForParty(Request[1], Player)
 
         --
         Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress())
@@ -116,20 +131,13 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...)
 
         if not Service:HasInviteFor(Player, Data[1]) then return end
 
-        local PlayerClass = Service:GetClass(Player)
         Service:JoinParty(Player, Data[1])
         Service:RemoveInvite(Player, Data[1])
         local Party = Service:GetParty(Data[1])
 
         Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress())
 
-        for _, PartyUser in Party:GetRawPlayers() do
-            if PartyUser == Player then continue end
-
-            local Sent = {Player.UserId, Party:GetPlayerCompressedTeam(PlayerClass)}
-
-            Network:Fire("Party", PartyUser, GameEnum.PartyManaging.PlayerJoined, Sent)
-        end
+        NotifyJoinForParty(Data[1], Player)
     elseif Type == GameEnum.PartyManaging.RejectInvite then
         local Data = {...}
 
@@ -221,7 +229,6 @@ function Service:JoinParty(Player: Player, Code: any): ()
 
     Service.__Player_Party[Player] = Code
     Player:AddTag("InParty")
-
     Party:AddPlayer(PlayerClass)
 end
 
@@ -256,7 +263,8 @@ function Service:Start(Player: Player): boolean
 
     Party:SetState(GameEnum.PartyStates.Teleporting)
 
-    GameEnum:ValueNameFrom("PartyStates", 1)
+    print(GameEnum:ValueNameFrom("PartyStates", 2))
+
     return TeleportService:TeleportGroup(Party:GetStagePlace(), Party, {})
 end
 

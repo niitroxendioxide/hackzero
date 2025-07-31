@@ -5,12 +5,14 @@ local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
 
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
+local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
 local ComponentClass = require(Client.Classes.Interface)
 local UIGroups = require(Client.Libraries.UIGroups)
 
 local Interactions = ComponentClass.new("Interactions", "Lobby")
 :: Types.UIComponent & {GetButton: (Name: string) -> (TextButton), SetButton: (Name: string, State: boolean) -> ()}
 
+--
 function Interactions:Link()
     local PlayerGui = Player.PlayerGui
 	local HUD = PlayerGui:WaitForChild("LobbyHUD", 10) :: ScreenGui
@@ -41,6 +43,8 @@ function Interactions:GetButton(Name: string): Frame
 end
 
 function Interactions:Init()
+    ScreenUtil:AdjustStrokes(self:GetFrame())
+
     local Create = Interactions:GetButton("Create")
     local Join = Interactions:GetButton("Join")
 

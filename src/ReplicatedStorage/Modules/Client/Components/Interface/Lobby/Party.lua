@@ -4,8 +4,13 @@ local Players = game:GetService('Players')
 local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
+
+local AgentModels = ReplicatedStorage.Assets.Characters.Agents
 local Assets = ReplicatedStorage.Assets.Interface
 
+local NavStates = require(ReplicatedStorage.Modules.Client.States.Navigation)
+local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
+local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
 local Types = require(Shared.Types)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
@@ -20,12 +25,12 @@ local Scope = PartyComponent:GetScope()
 local States = {
     Agents = Scope:Value({}),
     Team = Scope:Value({}),
+    CurrentPartyOwner = Scope:Value({}),
     Thread = nil,
 }
 
 --
-local AGENT_SELECTED_COLOR = Color3.fromRGB(207, 237, 255)
-
+local THREADS = {}
 
 --
 local function RequestPartyCreation()
@@ -53,6 +58,8 @@ local function RequestPartyLeave(): ()
     if MainMenu then
         MainMenu:Set(true, true)
     end
+
+    NavStates:Set('Movement_Locked', false)
 
     Interactions:FireLeaveSignal()
 end
@@ -95,19 +102,24 @@ local function SelectAgent(Name: string)
         task.cancel(States.Thread)
     end
 
-    States.Thread = task.delay(1, RequestPartyTeamUpdate)
+    States.Thread = task.delay(.2, RequestPartyTeamUpdate)
 
     return States.Team:set(Selected)
 end
 
-local function AddPlayerToList(PlayerId: number, Team: string)
+local function AddPlayerToList(PlayerId: number, Team: string, IsOwner: boolean)
     local User = Players:GetPlayerByUserId(PlayerId)
     local Main = PartyComponent:GetFrame()
     local Object = Assets.Lobby.Party.PlayerListObject:Clone()
     Object.PlayerName.Text = User.DisplayName
     Object.TeamCharacters.Text = Team
     Object.Name = PlayerId
+    Object.QuitButton.Visible = false
     Object.Parent = Main.Players
+
+    if not IsOwner and Player.UserId == Scope.peek(States.CurrentPartyOwner) then
+        Object.QuitButton.Visible = true
+    end
 
     return Object
 end
@@ -116,10 +128,26 @@ local function AddAgentToList(Agent: string, Level: number)
     local Main = PartyComponent:GetFrame()
     local Object = Assets.Lobby.Party.CharacterListObject:Clone()
     Object.CharacterName.Text = Agent
-    Object.CharacterLevel.Text = Level
+    Object.CharacterLevel.Text = 'Lvl. ' .. Level
     Object.Name = Agent
     Object:SetAttribute("AgentName", Agent)
     Object.Parent = Main.Agents
+
+    --
+    local AgentModelBase = AgentModels:FindFirstChild(Agent) or AgentModels.Template
+    if AgentModelBase then
+        local Model = AgentModelBase:Clone()
+        Model:PivotTo(CFrame.new())
+        Model.Parent = Object.Viewport.World
+
+        --
+        local Camera = Instance.new("Camera")
+        Camera.CFrame = CFrame.new(0, 1.75, -35) * CFrame.Angles(0, math.pi, 0)
+        Camera.Parent = Object.Viewport.World
+        Camera.FieldOfView = 5
+
+        Object.Viewport.CurrentCamera = Camera
+    end
 
     Object.Select.MouseButton1Click:Connect(function()
         SelectAgent(Agent)
@@ -172,6 +200,8 @@ end
 function PartyComponent:Init(): ()
     local Frame = self:GetFrame() :: Frame & {QuitButton: TextButton, PlayButton: TextButton}
 
+    ScreenUtil:AdjustStrokes(self:GetFrame())
+
     Frame.QuitButton.MouseButton1Click:Connect(RequestPartyLeave)
 
 
@@ -223,12 +253,41 @@ function PartyComponent:Init(): ()
         for _, ItemInstance in Frame.Agents:GetChildren() do
             if not ItemInstance:IsA("Frame") then continue end
 
-            if table.find(TeamList, ItemInstance:GetAttribute("AgentName")) then
-                ItemInstance.SelectedStroke.Enabled = true
-                ItemInstance.BackgroundColor3 = AGENT_SELECTED_COLOR
+            local Index = table.find(TeamList, ItemInstance:GetAttribute("AgentName"))
+            if Index then
+                Effects:Tween(ItemInstance.UIScale, {.25, 'Back'}, {Scale = 1})
+                ItemInstance.Light.Visible = true
+                ItemInstance.AgentId.Visible = true
+                ItemInstance.AgentId.Label.Text = Index
+
+                if THREADS[ItemInstance] then
+                    continue
+                end
+
+                THREADS[ItemInstance] = task.spawn(function()
+                    local Angle = 0
+
+                    while true do
+                        local Delta = task.wait()
+
+                        Angle += Delta * math.pi
+                        local Cos = math.cos(Angle)
+
+                        ItemInstance.UIStroke.Thickness = ScreenUtil:GetStrokeSize(2 + Cos)
+                    end
+                end)
             else
-                ItemInstance.BackgroundColor3 = Color3.new(1,1,1)
-                ItemInstance.SelectedStroke.Enabled = false
+                ItemInstance.AgentId.Visible = false
+                Effects:Tween(ItemInstance.UIScale, {.25, 'Back'}, {Scale = 0.9})
+                ItemInstance.Light.Visible = false
+
+                if THREADS[ItemInstance] then
+                    task.cancel(THREADS[ItemInstance])
+                end
+
+                THREADS[ItemInstance] = nil
+
+                ItemInstance.UIStroke.Thickness = ScreenUtil:GetStrokeSize(1)
             end
         end
 
@@ -265,8 +324,8 @@ function PartyComponent:CreateParty()
     return RequestPartyCreation()
 end
 
-function PartyComponent:AddPlayerToList(ID: number, Team: string)
-    return AddPlayerToList(ID, Team)
+function PartyComponent:AddPlayerToList(ID: number, Team: string, IsOwner: boolean)
+    return AddPlayerToList(ID, Team, IsOwner)
 end
 
 function PartyComponent:UpdateTeam(ID: number, Team: string)

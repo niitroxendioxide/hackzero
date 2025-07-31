@@ -7,6 +7,7 @@ local Types = require(Shared.Types.Stages)
 --
 local Stages = {
     __Cache = {},
+    __Cached_Ordered_Acts = {},
 }
 
 function Stages:Init()
@@ -20,6 +21,16 @@ function Stages:Init()
             warn("Error on stage data for [", Module.Name, "]:", Data)
         end
     end
+end
+
+local function OrderActsForStage(Stage: string)
+    Stages.__Cached_Ordered_Acts[Stage] = {}
+
+    for ActName in Stages:GetStage(Stage).Acts do
+        table.insert(Stages.__Cached_Ordered_Acts[Stage], ActName)
+    end
+
+    table.sort(Stages.__Cached_Ordered_Acts[Stage], function(a, b) return a > b end)
 end
 
 function Stages:GetStage(StageName: string): Types.Stage
@@ -36,6 +47,22 @@ function Stages:GetEvent(StageName: string, ActName: string, Event: string)
     local Act = Stages:GetAct(StageName, ActName)
 
     return Act.Guide[Event]
+end
+
+function Stages:GetOrderedActId(Stage: string, Act: string): number?
+    if not Stages.__Cached_Ordered_Acts[Stage] then
+        OrderActsForStage(Stage)
+    end
+
+    return table.find(Stages.__Cached_Ordered_Acts[Stage], Act)
+end
+
+function Stages:GetActById(Stage: string, Act: number): string
+    if not Stages.__Cached_Ordered_Acts[Stage] then
+        OrderActsForStage(Stage)
+    end
+
+    return Stages.__Cached_Ordered_Acts[Stage][Act]
 end
 
 return Stages

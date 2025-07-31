@@ -40,7 +40,6 @@ function Party.RemovePlayer(self: Types.PartyClass, PlayerToRemove: Types.PartyP
     for key, PartyPlayer in self.__Players do
         if PartyPlayer:GetId() == PlayerToRemove:GetId() then
             table.remove(self.__Players, key)
-
         end
     end
 
@@ -154,6 +153,8 @@ function Party.Compress(self: Types.PartyClass): {}
         table.insert(Compressed, Player:GetId())
         table.insert(Compressed, Team)
     end
+
+    table.insert(Compressed, self.__Owner)
 
     return Compressed
 end

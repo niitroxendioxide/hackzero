@@ -163,6 +163,7 @@ return {
 		RejectInvite = 10,
 		PlayerJoined = 11,
 		PlayerLeft = 12,
+		RequestMapsAvailable = 13,
 	},
 
 	FetchRequests = {
