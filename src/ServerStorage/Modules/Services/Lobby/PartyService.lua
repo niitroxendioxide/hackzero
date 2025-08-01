@@ -56,9 +56,10 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
 
     if Type == GameEnum.PartyManaging.Create then
         local NewParty = Service:CreateParty(Player)
+        local StageData = DataService:Get(Player, "StagesUnlocked")
 
         --
-        Network:Fire("Party", Player, GameEnum.PartyManaging.Create, NewParty:Compress())
+        Network:Fire("Party", Player, GameEnum.PartyManaging.Create, NewParty:Compress(), StageData)
     elseif Type == GameEnum.PartyManaging.Join then
         local Request = {...}
         local Party = Service:GetParty(Request[1])

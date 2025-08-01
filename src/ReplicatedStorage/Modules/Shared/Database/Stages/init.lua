@@ -43,6 +43,10 @@ function Stages:GetAct(StageName: string, Act: string): Types.Stage_Act
     return Stage.Acts[Act]
 end
 
+function Stages:GetAll()
+    return Stages.__Cache
+end
+
 function Stages:GetEvent(StageName: string, ActName: string, Event: string)
     local Act = Stages:GetAct(StageName, ActName)
 

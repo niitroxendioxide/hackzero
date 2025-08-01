@@ -39,6 +39,7 @@ local Service = {
 
 }
 
+-- [[ | PRIVATE FUNCTIONS | ]]
 local function RecursiveSearch(Data: {}, Key: string): ({}, string)
     local Split = string.split(Key, "/")
     local End = Data;
@@ -55,6 +56,9 @@ local function RecursiveSearch(Data: {}, Key: string): ({}, string)
     return End, FinalKey
 end
 
+
+
+-- [[ | PUBLIC FUNCTIONS | ]]
 function Service:Init()
     Network.new('ItemData', 'Event')
     Network.new("DataFetchRequest", "Event")
@@ -77,6 +81,14 @@ function Service:Init()
             end
 
             Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Quests, Quests)
+        elseif Type == GameEnum.FetchRequests.Stages then
+            local Stages = Service:Get(Player, "StagesUnlocked")
+            if not Stages then
+                warn('no stage data :v')
+            end
+
+            print(Stages)
+            Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Stages, Stages)
         end
     end)
 

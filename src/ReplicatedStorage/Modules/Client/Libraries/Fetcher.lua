@@ -62,6 +62,13 @@ function Fetcher:FetchAgents(): {any}
     return TranslatedData
 end
 
+function Fetcher:FetchStages(): {any}
+    local Data = Fetcher:SendRequest(GameEnum.FetchRequests.Stages)-- Request[2]
+
+    return Data
+end
+
+
 function Fetcher:FetchParties(): {any}
     local RetreivedData = Fetcher:SendRequest(GameEnum.FetchRequests.Parties, "Party")
     local New = {}

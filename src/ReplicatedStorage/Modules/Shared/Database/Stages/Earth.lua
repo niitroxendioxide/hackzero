@@ -4,11 +4,12 @@ local Types = require("../../Types/Stages")
 
 --
 return {
-    Name = "Earth",
+    Name = "West City",
     Map = "Dragon Ball/Destroyed West City",
 
     Acts = {
         Intro = {
+            Description = "Introduction to the game's mechanics",
             Requisites = {},
 
             Rewards = {

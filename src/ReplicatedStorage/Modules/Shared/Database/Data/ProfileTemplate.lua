@@ -21,6 +21,16 @@ return {
         QOL = {},
     },
 
+    StagesUnlocked = {
+        Earth = {
+            Intro = true,
+        },
+
+        Training = {
+            Intro = true,
+        }
+    },
+
     Quests = {
         Daily = {},
         Main = {},

@@ -18,6 +18,7 @@ local ComponentClass = require(Client.Classes.Interface)
 local Fetcher = require(Client.Libraries.Fetcher)
 
 local UIGroups = require(Client.Libraries.UIGroups)
+local StagesDatabase = require(Shared.Database.Stages)
 local PartyComponent = ComponentClass.new("Party", "Lobby")
 
 local Scope = PartyComponent:GetScope()
@@ -25,7 +26,8 @@ local Scope = PartyComponent:GetScope()
 local States = {
     Agents = Scope:Value({}),
     Team = Scope:Value({}),
-    CurrentPartyOwner = Scope:Value({}),
+    CurrentPartyOwner = Scope:Value(0),
+    Stage = Scope:Value("Earth"),
     Thread = nil,
 }
 
@@ -34,6 +36,7 @@ local THREADS = {}
 
 --
 local function RequestPartyCreation()
+    --
     Network:Fire("Party", GameEnum.PartyManaging.Create)
 
     local Data = Fetcher:FetchAgents()
@@ -186,6 +189,29 @@ local function ClearParty()
     end
 end
 
+local function UpdateStages(Unlocked: {[string]: {[string]: boolean}})
+    local Stages = StagesDatabase:GetAll()
+    local Frame = PartyComponent:GetFrame()
+
+    for _, obj in Frame.MapList:GetChildren() do
+        if obj:IsA("Frame") then
+            obj:Destroy()
+        end
+    end
+
+    for StageName, StageData in Stages do
+        local Object = Assets.Lobby.Party.MapObject:Clone()
+        Object.Parent = Frame.MapList
+        Object.MapName.Text = StageData.Name
+
+        Object.TextButton.MouseButton1Click:Connect(function()
+            States.Stage:set(StageName)
+
+            -- change stuff here :v
+        end)
+    end
+end
+
 --
 function PartyComponent:Link()
     local PlayerGui = Player.PlayerGui
@@ -318,6 +344,10 @@ end
 
 function PartyComponent:Clear()
     return ClearParty()
+end
+
+function PartyComponent:UpdateStages(Data)
+    return UpdateStages(Data)
 end
 
 function PartyComponent:CreateParty()

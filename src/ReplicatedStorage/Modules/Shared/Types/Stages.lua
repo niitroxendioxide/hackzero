@@ -80,6 +80,7 @@ export type Marker = {
 
 export type Rating = "X" | "B" | "A" | "S" | "SSS"
 export type Stage_Act = {
+	Description: string?,
 	Requisites: {
 
 	},

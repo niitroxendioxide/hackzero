@@ -9,6 +9,7 @@ return {
 
     Acts = {
         Intro = {
+            Description = "Speak",
             Requisites = {},
 
             Rewards = {

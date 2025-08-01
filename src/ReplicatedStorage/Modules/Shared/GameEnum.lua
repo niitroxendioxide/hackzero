@@ -170,6 +170,7 @@ return {
 		Agents = 105,
 		Parties = 205,
 		Quests = 305,
+		Stages = 405,
 	},
 
 	NotificationTypes = {

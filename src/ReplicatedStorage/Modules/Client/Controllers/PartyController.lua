@@ -26,7 +26,7 @@ function Controller:Init()
         return;
     end
 
-    Network:On("Party", function(Type: number, ServerResponse: CompressedParty | string): ()
+    Network:On("Party", function(Type: number, ServerResponse: CompressedParty | string, StageData: {}): ()
         local PartyComponent = InterfaceController:GetComponent("Party")
 
         if Type == GameEnum.PartyManaging.Create then
@@ -37,6 +37,7 @@ function Controller:Init()
 
             PartyComponent:Set(true)
             PartyComponent:AddPlayerToList((ServerResponse :: CompressedParty)[1], Controller:BufferToTeamString(PlayerTeamData), true)
+            PartyComponent:UpdateStages(StageData)
         elseif Type == GameEnum.PartyManaging.Join then
             PartyComponent:Set(true)
             local List, Owner = Controller:GetPlayerListForParty(ServerResponse :: CompressedParty)
