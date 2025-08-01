@@ -27,7 +27,7 @@ function Ability:Play(Caster: Types.GenericClass, Skill_Name: string, State: str
 	local Clock = os.clock()
 	local AttackTime = Ability:FromData('Attack_State_Time')
 	local Sequence = Ability:Begin(Caster, {
-		{0, function(_: Types.Sequence)
+		{0, function()
 			Caster:SwitchState('Attacking', AttackTime)
 		end,},
 

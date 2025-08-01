@@ -16,7 +16,7 @@ function Ability:Play(Caster: Types.GenericClass, ...)
 	local _SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 
 	Ability:Begin(Caster, {
-		{0, function(_: Types.Sequence)
+		{0, function()
 			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time'))
 		end,},
 

@@ -26,7 +26,7 @@ function Controller:Init()
         return;
     end
 
-    Network:On("Party", function(Type: number, ServerResponse: CompressedParty | string, StageData: {}): ()
+    Network:On("Party", function(Type: number, ServerResponse: CompressedParty | string | {any}, StageData: {}): ()
         local PartyComponent = InterfaceController:GetComponent("Party")
 
         if Type == GameEnum.PartyManaging.Create then
@@ -37,11 +37,13 @@ function Controller:Init()
 
             PartyComponent:Set(true)
             PartyComponent:AddPlayerToList((ServerResponse :: CompressedParty)[1], Controller:BufferToTeamString(PlayerTeamData), true)
+            PartyComponent:SetPartyOwner(Player.UserId)
             PartyComponent:UpdateStages(StageData)
         elseif Type == GameEnum.PartyManaging.Join then
             PartyComponent:Set(true)
             local List, Owner = Controller:GetPlayerListForParty(ServerResponse :: CompressedParty)
 
+            PartyComponent:SetPartyOwner(Owner)
             for Name, Data in List do
                 PartyComponent:AddPlayerToList(Name, Data, Name == Owner)
             end
@@ -54,15 +56,27 @@ function Controller:Init()
         elseif Type == GameEnum.PartyManaging.Leave then
             PartyComponent:Set(false)
             PartyComponent:Clear()
+        elseif Type == GameEnum.PartyManaging.Queue then
+            local Data = (ServerResponse :: {string})
+            PartyComponent:ShowQueueing(Data[1])
         elseif Type == GameEnum.PartyManaging.Failed then
             local ErrorMessage = ServerResponse :: string
 
             warn("Server received error:", ErrorMessage)
             PartyComponent:SetButtonState("Play", true)
+        elseif Type == GameEnum.PartyManaging.SetReady then
+            local ReadyCount = (ServerResponse :: {})[1]
+            local PlayerIdReady = (ServerResponse :: {})[2]
+
+            PartyComponent:SetPlayerReady(ReadyCount, PlayerIdReady)
         elseif Type == GameEnum.PartyManaging.ChangeTeam then
             local PlayerTeamData = ServerResponse :: CompressedParty
 
             PartyComponent:UpdateTeam(PlayerTeamData[1], Controller:BufferToTeamString(PlayerTeamData[2] :: buffer))
+        elseif Type == GameEnum.PartyManaging.ChangeStage then
+            local PartyStageData = ServerResponse :: {string}
+
+            PartyComponent:UpdateStageInfo(PartyStageData[1])
         end
     end)
 end
@@ -70,7 +84,12 @@ end
 function Controller:GetPlayerListForParty(Compressed: CompressedParty)
     local List = {}
 
+    print("Full list:", Compressed)
+
     for i = 1, #Compressed, 2 do
+        if i == #Compressed then
+            break
+        end
 
         local Name = Compressed[i]
         local Team = Controller:BufferToTeamString(Compressed[i + 1] :: buffer)

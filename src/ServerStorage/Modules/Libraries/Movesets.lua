@@ -5,7 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Server = ServerStorage.Modules
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Abilities)
 local MovesetFolder = Server.Components.Movesets
 
 --

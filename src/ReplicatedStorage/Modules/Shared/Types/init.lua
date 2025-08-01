@@ -557,6 +557,7 @@ export type ClientAgentData = {
 export type PartyPlayerTeam = {[number]: PlayerAgentData}
 export type PartyState = typeof(_GameEnum.PartyStates.Idle)
 export type PartyPlayer = {
+	UserId: number,
 	PlayerObject: Player,
 	Level: number,
 
@@ -574,6 +575,8 @@ export type PartyClass = {
 	__Owner: number,
 	__State_Name: string,
 	__Max_Players: number,
+	__Ready: {PartyPlayer},
+	__Player_Count: number,
 	__Teams: {},
 
 	--
@@ -588,14 +591,23 @@ export type PartyClass = {
 	GetPlayers: (self: PartyClass) -> {PartyPlayer},
 	GetRawPlayers: (self: PartyClass) -> ({Player}),
 	GetMaxPlayers: (self: PartyClass) -> (number),
+	SwitchStage: (self: PartyClass, Type: string, Stage: string, Act: string) -> (),
 
-	GetPlayerTeam: (self: PartyClass, Player: PartyPlayer) -> (),
+	GetPlayerTeam: (self: PartyClass, Player: PartyPlayer) -> (PartyPlayerTeam),
 	SetPlayerTeam: (self: PartyClass, Player: PartyPlayer, Team: PartyPlayerTeam?) -> (),
 	GetSimplifiedTeam: (self: PartyClass, Player: PartyPlayer) -> (),
 	GetPlayerCompressedTeam: (self: PartyClass, Player: PartyPlayer) -> (),
 
 	SetState: (self: PartyClass, State: number) -> (),
 	SetStage: (self: PartyClass, Stage: string) -> (),
+
+	SetReady: (self: PartyClass, Player: PartyPlayer) -> (),
+
+	--[[
+		@return Boolean: Whether it did cancel or not.
+	]]
+	CancelReady: (self: PartyClass, Player: PartyPlayer) -> (boolean),
+	IsReady: (self: PartyClass) -> (boolean),
 
 	--[[
 		Compress the table in order to be sent via network

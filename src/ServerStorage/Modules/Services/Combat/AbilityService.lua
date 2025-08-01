@@ -11,6 +11,7 @@ local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
 local Enemies = require(Shared.Libraries.Enemies)
 local GameEnum = require(Shared.GameEnum)
+local AbilityTypes = require(Shared.Types.Abilities)
 
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local AgentLibrary = require(ServerStorage.Modules.Libraries.Agents)
@@ -54,7 +55,7 @@ function Service:Init()
 		local Skills = Moveset:GetAll()
 
 		for _, Skill in Skills do
-			Skill.__Hit:Connect(function(Data: Types.AbilityHitInfo)
+			Skill.__Hit:Connect(function(Data: AbilityTypes.AbilityHitInfo)
 				local Agent = Data.Caster :: AgentTypes.ServerAgentClass
 				if not Agent or Data.Hit_Type ~= 'Entity' then return end
 				local AgentPlayer = Agent.__Player_Assigned
@@ -212,7 +213,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 	return true;
 end
 
-function Service:GetMoveset(Name: string): Types.MovesetClass
+function Service:GetMoveset(Name: string): AbilityTypes.MovesetClass
 	return MovesetLibrary:Get(Name) or Service:GetMoveset("Goku")
 end
 

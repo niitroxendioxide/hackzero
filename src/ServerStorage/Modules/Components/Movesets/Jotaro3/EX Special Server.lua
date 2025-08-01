@@ -5,13 +5,13 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.GenericClass, _, State: Types.InputState)
+function Ability:Play(Caster: Types.Caster, _, State: Types.InputState)
 	--
     local Release = State == 'End'
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
@@ -35,7 +35,7 @@ function Ability:Play(Caster: Types.GenericClass, _, State: Types.InputState)
     local Clock = os.clock()
     local AttackTime =  Ability:FromData('Attack_State_Time')
 	local Sequence = Ability:Begin(Caster, {
-		{0, function(_: Types.Sequence)
+		{0, function()
 			Caster:SwitchState('Attacking', AttackTime)
 		end,},
 
@@ -54,7 +54,7 @@ function Ability:Play(Caster: Types.GenericClass, _, State: Types.InputState)
             Caster:Walk(Ability:FromData('Walk_Time'))
             Clock = os.clock()
 
-			Ability:CreateHitbox(Caster, Vector3.zAxis*-4,  vector.create(5, 5, 9), function(Target: Types.ServerEnemyClass)
+			Ability:CreateHitbox(Caster, Vector3.zAxis*-4,  vector.create(5, 5, 9), function(Target: Types.Target)
 				Ability:Hit(Caster, Target, {
                     Damage = Ability:FromData('Damage_Mult', nil, SkillLevel),
                     Affliction = 'Energy',

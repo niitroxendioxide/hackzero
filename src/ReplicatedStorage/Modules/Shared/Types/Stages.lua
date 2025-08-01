@@ -104,6 +104,7 @@ export type Stage_Act = {
 }
 
 export type Stage = {
+	Icon: number?,
 	Name: string,
 	Map: string,
 

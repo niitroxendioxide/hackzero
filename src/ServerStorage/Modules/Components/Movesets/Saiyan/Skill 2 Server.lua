@@ -16,7 +16,7 @@ function Ability:Play(Caster: Types.ServerEnemyClass)
 	local Attack_Time = Ability:FromData('Attack_State_Time')
 
 	Ability:Begin(Caster, {
-		{0, function(_: Types.Sequence)
+		{0, function()
 			Caster:SwitchState('Attacking', Attack_Time)
 		end,},
 

@@ -2,6 +2,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
+local PartyPlayer = require(script.Parent.PartyPlayer)
+local Play = require(ReplicatedStorage.Modules.Client.Components.Areas.Play)
 local Types = require(Shared.Types)
 local GameEnum = require(Shared.GameEnum)
 local Characters = require(Shared.Database.Characters)
@@ -20,6 +22,8 @@ function Party.new(Code: number, Owner: Types.PartyPlayer): Types.PartyClass
     self.__FriendsOnly = false
     self.__State = 1
     self.__Max_Players = 4
+    self.__Player_Count = 1
+    self.__Ready = {}
     self.__State_Name = "Idle"
     self.__Teams = {}
 
@@ -34,6 +38,38 @@ function Party.AddPlayer(self: Types.PartyClass, Player: Types.PartyPlayer): ()
     self:SetPlayerTeam(Player, {})
 
     table.insert(self.__Players, Player)
+end
+
+function Party.SetReady(self: Types.PartyClass, Player: Types.PartyPlayer)
+    if table.find(self.__Ready, Player) then
+        return
+    end
+
+    table.insert(self.__Ready, Player)
+end
+
+function Party.IsReady(self: Types.PartyClass)
+    local ReadyCount = #self.__Ready
+
+    return ReadyCount == #self.__Players
+end
+
+function Party.CancelReady(self: Types.PartyClass, Player: Types.PartyPlayer): boolean
+    if self.__State == GameEnum.PartyStates.Queueing then
+        return false
+    end
+
+    local Index = table.find(self.__Ready, Player)
+
+    if Index then
+        table.remove(self.__Ready, Index)
+    end
+
+    return true
+end
+
+function Party.SwitchStage(self: Types.PartyClass, Type: string, Stage: string, Act: string)
+    self.__Stage = Type..'/'..Stage..'/'..Act
 end
 
 function Party.RemovePlayer(self: Types.PartyClass, PlayerToRemove: Types.PartyPlayer)
@@ -94,12 +130,12 @@ function Party.IsOwner(self: Types.PartyClass, Player: Types.PartyPlayer): ()
     return self.__Owner == Player:GetId()
 end
 
-function Party.GetPlayerTeam(self: Types.PartyClass, Player: Types.PartyPlayer)
-    return self.__Teams[Player:GetId()]
-end
-
 function Party.GetDataTeam(self: Types.PartyClass, Player: Types.PartyPlayer)
     return {}
+end
+
+function Party.GetPlayerTeam(self: Types.PartyClass, Player: Types.PartyPlayer)
+    return self.__Teams[Player:GetId()]
 end
 
 function Party.SetPlayerTeam(self: Types.PartyClass, Player: Types.PartyPlayer, Team: Types.PartyPlayerTeam): ()

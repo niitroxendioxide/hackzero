@@ -29,7 +29,6 @@ function Service:Init()
     end
 
     for _, CommandInstance: TextChatCommand in CommandFolder:GetChildren() :: {TextChatCommand} do
-        print(CommandInstance.Name)
         CommandInstance.Triggered:Connect(function(Caster: TextSource, Message: string)
             local CleanedString = string.gsub(Message, CommandInstance.PrimaryAlias, '')
             CleanedString = string.gsub(CleanedString, "^%s+", "")

@@ -9,7 +9,7 @@ return {
 
     Acts = {
         Intro = {
-            Description = "Speak",
+            Description = "Training area, agents can traing their abilities or test out their new abilities. Feel free to bring anyone in for either testing out their skills or messing around with the controls.",
             Requisites = {},
 
             Rewards = {

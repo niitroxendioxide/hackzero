@@ -74,6 +74,22 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
 
         --
         Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress())
+    elseif Type == GameEnum.PartyManaging.ChangeStage then
+        local Request = ({...})[1]
+        local Party = Service:GetParty(Service:GetCode(Player)) :: Types.PartyClass
+        local Class = Service:GetClass(Player)
+
+        if not Party:IsOwner(Class) then
+            return
+        end
+
+        Party:SwitchStage(Request[1], Request[2], Request[3])
+
+        print('Switched the party to:', Party.__Stage)
+
+        for _, NetPlayer in Party:GetRawPlayers() do
+            Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.ChangeStage, {Party.__Stage})
+        end
     elseif Type == GameEnum.PartyManaging.Leave then
         local Code = Service:GetCode(Player)
         local Party = Service:GetParty(Code)
@@ -95,11 +111,50 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
             Service:DeleteParty(Code)
         end
     elseif Type == GameEnum.PartyManaging.Start then
+        local Code = Service:GetCode(Player)
+        local Party = Service:GetParty(Code)
+        local PlayerClass = Service:GetClass(Player)
+
+        if not Service:CanReadyUp(PlayerClass, Party) then
+            print("Cannot ready up!")
+
+            return
+        end
+
+        Party:SetReady(PlayerClass)
+
+        if not Party:IsReady() then
+            for _, NetPlayer in Party:GetRawPlayers() do
+                Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.SetReady, {#Party.__Ready, Player.UserId})
+            end
+
+            return
+        end
+
+        for _, NetPlayer in Party:GetRawPlayers() do
+            Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.Queue, {Party.__Stage})
+        end
+
+        --
         local Result, Message = Service:Start(Player)
 
         if not Result then
             Network:Fire("Party", Player, GameEnum.PartyManaging.Failed, Message)
         end
+    elseif Type == GameEnum.PartyManaging.CancelReady then
+        local Code = Service:GetCode(Player)
+        local Party = Service:GetParty(Code)
+        local PlayerClass = Service:GetClass(Player)
+
+        local CouldCancel = Party:CancelReady(PlayerClass)
+        if CouldCancel then
+            for _, NetPlayer in Party:GetRawPlayers() do
+                Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.CancelReady, {#Party.__Ready, Player.UserId})
+            end
+        else
+            print("Couldn\'t cancel the ready request.")
+        end
+
     elseif Type == GameEnum.PartyManaging.ChangeTeam then
         local Data = {...}
 
@@ -110,10 +165,10 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         local PlayerClass = Service:GetClass(Player)
         local Party = Service:GetParty(Code)
 
-        for _, Player in Party:GetRawPlayers() do
+        for _, NetPlayer in Party:GetRawPlayers() do
             local Team = Party:GetPlayerCompressedTeam(PlayerClass)
 
-            Network:Fire("Party", Player, GameEnum.PartyManaging.ChangeTeam, {Player.UserId, Team})
+            Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.ChangeTeam, {Player.UserId, Team})
         end
     elseif Type == GameEnum.FetchRequests.Parties then
         Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Parties, Service:FetchParties())
@@ -129,16 +184,19 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         Service:InvitePlayer(InvitedPlayer, Code)
     elseif Type == GameEnum.PartyManaging.AcceptInvite then
         local Data = {...}
+        local Code = Data[1]
 
-        if not Service:HasInviteFor(Player, Data[1]) then return end
+        if not Service:HasInviteFor(Player, Code) then return end
 
-        Service:JoinParty(Player, Data[1])
-        Service:RemoveInvite(Player, Data[1])
-        local Party = Service:GetParty(Data[1])
+        Service:JoinParty(Player, Code)
+        Service:RemoveInvite(Player, Code)
+        local Party = Service:GetParty(Code)
+
+        Service:JoinParty(Player, Code)
+
+        NotifyJoinForParty(Code, Player)
 
         Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress())
-
-        NotifyJoinForParty(Data[1], Player)
     elseif Type == GameEnum.PartyManaging.RejectInvite then
         local Data = {...}
 
@@ -189,6 +247,18 @@ end
 
 function Service:GetCode(Player: Player)
     return Service.__Player_Party[Player]
+end
+
+function Service:CanReadyUp(Player: Player, Party: Types.PartyClass)
+    local Class = Service:GetClass(Player)
+    local Team = Party:GetPlayerTeam(Class)
+    print(Class:GetId(), Class.PlayerObject)
+
+    if not Team or #Team < 1 then
+        return false
+    end
+
+    return true
 end
 
 function Service:FetchParties(): ()
@@ -264,8 +334,6 @@ function Service:Start(Player: Player): boolean
 
     Party:SetState(GameEnum.PartyStates.Teleporting)
 
-    print(GameEnum:ValueNameFrom("PartyStates", 2))
-
     return TeleportService:TeleportGroup(Party:GetStagePlace(), Party, {})
 end
 
@@ -298,6 +366,8 @@ function Service:ChangeTeam(Player: Player, Names: {string}): ()
     end
 
     if not Party then return; end
+
+    print("hi :3")
     Party:SetPlayerTeam(PlayerClass, Agents)
 end
 

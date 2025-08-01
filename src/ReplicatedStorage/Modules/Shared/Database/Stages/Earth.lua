@@ -6,6 +6,7 @@ local Types = require("../../Types/Stages")
 return {
     Name = "West City",
     Map = "Dragon Ball/Destroyed West City",
+    Icon = 105699184211954,
 
     Acts = {
         Intro = {
@@ -219,5 +220,9 @@ return {
                 },
             },
         },
+
+        Mission1 = {},
+        Mission2 = {},
+        Mission3 = {},
     }
 } :: Types.Stage

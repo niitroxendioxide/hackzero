@@ -52,6 +52,10 @@ function Controller.__BannerUpdated(BannerId: number, BannerData: {})
         table.insert(SubCharacters, BannerData[i][1])
     end
 
+    if not(BannerData) or not(BannerData[1]) or not(BannerData[1][1]) then
+        return
+    end
+
     SummonMenu:SetBanner({
         Main = BannerData[1][1],
         Sub = SubCharacters,
