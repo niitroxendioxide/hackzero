@@ -5,5 +5,5 @@ return {
         Amount = 10,
     },
 
-    Rarity = 'Rare',
+    Rarity = 'Epic',
 }

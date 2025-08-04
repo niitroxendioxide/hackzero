@@ -9,10 +9,10 @@ local Classes = Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
-local PlayerCompanionData = require(ServerStorage.Modules.Classes.Data.PlayerCompanionData)
 local QuestUtil = require(ServerStorage.Modules.Libraries.QuestUtil)
 local Network = require(Shared.Network)
 local DataTypes = require(Shared.Types.Data)
+local CompTypes = require(Shared.Types.Companions)
 
 local GameEnum = require(Shared.GameEnum)
 local Types = require(Shared.Types)
@@ -25,6 +25,7 @@ local PlayerItemDataClass = require(Classes.Data.PlayerItemData)
 local PlayerAgentDataClass = require(Classes.Data.PlayerAgentData)
 local PlayerDriveDataClass = require(Classes.Data.PlayerDriveData)
 local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
+local PlayerCompanionDataClass = require(Classes.Data.PlayerCompanionData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
 local DataStore = ProfileStore.New("newdata", ProfileTemplate)
@@ -37,6 +38,7 @@ local Service = {
     __Artifacts = {},
     __Drives = {},
     __Items = {},
+    __Companions = {},
 
 }
 
@@ -661,12 +663,29 @@ function Service:TakeItem(Player: Player, ItemName: string, Amount: number)
     Retrieved:SetAmount(Retrieved.__Amount - Amount)
 end
 
-function Service:GetCompanion(Id: string)
-    
+
+function Service:GetOrCreateCompanion(Player: Player, Id: string): CompTypes.PlayerCompanionDataClass?
+    local Data = Service:GetDataFor(Player)
+
+    if not Data.Companions[Id] then
+        return
+    end
+
+    if not Service.__Companions[Player] then
+        Service.__Companions[Player] = {}
+    end
+
+    if not Service.__Companions[Player][Id] then
+        local CompanionData = Data.Companions[Id]
+
+        Service.__Companions[Player][Id] = PlayerCompanionDataClass.new(CompanionData.Name, CompanionData)
+    end
+
+    return Service.__Companions[Player][Id]
 end
 
-function Service:SaveCompanion(Id: string)
-    
+function Service:SaveCompanion(Player: Player, Object: CompTypes.PlayerCompanionDataClass)
+    local Data = Service:GetDataFor(Player)
 end
 
 

@@ -3,7 +3,7 @@ local Types = require("../../Types")
 return {
     Name = "Template",
     Role_Needed = "Attack",
-    Tier = "Rare",
+    Tier = "Epic",
 
     IconId = 121441602694239,
     ModelName = "",

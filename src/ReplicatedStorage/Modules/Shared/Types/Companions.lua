@@ -54,6 +54,27 @@ export type CompanionStatsClass = {
     },
 }
 
+export type CompanionStats = {
+    Attack: number,
+    AttackRate: number,
+    AttackSpeed: number,
+    Defense: number,
+    Speed: number,
+}
+
+
+export type CompanionData = {
+    Level: number,
+    Experience: number,
+    Trait: string,
+    BaseStats: CompanionStats,
+    LevelStats: {
+        Attack: number,
+        Defense: number,
+    },
+    ObtainmentDate: number,
+}
+
 export type CompanionMovementClass = {
     __Area: BasePart?,
     __Clock: number,
@@ -78,6 +99,17 @@ export type CompanionMovementClass = {
     GetPivot: (self: CompanionMovementClass) -> (CFrame),
     GetGoal: (self: CompanionMovementClass) -> (CFrame),
     PivotTo: (self: CompanionMovementClass, At: CFrame) -> (),
+}
+
+export type PlayerCompanionDataClass = {
+    __Id: string,
+    __Level: number,
+    __Base_Stats: {},
+    __Level_Stats: {},
+
+
+    ToData: (self: PlayerCompanionDataClass) -> (CompanionData),
+    Compress: (self: PlayerCompanionDataClass) -> (string, buffer),
 }
 
 return 0

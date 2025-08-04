@@ -125,6 +125,13 @@ return {
 
 	Assist_Counter_Invulnerability_Time = 0.75,
 
+	Stat_Tier_Mults = {
+		Common = {0.1, 0.3},
+		Epic = {0.31, 0.55},
+		Legendary = {0.57, 0.82},
+		Mythical = {0.85, 0.99},
+	},
+
 	--
 	Difficulty_Targetting_Priorities = {
 		EASY = {

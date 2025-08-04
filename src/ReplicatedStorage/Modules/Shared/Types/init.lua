@@ -6,7 +6,7 @@ local _GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 -- [[ Other ]]
 
 --// B rank, A rank, S rank
-export type Tier = 'Rare' | 'Legendary' | 'Mythical' | 'Common'
+export type Tier = 'Epic' | 'Legendary' | 'Mythical' | 'Common'
 
 -- [[ Character Controlling ]]
 export type Rig = Model & {
@@ -679,6 +679,7 @@ export type PlayerProfileData = {
 		Interactions: {},
 	},
 
+	Companions: {},
     Agents: {
 		[number]: PlayerAgentData,
 	},

@@ -4,7 +4,7 @@ return {
 
     Type = "Feeding",
     Icon = 114039663757527,
-    Tier = "Rare",
+    Tier = "Epic",
     Max = math.huge,
 
     Other = {

@@ -280,7 +280,7 @@ return {
 	Tiers = {
 		["Mythical"] = 1,
 		["Legendary"] = 2,
-		["Rare"] = 3,
+		["Epic"] = 3,
 		["Common"] = 4,
 	},
 

@@ -21,7 +21,7 @@ return function(Caster: TextSource, Parameters: {[number]: string})
     local Player = Players:GetPlayerByUserId(Caster.UserId)
 
     for i = 1, Amount do
-        local NewArtifact = PlayerArtifactDataClass.randomize('Wristband', 'Rare', Level)
+        local NewArtifact = PlayerArtifactDataClass.randomize('Wristband', 'Epic', Level)
 
         DataService:AddArtifact(Player, NewArtifact)
     end

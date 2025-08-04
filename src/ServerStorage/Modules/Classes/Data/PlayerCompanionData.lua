@@ -1,16 +1,51 @@
+local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Companions = require(Shared.Database.Companions)
 local CompanionTraits = require(Shared.Database.CompanionTraits)
 
+local Types = require(Shared.Types.Companions)
 local Rng = Random.new()
+
+--[[
+    Roll for a stat using a numberrange
+
+    @return Tier (The tier of the stat rolled, common, epic, legendary, mythical, etc.)
+    @return Value the value of the stat rolled
+]]
+local function RollForStat(Range: NumberRange, Invert: boolean): (number, number)
+    local Chance = Rng:NextNumber(0, 100)
+    local Value = 0
+    local Tier = 'Common'
+    local Start, Goal = Range.Min, Range.Max
+    if Invert then
+        Goal, Start = Start, Goal
+    end
+
+    if Chance < 0.5 then
+        Tier = 'Mythical'
+    elseif Chance < 7.5 then
+        Tier = 'Legendary'
+    elseif Chance < 38 then
+        Tier = 'Epic'
+    end
+
+    local MultRange = Statics.Stat_Tier_Mults[Tier]
+    local Percent = Rng:NextNumber(MultRange[1], MultRange[2])
+
+    Value = math.lerp(Start, Goal, Percent)
+
+    return Value, GameEnum.Tiers[Tier]
+end
 
 --
 local CompanionDataClass = {}
 CompanionDataClass.__index = CompanionDataClass
 
-function CompanionDataClass.new(Name: string, Data: {[string]: any})
+function CompanionDataClass.new(Name: string, Data: {[string]: any}): Types.PlayerCompanionDataClass
     local self = setmetatable({}, CompanionDataClass)
     self.__Id = Data.Id
     self.__Name = Name
@@ -25,7 +60,7 @@ function CompanionDataClass.new(Name: string, Data: {[string]: any})
     return self
 end
 
-function CompanionDataClass.randomize(Name: string)
+function CompanionDataClass.randomize(Name: string): Types.PlayerCompanionDataClass
     local BaseStats = {}
     local LevelStats = {}
 
@@ -33,12 +68,10 @@ function CompanionDataClass.randomize(Name: string)
         if typeof(StatValue) == 'number' then
             BaseStats[StatName] = StatValue
         else
-            local Chosen = Rng:NextNumber(StatValue.Min, StatValue.Max)
-            local Percent = (Chosen - StatValue.Min) / (StatValue.Max - StatValue.Min)
+            local Value, Rarity = RollForStat(StatValue, StatName == 'AttackRate' or StatName == 'AttackSpeed')
 
-            print(StatName, "got a: ", Percent)
-
-            BaseStats[StatName] = Chosen
+            print(GameEnum:ValueNameFrom('Tiers', Rarity), ' pulled for base stat:', StatName, ' value: ', math.floor(Value * 10) / 10)
+            BaseStats[StatName] = Value
         end
     end
 
@@ -46,7 +79,11 @@ function CompanionDataClass.randomize(Name: string)
         if typeof(StatValue) == 'number' then
             LevelStats[StatName] = StatValue
         else
-            LevelStats[StatName] = Rng:NextNumber(StatValue.Min, StatValue.Max)
+            local Value, Rarity = RollForStat(StatValue, StatName == 'AttackRate' or StatName == 'AttackSpeed')
+
+            print(GameEnum:ValueNameFrom('Tiers', Rarity), ' pulled for level stat:', StatName, ' value: ', math.floor(Value * 10) / 10)
+
+            LevelStats[StatName] = Value
         end
     end
 
@@ -62,13 +99,14 @@ function CompanionDataClass.randomize(Name: string)
 
         Trait = Legendary[Rng:NextInteger(1, #Legendary)]
     elseif Percent < 20 then
-        local Rare = CompanionTraits:GetAllOfRarity("Rare")
+        local Epic = CompanionTraits:GetAllOfRarity("Epic")
 
-        Trait = Rare[Rng:NextInteger(1, #Rare)]
+        Trait = Epic[Rng:NextInteger(1, #Epic)]
     end
 
     return CompanionDataClass.new(Name, {
         Level = 1,
+        Id = HttpService:GenerateGUID(false),
         BaseStats = BaseStats,
         LevelStats = LevelStats,
         ObtainmentDate = DateTime.now().UnixTimestamp,
@@ -111,6 +149,7 @@ end
 
 function CompanionDataClass:ToData()
     return {
+        Id = self.__Id,
         Level = self.__Level,
         Trait = self.__Trait,
         BaseStats = self.__Base_Stats,

@@ -36,6 +36,7 @@ return {
         Main = {},
         Interactions = {},
     },
+    Companions = {},
     Agents = {},
     Achievements = {},
     Titles = {},

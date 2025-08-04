@@ -1,6 +1,6 @@
 return {
     Name = "Companion Template",
-    Tier = "Rare",
+    Tier = "Epic",
 
     Passive = {
         Description = "Does something",
