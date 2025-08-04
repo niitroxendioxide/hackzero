@@ -11,10 +11,10 @@ local Companions = require(Shared.Database.Companions)
 local StatsClass = {}
 StatsClass.__index = StatsClass
 
-function StatsClass.new(Name: string, Level: number)
+function StatsClass.new(Name: string, Stats: {})
     local self = setmetatable({}, StatsClass)
     self.__Items = {}
-    self.__Stats = Companions:GetStatsAtLevel(Name, Level)
+    self.__Stats = Stats
 
     return self
 end

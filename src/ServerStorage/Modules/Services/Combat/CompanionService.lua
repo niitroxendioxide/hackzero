@@ -13,7 +13,7 @@ function Service:Init()
 end
 
 function Service:CreateCompanion()
-    local New = ServerCompanion.new("Default", 1)
+    local New = ServerCompanion.new("Default", {})
     local AgentList = Agents:GetActiveAgents()
 
     New:Init(1)

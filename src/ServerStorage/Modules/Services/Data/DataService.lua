@@ -9,6 +9,7 @@ local Classes = Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local PlayerCompanionData = require(ServerStorage.Modules.Classes.Data.PlayerCompanionData)
 local QuestUtil = require(ServerStorage.Modules.Libraries.QuestUtil)
 local Network = require(Shared.Network)
 local DataTypes = require(Shared.Types.Data)
@@ -659,6 +660,15 @@ function Service:TakeItem(Player: Player, ItemName: string, Amount: number)
 
     Retrieved:SetAmount(Retrieved.__Amount - Amount)
 end
+
+function Service:GetCompanion(Id: string)
+    
+end
+
+function Service:SaveCompanion(Id: string)
+    
+end
+
 
 
 ---

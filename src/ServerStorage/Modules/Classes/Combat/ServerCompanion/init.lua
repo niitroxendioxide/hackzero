@@ -16,12 +16,11 @@ local StatsClass = require(script.Stats)
 local CompanionClass = {}
 CompanionClass.__index = CompanionClass
 
-function CompanionClass.new(Name: string, Level: number)
+function CompanionClass.new(Name: string, Stats: {})
     local self = setmetatable({}, CompanionClass)
-    self.__Stats = StatsClass.new(Name, Level)
-    self.__Movement = MovementClass.new(self.__Stats:GetStat("Speed"))
+    self.__Stats = StatsClass.new(Name, Stats)
+    self.__Movement = MovementClass.new(24)
     self.__Owner = nil
-    self.__Level = Level
     self.__Gear = {}
     self.__Key = -1
 

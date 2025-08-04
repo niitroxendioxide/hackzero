@@ -42,23 +42,24 @@ function Companions:GetPasive(Name: string): Types.CompanionPassive
 	return AccessedData.Passive
 end
 
-function Companions:GetStatsAtLevel(Name: string, Level: number)
+function Companions:GetStats(Name: string)
 	local ObtainedData = Companions:GetCompanionData(Name)
-
-	local Converted = {}
-
-	for Key, Value in ObtainedData.Stats do
-		local PerLevel = ObtainedData.LevelStats
-
-		if PerLevel[Key] then
-			Converted[Key] = Value + (PerLevel[Key] * math.max(Level - 1, 0))
-		else
-			Converted[Key] = Value
-		end
+	if not table.isfrozen(ObtainedData.Stats) then
+		table.freeze(ObtainedData.Stats)
 	end
 
-	return table.freeze(Converted)
+	return ObtainedData.Stats
 end
+
+function Companions:GetLevelStats(Name: string)
+	local ObtainedData = Companions:GetCompanionData(Name)
+	if not table.isfrozen(ObtainedData.LevelStats) then
+		table.freeze(ObtainedData.LevelStats)
+	end
+
+	return ObtainedData.LevelStats
+end
+
 
 function Companions:GetCompanionData(Companion: string): Types.CompanionData
 	if Companions.__Saved[Companion] == nil then
