@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local AgentDatabase = require(Database.Characters)
 local CompanionsDatabase = require(Database.Companions)
 
@@ -44,6 +45,7 @@ local System = {
 	__CurrentBanner = {},
 	__RarityUnits = {},
 	__Random = nil :: Random?,
+	__Generating = false :: boolean,
 }
 
 function System:Init()
@@ -72,9 +74,9 @@ function System:Init()
                 --'Legendary',
 				'Mythical',
                 'Legendary',
-				'Rare',
-				'Rare',
-				'Rare',
+				'Epic',
+				'Epic',
+				'Epic',
             })
 
             --print("Update banner", System:GetBanner())
@@ -84,24 +86,33 @@ function System:Init()
 end
 
 function System:GetBanner(): {[number]: string}
+	if System.__Generating  then
+		repeat
+			task.wait()
+		until not System.__Generating
+	end
+
 	return System.__CurrentBanner
 end
 
 function System:GetCharacterFromBannerWithRarity(Rarity: string): (string?)
 	local Banner = System:GetBanner()
-	local Choices = {}
 
+	local Choices = {}
 	for _, Character in Banner do
 		if Character[2] == Rarity then
-			table.insert(Choices, Character[1])
+			table.insert(Choices, Character)
 		end
 	end
 
+	print(Choices)
 	if #Choices == 0 then
 		return;
 	end
 
-	return Choices[math.random(1, #Choices)]
+	local Choice = Choices[math.random(1, #Choices)]
+
+	return Choice[1], Choice[3]
 end
 
 function System:CreatePool()
@@ -134,6 +145,8 @@ end
 
 function System:GenerateRandomBanner(Rarities: {string | {string}})
 	System.__Random = Random.new(System.CurrentDay);
+	System.__Generating = true
+
 	local Banner = {};
 
 	local Index = 1
@@ -143,19 +156,28 @@ function System:GenerateRandomBanner(Rarities: {string | {string}})
 
 		if GeneratedUnit then
 			Index += 1
-			table.insert(Banner, GeneratedUnit);
+
+			if GeneratedUnit[1] ~= nil then
+				table.insert(Banner, GeneratedUnit);
+			end
 		end
 
 		Attempts-=1
 	until #Banner >= #Rarities or Attempts <= 0;
 
     System.__CurrentBanner = table.freeze(Banner)
+	System.__Generating = false
 
 	return Banner;
 end
 
 function System:GenerateRandomUnit(Current_Table: {}, RarityID: string | {string & string})
 	local Unit, Rarity = System:GetRandomUnit(RarityID);
+
+	if Rarity == nil then
+		return
+	end
+
 	local RarityCopy = ShallowCopy(Rarity);
 
 	--Duplicate check below
@@ -187,7 +209,7 @@ function System:GenerateRandomUnit(Current_Table: {}, RarityID: string | {string
 	local IsAgent = AgentDatabase:GetCharacterData(Unit) ~= nil
 
 
-	return {Unit, RarityIDCorrect, IsAgent and 'Agent' or 'Companion'}
+	return {Unit, RarityIDCorrect, IsAgent and GameEnum.SummonDropTypes.Agent or GameEnum.SummonDropTypes.Companion}
 end
 
 function System:GetRandomUnit(Rarity: string | {string & string})

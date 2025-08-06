@@ -30,7 +30,7 @@ function Controller:Init()
             NavStates:Set('Movement_Locked', true)
 
             for _, Agent in Result do
-                Cutscenes:Start("Summon", {Agent[1]})
+                Cutscenes:Start("Summon", {Agent[1], Agent[2]})
                 Cutscenes:WaitCurrent()
             end
 
@@ -44,6 +44,8 @@ function Controller.__BannerUpdated(BannerId: number, BannerData: {})
     if typeof(BannerData) ~= "table" then
         return
     end
+
+    print(BannerId, BannerData)
 
     local SummonMenu = InterfaceController:GetComponent("Summon")
 

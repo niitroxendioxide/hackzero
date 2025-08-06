@@ -19,6 +19,11 @@ local DataService = require(Modules.Services.Data.DataService)
 local ShopService = require(Modules.Services.Lobby.ShopService)
 local Probabilities = require(Shared.Database.Probabilities)
 local PlayerAgentDataClass = require(Modules.Classes.Data.PlayerAgentData)
+local PlayerCompanionDataClass = require(Modules.Classes.Data.PlayerCompanionData)
+
+type GenericDataObject = {
+    Name: string
+} & any
 
 --
 local Service = {}
@@ -45,19 +50,27 @@ function Service:SyncBanner(Player: Player)
         return
     end
 
-    Network:Fire("Banner", Player, 1, Banner:GetBanner())
+    local Banner = Banner:GetBanner()
+
+    print(Banner)
+    Network:Fire("Banner", Player, 1, Banner)
 end
 
-function Service:SummonFromBanner()
-    -- get character
+function Service:SummonFromBanner(): (GenericDataObject, number)
+    -- get name
     local Rarity = Probabilities:GetRollTypeFrom("Summon")
-    local CharacterName = Banner:GetCharacterFromBannerWithRarity(Rarity)
+    local CharacterName, CharacterType = Banner:GetCharacterFromBannerWithRarity(Rarity)
 
-    -- replace later
+    print(CharacterName, Rarity)
+    local ObtainedUnitDataClass;
 
-    local ObtainedAgentDataClass = PlayerAgentDataClass.new(CharacterName, 1, DateTime.now().UnixTimestampMillis)
+    if CharacterType == GameEnum.SummonDropTypes.Agent then
+        ObtainedUnitDataClass = PlayerAgentDataClass.new(CharacterName, 1, DateTime.now().UnixTimestampMillis)
+    else
+        ObtainedUnitDataClass = PlayerCompanionDataClass.randomize(CharacterName)
+    end
 
-    return ObtainedAgentDataClass
+    return ObtainedUnitDataClass, CharacterType
 end
 
 -- ## Privates
@@ -92,22 +105,29 @@ function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: nu
         local TokenUpdated = false;
         local List = {};
         for idx = 1, Amount do
-            local NewAgent = Service:SummonFromBanner()
+            local NewObject, ObjectType = Service:SummonFromBanner()
+            print(NewObject)
+            if ObjectType == GameEnum.SummonDropTypes.Agent then
+                local HasAgent = DataService:HasAgent(Player, NewObject.Name)
 
-            local HasAgent = DataService:HasAgent(Player, NewAgent.Name)
+                if HasAgent then
+                    local Item = DataService:GetItem(Player, 'AgentToken:'..NewObject.Name, true)
+                    Item:SetAmount(math.min(6, Item.__Amount + 1))
 
-            if HasAgent then
-                local Item = DataService:GetItem(Player, 'AgentToken:'..NewAgent.Name, true)
-                Item:SetAmount(math.min(6, Item.__Amount + 1))
+                    TokenUpdated = true;
 
-                TokenUpdated = true;
+                    DataService:SaveItem(Player, Item)
+                else
+                    DataService:AddAgent(Player, NewObject)
+                end
+            elseif ObjectType == GameEnum.SummonDropTypes.Companion then
+                TokenUpdated = true
 
-                DataService:SaveItem(Player, Item)
-            else
-                DataService:AddAgent(Player, NewAgent)
+                DataService:SaveCompanion(Player, NewObject)
             end
 
-            table.insert(List, {NewAgent.Name})
+
+            table.insert(List, {NewObject.Name, ObjectType})
         end
 
         if TokenUpdated then

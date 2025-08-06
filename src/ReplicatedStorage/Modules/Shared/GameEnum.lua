@@ -201,6 +201,14 @@ return {
 		PlayerDied = 9,
 	},
 
+	SummonDropTypes = {
+		Agent = 1,
+		Companion = 2,
+		Drive = 3,
+		Artifact = 4,
+		Emote = 5,
+	},
+
 	SummonRequests = {
 		SummonOne = 1,
 		SummonTen = 2,

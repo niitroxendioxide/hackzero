@@ -10,8 +10,9 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage.Assets.Characters
 local Classes = Client.Classes
 
-local Inputs = require(Client.Libraries.Inputs)
 local Types = require(Shared.Types)
+local Inputs = require(Client.Libraries.Inputs)
+local GameEnum = require(Shared.GameEnum)
 local EffectsUtil = require(Shared.Utility.Effects)
 local CutsceneClass = require(Classes.Cutscene)
 
@@ -21,9 +22,14 @@ local SummonCutscene = CutsceneClass.new("Summon", 10)
 function SummonCutscene.Sequence(self: Types.CutsceneClass, Data: {string})
     local SummonRoom = World.LobbyCutscenes.SummonRoom
     local CharacterName = Data[1] or "Template"
-    local ModelCharacter = Assets.Agents:FindFirstChild(CharacterName)
+    local CharacterType = Data[2] or GameEnum.SummonDropTypes.Agent
+
+    --
+    local Directory = GameEnum.KeyLookup(GameEnum.SummonDropTypes, CharacterType)
+    print(Directory)
+    local ModelCharacter = Assets[Directory..'s']:FindFirstChild(CharacterName)
     if not ModelCharacter then
-        ModelCharacter = Assets.Agents:FindFirstChild("Template")
+        ModelCharacter = Assets[Directory..'s']:FindFirstChild("Template")
     end
 
     --

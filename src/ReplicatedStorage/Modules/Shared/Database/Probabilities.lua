@@ -13,7 +13,7 @@ return {
     Summon = {
         ["Mythical"] = 0.5,
         ["Legendary"] = 7,
-        ["Rare"] = 92.5,
+        ["Epic"] = 92.5,
     },
 
     Test = {
