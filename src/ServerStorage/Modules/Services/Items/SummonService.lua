@@ -86,6 +86,7 @@ function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: nu
             return
         end
 
+        --
         DataService:Set(Player, "Gems", PlayerGems - GemRequirement)
 
         local TokenUpdated = false;

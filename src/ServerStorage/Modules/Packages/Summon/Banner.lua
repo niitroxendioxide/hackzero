@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local AgentDatabase = require(Database.Characters)
+local CompanionsDatabase = require(Database.Companions)
 
 local ClockUtil = require(Shared.Utility.Clock)
 local SyncedTime = require(script.Parent.SyncedTime)
@@ -71,8 +72,9 @@ function System:Init()
                 --'Legendary',
 				'Mythical',
                 'Legendary',
-				'Legendary',
-				'Legendary'
+				'Rare',
+				'Rare',
+				'Rare',
             })
 
             --print("Update banner", System:GetBanner())
@@ -105,6 +107,19 @@ end
 function System:CreatePool()
     for _, Unit in AgentDatabase:GetAllCharacterNames() do
 		local Data = AgentDatabase:GetCharacterData(Unit)
+        local Rarity = Data.Tier
+
+		if Data.NotOnBanner then continue end
+
+		if not(System.__RarityUnits[Rarity]) then
+			System.__RarityUnits[Rarity] = {}
+		end
+
+		table.insert(System.__RarityUnits[Rarity], Unit)
+	end
+
+	for _, Unit in CompanionsDatabase:GetAllNames() do
+		local Data = CompanionsDatabase:GetCompanionData(Unit)
         local Rarity = Data.Tier
 
 		if Data.NotOnBanner then continue end
@@ -169,8 +184,10 @@ function System:GenerateRandomUnit(Current_Table: {}, RarityID: string | {string
 		RarityIDCorrect = RarityID[1]
 	end
 
+	local IsAgent = AgentDatabase:GetCharacterData(Unit) ~= nil
 
-	return {Unit, RarityIDCorrect}
+
+	return {Unit, RarityIDCorrect, IsAgent and 'Agent' or 'Companion'}
 end
 
 function System:GetRandomUnit(Rarity: string | {string & string})

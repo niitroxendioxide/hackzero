@@ -11,8 +11,9 @@ export type ProbabilityDict = {
 -- AND YOU'D HAVE THAT THE ONE WITH 100 ENTRIES IS AROUND 83.33% INSTEAD OF 100%
 return {
     Summon = {
-        ["Mythical"] = 5,
-        ["Legendary"] = 95,
+        ["Mythical"] = 0.5,
+        ["Legendary"] = 7,
+        ["Rare"] = 92.5,
     },
 
     Test = {

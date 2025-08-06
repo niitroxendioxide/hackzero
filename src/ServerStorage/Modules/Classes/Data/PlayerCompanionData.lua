@@ -54,6 +54,7 @@ function CompanionDataClass.new(Name: string, Data: {[string]: any}): Types.Play
     self.__Base_Stats = Data.BaseStats or {}
     self.__Level_Stats = Data.LevelStats or {}
     self.__Obtainment_Date = Data.ObtainmentDate or DateTime.now().UnixTimestamp
+    self.__Stats_Rarity = Data.StatsRarity
     self.__Trait = Data.Trait or 'None'
 
 
@@ -63,6 +64,7 @@ end
 function CompanionDataClass.randomize(Name: string): Types.PlayerCompanionDataClass
     local BaseStats = {}
     local LevelStats = {}
+    local StatRarities = {Level = {}, Base = {}}
 
     for StatName, StatValue: number | NumberRange in Companions:GetStats(Name) do
         if typeof(StatValue) == 'number' then
@@ -70,7 +72,7 @@ function CompanionDataClass.randomize(Name: string): Types.PlayerCompanionDataCl
         else
             local Value, Rarity = RollForStat(StatValue, StatName == 'AttackRate' or StatName == 'AttackSpeed')
 
-            print(GameEnum:ValueNameFrom('Tiers', Rarity), ' pulled for base stat:', StatName, ' value: ', math.floor(Value * 10) / 10)
+            StatRarities.Base[StatName] = Rarity
             BaseStats[StatName] = Value
         end
     end
@@ -81,8 +83,7 @@ function CompanionDataClass.randomize(Name: string): Types.PlayerCompanionDataCl
         else
             local Value, Rarity = RollForStat(StatValue, StatName == 'AttackRate' or StatName == 'AttackSpeed')
 
-            print(GameEnum:ValueNameFrom('Tiers', Rarity), ' pulled for level stat:', StatName, ' value: ', math.floor(Value * 10) / 10)
-
+            StatRarities.Level[StatName] = Rarity
             LevelStats[StatName] = Value
         end
     end
@@ -110,6 +111,7 @@ function CompanionDataClass.randomize(Name: string): Types.PlayerCompanionDataCl
         BaseStats = BaseStats,
         LevelStats = LevelStats,
         ObtainmentDate = DateTime.now().UnixTimestamp,
+        StatsRarity = StatRarities,
         Trait = Trait
     })
 end
@@ -156,6 +158,7 @@ function CompanionDataClass:ToData()
         Experience = self.__Experience,
         LevelStats = self.__Level_Stats,
         ObtainmentDate = self.__Obtainment_Date,
+        StatsRarity = self.__Stats_Rarity
     }
 end
 
