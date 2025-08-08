@@ -105,13 +105,13 @@ function System:GetCharacterFromBannerWithRarity(Rarity: string): (string?)
 		end
 	end
 
-	print(Choices)
 	if #Choices == 0 then
 		return;
 	end
 
 	local Choice = Choices[math.random(1, #Choices)]
 
+	print(Choice, 'is what i chose!')
 	return Choice[1], Choice[3]
 end
 
@@ -171,6 +171,14 @@ function System:GenerateRandomBanner(Rarities: {string | {string}})
 	return Banner;
 end
 
+--[[
+	Generates a random unit, FOR THE BANNER. Not for the pulling, for pulling use
+	```lua
+		-- we need a rarity to give the banner to get one random of it, you can use the Probability Utils for it.
+		local Rarity = "Epic"
+		local UnitObtained = Banner:GetCharacterFromBannerWithRarity(Rarity)
+	```
+]]
 function System:GenerateRandomUnit(Current_Table: {}, RarityID: string | {string & string})
 	local Unit, Rarity = System:GetRandomUnit(RarityID);
 
@@ -206,8 +214,7 @@ function System:GenerateRandomUnit(Current_Table: {}, RarityID: string | {string
 		RarityIDCorrect = RarityID[1]
 	end
 
-	local IsAgent = AgentDatabase:GetCharacterData(Unit) ~= nil
-
+	local IsAgent = AgentDatabase:GetCharacterData(Unit, true) ~= nil
 
 	return {Unit, RarityIDCorrect, IsAgent and GameEnum.SummonDropTypes.Agent or GameEnum.SummonDropTypes.Companion}
 end

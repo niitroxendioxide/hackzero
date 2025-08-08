@@ -47,6 +47,9 @@ CompanionDataClass.__index = CompanionDataClass
 
 function CompanionDataClass.new(Name: string, Data: {[string]: any}): Types.PlayerCompanionDataClass
     local self = setmetatable({}, CompanionDataClass)
+    self.Name = Name
+
+    --
     self.__Id = Data.Id
     self.__Name = Name
     self.__Level = Data.Level or 1

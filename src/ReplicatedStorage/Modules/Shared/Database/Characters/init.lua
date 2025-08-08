@@ -77,8 +77,8 @@ function CharacterData:GetSpeedStats(Character: string): Types.CharacterStats
 	}
 end
 
-function CharacterData:GetCharacterData(Character: string): Types.CharacterData
-	if CharacterData.__Saved[Character] == nil then
+function CharacterData:GetCharacterData(Character: string, ForceNoTemplate: boolean?): Types.CharacterData
+	if CharacterData.__Saved[Character] == nil and not ForceNoTemplate then
 		return CharacterData.__Saved['Template']
 	end
 

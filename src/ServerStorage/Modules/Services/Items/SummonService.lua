@@ -51,8 +51,6 @@ function Service:SyncBanner(Player: Player)
     end
 
     local Banner = Banner:GetBanner()
-
-    print(Banner)
     Network:Fire("Banner", Player, 1, Banner)
 end
 
@@ -61,7 +59,6 @@ function Service:SummonFromBanner(): (GenericDataObject, number)
     local Rarity = Probabilities:GetRollTypeFrom("Summon")
     local CharacterName, CharacterType = Banner:GetCharacterFromBannerWithRarity(Rarity)
 
-    print(CharacterName, Rarity)
     local ObtainedUnitDataClass;
 
     if CharacterType == GameEnum.SummonDropTypes.Agent then
@@ -106,7 +103,6 @@ function Service.__ServerEvent(Player: Player, RequestType: number, BannerId: nu
         local List = {};
         for idx = 1, Amount do
             local NewObject, ObjectType = Service:SummonFromBanner()
-            print(NewObject)
             if ObjectType == GameEnum.SummonDropTypes.Agent then
                 local HasAgent = DataService:HasAgent(Player, NewObject.Name)
 

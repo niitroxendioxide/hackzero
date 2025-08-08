@@ -26,7 +26,6 @@ function SummonCutscene.Sequence(self: Types.CutsceneClass, Data: {string})
 
     --
     local Directory = GameEnum.KeyLookup(GameEnum.SummonDropTypes, CharacterType)
-    print(Directory)
     local ModelCharacter = Assets[Directory..'s']:FindFirstChild(CharacterName)
     if not ModelCharacter then
         ModelCharacter = Assets[Directory..'s']:FindFirstChild("Template")

@@ -4,7 +4,7 @@ export type ProbabilityDict = {
         [string]: number,
     },
 
-    GetRollTypeFrom: (self: ProbabilityDict, Key: string) -> (string),
+    GetRollTypeFrom: (self: ProbabilityDict, Key: 'Summon' | string) -> (string),
 }
 
 -- PROBABILITIES ARE DETERMINED WITH ENTRIES. NOT WITH PERCENT, 100 ENTRIES FOR ONE THING IS POSSIBLE, AND ADD 20 MORE ENTRIES
@@ -16,21 +16,13 @@ return {
         ["Epic"] = 92.5,
     },
 
-    Test = {
-        a = 12,
-        b = 19,
-        c = 32,
-        d = 55,
-        g = 56,
-        f = 91,
-    },
-
-
+    -- TODO: Change the logic later :3
     GetRollTypeFrom = function(self: ProbabilityDict, Key: string)
         local Directory = self[Key]
         local Choices = {}
+
         for ItemName, Amount in Directory do
-            for i = 1, Amount do
+            for i = 1, math.round(Amount) do
                 table.insert(Choices, ItemName)
             end
         end
