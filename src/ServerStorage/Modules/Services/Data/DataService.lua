@@ -111,6 +111,10 @@ function Service:FetchAgents(Player: Player)
 
     local Data = {}
     for _, Agent in (Agents or {}) do
+        if Agent.Name == 'Default' then
+            continue
+        end
+
         table.insert(Data, Agent:Compress())
     end
 

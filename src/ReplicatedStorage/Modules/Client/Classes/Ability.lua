@@ -19,6 +19,7 @@ local Sequence = require(Shared.Utility.Sequence)
 local CharactersLib = require(Client.Libraries.Characters)
 --local CharacterDatabase = require(Shared.Database.Characters)
 
+local HitStop = require(Client.Utility.HitStop)
 local Cooldown = require(Shared.Utility.Cooldown)
 local GameEnum = require(Shared.GameEnum)
 local Replicator = require(Client.Libraries.Replicator)
@@ -113,6 +114,11 @@ end
 function AbilityClass:Effect(Name: string, ...)
 	return Effects:Play(Name, ...)
 end
+
+function AbilityClass:EffectSerial(Name: string, ...)
+	return Effects:PlaySerial(Name, ...)
+end
+
 
 function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?): ()
 	if Key == 'Knockback' then
@@ -302,6 +308,34 @@ function AbilityClass.UseAttackData(self: Types.AbilityClass, Sequence: Types.Se
 		end)
 	end
 end
+
+--[[
+	Play a different sequence of effects both on the caster and the target for hitting an enemy.
+	@param Caster represents whoever is casting the skill at the time
+	@param Target represents whoever is hit by the caster
+	@param Data Can include 'EffectData' for modifying the effect, or a Custom HitStopDuration
+]]
+function AbilityClass.Hit(self: Types.AbilityClass, Caster, Target, Data)
+	local HitstopDuration = Data.HitstopDuration
+	local Sequence = self:Get(Caster, 'CurrentPlayerSequence')
+	local Animations = self:Get(Caster, "CurrentSkillSavedObjects")
+
+	if Animations and #Animations > 0 then
+		HitStop:Apply(Caster, Sequence, Animations[1], HitstopDuration)
+	end
+
+	if Data.StopEffect then
+		
+		
+	end
+
+    if Target and Target.Hit then
+        Target:Hit(Caster, Data)
+
+		self:Effect("Hit", Target, Data.EffectData)
+    end
+end
+
 
 function AbilityClass.Cancel(self: Types.AbilityClass, Agent: any, Context: {Hit: boolean?})
 	Context = Context or {}

@@ -39,4 +39,17 @@ function Effects:Play(Name: string, ...)
 	end)
 end
 
+function Effects:PlaySerial(Name: string, ...)
+	--
+	local Module = Effects.__Cached[Name]
+
+	if not Module then
+		return
+	end
+
+	local Args = {...};
+
+	return Module(table.unpack(Args))
+end
+
 return Effects

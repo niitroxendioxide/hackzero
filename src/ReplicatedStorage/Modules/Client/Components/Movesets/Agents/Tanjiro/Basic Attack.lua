@@ -19,6 +19,7 @@ function Ability:Play(Agent: Types.Caster)
 	end
 
 	--
+	local EffectObj = {}
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
 	local Sequence = Ability:Begin(Agent, {
 		{0, function(_: Types.Sequence)
@@ -34,7 +35,7 @@ function Ability:Play(Agent: Types.Caster)
 		{.133, function()
 			if M1_Count ~= 5 then return end
 
-			Ability:Effect("Slash", Agent, -66.229, nil, false)
+			EffectObj = Ability:EffectSerial("Slash", Agent, -66.229, nil, false)
 		end},
 
 		{.15, function()
@@ -44,25 +45,25 @@ function Ability:Play(Agent: Types.Caster)
 			end
 			if M1_Count > 2 then return end
 
-			Ability:Effect("Slash", Agent, M1_Count == 1 and -67.608 or -55, nil, M1_Count == 2)
+			EffectObj = Ability:EffectSerial("Slash", Agent, M1_Count == 1 and -67.608 or -55, nil, M1_Count == 2)
 		end},
 
 		{.41, function()
 			if M1_Count ~= 5 then return end
 
-			Ability:Effect("Slash", Agent, 70, nil, false)
+			EffectObj = Ability:EffectSerial("Slash", Agent, 70, nil, false)
 		end},
 
 		{.2, function()
 			if M1_Count ~= 4 then return end
 
-			Ability:Effect("Slash", Agent, -67, nil, true)
+			EffectObj = Ability:EffectSerial("Slash", Agent, -67, nil, true)
 		end},
 
 		{.45, function()
 			if M1_Count ~= 4 then return end
 
-			Ability:Effect("Slash", Agent, -78.8)
+			EffectObj = Ability:EffectSerial("Slash", Agent, -78.8)
 		end},
 	}, true)
 
@@ -72,8 +73,10 @@ function Ability:Play(Agent: Types.Caster)
 		Size = Vector3.new(4, 4, 5),
 		Offset = Vector3.new(0, 0, -2.5),
 		Hit_Function = function(Target: Types.Target)
-			Target:Hit()
-			Ability:Effect('Hit', Target)
+			Ability:Hit(Agent, Target, {StopEffect = EffectObj})
+
+			--Target:Hit()
+			--Ability:Effect('Hit', Target)
 		end
 	})
 
@@ -84,8 +87,9 @@ function Ability:Play(Agent: Types.Caster)
 			Size = Vector3.new(4, 4, 5),
 			Offset = Vector3.new(0, 0, -2.5),
 			Hit_Function = function(Target: Types.Target)
-				Target:Hit()
-				Ability:Effect('Hit', Target)
+				Ability:Hit(Agent, Target, {StopEffect = EffectObj})
+				--Target:Hit()
+				--Ability:Effect('Hit', Target)
 			end
 		})
 	end

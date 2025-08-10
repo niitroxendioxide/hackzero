@@ -36,4 +36,6 @@ return function(Caster: Types.AgentClass, Angle: number, Offset: CFrame, Reverse
     end)
 
     Effects:CleanUp(Connection, 1.5)
+
+    return SlashEffect
 end
