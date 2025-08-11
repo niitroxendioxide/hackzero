@@ -17,6 +17,7 @@ local Hitbox = require(Shared.Utility.Hitbox)
 local Enemies = require(Shared.Libraries.Enemies)
 local Sequence = require(Shared.Utility.Sequence)
 local CharactersLib = require(Client.Libraries.Characters)
+local EffectsLibrary = require(Shared.Utility.Effects)
 --local CharacterDatabase = require(Shared.Database.Characters)
 
 local HitStop = require(Client.Utility.HitStop)
@@ -320,13 +321,18 @@ function AbilityClass.Hit(self: Types.AbilityClass, Caster, Target, Data)
 	local Sequence = self:Get(Caster, 'CurrentPlayerSequence')
 	local Animations = self:Get(Caster, "CurrentSkillSavedObjects")
 
+	if Caster.__Player_Assigned == Players.LocalPlayer then
+		EffectsLibrary:ShakeCamera("SoftHit")
+	end
+
 	if Animations and #Animations > 0 then
-		HitStop:Apply(Caster, Sequence, Animations[1], HitstopDuration)
+		for _, Anim in Animations do
+			HitStop:Apply(Caster, Sequence, Anim, HitstopDuration)
+		end
 	end
 
 	if Data.StopEffect then
-		
-		
+		HitStop:StopEffect(Data.StopEffect, HitstopDuration)
 	end
 
     if Target and Target.Hit then

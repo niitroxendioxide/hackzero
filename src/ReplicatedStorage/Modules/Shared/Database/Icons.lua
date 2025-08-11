@@ -13,12 +13,37 @@ return {
 	},
 
 	Buttons = {
-		['Inventory'] = 93968693751727,
-		['Agents'] = 126819722091537,
-		['Settings'] = 134273057855463,
 		['Map'] = 88079458754712,
 		['Shop'] = 139099004250521,
 		['Quests'] = 82127527330126,
+		['Agents'] = 126819722091537,
+		['Settings'] = 134273057855463,
+		['Inventory'] = 93968693751727,
+		['Companions'] = 75933963205055,
+	},
+
+	Rarities = {
+		['Common'] = {
+			Id = PREFIX .. 126340402420755,
+
+			TextColorSequence = Sequence { Key(0, RGB(152, 152, 152)), Key(1, White) }
+		},
+		['Epic'] = {
+			Id = PREFIX .. 140502637235592,
+
+			TextColorSequence = Sequence { Key(0, RGB(212, 0, 255)), Key(1, RGB(223, 147, 255)) }
+		},
+		['Legendary'] = {
+			Id = PREFIX .. 101596220681824,
+
+			TextColorSequence = Sequence { Key(0, RGB(255, 111, 39)), Key(1, White) }
+		},
+		['Mythical'] = {
+			Id = PREFIX .. 103396654374573,
+
+			OutlineColor = RGB(103, 0, 132),
+			TextColorSequence = Sequence { Key(0, White), Key(0.244, RGB(13, 167, 255)), Key(0.574, RGB(130, 57, 255)), Key(1, RGB(212, 0, 255)) }
+		},
 	},
 
 	Skills = {

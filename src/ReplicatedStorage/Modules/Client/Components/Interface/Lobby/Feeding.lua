@@ -25,6 +25,8 @@ local States = {
     SelectedAgent = nil,
     SelectedFeedItems = {} :: {[string]: number},
     ItemMenuOpen = false,
+    CompanionId = '',
+    Type = 'Agent',
 }
 
 local function Feed()
@@ -151,9 +153,10 @@ end
 function UpdatePreview()
     local MainFrame = Component:GetFrame()
     local LevelBar = MainFrame.Agent.Data.LvlBar
+    local IsAgent = States.Type == 'Agent'
 
-    local AgentData = LocalData:GetAgent(States.SelectedAgent)
-    if not AgentData then
+    local CharacterData = IsAgent and LocalData:GetAgent(States.SelectedAgent) or LocalData:GetCompanion(States.CompanionId)
+    if not CharacterData then
         return
     end
 
@@ -166,8 +169,8 @@ function UpdatePreview()
     LevelBar.Exp.Preview.Visible = true
 
     local AddedLevels = 0
-    local ExpForLevel = Statics.Experience_For_Level(AgentData.Level + 1)
-    local Total = AgentData.Experience
+    local ExpForLevel = IsAgent and Statics.Experience_For_Level(CharacterData.Level + 1) or Statics.Companion_Experience_For_Level(CharacterData.Level + 1)
+    local Total = CharacterData.Experience
     for Item, Count in States.SelectedFeedItems do
         local ValidItemData = ItemDatabase:GetItemData(Item)
         if not ValidItemData or not ValidItemData.Other or not ValidItemData.Other.FeedExp then continue end
@@ -178,11 +181,11 @@ function UpdatePreview()
     while Total > ExpForLevel do
         AddedLevels += 1
         Total -= ExpForLevel
-        ExpForLevel = Statics.Experience_For_Level(AgentData.Level + AddedLevels + 1)
+        ExpForLevel = IsAgent and Statics.Experience_For_Level(CharacterData.Level + 1) or Statics.Companion_Experience_For_Level(CharacterData.Level + 1)
     end
 
     LevelBar.Exp.Fill.Visible = AddedLevels <= 0
-    LevelBar.Lvl.Text = `Level: {AgentData.Level + AddedLevels} / 60`
+    LevelBar.Lvl.Text = `Level: {CharacterData.Level + AddedLevels} / 60`
     LevelBar.Lvl.TextColor3 = AddedLevels > 0 and Color3.fromRGB(164, 193, 255) or Color3.new(1,1,1)
 
     EffectUtil:Tween(LevelBar.Exp.Preview, {.25, 'Cubic'}, {Size = UDim2.fromScale(Total / ExpForLevel, 1)})

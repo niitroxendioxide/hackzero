@@ -2,6 +2,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
+local CompanionTraits = require(ReplicatedStorage.Modules.Shared.Database.CompanionTraits)
+local Companions = require(ReplicatedStorage.Modules.Shared.Database.Companions)
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
 local Network = require(Shared.Network)
 local AgentDatabase = require(Shared.Database.Characters)
@@ -60,6 +62,38 @@ function Fetcher:FetchAgents(): {any}
     LocalData:SetAgents(TranslatedData)
 
     return TranslatedData
+end
+
+function Fetcher:FetchCompanions()
+    local Data = Fetcher:SendRequest(GameEnum.FetchRequests.Companions)
+
+    local CompanionList = {}
+
+    for _, Obj in Data do
+        local Buffer = Obj[1]
+        local Stats = Obj[2]
+        local Rarities = Obj[3]
+
+        local Id = buffer.readstring(Buffer, 7, buffer.len(Buffer) - 7)
+
+        local Converted = {
+            Id = Id,
+            Name = Companions:GetFromId(buffer.readu8(Buffer, 0)),
+            Level = buffer.readu8(Buffer, 1),
+            Trait = CompanionTraits:GetFromId(buffer.readu8(Buffer, 2)),
+            Experience = buffer.readf32(Buffer, 3),
+
+            Stats = Stats,
+            Rarities = Rarities,
+        }
+
+        table.insert(CompanionList, Converted)
+    end
+
+    LocalData:SetCompanionData(CompanionList)
+
+
+    return CompanionList
 end
 
 function Fetcher:FetchStages(): {any}

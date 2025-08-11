@@ -174,6 +174,7 @@ return {
 		Parties = 205,
 		Quests = 305,
 		Stages = 405,
+		Companions = 406,
 	},
 
 	NotificationTypes = {

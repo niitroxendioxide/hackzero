@@ -1,5 +1,5 @@
 -- Constants
-local HITSTOP_DURATION = 0.25
+local HITSTOP_DURATION = 4/60
 
 --
 local HitStop = {}
@@ -21,7 +21,7 @@ function HitStop:Apply(Agent: any, Sequence: any, AnimTrack: AnimationTrack, Dur
     Sequence:Pause()
     AnimTrack:AdjustSpeed(0)
 
-    ActiveHitStops[Agent] = task.delay(HITSTOP_DURATION, function()
+    ActiveHitStops[Agent] = task.delay(DurationOverride or HITSTOP_DURATION, function()
         Sequence:Start()
         AnimTrack:AdjustSpeed(originalAnimSpeed)
 
@@ -30,6 +30,9 @@ function HitStop:Apply(Agent: any, Sequence: any, AnimTrack: AnimationTrack, Dur
 end
 
 function HitStop:StopEffect(Effect: Instance, Time: number)
+    if typeof(Effect) ~= 'Instance' then
+        return
+    end
 
     if ActiveHitStops[Effect] then
         task.cancel(ActiveHitStops[Effect])

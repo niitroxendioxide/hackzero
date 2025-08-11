@@ -58,6 +58,15 @@ local CameraShakePresets = {
 		return c
 	end;
 
+	-- Softer than previous one
+	-- Should happen once.
+	SoftHit = function()
+		local c = CameraShakeInstance.new(2, 9, .05, 0.4)
+		c.PositionInfluence = Vector3.new(0.07, 0.07, 0.07)
+		c.RotationInfluence = Vector3.new(0.25, 0.15, 0.35)
+		return c
+	end;
+
 
 	-- A low magnitude and rough shake.
 	-- Should happen once.

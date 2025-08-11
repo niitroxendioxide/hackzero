@@ -62,17 +62,32 @@ export type CompanionStats = {
     Speed: number,
 }
 
-
+export type Rarities = {
+        Base: {[string]: number},
+        Level: {[string]: number},
+    }
 export type CompanionData = {
+    Id: string,
     Level: number,
     Experience: number,
     Trait: string,
     BaseStats: CompanionStats,
-    LevelStats: {
-        Attack: number,
-        Defense: number,
-    },
+    LevelStats: CompanionStats,
+
+    StatsRarity: Rarities,
+
     ObtainmentDate: number,
+}
+
+export type ClientCompanionData = {
+    Id: string,
+    Name: string,
+    Level: number,
+    Trait: string,
+    Experience: number,
+
+    Stats: CompanionStats,
+    Rarities: Rarities,
 }
 
 export type CompanionMovementClass = {

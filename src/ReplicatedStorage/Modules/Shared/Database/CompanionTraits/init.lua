@@ -37,7 +37,7 @@ function TraitService:GetAllOfRarity(Rarity: string?)
 end
 
 function TraitService:GetIdFor(Name: string)
-    return table.find(TraitService.__Ids, Name)
+    return table.find(TraitService.__Ids, Name) or 0
 end
 
 function TraitService:GetFromId(Id: number): string

@@ -51,7 +51,7 @@ function CompanionDataClass.new(Name: string, Data: {[string]: any}): Types.Play
 
     --
     self.__Id = Data.Id
-    self.__Name = Name
+    self.__Name = Name or 'Default'
     self.__Level = Data.Level or 1
     self.__Experience = Data.Experience or 0
     self.__Base_Stats = Data.BaseStats or {}
@@ -125,7 +125,7 @@ function CompanionDataClass:GetStats()
     for StatName, StatValue in self.__Base_Stats do
         local LevelValue = self.__Level_Stats[StatName] or 0
 
-        Stats[StatName] = StatValue + (LevelValue*self.__Level)
+        Stats[StatName] = StatValue + (LevelValue*(self.__Level - 1))
     end
 
     return Stats
@@ -135,26 +135,26 @@ function CompanionDataClass:SetLevel(Level: number)
     self.__Level = Level
 end
 
-function CompanionDataClass:Compress()
-    local DataBuffer = buffer.create(12)
-    buffer.writeu8(DataBuffer, 0, Companions:GetIdFor(self.__Name))
+function CompanionDataClass:Compress(): {buffer | {}}
+    local NameId =  Companions:GetIdFor(self.__Name)
+
+    print(self.__Name, NameId)
+    local DataBuffer = buffer.create(7 + #self.__Id)
+    buffer.writeu8(DataBuffer, 0, NameId)
     buffer.writeu8(DataBuffer, 1, self.__Level)
     buffer.writeu8(DataBuffer, 2, CompanionTraits:GetIdFor(self.__Trait))
+    buffer.writef32(DataBuffer, 3, self.__Experience)
+    buffer.writestring(DataBuffer, 7, self.__Id)
 
     local Stats = self:GetStats()
-    buffer.writeu16(DataBuffer, 3, Stats.Attack)
-    buffer.writeu16(DataBuffer, 5, Stats.Defense)
-    buffer.writeu16(DataBuffer, 7, Stats.Speed * 100)
 
-    buffer.writeu16(DataBuffer, 9, Stats.AttackSpeed * 100)
-    buffer.writeu8(DataBuffer, 11, (Stats.AttackRate * 10))
-
-    return DataBuffer
+    return {DataBuffer, Stats, self.__Stats_Rarity}
 end
 
 function CompanionDataClass:ToData()
     return {
         Id = self.__Id,
+        Name = self.__Name,
         Level = self.__Level,
         Trait = self.__Trait,
         BaseStats = self.__Base_Stats,

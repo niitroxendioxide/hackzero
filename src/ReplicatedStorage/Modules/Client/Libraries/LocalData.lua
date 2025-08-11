@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
 local Data = require(ReplicatedStorage.Modules.Shared.Types.Data)
+local Companions = require(ReplicatedStorage.Modules.Shared.Types.Companions)
 
 --
 local LocalData = {
@@ -56,6 +57,24 @@ function LocalData:EditAgentDrive(AgentName: string, Drive: Types.PlayerDriveDat
             Agent.Drive = Drive.Id
         end
     end
+end
+
+function LocalData:GetCompanion(Id: string): Companions.ClientCompanionData?
+    for _, Companion in LocalData.__Cache['Companions'] do
+        if Companion.Id == Id then
+            return Companion
+        end
+    end
+
+    return;
+end
+
+function LocalData:SetCompanionData(Data: {Companions.ClientCompanionData})
+    LocalData.__Cache['Companions'] = Data
+end
+
+function LocalData:GetAllCompanions(): {Companions.ClientCompanionData}
+    return LocalData.__Cache['Companions']
 end
 
 --

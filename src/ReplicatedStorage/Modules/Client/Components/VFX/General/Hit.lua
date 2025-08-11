@@ -10,7 +10,7 @@ local Effects = require(Shared.Utility.Effects)
 
 ---
 return function(Enemy: Types.EnemyClass,
-	Data: {Emitter: string?, Offset: CFrame?, HueShift: number?, HueShiftFilter: ((any) -> (number))?}
+	Data: {Emitter: string?, Offset: CFrame?, HueShift: number?, HueShiftFilter: ((any) -> (number))?, HitstopTime: number?}
 )
 
 	Data = Data or {}
@@ -34,4 +34,17 @@ return function(Enemy: Types.EnemyClass,
 	end
 
 	Effects:Emit(Object)
+
+	task.delay(3/60, function()
+		for _, Particle in Object:GetDescendants() do
+			if Particle:IsA("ParticleEmitter") then
+				local Time = Particle.TimeScale
+				Particle.TimeScale = 0
+
+				task.delay(Data.HitstopTime or 4/60, function()
+					Particle.TimeScale = Time
+				end)
+			end
+		end
+	end)
 end

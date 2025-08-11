@@ -28,7 +28,7 @@ local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 local PlayerCompanionDataClass = require(Classes.Data.PlayerCompanionData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("newdata", ProfileTemplate)
+local DataStore = ProfileStore.New("companiondatatest1", ProfileTemplate)
 
 --
 local ReplicatedKeys = {"Gems", "Money"}
@@ -92,6 +92,10 @@ function Service:Init()
 
             print(Stages)
             Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Stages, Stages)
+        elseif Type == GameEnum.FetchRequests.Companions then
+            local Companions = Service:FetchCompanions(Player)
+
+            Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Companions, Companions)
         end
     end)
 
@@ -172,6 +176,19 @@ function Service:FetchArtifacts(Player: Player, Filter: ((a: Types.PlayerArtifac
         local CompressedObject = Artifact:Compress()
 
         table.insert(Data, CompressedObject)
+    end
+
+    return Data
+end
+
+
+function Service:FetchCompanions(Player: Player)
+    local Companions = Service:GetCompanions(Player)
+    if not Companions then return end
+    local Data = {}
+
+    for _, Object in Companions do
+        table.insert(Data, Object:Compress())
     end
 
     return Data
@@ -263,6 +280,7 @@ function Service:AddPlayer(Player: Player)
             Service:SetupArtifacts(Player)
             Service:SetupDrives(Player)
             Service:SetupItems(Player)
+            Service:SetupCompanions(Player)
         else
         -- The player has left before the profile session started
             RetrievedProfile:EndSession()
@@ -667,6 +685,14 @@ function Service:TakeItem(Player: Player, ItemName: string, Amount: number)
     Retrieved:SetAmount(Retrieved.__Amount - Amount)
 end
 
+function Service:SetupCompanions(Player: Player)
+    local Data = Service:GetDataFor(Player)
+
+    for Id in Data.Companions do
+        Service:GetOrCreateCompanion(Player, Id)
+    end
+end
+
 
 function Service:GetOrCreateCompanion(Player: Player, Id: string): CompTypes.PlayerCompanionDataClass?
     local Data = Service:GetDataFor(Player)
@@ -690,8 +716,31 @@ end
 
 function Service:SaveCompanion(Player: Player, Object: CompTypes.PlayerCompanionDataClass)
     local Data = Service:GetDataFor(Player)
+
+    if not Service.__Companions[Player] then
+        Service.__Companions[Player] = {}
+    end
+
+    Service.__Companions[Player][Object.__Id] = Object
+    Data.Companions[Object.__Id] = Object:ToData()
 end
 
+function Service:GetCompanions(Player: Player, Filter: ((Companion: CompTypes.PlayerCompanionDataClass) -> (boolean))?)
+    local CompanionList = Service.__Companions[Player]
+
+    if not Filter then
+        return CompanionList
+    end
+
+    local List = {}
+    for _, Companion in CompanionList do
+        if Filter(Companion) then
+            table.insert(List, Companion)
+        end
+    end
+
+    return List
+end
 
 
 ---

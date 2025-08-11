@@ -50,6 +50,9 @@ local System = {
 
 function System:Init()
 	Network.new("Banner", "Event")
+	Network:On("Banner", function(Player: Player, BannerId: number)
+		Network:Fire("Banner", Player, 1, System:GetBanner())
+	end)
 
 	SyncedTime.Init()
     System:CreatePool()
@@ -111,7 +114,6 @@ function System:GetCharacterFromBannerWithRarity(Rarity: string): (string?)
 
 	local Choice = Choices[math.random(1, #Choices)]
 
-	print(Choice, 'is what i chose!')
 	return Choice[1], Choice[3]
 end
 

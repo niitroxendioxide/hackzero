@@ -36,6 +36,20 @@ local GetExpForLevel; GetExpForLevel = function(level)
 	end
 end
 
+local function CompanionExperiencePerLevel(Level: number)
+	if Level == 1 then
+		return 250
+	end
+
+	if Level < 10 then
+		return Level + (Level * 10) * math.exp(1.5 + (3 / Level))
+	end
+
+	local Ascension = Level // 10
+
+	return (Level * math.exp(Ascension * (1.5/Level)) + (Level * 100)) * (math.pi/2.75*(Level / 5))
+end
+
 return {
 	GameVersion = '0.01',
 
@@ -75,6 +89,7 @@ return {
 		[5] = 40,
 	},
 
+	Companion_Experience_For_Level = CompanionExperiencePerLevel,
 	Experience_For_Level = GetExpForLevel,
 	GetExperienceForMax = function(StartLevel, CurrentExperience)
 		local ExpForLevels = 0

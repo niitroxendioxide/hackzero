@@ -45,8 +45,6 @@ function Controller.__BannerUpdated(BannerId: number, BannerData: {})
         return
     end
 
-    print(BannerId, BannerData)
-
     local SummonMenu = InterfaceController:GetComponent("Summon")
 
     local SubCharacters = {}
