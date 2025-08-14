@@ -19,6 +19,22 @@ function AnimationLibrary:GetAnim(Directory: string)
 	return Object[Split[#Split]]
 end
 
+function AnimationLibrary:GetCompanionAnimation(Character: string, TrackName: string)
+	local Base = Animations.Companions:FindFirstChild(Character)
+	if not Base then
+		Base = Animations.Companions.Default
+	end
+
+	local Track = Base:FindFirstChild(TrackName)
+
+	if Track:IsA('Folder') then
+		local Children = Track:GetChildren()
+		return Children[math.random(1, #Children)]
+	end
+
+	return Track
+end
+
 function AnimationLibrary:GetMovementAnim(Character: string, TrackName: string)
 	local MovementDirectory = General
 
@@ -72,7 +88,7 @@ function AnimationLibrary:GetTracks(Character: Model): {AnimationTrack}
 end
 
 function AnimationLibrary:GetAnimator(Character: Model): Animator
-	local Humanoid = Character:FindFirstChild('Humanoid') :: Humanoid
+	local Humanoid = Character:FindFirstChild('Humanoid') :: Humanoid or Character:FindFirstChild('AnimationController') :: Humanoid
 	local Animator = Humanoid:FindFirstChild('Animator') :: Animator
 
 	if Animator == nil then

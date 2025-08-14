@@ -5,6 +5,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local World = require(ReplicatedStorage.Modules.Shared.World)
 local Appearance = require(script.Parent.Appearance)
+local Animator = require(script.Animator)
 local Types = require(Shared.Types.Companions)
 
 --
@@ -36,6 +37,7 @@ function ClientCompanionClass.new(Name: string, At: CFrame): Types.ClientCompani
     self.__Goal = At
     self.__Collider = CreateColliderObject(At)
     self.__Appearance = Appearance.new(Name, "Companions")
+    self.__Animator = Animator.new(self, Name)
     self.__Connection = nil
 
     return self
@@ -45,9 +47,18 @@ function ClientCompanionClass.Init(self: Types.ClientCompanionClass, Key: number
     if self.__Connection then return end
 
     self.__Appearance:JoinTo(self.__Collider)
+    self.__Animator:Init()
 
     --[[self.__Connection = RunService.Heartbeat:Connect(function(Delta: number)
     end)]]
+end
+
+function ClientCompanionClass.GetModel(self: Types.ClientCompanionClass)
+    return self.__Appearance:GetModel()
+end
+
+function ClientCompanionClass.IsMoving(self: Types.ClientCompanionClass)
+    return false
 end
 
 function ClientCompanionClass.Move(self: Types.ClientCompanionClass, At: CFrame): ()
@@ -55,7 +66,7 @@ function ClientCompanionClass.Move(self: Types.ClientCompanionClass, At: CFrame)
 
     local Cast = workspace:Raycast(At.Position, At.UpVector * -10, World:GetMapParams())
     if Cast then
-        CorrectedCFrame = CFrame.lookAlong(Cast.Position + Cast.Normal, CorrectedCFrame.LookVector)
+        CorrectedCFrame = CFrame.lookAlong(Cast.Position + Cast.Normal*3, -CorrectedCFrame.LookVector)
     end
 
     self.__Goal = CorrectedCFrame

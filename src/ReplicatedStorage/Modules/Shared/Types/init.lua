@@ -43,6 +43,8 @@ export type AppearanceController = {
 	BindObject: (self: AppearanceController, Object: Instance, Toggle: (self: Instance, State: boolean, ExtraState: number) -> ()) -> (),
 	UnbindObject: (self: AppearanceController, Object: Instance) -> (),
 
+	GetModel: (self: AppearanceController) -> (Model),
+
 	BindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),
 	UnbindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),
 	SetVisible: (self: AppearanceController, State: boolean) -> (),

@@ -1,5 +1,6 @@
 local Agents = require(script.Parent.Agents)
 local Default = require(script.Parent)
+local Abilities = require(script.Parent.Abilities)
 
 
 export type ClientCompanionClass = {
@@ -9,6 +10,7 @@ export type ClientCompanionClass = {
     __Goal: CFrame,
     __Connection: RBXScriptConnection?,
     __Alpha: number,
+    __Animator: {[string]: any},
 
     GetId: (self: ClientCompanionClass) -> (number?),
 
@@ -125,6 +127,29 @@ export type PlayerCompanionDataClass = {
 
     ToData: (self: PlayerCompanionDataClass) -> (CompanionData),
     Compress: (self: PlayerCompanionDataClass) -> (string, buffer),
+}
+
+
+export type CompanionAttackData = {
+    HitboxArea: (vector | Vector3)?,
+
+    Damage: number,
+    Element: string?,
+    Affliction: number?,
+
+}
+export type ServerCompanionAttack = {
+    __Cache: {[any]: {[string]: any}},
+    __Sequences: {[CompanionClass]: Abilities.Sequence},
+
+    Run: (self: ServerCompanionAttack, Caster: CompanionClass, Target: Agents.Enemy) -> (),
+    Cancel: (self: ServerCompanionAttack, Caster: CompanionClass) -> (),
+
+
+    Sequence: (self: ServerCompanionAttack, Frames: Abilities.SequenceFrames) -> (),
+    Save: (self: ServerCompanionAttack) -> (),
+
+    Hit: (self: ServerCompanionAttack, Target: Agents.Enemy, HitData: {}) -> (),
 }
 
 return 0

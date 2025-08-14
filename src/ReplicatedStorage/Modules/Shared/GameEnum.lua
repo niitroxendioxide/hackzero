@@ -45,7 +45,6 @@ return {
 
 		--
 		ClearPlayerData = 150,
-		PlayVisualEffect = 151,
 		SetColliderArea = 152,
 
 		--
