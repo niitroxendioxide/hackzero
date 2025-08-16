@@ -39,6 +39,7 @@ function ClientCompanionClass.new(Name: string, At: CFrame): Types.ClientCompani
     self.__Appearance = Appearance.new(Name, "Companions")
     self.__Animator = Animator.new(self, Name)
     self.__Connection = nil
+    self.__Moving = false
 
     return self
 end
@@ -57,8 +58,12 @@ function ClientCompanionClass.GetModel(self: Types.ClientCompanionClass)
     return self.__Appearance:GetModel()
 end
 
+function ClientCompanionClass.SetMoving(self: Types.ClientCompanionClass, State: boolean)
+    self.__Moving = State
+end
+
 function ClientCompanionClass.IsMoving(self: Types.ClientCompanionClass)
-    return false
+    return self.__Moving
 end
 
 function ClientCompanionClass.Move(self: Types.ClientCompanionClass, At: CFrame): ()

@@ -46,6 +46,7 @@ return {
 		--
 		ClearPlayerData = 150,
 		SetColliderArea = 152,
+		PlayVisualEffect = 250,
 
 		--
 		CreateDestructible = 80,
@@ -57,6 +58,7 @@ return {
 		PlayEventDialogue = 85,
 		CreateCompanion = 86,
 		MoveCompanion = 87,
+		SetMovingStatusCompanion = 88,
 	},
 
 	InteractionType = {

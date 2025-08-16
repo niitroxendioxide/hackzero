@@ -11,6 +11,7 @@ export type ClientCompanionClass = {
     __Connection: RBXScriptConnection?,
     __Alpha: number,
     __Animator: {[string]: any},
+    __Moving: boolean,
 
     GetId: (self: ClientCompanionClass) -> (number?),
 
@@ -23,8 +24,13 @@ export type CompanionClass = {
     __Movement: CompanionMovementClass,
     __Owner: Agents.AgentClass | Agents.ServerAgentClass,
     __Level: number,
-    __Gear: CompanionStatsClass,
+    __Stats: CompanionStatsClass,
     __Key: number,
+    __Moving: boolean,
+    __Last_Attack_Time: number,
+    __Thread: thread?,
+    __State: 'Idle' | 'Attacking' | string,
+    __Name: string,
 
     --[[
         Set the player to follow by default. When no area is set, the robot follows this character
@@ -36,6 +42,9 @@ export type CompanionClass = {
     RemoveGear: (self: CompanionClass, Gear: Agents.GearObject) -> (),
     PivotTo: (self: CompanionClass, At: CFrame) -> (),
     GetPivot: (self: CompanionClass) -> (CFrame),
+    ComputeActions: (self: CompanionClass, Delta: number) -> (),
+    Attack: (self: CompanionClass) -> (),
+    GetGearManager: (self: CompanionClass) -> (Agents.ServerGearManager),
 
     --[[
         Set the area for the companion to wander around
@@ -45,6 +54,9 @@ export type CompanionClass = {
     Init: (self: CompanionClass, Id: number) -> (),
 
     --Update: (self: CompanionClass, Delta: number) -> (),
+
+    GetStat: (self: CompanionClass, Stat: string) -> (number),
+
 }
 
 export type CompanionStatsClass = {
@@ -54,6 +66,10 @@ export type CompanionStatsClass = {
         Defense: number,
         Speed: number,
     },
+
+    GetStat: (self: CompanionStatsClass, Stat: string) -> (number?),
+    Add: (self: CompanionStatsClass, Item: any) -> (),
+    Remove: (self: CompanionStatsClass, Item: any) -> (),
 }
 
 export type CompanionStats = {
@@ -67,7 +83,7 @@ export type CompanionStats = {
 export type Rarities = {
         Base: {[string]: number},
         Level: {[string]: number},
-    }
+}
 export type CompanionData = {
     Id: string,
     Level: number,
@@ -107,6 +123,7 @@ export type CompanionMovementClass = {
     __Direction: vector | Vector3,
 
     Update: (self: CompanionMovementClass, Delta: number) -> (),
+    IsMoving: (self: CompanionMovementClass) -> (boolean),
 
     SetArea: (self: CompanionMovementClass, Box: BasePart?) -> (),
     Follow: (self: CompanionMovementClass, Agent: Agents.AgentClass | Agents.ServerAgentClass) -> (),
@@ -146,7 +163,7 @@ export type ServerCompanionAttack = {
     Cancel: (self: ServerCompanionAttack, Caster: CompanionClass) -> (),
 
 
-    Sequence: (self: ServerCompanionAttack, Frames: Abilities.SequenceFrames) -> (),
+    Sequence: (self: ServerCompanionAttack, Caster: CompanionClass, Frames: Abilities.SequenceFrames) -> (),
     Save: (self: ServerCompanionAttack) -> (),
 
     Hit: (self: ServerCompanionAttack, Target: Agents.Enemy, HitData: {}) -> (),

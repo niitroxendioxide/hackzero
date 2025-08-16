@@ -12,8 +12,8 @@ function Service:Init()
     
 end
 
-function Service:CreateCompanion()
-    local New = ServerCompanion.new("Default", {})
+function Service:CreateCompanion(CompanionDataClass: any)
+    local New = ServerCompanion.new("Default", CompanionDataClass:GetStats(), CompanionDataClass.__Level)
     local AgentList = Agents:GetActiveAgents()
 
     New:Init(1)

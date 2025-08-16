@@ -64,6 +64,10 @@ function CompanionMovementClass.GetCollider(self: Types.CompanionMovementClass):
     return self.__Collider
 end
 
+function CompanionMovementClass.IsMoving(self: Types.CompanionMovementClass)
+    return self.__Moving
+end
+
 function CompanionMovementClass.Update(self: Types.CompanionMovementClass, Delta: number): ()
 
     if not self.__Moving and self.__Can_Move then

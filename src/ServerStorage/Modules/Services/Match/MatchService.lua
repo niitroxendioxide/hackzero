@@ -184,7 +184,12 @@ function Service:Begin(Stage: string, Act: string)
     DestructibleService:SetupStage(Marker_Data.Destructibles)
     LootService:SetupChests(Marker_Data.Chests)
     NPCService:SetupNPCS(Marker_Data.NPCS)
-    CompanionService:CreateCompanion()
+
+
+    --
+    local Companions = DataService:GetCompanions((Players:GetPlayers())[math.random(1, #Players:GetPlayers())])
+
+    CompanionService:CreateCompanion(Companions[1])
 
     --
     MissionClass.Finished:Once(function(State: boolean)

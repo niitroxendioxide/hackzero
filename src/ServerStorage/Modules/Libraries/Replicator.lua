@@ -543,4 +543,13 @@ function Replicator:MoveCompanion(CompanionObject: Companions.CompanionClass, Go
 	Network:FireForAll("ReliableReplication", Object)
 end
 
+function Replicator:SetMovingStatusCompanion(CompanionObject: Companions.CompanionClass, Status: boolean)
+	local Object = buffer.create(3)
+	buffer.writeu8(Object, 0, GameEnum.Replication.SetMovingStatusCompanion)
+	buffer.writeu8(Object, 1, CompanionObject.__Key)
+	buffer.writeu8(Object, 2, Status and 1 or 0)
+
+	Network:FireForAll("ReliableReplication", Object)
+end
+
 return Replicator

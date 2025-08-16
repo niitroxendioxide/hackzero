@@ -223,5 +223,17 @@ function Controller:MoveCompanion(Buffer: buffer)
 	Class:Move(At)
 end
 
+function Controller:SetMovingStatusCompanion(Buffer: buffer)
+	local CompanionId = buffer.readu8(Buffer, 1)
+	local State = buffer.readu8(Buffer, 2) == 1
+
+	local Class = Companions:Get(CompanionId)
+	if not Class then
+		return
+	end
+
+	Class:SetMoving(State)
+end
+
 
 return Controller

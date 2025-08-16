@@ -11,16 +11,17 @@ local Companions = require(Shared.Database.Companions)
 local StatsClass = {}
 StatsClass.__index = StatsClass
 
-function StatsClass.new(Name: string, Stats: {})
+function StatsClass.new(Name: string, Stats: {}, Level: number)
     local self = setmetatable({}, StatsClass)
     self.__Items = {}
     self.__Stats = Stats
+    self.__Level = Level
 
     return self
 end
 
 function StatsClass.GetStat(self: Types.CompanionStatsClass, Name: string)
-    
+    return self.__Stats[Name] or 0
 end
 
 function StatsClass.Add(self: Types.CompanionStatsClass, GearObject: AgentTypes.GearObject)

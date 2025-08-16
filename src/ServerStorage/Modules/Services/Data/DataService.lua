@@ -729,7 +729,9 @@ function Service:GetCompanions(Player: Player, Filter: ((Companion: CompTypes.Pl
     local CompanionList = Service.__Companions[Player]
 
     if not Filter then
-        return CompanionList
+        local List = {}
+        for k, v in CompanionList do table.insert(List, v) end
+        return List
     end
 
     local List = {}

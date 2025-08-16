@@ -7,19 +7,28 @@ local AgentTypes = require(Shared.Types.Agents)
 local DefaultTypes = require(Shared.Types)
 local Defense_Factors = require(Shared.Database.Defense)
 
+local Mock = {}
+Mock.__index = function(t, k)
+	return function()
+		return nil
+	end
+end
+
 --
 local RNG = Random.new()
 local DamageLibrary = {}
 
-function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:AgentTypes.Enemy,Data: Types.HitEnemyData): (number, boolean, boolean, string, number, number, boolean)
+function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy,Data: Types.HitEnemyData): (number, boolean, boolean, string, number, number, boolean)
 	local EnemyStatus = Enemy.__Status
-	local AgentGear = Agent:GetGearManager()
+	local AgentGear = Agent.GetGearManager and Agent:GetGearManager()
 
 	-- Pre-process
-	AgentGear:RunHitProcesses("Before", {
-		Agent = Agent,
-		Target = Enemy,
-	})
+	if AgentGear then
+		AgentGear:RunHitProcesses("Before", {
+			Agent = Agent,
+			Target = Enemy,
+		})
+	end
 
 	-- Agent
 	local Attack = Agent:GetStat('Attack')
@@ -29,7 +38,7 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:AgentTypes
 	local Pen_Ratio = Agent:GetStat('Pen_Ratio')
 	local Affliction_Aptitude = Agent:GetStat('Affliction_Aptitude')
 	local Level = Agent.__Level
-	local Damage_Bonus_Mult = 1 + Agent:GetMultBonus(Data.Affliction :: DefaultTypes.Element) + Agent:GetMultBonus(Data.Attack_Type)
+	local Damage_Bonus_Mult = 1 + (Agent.GetMultBonus and (Agent:GetMultBonus(Data.Affliction :: DefaultTypes.Element) + Agent:GetMultBonus(Data.Attack_Type)) or 0)
 
 	local Is_Critical = RNG:NextNumber(0, 100) <= Crit_Rate
 
@@ -54,13 +63,15 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:AgentTypes
 	local Burst_Damage = 0
 
 	--
-	AgentGear:RunHitProcesses("After",{
-		Agent = Agent,
-		Target = Enemy,
-		Element = Data.Affliction,
-		Total_Damage = Final_Damage,
-		Critical = Is_Critical,
-	})
+	if AgentGear then
+		AgentGear:RunHitProcesses("After",{
+			Agent = Agent,
+			Target = Enemy,
+			Element = Data.Affliction,
+			Total_Damage = Final_Damage,
+			Critical = Is_Critical,
+		})
+	end
 
 	--
 	Enemy:TakeAffliction(Data.Affliction or 'None', Filled_Affliction)
@@ -73,12 +84,14 @@ function DamageLibrary:Deal(Agent: AgentTypes.ServerAgentClass, Enemy:AgentTypes
 		Enemy:TakeDamage(Burst_Damage)
 		Enemy:ResetAffliction(Data.Affliction)
 
-		AgentGear:RunEffectProcesses({
-			Agent = Agent,
-			Target = Enemy,
-			Element = Data.Affliction,
-			Total_Damage = Burst_Damage,
-		})
+		if AgentGear then
+			AgentGear:RunEffectProcesses({
+				Agent = Agent,
+				Target = Enemy,
+				Element = Data.Affliction,
+				Total_Damage = Burst_Damage,
+			})
+		end
 	end
 
 	local EnemyDied = Enemy:TakeDamage(Final_Damage)

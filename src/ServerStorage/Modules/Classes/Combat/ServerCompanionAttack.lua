@@ -1,9 +1,13 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(Shared.Types.Companions)
 local Signal = require(Shared.Utility.Signal)
 local Sequence = require(Shared.Utility.Sequence)
+
+local Damage = require(ServerStorage.Modules.Libraries.Damage)
+local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 
 --
 local AttackClass = {}
@@ -60,6 +64,13 @@ end
 
 function AttackClass.Cancel(self: Types.ServerCompanionAttack)
     
+end
+
+function AttackClass.Hit(self: Types.ServerCompanionAttack, Caster: Types.CompanionClass, Target: any, Data)
+    local Dealt_Damage = Damage:Deal(Caster, Target, Data)
+
+
+    Replicator:DisplayDamage(Target, Dealt_Damage, false, Data.Affliction)
 end
 
 return AttackClass
