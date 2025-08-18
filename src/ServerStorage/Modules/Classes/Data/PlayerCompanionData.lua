@@ -138,7 +138,6 @@ end
 function CompanionDataClass:Compress(): {buffer | {}}
     local NameId =  Companions:GetIdFor(self.__Name)
 
-    print(self.__Name, NameId)
     local DataBuffer = buffer.create(7 + #self.__Id)
     buffer.writeu8(DataBuffer, 0, NameId)
     buffer.writeu8(DataBuffer, 1, self.__Level)

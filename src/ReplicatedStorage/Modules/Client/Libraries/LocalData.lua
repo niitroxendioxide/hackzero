@@ -69,6 +69,16 @@ function LocalData:GetCompanion(Id: string): Companions.ClientCompanionData?
     return;
 end
 
+function LocalData:EditCompanion(Companion: Companions.ClientCompanionData): ()
+    for subid, Comp in LocalData.__Cache['Companions'] do
+        if Comp.Id == Companion.Id then
+            LocalData.__Cache['Companions'][subid] = Companion
+
+            return
+        end
+    end
+end
+
 function LocalData:SetCompanionData(Data: {Companions.ClientCompanionData})
     LocalData.__Cache['Companions'] = Data
 end

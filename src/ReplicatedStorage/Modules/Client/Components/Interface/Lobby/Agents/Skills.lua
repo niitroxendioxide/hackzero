@@ -222,7 +222,7 @@ function SkillComponent:ShowInformation(MainFrame: MainFrame, Skill: string?)
     --
     if not SkillComponent.__Connection then
         SkillComponent.__Connection = StatsTab.Upgrade.Button.MouseButton1Click:Connect(function()
-            Network:Fire('UpdateAgent', GameEnum.AgentEvent.UpgradeAgentSkill, {
+            Network:Fire('UpdateAgent', GameEnum.BuildEvent.UpgradeAgentSkill, {
                 SkillComponent.__Agent,
                 SkillComponent.__Skill,
             })

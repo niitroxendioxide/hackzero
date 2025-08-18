@@ -242,7 +242,7 @@ return {
 		Finished = 2,
 	},
 
-	AgentEvent = {
+	BuildEvent = {
 		UpdateArtifactSlot = 1,
 		UpdateDrive = 2,
 		LevelAgent = 3,
@@ -250,6 +250,7 @@ return {
 		LoadAll = 5,
 		UpgradeAgentSkill = 6,
 		AscendAgent = 7,
+		LevelCompanion = 8,
 	},
 
 	ChangeEvents = {

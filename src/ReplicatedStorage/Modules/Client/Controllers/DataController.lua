@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local DataConverter = require(ReplicatedStorage.Modules.Client.Libraries.DataConverter)
 local Data = require(Shared.Types.Data)
 local Fetcher = require(Client.Libraries.Fetcher)
 
@@ -107,16 +108,18 @@ function Controller:Init()
     end)
 
     Network:On("UpdateAgent", function(Type: number, Payload: {}): ()
-        if Type == GameEnum.AgentEvent.UpdateArtifactSlot then
+        if Type == GameEnum.BuildEvent.UpdateArtifactSlot then
             Controller:UpdateArtifactState(Payload)
-        elseif Type == GameEnum.AgentEvent.UpdateDrive then
+        elseif Type == GameEnum.BuildEvent.UpdateDrive then
             Controller:UpdateDriveState(Payload)
-        elseif Type == GameEnum.AgentEvent.UpgradeAgentSkill then
+        elseif Type == GameEnum.BuildEvent.UpgradeAgentSkill then
             Controller:UpdateAgentSkills(Payload)
-        elseif Type == GameEnum.AgentEvent.AscendAgent then
+        elseif Type == GameEnum.BuildEvent.AscendAgent then
             Controller:AscendAgent(Payload)
-        elseif Type == GameEnum.AgentEvent.LevelAgent then
+        elseif Type == GameEnum.BuildEvent.LevelAgent then
             Controller:LevelAgent(Payload)
+        elseif Type == GameEnum.BuildEvent.LevelCompanion then
+            Controller:LevelCompanion(Payload)
         end
     end)
 
@@ -294,6 +297,16 @@ function Controller:ShowCurrencies(Payload: {[string]: number})
 
     UIComponent:ShowCurrency('Money', Payload.Money)
     UIComponent:ShowCurrency('Gems', Payload.Gems)
+end
+
+function Controller:LevelCompanion(Payload: {})
+    local NewDecompressedData = DataConverter.FromCompanionCompressedObject(Payload)
+
+    LocalData:EditCompanion(NewDecompressedData)
+
+    --
+    local UIComponent = InterfaceController:GetComponent("Companions")
+    UIComponent:Refresh()
 end
 
 return Controller

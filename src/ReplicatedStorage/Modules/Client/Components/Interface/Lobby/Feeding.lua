@@ -34,7 +34,9 @@ local function Feed()
         return
     end
 
-    Network:Fire("UpdateAgent", GameEnum.AgentEvent.LevelAgent, {States.SelectedAgent, States.SelectedFeedItems})
+    local UpgradeType = States.Type == "Agent" and GameEnum.BuildEvent.LevelAgent or GameEnum.BuildEvent.LevelCompanion
+
+    Network:Fire("UpdateAgent", UpgradeType, {States.SelectedAgent, States.SelectedFeedItems})
 
     for Item in States.SelectedFeedItems do
         RemoveItemToFeed(Item, true)
@@ -155,13 +157,15 @@ function UpdatePreview()
     local LevelBar = MainFrame.Agent.Data.LvlBar
     local IsAgent = States.Type == 'Agent'
 
-    local CharacterData = IsAgent and LocalData:GetAgent(States.SelectedAgent) or LocalData:GetCompanion(States.CompanionId)
+    local CharacterData = IsAgent and LocalData:GetAgent(States.SelectedAgent) or LocalData:GetCompanion(States.SelectedAgent)
     if not CharacterData then
         return
     end
 
     if TableUtil:GetDictLength(States.SelectedFeedItems) == 0 then
         LevelBar.Exp.Preview.Visible = false
+        LevelBar.Added.Visible = false
+        LevelBar.Lvl.TextColor3 = Color3.new(1, 1, 1)
         LevelBar.Exp.Preview.Size = UDim2.fromScale(0, 1)
         return
     end
@@ -178,14 +182,19 @@ function UpdatePreview()
         Total += ValidItemData.Other.FeedExp * Count
     end
 
+    local TotalAddedExperience = Total
+
     while Total > ExpForLevel do
         AddedLevels += 1
         Total -= ExpForLevel
-        ExpForLevel = IsAgent and Statics.Experience_For_Level(CharacterData.Level + 1) or Statics.Companion_Experience_For_Level(CharacterData.Level + 1)
+        ExpForLevel = IsAgent and Statics.Experience_For_Level(CharacterData.Level + AddedLevels + 1) or Statics.Companion_Experience_For_Level(CharacterData.Level + AddedLevels + 1)
     end
 
     LevelBar.Exp.Fill.Visible = AddedLevels <= 0
     LevelBar.Lvl.Text = `Level: {CharacterData.Level + AddedLevels} / 60`
+    LevelBar.Added.Visible = AddedLevels > 0
+    LevelBar.Added.Text = `+{AddedLevels} Levels ({TotalAddedExperience} EXP)`
+    LevelBar.NeededExperience.Text = `{math.floor(Total)} / {math.ceil(ExpForLevel)}`
     LevelBar.Lvl.TextColor3 = AddedLevels > 0 and Color3.fromRGB(164, 193, 255) or Color3.new(1,1,1)
 
     EffectUtil:Tween(LevelBar.Exp.Preview, {.25, 'Cubic'}, {Size = UDim2.fromScale(Total / ExpForLevel, 1)})
@@ -261,6 +270,7 @@ function Component:Init()
     local CloseButtonList = MainFrame.Agent.ItemList.Close
     CloseButtonList.Button.MouseButton1Click:Connect(function()
         CloseButtonList.UIScale.Scale = 0.75
+        States.SelectedFeedItems = {}
         EffectUtil:Tween(CloseButtonList.UIScale, {0.3, 'Back'}, {Scale = 1})
         ToggleItemMenu(false)
     end)
@@ -328,6 +338,8 @@ function Component:ShowAgentFeeding(AgentName: string)
     DataFrame.AgentName.Text = AgentName
     DataFrame.LvlBar.Lvl.Text = `Level: {Info.Level} / 60`
 
+    States.Type = "Agent"
+
     --
     local Model = Assets.Characters.Agents:FindFirstChild(AgentName)
     if Model then
@@ -352,19 +364,62 @@ function Component:ShowAgentFeeding(AgentName: string)
     Component:UpdateProgressBar()
 end
 
+function Component:ShowCompanionFeeding(CompanionId: string)
+    local AgentMenu = Component:SetMenu("Agent", true)
+    if not AgentMenu then
+        return
+    end
+
+    self:Set(true)
+    ToggleItemMenu(false)
+
+    local Info = LocalData:GetCompanion(CompanionId)
+    local DataFrame = AgentMenu.Data
+
+    States.Type = "Companion"
+
+    DataFrame.AgentName.Text = Info.Name
+    DataFrame.LvlBar.Lvl.Text = `Level: {Info.Level} / 60`
+
+    --
+    local Model = Assets.Characters.Companions:FindFirstChild(Info.Name)
+    if Model then
+        if States.AgentModel then
+            States.AgentModel:Destroy()
+        end
+
+        local NewCamera = Instance.new('Camera')
+        local Cloned = Model:Clone()
+        Cloned.Parent = DataFrame.Viewport.WorldModel
+        Cloned:PivotTo(CFrame.new())
+
+        NewCamera.FieldOfView = 1
+        NewCamera.CFrame = Cloned:GetPivot() * CFrame.new(0, 0, -220) * CFrame.Angles(0, math.pi, 0)
+        DataFrame.Viewport.CurrentCamera = NewCamera
+
+        States.AgentModel = Cloned
+    end
+
+    States.SelectedAgent = CompanionId
+
+    Component:UpdateProgressBar()
+end
+
 function Component:UpdateProgressBar()
     local MainFrame = self:GetFrame()
     local LevelBar = MainFrame.Agent.Data.LvlBar
 
-    local AgentData = LocalData:GetAgent(States.SelectedAgent)
+    local AgentData = States.Type == 'Agent' and LocalData:GetAgent(States.SelectedAgent) or LocalData:GetCompanion(States.SelectedAgent)
     if not AgentData then
         return
     end
 
     local Maxexp = Statics.Experience_For_Level(AgentData.Level + 1)
     LevelBar.Lvl.Text = `Level: {AgentData.Level} / 60`
+    LevelBar.NeededExperience.Text = `{AgentData.Experience} / {Maxexp}`
     LevelBar.Lvl.TextColor3 = Color3.new(1, 1, 1)
     LevelBar.Exp.Fill.Visible = true
+    LevelBar.Added.Visible = false
 
     EffectUtil:Tween(LevelBar.Exp.Fill,
         {.3, 'Cubic'},

@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
+local DataConverter = require(script.Parent.DataConverter)
 local CompanionTraits = require(ReplicatedStorage.Modules.Shared.Database.CompanionTraits)
 local Companions = require(ReplicatedStorage.Modules.Shared.Database.Companions)
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
@@ -70,24 +71,7 @@ function Fetcher:FetchCompanions()
     local CompanionList = {}
 
     for _, Obj in Data do
-        local Buffer = Obj[1]
-        local Stats = Obj[2]
-        local Rarities = Obj[3]
-
-        local Id = buffer.readstring(Buffer, 7, buffer.len(Buffer) - 7)
-
-        local Converted = {
-            Id = Id,
-            Name = Companions:GetFromId(buffer.readu8(Buffer, 0)),
-            Level = buffer.readu8(Buffer, 1),
-            Trait = CompanionTraits:GetFromId(buffer.readu8(Buffer, 2)),
-            Experience = buffer.readf32(Buffer, 3),
-
-            Stats = Stats,
-            Rarities = Rarities,
-        }
-
-        table.insert(CompanionList, Converted)
+        table.insert(CompanionList, DataConverter.FromCompanionCompressedObject(Obj))
     end
 
     LocalData:SetCompanionData(CompanionList)

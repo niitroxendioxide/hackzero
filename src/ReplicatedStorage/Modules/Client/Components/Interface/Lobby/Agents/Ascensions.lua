@@ -138,7 +138,7 @@ function SubComponent:UpdateAscensionInfo(MainFrame: AscensionsFrame, AgentName:
             return
         end
 
-        Network:Fire("UpdateAgent", GameEnum.AgentEvent.AscendAgent, {Agent.Name, States.AscensionTimes})
+        Network:Fire("UpdateAgent", GameEnum.BuildEvent.AscendAgent, {Agent.Name, States.AscensionTimes})
     end)
 end
 

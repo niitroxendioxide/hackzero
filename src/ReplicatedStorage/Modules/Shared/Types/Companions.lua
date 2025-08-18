@@ -139,6 +139,7 @@ export type PlayerCompanionDataClass = {
     __Id: string,
     __Level: number,
     __Base_Stats: {},
+    __Experience: number,
     __Level_Stats: {},
 
 

@@ -55,6 +55,7 @@ return {
 
 	Max_Player_Level = 60,
 	Max_Character_Level = 60,
+	Max_Companion_Level = 70,
 	Max_Team_Size = 5,
 
 	-- Summoning

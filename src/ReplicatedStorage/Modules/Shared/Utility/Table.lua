@@ -18,7 +18,7 @@ function TableUtil:printTable(t, tabcount: number?)
     end
 end
 
-function TableUtil:GetDictLength(a, min: number?): number | boolean
+function TableUtil:GetDictLength(a: {[any]: any}, min: number?): number | boolean
     local k=0;
     for _ in a do
         if (min and k>min)then return true end

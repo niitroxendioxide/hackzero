@@ -48,20 +48,26 @@ local function ShowAllCompanions()
     States.LastSelectedFrame = nil
     States.IdSelected = ''
 
+    local Selected = Data[1]
     for _, CompData in Data do
         local Name = RandomNameGen(CompData.Id)
         local NewObject = Companions.CompanionObject:Clone()
         NewObject.Name = CompData.Id
         NewObject.Id.Text = Name
         NewObject.Level.Text = 'Level: '..CompData.Level
+        NewObject.LayoutOrder = -CompData.Level
         NewObject.Parent = MainFrame.List
+
+        if CompData.Level > Selected.Level then
+            Selected = CompData
+        end
 
         NewObject.Btn.MouseButton1Click:Connect(function()
             SelectCompanion(CompData.Id)
         end)
     end
 
-    SelectCompanion(Data[1].Id)
+    SelectCompanion(Selected.Id)
 end
 
 function SelectCompanion(Id: string)
@@ -113,6 +119,12 @@ function SelectCompanion(Id: string)
     Frame.Stats.Passive.TextSize = ScreenUtil:GetTextSize(16)
 
     --
+    ShowCompanionData(CompanionData)
+end
+
+function ShowCompanionData(CompanionData)
+    local Frame = Component:GetFrame()
+
     for _, obj in Frame.Stats.List:GetChildren() do
         if not obj:IsA("Frame") then
             continue
@@ -120,6 +132,8 @@ function SelectCompanion(Id: string)
 
         obj:Destroy()
     end
+
+    Frame.Stats.Level.Text = `Level: {CompanionData.Level}`
 
     local Rarities = CompanionData.Rarities
     for StatName, StatValue in CompanionData.Stats do
@@ -152,6 +166,22 @@ function SelectCompanion(Id: string)
     end
 end
 
+function Component:Refresh()
+    if States.IdSelected == nil then
+        return
+    end
+
+    local NewData = LocalData:GetCompanion(States.IdSelected)
+    local MainFrame = Component:GetFrame()
+
+    local ListSelected = MainFrame.List:FindFirstChild(States.IdSelected)
+    if ListSelected then
+        ListSelected.Level.Text = `Level: {NewData.Level}`
+    end
+
+    ShowCompanionData(NewData)
+end
+
 function Component:Link()
     local PlayerGui = Player.PlayerGui
 	local HUD = PlayerGui:WaitForChild("LobbyHUD", 10) :: ScreenGui
@@ -177,6 +207,13 @@ function Component:Init()
             --
             Camera:FreeUsage()
         end
+    end)
+
+    MainFrame.Stats.LevelUpButton.MouseButton1Click:Connect(function()
+        local FeedingElement = UIGroups:GetElementClass('Feeding', 'Feeding')
+        print(FeedingElement)
+
+        FeedingElement:ShowCompanionFeeding(States.IdSelected)
     end)
 
     UIEffects:AnimateReturnButton(MainFrame.Return, function()

@@ -7,6 +7,7 @@ local Services = Modules.Services
 local Shared = ReplicatedStorage.Modules.Shared
 
 
+local Companions = require(ReplicatedStorage.Modules.Shared.Types.Companions)
 local Statics = require(Shared.Database.Statics)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
@@ -18,52 +19,56 @@ local ItemDatabase = require(Shared.Database.Items)
 
 -- Artifacts
 local function AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
-    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
+    Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.UpdateArtifactSlot, {
         GameEnum.ChangeEvents.Add, Artifact:Compress(), Agent.Name, Agent.Artifacts
     })
 end
 
 local function RemoveArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
-    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
+    Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.UpdateArtifactSlot, {
         GameEnum.ChangeEvents.Remove, Artifact:Compress(), Agent.Name, Agent.Artifacts
     })
 end
 
 local function UpdateArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass): ()
-    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateArtifactSlot, {
+    Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.UpdateArtifactSlot, {
         GameEnum.ChangeEvents.Update, Artifact:Compress(),
     })
 end
 
 --
 local function AddDrive(Player: Player, Drive: Types.PlayerDriveDataClass, Agent: Types.PlayerAgentDataClass): ()
-    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateDrive, {
+    Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.UpdateDrive, {
         GameEnum.ChangeEvents.Add, Drive:Compress(), Agent.Name,
     })
 end
 
 local function RemoveDrive(Player: Player, Drive: Types.PlayerDriveDataClass, Agent: Types.PlayerAgentDataClass): ()
-    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateDrive, {
+    Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.UpdateDrive, {
         GameEnum.ChangeEvents.Remove, Drive:Compress(), Agent.Name
     })
 end
 
 local function UpdateDrive(Player: Player, Drive: Types.PlayerDriveDataClass): ()
-    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpdateDrive, {
+    Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.UpdateDrive, {
         GameEnum.ChangeEvents.Update, Drive:Compress(),
     })
 end
 
 local function UpdateSkills(Player: Player, Agent: Types.PlayerAgentDataClass): ()
-    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.UpgradeAgentSkill, {Agent.Name, Agent.Skills})
+    Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.UpgradeAgentSkill, {Agent.Name, Agent.Skills})
+end
+
+local function UpdateCompanionLevel(Player: Player, Companion: Companions.PlayerCompanionDataClass): ()
+    Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.LevelCompanion, Companion:Compress())
 end
 
 local function AscendAgent(Player: Player, Agent: Types.PlayerAgentDataClass): ()
-    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.AscendAgent, {Agent.Name, Agent.Ascensions})
+    Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.AscendAgent, {Agent.Name, Agent.Ascensions})
 end
 
 local function UpdateAgentLevel(Player: Player, Agent: Types.PlayerAgentDataClass): ()
-    Network:Fire('UpdateAgent', Player, GameEnum.AgentEvent.LevelAgent, {Agent.Name, Agent.Level, Agent.Experience})
+    Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.LevelAgent, {Agent.Name, Agent.Level, Agent.Experience})
 end
 
 
@@ -78,23 +83,25 @@ function Service:Init()
 end
 
 function Service.__HandleEvent(Player: Player, Type: number, Request: {})
-    if Type == GameEnum.AgentEvent.UpdateArtifactSlot then
+    if Type == GameEnum.BuildEvent.UpdateArtifactSlot then
         Service:SetAgentArtifactSlot(Player, Request[1], Request[2])
-    elseif Type == GameEnum.AgentEvent.UpdateDrive then
+    elseif Type == GameEnum.BuildEvent.UpdateDrive then
         Service:SetAgentDrive(Player, Request[1], Request[2])
-    elseif Type == GameEnum.AgentEvent.UpgradeAgentSkill then
+    elseif Type == GameEnum.BuildEvent.UpgradeAgentSkill then
         Service:UpgradeAgentSkill(Player, Request[1], Request[2])
-    elseif Type == GameEnum.AgentEvent.AscendAgent then
+    elseif Type == GameEnum.BuildEvent.AscendAgent then
         Service:AscendAgent(Player, Request[1], Request[2])
-    elseif Type == GameEnum.AgentEvent.LevelAgent then
+    elseif Type == GameEnum.BuildEvent.LevelAgent then
         Service:LevelAgent(Player, Request[1], Request[2])
+    elseif Type == GameEnum.BuildEvent.LevelCompanion then
+        Service:UpgradeCompanion(Player, Request[1], Request[2])
     end
 end
 
 function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
     local Agent = DataService:GetAgent(Player, AgentName)
 
-    if Agent.Level >= 60 then
+    if Agent.Level >= Statics.Max_Character_Level then
         return
     end
 
@@ -244,5 +251,48 @@ function Service:SetAgentDrive(Player: Player, AgentName: string, DriveId: strin
     end
 end
 
+
+function Service:UpgradeCompanion(Player: Player, CompanionId: string, Items: {[string]: number})
+    local Companion = DataService:GetOrCreateCompanion(Player, CompanionId)
+
+    if Companion.__Level >= Statics.Max_Companion_Level then
+        return
+    end
+
+    --
+    local TotalExperience = 0
+    local NextLevelExperience = Statics.Companion_Experience_For_Level(Companion.__Level + 1)
+
+    for Item, Count in Items do
+        local ItemInfo = ItemDatabase:GetItemData(Item)
+        if not ItemInfo or not ItemInfo.Other.FeedExp then continue end
+
+        local HasAmount = DataService:HasItem(Player, Item, Count)
+        if not HasAmount then
+            continue
+        end
+
+        if (TotalExperience + ItemInfo.Other.FeedExp > NextLevelExperience) and (Companion.__Level + 1) > Statics.Max_Companion_Level then
+            continue
+        end
+
+        local Amount = Count * ItemInfo.Other.FeedExp
+
+        DataService:TakeItem(Player, Item, Count)
+        TotalExperience += Amount
+    end
+
+    local Next = Statics.Companion_Experience_For_Level(Companion.__Level + 1)
+    Companion.__Experience += TotalExperience
+
+    while Companion.__Experience >= Next do
+        Companion.__Experience -= Next
+        Companion.__Level += 1
+        Next = Statics.Companion_Experience_For_Level(Companion.__Level + 1)
+    end
+
+    DataService:SaveCompanion(Player, Companion)
+    UpdateCompanionLevel(Player, Companion)
+end
 
 return Service

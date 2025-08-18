@@ -125,7 +125,7 @@ local function RequestChangeArtifact()
     local SelectedArtifact = States.__Current_Selected_Item
     local SelectedAgent = States.__Current_Agent.Name
 
-    Network:Fire('UpdateAgent', GameEnum.AgentEvent.UpdateArtifactSlot, {
+    Network:Fire('UpdateAgent', GameEnum.BuildEvent.UpdateArtifactSlot, {
         SelectedAgent,
         SelectedArtifact
     })
@@ -135,7 +135,7 @@ local function RequestChangeDrive()
     local SelectedDrive = States.__Current_Drive_Selected
     local SelectedAgent = States.__Current_Agent.Name
 
-    Network:Fire('UpdateAgent', GameEnum.AgentEvent.UpdateDrive, {
+    Network:Fire('UpdateAgent', GameEnum.BuildEvent.UpdateDrive, {
         SelectedAgent,
         SelectedDrive
     })

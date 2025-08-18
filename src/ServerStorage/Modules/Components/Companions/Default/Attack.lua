@@ -16,10 +16,10 @@ function Ability:Run(Companion: Types.CompanionClass, Target: Abilities.Target)
     -- Do stuff here
     Ability:Sequence(Companion, {
         {0, function()
-
+            Companion:SwitchState('Attacking', .5)
         end},
 
-        {.25, function()
+        {.3, function()
             Ability:Hit(Companion, Target, {
                 Damage = Companion:GetStat("Attack"),
                 Affliction = "Physical",

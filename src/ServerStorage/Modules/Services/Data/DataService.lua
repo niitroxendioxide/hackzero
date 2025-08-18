@@ -524,6 +524,10 @@ function Service:SavePlayerData(Player: Player)
     for _, Item: DataTypes.PlayerItemDataClass in (Service.__Items[Player] or {}) do
         Service:SaveItem(Player, Item)
     end
+
+    for _, Item: CompTypes.PlayerCompanionDataClass in (Service.__Companions[Player] or {}) do
+        Service:SaveCompanion(Player, Item)
+    end
 end
 
 function Service:AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass): ()

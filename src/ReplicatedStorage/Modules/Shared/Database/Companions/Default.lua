@@ -10,7 +10,7 @@ return {
         Description = "Does something",
     },
 
-    Stats = {
+    Stats = { 
         Defense = NumberRange.new(12, 30),
         Attack = NumberRange.new(200, 450),
         AttackSpeed = NumberRange.new(0.85, 1.25),
