@@ -440,6 +440,14 @@ export type ServerGearManager = {
 	RemoveGear: (self: ServerGearManager, Gear: string) -> (),
 
 	--[[
+		Executes a hook assigned to a specific event under the gear obtained
+		@param HookId The hook event to trigger
+		@param ProcessData The data related to the process running the hook
+	]]
+
+	RunHook: (self: ServerGearManager, HookId: number, Data: any) -> (),
+
+	--[[
 		Runs all the Effect Events for the artifacts/items equipped
 		@param EventData : `ProcessEventData` The data for the effect process event
 	]]

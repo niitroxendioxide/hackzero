@@ -65,8 +65,6 @@ function PlayerArtifactDataClass.randomize(Name: string, Tier: string, Level: nu
         SubStats[RandomStat] += 1
     end
 
-    print(SubStats, TotalBoosts)
-
     --
     local MainStat = GameEnum:Random('MainStats')
 

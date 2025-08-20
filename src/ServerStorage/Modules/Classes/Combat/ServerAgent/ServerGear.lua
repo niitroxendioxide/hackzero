@@ -1,10 +1,14 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
+local Libraries = ServerStorage.Modules.Libraries
 
-local GearDatabase = require(Database.Gears)
+local GearTypes = require(Shared.Types.Gear)
 local AgentTypes = require(Shared.Types.Agents)
+local GearLibrary = require(Libraries.Gear)
+local GearDatabase = require(Database.Gears)
 
 
 --
@@ -15,6 +19,7 @@ function GearStore.new(ItemsClass: AgentTypes.AgentItemsClass): AgentTypes.Serve
     local self = setmetatable({}, GearStore)
     self.__Items = ItemsClass
     self.__Objects = {}
+    self.__Gears = {}
 
     return self
 end
@@ -73,8 +78,21 @@ function GearStore.HasObject(self: AgentTypes.ServerGearManager, Name: string): 
     return self.__Objects[Name] ~= nil
 end
 
+
 function GearStore.RemoveObject(self: AgentTypes.ServerGearManager, Item: AgentTypes.AgentArtifactClass & AgentTypes.DriveObject)
     self.__Objects[Item.Name] = nil
+end
+
+function GearStore.RunHook(self: AgentTypes.ServerGearManager, HookId: GearTypes.HookId, Data: GearTypes.ProcessData)
+
+    for _, Gear in self.__Gears do
+        local GearClass = GearLibrary:Get(Gear.Name)
+
+        if GearClass then
+            GearClass:RunHook(HookId, Data)
+        end
+    end
+
 end
 
 function GearStore.RunEffectProcesses(self: AgentTypes.ServerGearManager, Event_Data: AgentTypes.ProcessEventData)

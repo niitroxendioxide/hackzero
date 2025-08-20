@@ -10,6 +10,7 @@ local Assets = ReplicatedStorage.Assets
 local World = workspace:FindFirstChild("World")
 
 
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Types = require(Shared.Types)
 local Camera = require(Client.Libraries.Camera)
@@ -613,10 +614,16 @@ function Component:ShowArtifactInfo(ArtifactId: string?)
     DataFrame.MainStat.MainName.Text = string.gsub(MainStatName, '_', ' ')
     DataFrame.MainStat.Value.Text = tostring(Artifact.Stats.Main_Stat[MainStatName])..(if MainStatName:find('%%') then '%' else '')
 
-    for StatName, StatValue in Artifact.Stats.Sub_Stats do
+    for StatName, TotalUpgrades in Artifact.Stats.Sub_Stats do
+        local PerUpg = Statics.SubStatIncreases[StatName]
+        local Tick = PerUpg and PerUpg[Artifact.Tier] or 0
+        local Extras = TotalUpgrades - 1
+
         local NewAsset = Assets.Interface.Agents.Items.ArtifactSubStat:Clone()
         NewAsset.SubName.Text = string.gsub(StatName, '_', " ")
-        NewAsset.Value.Text = StatValue
+        NewAsset.Value.Text = Tick * TotalUpgrades
+        NewAsset.Amount.Visible = Extras > 0
+        NewAsset.Amount.Text = '+'..Extras
         NewAsset.Parent = DataFrame.SubStatList
     end
 end

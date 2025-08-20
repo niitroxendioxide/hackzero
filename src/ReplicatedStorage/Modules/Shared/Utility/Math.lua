@@ -1,7 +1,9 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Math = {}
 
 --
 local Database = script.Parent.Parent.Database
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local ArtifactDatabase = require(Database.Artifacts)
 local DrivesDatabase = require(Database.Drives)
 local AgentsDatabase = require(Database.Characters)
@@ -28,6 +30,7 @@ function Math:WriteArtifactsStats(StatsTable: {}, Artifacts)
     local Effects = {}
     for _, ArtifactObject in Artifacts do
         local Data = ArtifactDatabase:GetArtifactData(ArtifactObject.Name)
+        local ArtifactTier = ArtifactObject.Tier :: number
 
         local MainStatName = next(ArtifactObject.Stats.Main_Stat)
         local MainStatValue = ArtifactObject.Stats.Main_Stat[MainStatName]
@@ -72,11 +75,18 @@ function Math:WriteArtifactsStats(StatsTable: {}, Artifacts)
 
         --
         for SubName, SubValue in ArtifactObject.Stats.Sub_Stats do
+            local TickTable = Statics.SubStatIncreases[SubName]
+            if not TickTable then
+                continue
+            end
+
+            local Amount = TickTable[ArtifactTier] * SubValue
+
             if StatsTable[SubName] == nil then
                 StatsTable[SubName] = 0
             end
 
-            StatsTable[SubName] += SubValue
+            StatsTable[SubName] += Amount
         end
     end
 end

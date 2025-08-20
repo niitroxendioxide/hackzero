@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Types = require(Shared.Types.Abilities)
 local AgentTypes = require(Shared.Types.Agents)
 local DefaultTypes = require(Shared.Types)
@@ -18,17 +19,17 @@ end
 local RNG = Random.new()
 local DamageLibrary = {}
 
-function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy,Data: Types.HitEnemyData): (number, boolean, boolean, string, number, number, boolean)
+function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitEnemyData): (number, boolean, boolean, string, number, number, boolean)
 	local EnemyStatus = Enemy.__Status
-	local AgentGear = Agent.GetGearManager and Agent:GetGearManager()
+	local AgentGear: AgentTypes.ServerGearManager = (Agent.GetGearManager and Agent:GetGearManager()) or Mock
 
 	-- Pre-process
-	if AgentGear then
-		AgentGear:RunHitProcesses("Before", {
-			Agent = Agent,
-			Target = Enemy,
-		})
-	end
+	AgentGear:RunHook(GameEnum.GearHookType.HitDataSetup, {Caster = Agent, Target = Enemy, HitData = Data})
+
+	AgentGear:RunHitProcesses("Before", {
+		Agent = Agent,
+		Target = Enemy,
+	})
 
 	-- Agent
 	local Attack = Agent:GetStat('Attack')
@@ -62,39 +63,45 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy,Data: Types.HitEn
 	local Filled_Affliction = ((Data.Affliction_Buildup or 1) / 100) * (1 + Affliction_Aptitude/90) * (1 + Percent_Bonus)
 	local Burst_Damage = 0
 
+	-- Run any hook regarding before-hit or before-affliction
+	AgentGear:RunHook(GameEnum.GearHookType.BeforeHit, {Caster = Agent, Target = Enemy, HitData = Data})
+	AgentGear:RunHook(GameEnum.GearHookType.BeforeAffliction, {Caster = Agent, Target = Enemy, HitData = Data})
 	--
-	if AgentGear then
-		AgentGear:RunHitProcesses("After",{
-			Agent = Agent,
-			Target = Enemy,
-			Element = Data.Affliction,
-			Total_Damage = Final_Damage,
-			Critical = Is_Critical,
-		})
-	end
 
-	--
 	Enemy:TakeAffliction(Data.Affliction or 'None', Filled_Affliction)
+
+	AgentGear:RunHook(GameEnum.GearHookType.AfterAffliction, {Caster = Agent, Target = Enemy, HitData = Data})
 
 	local AfflictionTriggered = false;
 	if Enemy:GetAffliction(Data.Affliction) >= 100 then
+		AgentGear:RunHook(GameEnum.GearHookType.OnAfflictionBurst, {Caster = Agent, Target = Enemy, HitData = Data})
 		-- TODO: Fix the res mult to change based on enemy stuff idk
 		AfflictionTriggered = true;
 		Burst_Damage = DamageLibrary:CalculateAfflictionBurst(Attack, Data.Affliction, Defense_Mult, Resistance_Multiplier, Agent, Enemy)
 		Enemy:TakeDamage(Burst_Damage)
 		Enemy:ResetAffliction(Data.Affliction)
 
-		if AgentGear then
-			AgentGear:RunEffectProcesses({
-				Agent = Agent,
-				Target = Enemy,
-				Element = Data.Affliction,
-				Total_Damage = Burst_Damage,
-			})
-		end
+		AgentGear:RunEffectProcesses({
+			Agent = Agent,
+			Target = Enemy,
+			Element = Data.Affliction,
+			Total_Damage = Burst_Damage,
+		})
 	end
 
 	local EnemyDied = Enemy:TakeDamage(Final_Damage)
+
+	-- Run hooks after damage was dealt, this is the last hook
+	local AfterData = {Damage = Final_Damage, Burst = AfflictionTriggered, Burst_Damage = Burst_Damage, Is_Critical = Is_Critical}
+	AgentGear:RunHook(GameEnum.GearHookType.AfterHit, {Caster = Agent, Target = Enemy, HitData = Data, ProcessedData = AfterData})
+	AgentGear:RunHitProcesses("After",{
+		Agent = Agent,
+		Target = Enemy,
+		Element = Data.Affliction,
+		Total_Damage = Final_Damage,
+		Critical = Is_Critical,
+	})
+
 
 	return Final_Damage, EnemyDied, Is_Critical, Affliction_Type, Filled_Affliction, Burst_Damage, AfflictionTriggered
 end
@@ -124,6 +131,9 @@ end
 
 function DamageLibrary:Daze(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Base_Multiplier: number)
 	local EnemyStatus = Enemy.__Status
+	local AgentGear: AgentTypes.ServerGearManager = Agent.GetGearManager and Agent:GetGearManager()
+
+	AgentGear:RunHook(GameEnum.GearHookType.OnDazeInflicted, {Caster = Agent, Target = Enemy})
 
 	-- Values
 	local Daze = Agent:GetStat('Daze')

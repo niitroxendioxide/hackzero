@@ -12,7 +12,7 @@ return {
 
 	--
 	Stats = {
-		Health = 100,
+		Health = 700,
 		Attack = 70,
 		Defense = 10,
 		Critical_Rate = 10, -- %

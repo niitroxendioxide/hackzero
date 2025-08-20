@@ -272,6 +272,22 @@ return {
 		["Affliction_Aptitude"] = 10,
 	},
 
+	GearHookType = {
+		BeforeHit = 1,
+		AfterHit = 2,
+		HitDataSetup = 3,
+		BeforeAffliction = 4,
+		AfterAffliction = 5,
+		OnAfflictionBurst = 6,
+		StructureDestroyed = 7,
+		OnDodge = 8,
+		OnChainAttack = 9,
+		OnEnergyGained = 10,
+		OnUltimateUsed = 11,
+		OnDazeInflicted = 12,
+		OnEnemyDazed = 13,
+	},
+
 	MainStats = {
 		["Attack%"] = 1,
 		["Health%"] = 2,
