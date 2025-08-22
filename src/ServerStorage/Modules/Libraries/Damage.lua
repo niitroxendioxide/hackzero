@@ -8,8 +8,12 @@ local AgentTypes = require(Shared.Types.Agents)
 local DefaultTypes = require(Shared.Types)
 local Defense_Factors = require(Shared.Database.Defense)
 
-local Mock = {}
+local Mock = {
+	RunHook = function() end,
+	RunHitProcesses = function() end
+}
 Mock.__index = function(t, k)
+
 	return function()
 		return nil
 	end

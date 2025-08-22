@@ -45,6 +45,7 @@ export type CompanionClass = {
     ComputeActions: (self: CompanionClass, Delta: number) -> (),
     Attack: (self: CompanionClass) -> (),
     GetGearManager: (self: CompanionClass) -> (Agents.ServerGearManager),
+    SwitchState: (self: CompanionClass, State: string, Time: number) -> (),
 
     --[[
         Set the area for the companion to wander around
