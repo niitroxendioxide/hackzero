@@ -13,7 +13,7 @@ local OriginalScreenTransparency = {}
     @param Time Automatically show it again after x seconds
     @return `function` ShowHUD: Shows the HUD again
 ]]
-function Util:HideHUD(Time: number?): (() -> ())?
+function Util:HideHUD(Time: number?, IgnoreDescendantOf: string?): (() -> ())?
     local Player = Players.LocalPlayer
     local Gui = Player.PlayerGui
 
@@ -24,8 +24,10 @@ function Util:HideHUD(Time: number?): (() -> ())?
     end
 
 
+    local DescendantToIgnore = IgnoreDescendantOf ~= nil and Screen:FindFirstChild(IgnoreDescendantOf) or Screen.Dialogues
+
     for _, Object in Screen:GetDescendants() do
-        if Object:IsDescendantOf(Screen.Dialogues) then
+        if Object:IsDescendantOf(Screen.Dialogues) or (Object:IsDescendantOf(DescendantToIgnore)) then
             continue
         end
 

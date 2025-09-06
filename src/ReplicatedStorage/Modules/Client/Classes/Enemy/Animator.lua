@@ -84,11 +84,11 @@ function AnimatorClass:Update(_: number)
 
 	local Direction =  self.__Character:GetDirection()
 	local Forward = math.abs(Direction:Dot(Vector3.new(0, 0, 1))) >= .8
-	
+
 	Right:AdjustWeight(Moving and math.clamp(Direction.X, 0.001, 1) or 0.001)
 	Left:AdjustWeight(Moving and math.clamp(-Direction.X, 0.001, 1) or 0.001)
 	Walk:AdjustWeight(Moving and Forward and 1 or 0.001)
-	
+
 	Walk:AdjustSpeed(-math.sign(Direction.Z) * 0.7)
 end
 

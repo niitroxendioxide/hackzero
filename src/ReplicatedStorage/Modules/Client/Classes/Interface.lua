@@ -90,6 +90,9 @@ end
 
 function ComponentClass:Bind()
 	local Object = self:Link(Players.LocalPlayer)
+	if Object == nil then
+		return
+	end
 
 	self.__Main_Frame = Object
 
