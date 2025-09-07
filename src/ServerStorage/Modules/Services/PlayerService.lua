@@ -9,6 +9,7 @@ local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 
+local Agents = require(ServerStorage.Modules.Libraries.Agents)
 local Network = require(ReplicatedStorage.Modules.Shared.Network)
 local Notifications = require(Modules.Packages.Notifications)
 local TeamService = require(script.Parent.Combat.TeamService)
@@ -16,6 +17,7 @@ local PartyService = require(script.Parent.Lobby.PartyService)
 local ChatService = require(script.Parent.Lobby.ChatService)
 local DataService = require(script.Parent.Data.DataService)
 local SummonService = require(script.Parent.Items.SummonService)
+local GearService = require(script.Parent.Match.GearService)
 
 local TeleportService = require(script.Parent.Data.TeleportService)
 local Places = require(Shared.Places)
@@ -138,6 +140,19 @@ function Service.PlayerAdded(Player: Player): ()
 	ChatService:SetupChannels(Player)
 	SummonService:SyncBanner(Player)
 	DataService:SyncPlayerItems(Player)
+
+	Player.Chatted:Connect(function(msg)
+		local split = string.split(msg, ' ')
+		if split[1] == '/promptgear' then
+			local List = {}
+			for k = 2, #split do
+				table.insert(List, split[k])
+			end
+
+			local Agent = Agents:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
+			GearService:PromptOptions(Agent, List)
+		end
+	end)
 
 	-- hi?
 	if Places:CanFight() then

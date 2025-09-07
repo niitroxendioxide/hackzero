@@ -1,19 +1,26 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = ReplicatedStorage.Modules.Client
-local Database = ReplicatedStorage.Modules.Shared.Database
+local Shared = ReplicatedStorage.Modules.Shared
+local Database = Shared.Database
 local Assets = ReplicatedStorage.Assets
 
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
 local GearDatabase = require(Database.Gears)
 local BaseClass = require(Client.Classes.Interface)
+local Signal = require(Shared.Utility.Signal)
 
 local RNG = Random.new()
 local Component = BaseClass.new("Gear", "Gear", {KeyToBind = Enum.KeyCode.P})
 local States = {
     CurrentThread = nil,
     CurrentHoverCard = nil,
+
+    ChosenCard = nil :: Signal.ScriptSignal<string, number>?,
+    MultipleCards = nil :: Signal.ScriptSignal<{string}>?,
+    SelectedCards = {},
+    AllCards = {},
 }
 
 function Hover(Holder)
@@ -58,7 +65,46 @@ function Hover(Holder)
     end)
 end
 
-function CreateCard(Name: string, Order: number)
+function SelectSingularCard(Name: string, Order: number, Holder: Frame)
+    States.ChosenCard:Fire(Name, Order)
+
+    Hover(Holder)
+
+    --
+    for _, OtherCard in States.AllCards do
+        local Button = OtherCard.Button
+
+        Button.Btn:Destroy()
+
+        if OtherCard == Holder then
+            Effects:Tween(Holder, {.4, 'Cubic', 'InOut'}, {Position = UDim2.fromScale(0.5, .5)})
+
+        else
+            Effects:Tween(OtherCard.ActualCard, {.3, 'Back', 'In'}, {Position = UDim2.fromScale(0.5, -4)})
+            Effects:Tween(Button.UIScale, {.25, 'Back', 'In'}, {Scale = 0})
+
+            Effects:CleanUp(Button, .25)
+        end
+    end
+
+    local MainFrame = Component:GetFrame()
+    Effects:Tween(MainFrame.Bg, {.3}, {BackgroundTransparency = 1})
+end
+
+function CalculateCardPosition(Order: number, Total: number)
+    local Padding = 0.17
+
+    if Total == 2 then
+        return Order == 1 and 0.5-(Padding/2) or 0.5+(Padding/2)
+    end
+
+    local Start = (0.5 - ((Total - 1)//2) * Padding) - Padding
+    local Pos = Start + Padding*Order
+
+    return Pos
+end
+
+function CreateCard(Name: string, Order: number, Total: number)
     local GearData = GearDatabase:GetGearData(Name)
     if not GearData then
         warn("Cannot create card for gear:", Name)
@@ -72,16 +118,27 @@ function CreateCard(Name: string, Order: number)
     local Key, Value = next(GearData.Mods)
     local valText = tostring(math.floor(Value)) .. (string.match(Key, "%%") and '%' or '')
 
+
     --
     local Holder = Assets.Interface.Gear.CardHolder:Clone()
+    Holder.Position = UDim2.fromScale(CalculateCardPosition(Order, Total), .5)
     Holder.ActualCard.Position = UDim2.fromScale(0.5, 5)
+    Holder.Parent = Component:GetFrame().List
+
+    table.insert(States.AllCards, Holder)
+
+    -- Connections
     Holder.Button.Btn.MouseEnter:Connect(function()
         Hover(Holder)
     end)
+
     Holder.Button.Btn.MouseLeave:Connect(function()
         Hover(Holder)
     end)
-    Holder.Parent = Component:GetFrame().List
+
+    Holder.Button.Btn.MouseButton1Click:Once(function()
+        SelectSingularCard(Name, Order, Holder)
+    end)
 
     --
     task.delay(Order * 1/12, function()
@@ -138,6 +195,8 @@ function ClearCards()
             Card:Destroy()
         end
     end
+
+    States.AllCards = {}
 end
 
 function Component:Link(Player: Player)
@@ -151,26 +210,26 @@ end
 
 function Component:Init()
 
-    Component:BindToStateChange(function(State)
-        if State then
-            Component:ShowOptions({"Dumbbells", "BoxingGloves", "Daggers"})
-        end
-    end)
-
 end
 
 function Component:ShowOptions(List: {string})
     local MainFrame = self:GetFrame()
+
+    self:Set(true)
 
     MainFrame.Bg.Visible = true
     MainFrame.Bg.BackgroundTransparency = 1
     Effects:Tween(MainFrame.Bg, {.25}, {BackgroundTransparency = 0.3})
 
     ClearCards()
+    States.ChosenCard = Signal.new()
 
     for k, Name in List do
-        CreateCard(Name, k)
+        CreateCard(Name, k, #List)
     end
+
+    --
+    return States.ChosenCard
 end
 
 return Component

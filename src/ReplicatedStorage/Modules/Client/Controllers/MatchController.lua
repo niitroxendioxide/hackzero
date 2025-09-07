@@ -33,6 +33,18 @@ function Controller:Init()
             Controller:BeginMatch(...)
         end
     end)
+
+    Network:On("Gear", function(Type: number, List: {})
+        if Type == GameEnum.GearEvent.Prompt then
+            Controller:PromptGearChoice(List)
+        end
+    end)
+end
+
+function Controller:PromptGearChoice(List: {string})
+    local Component = InterfaceController:GetComponent("Gear")
+
+    Component:ShowOptions(List)
 end
 
 function Controller:SetupStage(StageName: string, ActName: string)

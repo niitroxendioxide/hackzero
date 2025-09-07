@@ -137,7 +137,17 @@ function GearStore.RunHitProcesses(self: AgentTypes.ServerGearManager, State: Ag
 end
 
 function GearStore.GetAddedGearStat(self: AgentTypes.ServerGearManager, Stat: AgentTypes.Stat)
-    return 0
+    local Amount = 0
+
+    for _, Gear in self.__Gears do
+        local Data = GearDatabase:GetGearData(Gear.Name)
+
+        if Data.Mods[Stat] then
+            Amount += Data.Mods[Stat] * Gear.Amount
+        end
+    end
+
+    return Amount
 end
 
 return GearStore

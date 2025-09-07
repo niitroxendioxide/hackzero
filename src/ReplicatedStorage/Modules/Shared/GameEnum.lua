@@ -259,6 +259,11 @@ return {
 		Update = 3,
 	},
 
+	GearEvent = {
+		Prompt = 1,
+		Choose = 2,
+	},
+
 	SubStats = {
 		["Health%"] = 1,
 		["Health"] = 2,
