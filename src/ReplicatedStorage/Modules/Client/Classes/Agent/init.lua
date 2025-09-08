@@ -12,6 +12,7 @@ local AgentTypes = require(Shared.Types.Agents)
 local CharacterClass = require(script:WaitForChild('Character'))
 local StatusClass = require(Shared.Classes.Agents:WaitForChild('Status'))
 local ItemsClass = require(Shared.Classes.Agents.Items)
+local ClientGearClass = require(script:WaitForChild("ClientGear"))
 
 --local InterfaceStates = require(Client.Packages.InterfaceStates)
 local CharacterDatabase = require(Shared.Database.Characters)
@@ -38,6 +39,7 @@ function AgentClass.new(Name: string, Level: number, Skills: {}): AgentTypes.Age
 	self.__Limit_Area = nil
 	self.__Character = CharacterClass.new(Name)
 	self.__Items = ItemsClass.new(self)
+	self.__Gear = ClientGearClass.new()
 
 	return self
 end

@@ -11,6 +11,8 @@ local GearDatabase = require(Database.Gears)
 local Network = require(Shared.Network)
 local Signal = require(Shared.Utility.Signal)
 
+local AgentsLibrary = require(ServerStorage.Modules.Libraries.Agents)
+
 --
 local Service = {
     __Queue = {},
@@ -58,7 +60,11 @@ local function GiveGear(Player: Player, Data: {})
     local Object = Service.__Prompt_Objects[Player]
 
     if Object then
-        Object.Event:Fire(Data[1])
+        local GearName = Data[1]
+        local AgentId = AgentsLibrary:GetIdForPlayer(Player:GetAttribute("ReplicationId") :: number, Object.Agent)
+        Object.Event:Fire(GearName)
+
+        Network:Fire("Gear", Player, GameEnum.GearEvent.Give, {AgentId, GearName})
     end
 end
 

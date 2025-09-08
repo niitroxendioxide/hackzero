@@ -1,9 +1,13 @@
 --
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Player = Players.LocalPlayer
+
+local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
 local LocalData = require(Client.Libraries.LocalData)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
@@ -37,14 +41,28 @@ function Controller:Init()
     Network:On("Gear", function(Type: number, List: {})
         if Type == GameEnum.GearEvent.Prompt then
             Controller:PromptGearChoice(List)
+        elseif Type == GameEnum.GearEvent.Give then
+            local AgentId = List[1]
+            local GearName = List[2]
+            local RepId = Player:GetAttribute("ReplicationId") :: number
+
+            local Agent = Characters:GetAgent(RepId, AgentId)
+
+            Agent.__Gear:AddGear(GearName)
         end
     end)
 end
 
+
+
+-- // Client
 function Controller:PromptGearChoice(List: {string})
     local Component = InterfaceController:GetComponent("Gear")
 
-    Component:ShowOptions(List)
+    local Signal = Component:ShowOptions(List)
+    local ChosenName: string, _: number = Signal:Wait()
+
+    Network:Fire("Gear", GameEnum.GearEvent.Choose, {ChosenName})
 end
 
 function Controller:SetupStage(StageName: string, ActName: string)

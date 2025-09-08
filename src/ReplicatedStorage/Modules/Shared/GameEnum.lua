@@ -262,6 +262,7 @@ return {
 	GearEvent = {
 		Prompt = 1,
 		Choose = 2,
+		Give = 3,
 	},
 
 	SubStats = {
