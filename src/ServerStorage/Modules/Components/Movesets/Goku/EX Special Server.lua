@@ -49,6 +49,7 @@ function Ability:Play(Caster: Types.GenericClass, Skill_Name: string, State: str
 						Damage = Ability:FromData('Damage_Mult', nil, SkillLevel),
 						Affliction = 'Physical',
 						Stun = .225,
+						HitType = 'Blunt',
 						Daze = Ability:FromData('Daze_Mult', nil, SkillLevel),
 						Knockback = Ability:FromData('Knockback'),
 						Affliction_Buildup = Ability:FromData('Affliction_Buildup', nil, SkillLevel)

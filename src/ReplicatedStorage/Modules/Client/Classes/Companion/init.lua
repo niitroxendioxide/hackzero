@@ -34,6 +34,7 @@ ClientCompanionClass.__index = ClientCompanionClass
 
 function ClientCompanionClass.new(Name: string, At: CFrame): Types.ClientCompanionClass
     local self = setmetatable({}, ClientCompanionClass)
+    self.Name = Name
     self.__Goal = At
     self.__Collider = CreateColliderObject(At)
     self.__Appearance = Appearance.new(Name, "Companions")

@@ -422,6 +422,7 @@ export type ServerGearManager = {
 	__Items: AgentItemsClass,
 	__Objects: {[string]: AgentArtifactClass & DriveObject},
 	__Gears: {[string]: GearObject},
+	__Gear_Calculations: {[string]: number},
 
 	--[[
 		Tries adding a gear item to the list of gear items, returns false if the ItemLimit is Reached

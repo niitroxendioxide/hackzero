@@ -42,6 +42,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 					Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count, SkillLevel),
 					Stun = 0.25 + (StandSummoned and 0.15 or 0),
 					Daze = Daze,
+					HitType = 'Blunt',
 				})
 
 				if Result.Hit_Type == 'Entity' then

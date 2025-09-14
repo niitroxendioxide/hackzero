@@ -27,6 +27,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Data)
 				local Result = Ability:Hit(Caster, Target, {
 					Damage = Ability:FromData('Damage_Mult', nil, SkillLevel),
 					Affliction = 'Energy',
+					HitType = 'Blunt',
 					Affliction_Buildup = Ability:FromData('Affliction_Buildup', nil, SkillLevel),
 					Stun = 0.4,
 					Daze = Ability:FromData('Daze_Mult'),

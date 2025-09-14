@@ -28,7 +28,7 @@ local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 local PlayerCompanionDataClass = require(Classes.Data.PlayerCompanionData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("companiondatatest1", ProfileTemplate)
+local DataStore = ProfileStore.New("settingsandgeartest1", ProfileTemplate)
 
 --
 local ReplicatedKeys = {"Gems", "Money"}
@@ -734,7 +734,7 @@ function Service:GetCompanions(Player: Player, Filter: ((Companion: CompTypes.Pl
 
     if not Filter then
         local List = {}
-        for k, v in CompanionList do table.insert(List, v) end
+        for k, v in (CompanionList or {}) do table.insert(List, v) end
         return List
     end
 

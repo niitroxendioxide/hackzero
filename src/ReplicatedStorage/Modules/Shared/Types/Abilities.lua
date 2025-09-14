@@ -79,10 +79,12 @@ export type AbilityClass = {
 	Hit: (self: AbilityClass, Caster: Caster, Target: Target, Data: {HitstopDuration: number, EffectData: {any}}) -> (),
 }
 
+export type DamageHitType = 'Blunt' | 'Slash' | 'None'
 export type HitEnemyData = {
 	Damage: number,
 	Stun: number,
 	Daze: number,
+	HitType: DamageHitType,
 	Affliction: Default.Element,
 	Attack_Type: Default.AgentMovesetAbility,
 	Affliction_Buildup: number?,

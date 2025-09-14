@@ -80,6 +80,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 					Damage = Ability:FromData('Damage_Mult', M1_Count, SkillLevel),
 					Affliction = 'Physical',
 					Stun = .325,
+					HitType = 'Blunt',
 					Daze = Ability:FromData('Daze_Mult', M1_Count, SkillLevel),
 					Knockback = Ability:FromData('Knockback'),
 					Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count, SkillLevel)
@@ -95,6 +96,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 					Damage = Ability:FromData('Damage_Mult', 4.5, SkillLevel),
 					Affliction = 'Physical',
 					Stun = .325,
+					HitType = 'Blunt',
 					Daze = Ability:FromData('Daze_Mult', 4.5, SkillLevel),
 					Knockback = Ability:FromData('Knockback'),
 					Affliction_Buildup = Ability:FromData('Affliction_Buildup', 4.5, SkillLevel)
@@ -110,6 +112,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 					Damage = Ability:FromData('Damage_Mult', 2.5, SkillLevel),
 					Affliction = 'Physical',
 					Stun = .325,
+					HitType = 'Blunt',
 					Daze = Ability:FromData('Daze_Mult', 2.5, SkillLevel),
 					Knockback = Ability:FromData('Knockback'),
 					Affliction_Buildup = Ability:FromData('Affliction_Buildup', 2.5, SkillLevel)

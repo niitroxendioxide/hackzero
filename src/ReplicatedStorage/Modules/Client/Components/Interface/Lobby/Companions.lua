@@ -211,7 +211,6 @@ function Component:Init()
 
     MainFrame.Stats.LevelUpButton.MouseButton1Click:Connect(function()
         local FeedingElement = UIGroups:GetElementClass('Feeding', 'Feeding')
-        print(FeedingElement)
 
         FeedingElement:ShowCompanionFeeding(States.IdSelected)
     end)

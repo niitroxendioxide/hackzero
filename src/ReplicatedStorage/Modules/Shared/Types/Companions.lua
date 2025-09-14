@@ -4,6 +4,8 @@ local Abilities = require(script.Parent.Abilities)
 
 
 export type ClientCompanionClass = {
+    Name: string,
+
     __Key: number?,
     __Collider: BasePart,
     __Appearance: Default.AppearanceController,

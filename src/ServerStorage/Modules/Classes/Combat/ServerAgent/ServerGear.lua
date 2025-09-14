@@ -20,6 +20,7 @@ function GearStore.new(ItemsClass: AgentTypes.AgentItemsClass): AgentTypes.Serve
     self.__Items = ItemsClass
     self.__Objects = {}
     self.__Gears = {}
+    self.__Gear_Calculations = {}
 
     return self
 end
@@ -29,6 +30,8 @@ function GearStore.AddGear(self: AgentTypes.ServerGearManager, GearName: string)
     if not GearData then
         return false;
     end
+
+    self.__Gear_Calculations = {}
 
     local GearObject = self.__Gears[GearName];
     if not GearObject then
@@ -139,6 +142,10 @@ end
 function GearStore.GetAddedGearStat(self: AgentTypes.ServerGearManager, Stat: AgentTypes.Stat)
     local Amount = 0
 
+    if self.__Gear_Calculations[Stat] then
+        return self.__Gear_Calculations[Stat]
+    end
+
     for _, Gear in self.__Gears do
         local Data = GearDatabase:GetGearData(Gear.Name)
 
@@ -146,6 +153,8 @@ function GearStore.GetAddedGearStat(self: AgentTypes.ServerGearManager, Stat: Ag
             Amount += Data.Mods[Stat] * Gear.Amount
         end
     end
+
+    self.__Gear_Calculations[Stat] = Amount
 
     return Amount
 end

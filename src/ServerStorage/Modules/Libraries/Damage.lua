@@ -35,6 +35,8 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 		Target = Enemy,
 	})
 
+	local HitType = Data.HitType or 'None'
+
 	-- Agent
 	local Attack = Agent:GetStat('Attack')
 	local Crit_Rate = Agent:GetStat('Critical_Rate')
@@ -55,6 +57,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	local Defense_Mult = Level_Factor / (math.max(Raw_Defense * (1 - (Pen_Ratio / 100)) - Penetration, 0) + Level_Factor)
 
 	--
+	local Damage_Type_Extra = HitType ~= 'None' and AgentGear:GetAddedGearStat((HitType..'%') :: AgentTypes.Stat) or 1
 	local Resistance_Multiplier = 1 - (EnemyStatus:GetResistanceMultiplier() / 100)
 	local Crit_Mult = Is_Critical and Crit_Damage or 1
 	local Raw_Damage_Mult = Data.Damage / 100
@@ -62,10 +65,11 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	local Affliction_Type = Element_Multiplier < 1 and 'Weak' or Data.Affliction
 	local Dazed_State_Multiplier = EnemyStatus:IsKnocked() and EnemyStatus:GetDazeMultiplier() or 1
 
-	local Final_Damage = math.max(Base_Damage * Damage_Bonus_Mult * Crit_Mult * Defense_Mult * Element_Multiplier * Resistance_Multiplier * Damage_Taken_Mult * Dazed_State_Multiplier, 1)
+	local Final_Damage = math.max(Base_Damage * Damage_Bonus_Mult * Crit_Mult * Defense_Mult * Element_Multiplier * Resistance_Multiplier * Damage_Taken_Mult * Dazed_State_Multiplier * Damage_Type_Extra, 1)
 	local Percent_Bonus = (Final_Damage / EnemyStatus:GetStat('Max_Health')) / 0.63
 	local Filled_Affliction = ((Data.Affliction_Buildup or 1) / 100) * (1 + Affliction_Aptitude/90) * (1 + Percent_Bonus)
 	local Burst_Damage = 0
+
 
 	-- Run any hook regarding before-hit or before-affliction
 	AgentGear:RunHook(GameEnum.GearHookType.BeforeHit, {Caster = Agent, Target = Enemy, HitData = Data})
@@ -140,9 +144,9 @@ function DamageLibrary:Daze(Agent: AgentTypes.ServerAgentClass, Enemy: AgentType
 	AgentGear:RunHook(GameEnum.GearHookType.OnDazeInflicted, {Caster = Agent, Target = Enemy})
 
 	-- Values
+	local Daze_Bonus_Attacker = AgentGear:GetAddedGearStat("Stun%")
 	local Daze = Agent:GetStat('Daze')
 	local Daze_Res = 1 - (EnemyStatus:GetStat('Daze_Resistance') / 100)
-	local Daze_Bonus_Attacker = 1
 
 	--
 	local Total = (Base_Multiplier / 100) * Daze * Daze_Bonus_Attacker * Daze_Res

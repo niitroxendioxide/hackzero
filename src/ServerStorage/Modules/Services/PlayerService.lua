@@ -62,8 +62,37 @@ local function SyncPlayerDataWithOthers(Player: Player, AgentTeam: {}?, PlayerTo
 	Network:Fire("SharedData", PlayerToSync, Player, DataCache[Player])
 end
 
-local function SavePlayerSettings(SettingsToChange: {[string]: number | boolean})
-	
+function HandlePlayerChat(Player: Player)
+	Player.Chatted:Connect(function(msg)
+		local split = string.split(msg, ' ')
+		if split[1] == '/promptgear' then
+			local List = {}
+			for k = 2, #split do
+				table.insert(List, split[k])
+			end
+
+			local Agent = Agents:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
+			GearService:PromptOptions(Agent, List)
+		end
+	end)
+end
+
+local function SavePlayerSettings(Player: Player, SettingsToChange: {[string]: {[string]: number | boolean}})
+	local PlayerData = DataService:Get(Player, 'Settings')
+
+	for Category in SettingsToChange do
+		if not PlayerData[Category] then
+			continue
+		end
+
+		for Key, NewValue in SettingsToChange[Category] do
+			if not (typeof(PlayerData[Key]) == typeof(NewValue)) then
+				continue
+			end
+
+			PlayerData[Key] = NewValue
+		end
+	end
 end
 
 --
@@ -141,18 +170,7 @@ function Service.PlayerAdded(Player: Player): ()
 	SummonService:SyncBanner(Player)
 	DataService:SyncPlayerItems(Player)
 
-	Player.Chatted:Connect(function(msg)
-		local split = string.split(msg, ' ')
-		if split[1] == '/promptgear' then
-			local List = {}
-			for k = 2, #split do
-				table.insert(List, split[k])
-			end
-
-			local Agent = Agents:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
-			GearService:PromptOptions(Agent, List)
-		end
-	end)
+	HandlePlayerChat(Player)
 
 	-- hi?
 	if Places:CanFight() then

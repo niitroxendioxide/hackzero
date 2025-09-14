@@ -13,6 +13,10 @@ function Service:Init()
 end
 
 function Service:CreateCompanion(CompanionDataClass: any)
+    if not CompanionDataClass then
+        return;
+    end
+
     local New = ServerCompanion.new("Default", CompanionDataClass:GetStats(), CompanionDataClass.__Level)
     local AgentList = Agents:GetActiveAgents()
 

@@ -226,12 +226,14 @@ function Characters:Build(ReplicationId: number)
 	}
 end
 
-function Characters:GetCharacters(ReplicationId: number): {[number]: AgentTypes.AgentClass}
-	if not Characters.__Player_Data[ReplicationId] then
+function Characters:GetCharacters(ReplicationId: number?): {[number]: AgentTypes.AgentClass}
+	if ReplicationId == nil then ReplicationId = Players.LocalPlayer:GetAttribute("ReplicationId") end
+
+	if not Characters.__Player_Data[ReplicationId :: number] then
 		return {}
 	end
 
-	return Characters.__Player_Data[ReplicationId].List
+	return Characters.__Player_Data[ReplicationId :: number].List
 end
 
 function Characters:GetCurrentName(ReplicationId: number): string

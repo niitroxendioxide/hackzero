@@ -171,6 +171,11 @@ function EndScreen:Set(State: boolean)
 
     UIGroups.__Groups[self.__Group].Active = State and self.__Name or nil
 
+    local Class = UIGroups:GetElementClass("MenuGui", "IngameMenu")
+    if (Class) then
+        Class:Set(false)
+    end
+
     LightingEffects(State)
 
     if State then

@@ -28,6 +28,7 @@ function Ability:Play(Caster: Types.Caster): ()
 				Daze = Ability:FromData('Daze_Mult', M1_Count, SkillLevel),
 				Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count, SkillLevel),
 				Affliction = 'Physical',
+				HitType = 'Slash',
 				Stun = 0.25,
 			})
 		end
@@ -46,6 +47,7 @@ function Ability:Play(Caster: Types.Caster): ()
 					Daze = Ability:FromData('Daze_Mult', NewKey, SkillLevel),
 					Affliction_Buildup = Ability:FromData('Affliction_Buildup', NewKey, SkillLevel),
 					Affliction = 'Physical',
+					HitType = 'Slash',
 					Stun = 0.25,
 				})
 			end

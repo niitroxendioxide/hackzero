@@ -213,7 +213,9 @@ export type BoundKeybind = {
 
 -- [[ DATA ]]
 export type Role = 'Attack' | 'Element' | 'Support' | 'Stun'
-export type Stat = 'Daze_Resistance' | 'Speed' | 'Max_Health' | 'Max_Daze' | 'Health' | 'Attack' | 'Defense' | 'Critical_Rate' | 'Critical_Damage' | 'Penetration' | 'Pen_Ratio' | 'Daze' | 'Energy_Regeneration' | 'Affliction_Aptitude' | 'Affliction_Facility'
+export type Stat = 'Daze_Resistance' | 'Speed' | 'Max_Health' | 'Max_Daze' | 'Health' | 'Attack' | 'Defense'
+| 'Critical_Rate' | 'Critical_Damage' | 'Penetration' | 'Pen_Ratio' | 'Daze' | 'Energy_Regeneration' | 'Affliction_Aptitude' | 'Affliction_Facility'
+| 'Stun%' | 'LA_Blunt%' | 'LA_Slash%' | 'Blunt%' | 'Slash%'
 export type Element = 'Physical' | 'Energy' | 'Fire' | 'Ice' | 'Electric' | 'Wind' | 'Rock' | 'None' | 'Water'
 export type CharacterStats = {[Stat]: number, Jog_Speed: number, Sprint_Speed: number, Walk_Speed: number}
 

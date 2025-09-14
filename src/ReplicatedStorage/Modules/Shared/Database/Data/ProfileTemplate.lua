@@ -16,9 +16,21 @@ return {
     },
 
     Settings = {
-        Graphics = {},
-        Sounds = {},
+        Graphics = {
+            CameraShake = true,
+        },
+        Sound = {
+            Master_Volume = 50,
+            Music_Volume = 50,
+            Effects_Volume = 50,
+            Voices_Volume = 50,
+            Emotes_Volume = 50,
+            Interface_Volume = 50,
+
+            Sound_Effects = true,
+        },
         QOL = {},
+        Keybinds = {},
     },
 
     StagesUnlocked = {

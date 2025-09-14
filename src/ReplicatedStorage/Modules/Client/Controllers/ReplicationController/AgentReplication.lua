@@ -205,9 +205,8 @@ end
 function Controller:CreateCompanion(Buffer: buffer)
 	local Id = buffer.readu8(Buffer, 1)
 	local At = Math:DecodeCFrame(Buffer, 2)
-	local CompanionClass = Companion.new("Template", At)
+	local CompanionClass = Companion.new("Default", At)
 	CompanionClass:Init(Id)
-
 	Companions:Add(CompanionClass, Id)
 end
 

@@ -61,7 +61,8 @@ function Ability:Play(Caster: Types.Caster, _, State: Types.InputState)
                     Stun = .225,
                     Daze = Ability:FromData('Daze_Mult', nil, SkillLevel),
                     Knockback = Ability:FromData('Knockback'),
-                    Affliction_Buildup = Ability:FromData('Affliction_Buildup', nil, SkillLevel)
+                    Affliction_Buildup = Ability:FromData('Affliction_Buildup', nil, SkillLevel),
+					HitType = 'Blunt',
                 })
 			end)
 		end,},
