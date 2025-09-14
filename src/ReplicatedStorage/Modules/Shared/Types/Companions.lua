@@ -14,7 +14,16 @@ export type ClientCompanionClass = {
     __Alpha: number,
     __Animator: {[string]: any},
     __Moving: boolean,
+    __Owner_Id: number,
+    __UUID: string,
 
+    --[[
+        Not the same as `Companion.Name`. This is the randomly generated name using the UUID
+        @return `string` The randomly generated name of the Companion
+    ]]
+    GetName: (self: ClientCompanionClass) -> (string),
+
+    IsOwner: (self: ClientCompanionClass, Compared: Player) -> (boolean),
     GetId: (self: ClientCompanionClass) -> (number?),
 
     Init: (self: ClientCompanionClass, Key: number) -> (),
@@ -27,6 +36,7 @@ export type CompanionClass = {
     __Owner: Agents.AgentClass | Agents.ServerAgentClass,
     __Level: number,
     __Stats: CompanionStatsClass,
+    __UUID: string,
     __Key: number,
     __Moving: boolean,
     __Last_Attack_Time: number,
@@ -54,7 +64,7 @@ export type CompanionClass = {
         @param Box **BasePart** The area that the companion will be limited to
     ]]
     SetAreaDelimiter: (self: CompanionClass, Box: BasePart) -> (),
-    Init: (self: CompanionClass, Id: number) -> (),
+    Init: (self: CompanionClass, Id: number, Owner: Agents.ServerAgentClass) -> (),
 
     --Update: (self: CompanionClass, Delta: number) -> (),
 
@@ -148,6 +158,7 @@ export type PlayerCompanionDataClass = {
 
     ToData: (self: PlayerCompanionDataClass) -> (CompanionData),
     Compress: (self: PlayerCompanionDataClass) -> (string, buffer),
+    GetStats: (self: PlayerCompanionDataClass) -> ({[string]: any})
 }
 
 

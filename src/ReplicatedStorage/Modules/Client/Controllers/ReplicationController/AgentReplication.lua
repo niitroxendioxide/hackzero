@@ -202,11 +202,13 @@ function Controller:UpdateUltBar(Buffer: buffer)
 	InterfaceStates.UltBar[AgentId]:set(UltAmount)
 end
 
-function Controller:CreateCompanion(Buffer: buffer)
+function Controller:CreateCompanion(Buffer: buffer, UUID: string)
 	local Id = buffer.readu8(Buffer, 1)
-	local At = Math:DecodeCFrame(Buffer, 2)
-	local CompanionClass = Companion.new("Default", At)
-	CompanionClass:Init(Id)
+	local OwnerId = buffer.readu8(Buffer, 2)
+	local At = Math:DecodeCFrame(Buffer, 3)
+
+	local CompanionClass = Companion.new("Default", At, UUID)
+	CompanionClass:Init(Id, OwnerId)
 	Companions:Add(CompanionClass, Id)
 end
 

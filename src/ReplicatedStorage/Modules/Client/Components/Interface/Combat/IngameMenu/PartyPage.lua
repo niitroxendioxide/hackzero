@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Assets = ReplicatedStorage.Assets
@@ -50,22 +51,20 @@ function PageController:Refresh()
     end
 
     --
-    local ClientCompanion = Companions:Get(1)
-    if not ClientCompanion then
-        return
-    end
+    local CompanionList = Companions:GetCompanionsForPlayer(Players.LocalPlayer)
+    for _, ClientCompanion in CompanionList do
+        local Data = CompanionDatabase:GetCompanionData(ClientCompanion.Name)
+        if not(Data) then
+            return
+        end
 
-    local Data = CompanionDatabase:GetCompanionData(ClientCompanion.Name)
-    if not(Data) then
-        return
+        local NewObject = PartyAssets.Agent:Clone()
+        local ObjData = NewObject.Data
+        ObjData.CharName.Text = ClientCompanion:GetName() --RandomNameGen(ClientCompanion:GetId())
+        ObjData.Health:Destroy()
+        NewObject.Type.Text = 'COMPANION'
+        NewObject.Parent = Frame.List
     end
-
-    local NewObject = PartyAssets.Agent:Clone()
-    local ObjData = NewObject.Data
-    ObjData.CharName.Text = Data.Name --RandomNameGen(ClientCompanion:GetId())
-    ObjData.Health:Destroy()
-    NewObject.Type.Text = 'COMPANION'
-    NewObject.Parent = Frame.List
 end
 
 return PageController;

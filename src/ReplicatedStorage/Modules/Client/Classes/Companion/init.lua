@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage.Modules.Shared
+local RandomNameGen = require(ReplicatedStorage.Modules.Client.Utility.RandomNameGen)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local World = require(ReplicatedStorage.Modules.Shared.World)
 local Appearance = require(script.Parent.Appearance)
@@ -32,7 +33,7 @@ end
 local ClientCompanionClass = {}
 ClientCompanionClass.__index = ClientCompanionClass
 
-function ClientCompanionClass.new(Name: string, At: CFrame): Types.ClientCompanionClass
+function ClientCompanionClass.new(Name: string, At: CFrame, UUID: string): Types.ClientCompanionClass
     local self = setmetatable({}, ClientCompanionClass)
     self.Name = Name
     self.__Goal = At
@@ -41,13 +42,24 @@ function ClientCompanionClass.new(Name: string, At: CFrame): Types.ClientCompani
     self.__Animator = Animator.new(self, Name)
     self.__Connection = nil
     self.__Moving = false
+    self.__Owner_Id = -1
+    self.__UUID = UUID
 
     return self
 end
 
-function ClientCompanionClass.Init(self: Types.ClientCompanionClass, Key: number)
+function ClientCompanionClass.GetName(self: Types.ClientCompanionClass): string
+    return RandomNameGen(self.__UUID)
+end
+
+function ClientCompanionClass.IsOwner(self: Types.ClientCompanionClass, Player: Player): boolean
+    return self.__Owner_Id == (Player:GetAttribute("ReplicationId") :: number)
+end
+
+function ClientCompanionClass.Init(self: Types.ClientCompanionClass, Key: number, OwnerId: number)
     if self.__Connection then return end
 
+    self.__Owner_Id = OwnerId
     self.__Appearance:JoinTo(self.__Collider)
     self.__Animator:Init()
 

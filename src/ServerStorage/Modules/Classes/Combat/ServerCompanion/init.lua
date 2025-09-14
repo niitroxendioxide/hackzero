@@ -18,9 +18,10 @@ local CompanionAttacks = require(ServerStorage.Modules.Libraries.CompanionAttack
 local CompanionClass = {}
 CompanionClass.__index = CompanionClass
 
-function CompanionClass.new(Name: string, Stats: {}, Level: number)
+function CompanionClass.new(Name: string, Stats: {}, UUID: string, Level: number)
     local self = setmetatable({}, CompanionClass)
     self.__Name = Name
+    self.__UUID = UUID
     self.__Stats = StatsClass.new(Name, Stats, Level)
     self.__Movement = MovementClass.new(24)
     self.__Owner = nil
@@ -34,10 +35,13 @@ function CompanionClass.new(Name: string, Stats: {}, Level: number)
     return self
 end
 
-function CompanionClass.Init(self: Types.CompanionClass, Key: number)
+function CompanionClass.Init(self: Types.CompanionClass, Key: number, Owner: AgentTypes.ServerAgentClass)
+    assert(typeof(Key) == 'number', 'Invalid key id for companion class init.');
+
     self.__Movement:CreateCollider()
 
     self.__Key = Key
+    self.__Owner = Owner
     Replicator:CreateCompanion(self)
 
     local Clock = os.clock()

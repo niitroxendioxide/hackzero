@@ -1,28 +1,42 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
 local Classes = ServerStorage.Modules.Classes
 local Libraries = ServerStorage.Modules.Libraries
 
+local Companions = require(ReplicatedStorage.Modules.Shared.Types.Companions)
+local Heap = require(ReplicatedStorage.Modules.Shared.Utility.Heap)
 local Agents = require(Libraries.Agents)
 local ServerCompanion = require(Classes.Combat.ServerCompanion)
 
-local Service = {}
+local Service = {
+    Count = nil :: Heap.Heap?,
+    Classes = {} :: { Companions.CompanionClass },
+}
 
 function Service:Init()
-    
+    -- nun
+    Service.Count = Heap.new(32)
 end
 
-function Service:CreateCompanion(CompanionDataClass: any)
-    if not CompanionDataClass then
+function Service:CreateCompanion(CompanionDataClass: Companions.PlayerCompanionDataClass, Owner: number)
+    if not CompanionDataClass or (Service.Count:isEmpty()) then
         return;
     end
 
-    local New = ServerCompanion.new("Default", CompanionDataClass:GetStats(), CompanionDataClass.__Level)
+    local UUID = CompanionDataClass.__Id
+    local New = ServerCompanion.new("Default", CompanionDataClass:GetStats(), UUID, CompanionDataClass.__Level)
     local AgentList = Agents:GetActiveAgents()
 
-    New:Init(1)
-    New:Follow(AgentList[1])
-    New:PivotTo(AgentList[1]:GetPivot())
+    local OwnerAgent = AgentList[1]
+
+    New:Init(Service.Count:extract(), OwnerAgent)
+
+    -- / follow the first agent for now
+    New:Follow(OwnerAgent)
+    New:PivotTo(OwnerAgent:GetPivot())
+
+    table.insert(Service.Classes, New)
 end
 
 return Service

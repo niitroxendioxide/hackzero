@@ -526,12 +526,15 @@ end
 
 
 function Replicator:CreateCompanion(CompanionObject: Companions.CompanionClass)
-	local Object = buffer.create(14)
+	local OwnerId = CompanionObject.__Owner.__Player_Assigned:GetAttribute("ReplicationId")
+
+	local Object = buffer.create(15)
 	buffer.writeu8(Object, 0, GameEnum.Replication.CreateCompanion)
 	buffer.writeu8(Object, 1, CompanionObject.__Key)
-	Math:EncodeCFrame(CompanionObject:GetPivot(), Object, 2)
+	buffer.writeu8(Object, 2,  OwnerId:: number)
+	Math:EncodeCFrame(CompanionObject:GetPivot(), Object, 3)
 
-	Network:FireForAll("ReliableReplication", Object)
+	Network:FireForAll("ReliableReplication", Object, CompanionObject.__UUID)
 end
 
 function Replicator:MoveCompanion(CompanionObject: Companions.CompanionClass, Goal: CFrame)
