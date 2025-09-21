@@ -123,6 +123,10 @@ function Controller:Init()
         end
     end)
 
+    Network:On("PlayerSettings", function(Data: {})
+        
+    end)
+
     Network:On("SharedData", function(Player: Player, Data: {})
         local Agents = Data[1]
         local Drives = Data[2]
