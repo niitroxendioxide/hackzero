@@ -172,6 +172,10 @@ function Service.PlayerAdded(Player: Player): ()
 
 	HandlePlayerChat(Player)
 
+	-- load plr settings; TODO: delete later & change into new func
+	local PlayerSettings = DataService:Get(Player, "Settings");
+	Network:Fire("PlayerSettings", Player, PlayerSettings);
+
 	-- hi?
 	if Places:CanFight() then
 		for PlayerInCache in DataCache do

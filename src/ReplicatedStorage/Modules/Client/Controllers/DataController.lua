@@ -4,9 +4,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local DataConverter = require(ReplicatedStorage.Modules.Client.Libraries.DataConverter)
 local Data = require(Shared.Types.Data)
 local Fetcher = require(Client.Libraries.Fetcher)
+local Settings = require(Client.Packages.Settings)
+local DataConverter = require(Client.Libraries.DataConverter)
 
 local Types = require(Shared.Types)
 local Network = require(Shared.Network)
@@ -124,7 +125,7 @@ function Controller:Init()
     end)
 
     Network:On("PlayerSettings", function(Data: {})
-        
+        Settings:Set(Data)
     end)
 
     Network:On("SharedData", function(Player: Player, Data: {})

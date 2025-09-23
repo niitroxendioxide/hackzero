@@ -33,14 +33,16 @@ function IngameMenu:Init()
     local PageLayout: UIPageLayout = MainFrame.Pages.UIPageLayout
 
     for _, PageController in script:GetChildren() do
-        if PageController:IsA("ModuleScript") and MainFrame.Pages:FindFirstChild(PageController.Name) then
+        local PageFrame = MainFrame.Pages:FindFirstChild(PageController.Name)
+
+        if PageController:IsA("ModuleScript") and PageFrame then
             local Success, RequiredModule = pcall(require, PageController)
             if not Success or typeof(RequiredModule) ~= 'table' then
                 continue
             end
 
             if RequiredModule.Init then
-                task.spawn(RequiredModule.Init, RequiredModule, MainFrame.Pages[PageController.Name])
+                task.spawn(RequiredModule.Init, RequiredModule, PageFrame)
             end
 
             States.CachedTabs[PageController.Name] = RequiredModule;
@@ -56,7 +58,6 @@ function IngameMenu:Init()
                 EffectUtil:Tween(OtherButton.UIStroke, {.3, 'Cubic'}, {Color = BLACK})
                 EffectUtil:Tween(OtherButton.Background, {.25, 'Quint'}, {ImageColor3 = Color3.fromRGB(30, 30, 30)})
             end
-
         else
             return
         end
@@ -70,6 +71,8 @@ function IngameMenu:Init()
         EffectUtil:Tween(Button.UIStroke, {.3, 'Cubic'}, {Color = WHITE})
         EffectUtil:Tween(Button.Background, {.25, 'Cubic'}, {ImageColor3 = WHITE})
     end
+
+
 
     for _, Button in MainFrame.OptList:GetChildren() do
         if Button:IsA("Frame") then
@@ -89,6 +92,7 @@ function IngameMenu:Init()
 
         SelectButton(WNoPage)
     end)
+
 
     IngameMenu:BindToStateChange(function(State: boolean)
         Holder.Visible = true
