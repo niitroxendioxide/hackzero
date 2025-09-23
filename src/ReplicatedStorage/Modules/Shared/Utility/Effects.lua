@@ -6,10 +6,17 @@ local TweenService = game:GetService('TweenService')
 local EffectUtil = {}
 
 local Client = ReplicatedStorage.Modules.Client
+local Shared = ReplicatedStorage.Modules.Shared
+
 local Random_Number = Random.new()
-local CameraShaker = require(Client.Utility.Libraries.CameraShaker)
+
+local Mock = require(Shared.Utility.Mock)
 local World = require(script.Parent.Parent.World)
+local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
+local CameraShaker = require(Client.Utility.Libraries.CameraShaker)
+
 local Effects_Folder = workspace:WaitForChild('World'):WaitForChild('Effects')
+
 
 export type TweenGoals = {
 	Size: (Vector3 | UDim2)?,
@@ -206,7 +213,11 @@ function EffectUtil:Quad(p0, p1, p2, t)
 end
 
 function EffectUtil:ShakeCamera(Preset: string)
-	-- TODO: Add support for settings :3
+	if Settings:Get("CameraShake", "Settings") == false then
+		return Mock;
+	end
+
+
 	local Camera = workspace.CurrentCamera
 	local NewCamShake = CameraShaker.new(Enum.RenderPriority.Last.Value, function(shakeCf)
 		Camera.CFrame = Camera.CFrame * shakeCf
@@ -214,6 +225,8 @@ function EffectUtil:ShakeCamera(Preset: string)
 
 	NewCamShake:Start()
 	NewCamShake:Shake(CameraShaker.Presets[Preset]);
+
+	return NewCamShake;
 end
 
 return EffectUtil

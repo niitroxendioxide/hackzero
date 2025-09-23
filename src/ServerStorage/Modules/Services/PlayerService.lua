@@ -78,19 +78,19 @@ function HandlePlayerChat(Player: Player)
 end
 
 local function SavePlayerSettings(Player: Player, SettingsToChange: {[string]: {[string]: number | boolean}})
-	local PlayerData = DataService:Get(Player, 'Settings')
+	local SettingsData = DataService:Get(Player, 'Settings')
 
 	for Category in SettingsToChange do
-		if not PlayerData[Category] then
+		if not SettingsData[Category] then
 			continue
 		end
 
 		for Key, NewValue in SettingsToChange[Category] do
-			if not (typeof(PlayerData[Key]) == typeof(NewValue)) then
+			if typeof(SettingsData[Category][Key]) ~= 'nil' and not (typeof(SettingsData[Category][Key]) == typeof(NewValue)) then
 				continue
 			end
 
-			PlayerData[Key] = NewValue
+			SettingsData[Category][Key] = NewValue
 		end
 	end
 end
@@ -173,7 +173,7 @@ function Service.PlayerAdded(Player: Player): ()
 	HandlePlayerChat(Player)
 
 	-- load plr settings; TODO: delete later & change into new func
-	local PlayerSettings = DataService:Get(Player, "Settings");
+	local PlayerSettings = DataService:Get(Player, "Settings")
 	Network:Fire("PlayerSettings", Player, PlayerSettings);
 
 	-- hi?

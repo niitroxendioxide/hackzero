@@ -8,12 +8,15 @@ local Shared = ReplicatedStorage.Modules.Shared
 type BoolOption = Frame & {
     Btn: TextButton,
     SetName: TextLabel,
-    Opt: Frame & {UICorner: UICorner, UIStroke: UIStroke, Ball: Frame}
+    Opt: Frame & {UICorner: UICorner, UIStroke: UIStroke, 
+    Ball: Frame & {UIStroke: UIStroke, UIGradient: UIGradient}}
 }
 
-type SliderOption = Frame & {}
+type SliderOption = Frame & {
+    FagBut: GuiButton
+}
 
-type OptButton = BoolOption | SliderOption
+type OptButton = BoolOption & SliderOption
 
 type CategoryList = ScrollingFrame & {
     UIListLayout: UIListLayout,
@@ -26,6 +29,8 @@ type SettingsPage = Frame & {
     Labels: Folder;
     Background: ImageLabel,
     Save: Frame & {
+        UIStroke: UIStroke,
+        UIScale: UIScale,
         Btn: TextButton,
     },
 
@@ -33,6 +38,8 @@ type SettingsPage = Frame & {
 }
 
 --
+local ProfileTemplate = require(Shared.Database.Data.ProfileTemplate)
+
 local Effects = require(Shared.Utility.Effects)
 local Network = require(Shared.Network)
 local Settings = require(Client.Packages.Settings)
@@ -50,10 +57,11 @@ local AppearanceValues = {
 --
 local PageController = {}
 local States = {
-    MainFrame = nil :: SettingsPage?,
+    MainFrame = nil :: SettingsPage,
 
-    PreviousToUpdate = {},
+    PreviousToUpdate = {}, 
     ChangedSettings = {},
+    Changed = false,
 }
 
 function ChangeSettings(): ()
@@ -61,16 +69,21 @@ function ChangeSettings(): ()
 
     States.ChangedSettings = {};
     States.PreviousToUpdate = {};
+    States.Changed = false;
 
-    States.MainFrame.Save.Visible = false;
+    Effects:Tween(States.MainFrame.Save.UIScale, {.15, 'Back', 'In'}, {Scale = 0})
 end
 
 function ResetToDefaults(Category: string)
+    if not ProfileTemplate.Settings[Category] then return end;
 
+    for Key, State in ProfileTemplate.Settings[Category] do
+        SwitchValue(State, Key, Category);
+    end
 end
 
 function SetBoolDisplay(State: boolean, Name: string, Category: string)
-    local ButtonObject = States.MainFrame[Category]:FindFirstChild(Name) :: BoolOption
+    local ButtonObject: BoolOption = States.MainFrame[Category]:FindFirstChild(Name) :: BoolOption
     
     if ButtonObject then
         local Color = State and AppearanceValues.Bool.ActiveColor or AppearanceValues.Bool.InactiveColor
@@ -90,7 +103,21 @@ function SetBoolDisplay(State: boolean, Name: string, Category: string)
     end
 end
 
-function EditSetting(Key: string, Category: string, Value: any)
+function SwitchValue(NewValue: any, Key: string, Category: string)
+    if typeof(NewValue) == 'boolean' then
+        SetBoolDisplay(NewValue, Key, Category)
+    end
+end
+
+function HasOption(Key: string, Category: string): boolean
+    if States.MainFrame:FindFirstChild(Category) and States.MainFrame[Category]:FindFirstChild(Key) then
+        return true;
+    end
+
+    return false;
+end
+
+function EditSetting(Key: string, Category: string, Value: any, IgnoreChange: boolean?)
     if not States.ChangedSettings[Category] then
         States.ChangedSettings[Category] = {}
     end
@@ -98,11 +125,17 @@ function EditSetting(Key: string, Category: string, Value: any)
     States.ChangedSettings[Category][Key] = Value;
 
     --
-    States.MainFrame.Save.Visible = true;
+    SwitchValue(Value, Key, Category)
+
+    if not States.Changed and not(IgnoreChange) then
+        States.Changed = true                   
+        
+        Effects:Tween(States.MainFrame.Save.UIScale, {.15, 'Back'}, {Scale = 1})
+    end
 end
 
 function CreateButton(Value: any, Name: string, List: CategoryList): ()
-    local Category = List.Name;
+    local Category: string = List.Name;
 
     if typeof(Value) == 'boolean' then
         local Converted = string.gsub(Name, "_", " ")
@@ -110,43 +143,68 @@ function CreateButton(Value: any, Name: string, List: CategoryList): ()
         Button.SetName.AutoLocalize = false;
         Button.SetName.Text = StringsUtil:SplitTitleCaps(Converted);
         Button.Name = Name;
+        Button.Parent = List;
 
-        local CurrentState: boolean = Value;
+        SetBoolDisplay(Value, Name, Category)
         Button.Btn.MouseButton1Click:Connect(function()
+            local PreviousState = Settings:Get(Name, Category)
+            Settings:Modify(Name, Category, not PreviousState)
+
+            local CurrentState = Settings:Get(Name, Category)
+
             if not States.PreviousToUpdate[Category] then
                 States.PreviousToUpdate[Category] = {}
             end
 
             if not States.PreviousToUpdate[Category][Name] then
-                States.PreviousToUpdate[Category][Name] = CurrentState;
+                States.PreviousToUpdate[Category][Name] = PreviousState;
             end
-
+            
             -- upd state & show
-            CurrentState = not CurrentState;
-            SetBoolDisplay(CurrentState, Name, Category);
             EditSetting(Name, Category, CurrentState);
         end)
-
-        SetBoolDisplay(CurrentState, Name, Category)
-
-        Button.Parent = List;
     end
 end
 
 function PageController:Init(Frame: SettingsPage)
-    States.MainFrame = Frame;
+    States.MainFrame = Frame
+    PageController:Refresh()
+
+    -- // animate the save button
+    Frame.Save.Visible = true;
+    Frame.Save.UIScale.Scale = 0;
 
     Frame.Save.Btn.MouseButton1Click:Connect(ChangeSettings)
 
+    Frame.Save.Btn.MouseEnter:Connect(function()
+        Effects:Tween(Frame.Save, {.25}, {BackgroundColor3 = Color3.fromRGB(34, 218, 59)})
+        Effects:Tween(Frame.Save.UIStroke, {.25, 'Sine'}, {Color = Color3.fromRGB(32, 204, 58)})
+        Effects:Tween(Frame.Save.UIScale, {.15, 'Quad'}, {Scale = 1.1})
+    end)
+
+    Frame.Save.Btn.MouseLeave:Connect(function()
+        Effects:Tween(Frame.Save, {.25, 'Sine'}, {BackgroundColor3 = Color3.fromRGB(18, 116, 32)})
+        Effects:Tween(Frame.Save.UIStroke, {.25, 'Sine'}, {Color = Color3.fromRGB(16, 102, 30)})
+        Effects:Tween(Frame.Save.UIScale, {.15, 'Quad'}, {Scale = States.Changed and 1 or 0})
+    end)
+end
+
+function PageController:Refresh()
+    local Frame: SettingsPage = States.MainFrame
+    
     for _, Category in Settings:ListCategories() do
         if not( Frame:FindFirstChild(Category) ) then
             continue
         end
-
+        
         for _, Option in Settings:ListOptions(Category) do
             local Value = Settings:Get(Option, Category)
             
-            CreateButton(Value, Option, Frame:FindFirstChild(Category) :: CategoryList)
+            if HasOption(Option, Category) then
+                EditSetting(Option, Category, Value, true)
+            else
+                CreateButton(Value, Option, Frame:FindFirstChild(Category) :: CategoryList)
+            end
         end
     end
 end

@@ -121,4 +121,12 @@ function IngameMenu:Init()
 
 end
 
+function IngameMenu:Refresh()
+    if not States.CachedTabs['SettingsPage'] then
+        return;
+    end
+    
+    States.CachedTabs['SettingsPage']:Refresh()
+end
+
 return IngameMenu

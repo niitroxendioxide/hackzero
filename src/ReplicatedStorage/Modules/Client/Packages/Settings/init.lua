@@ -42,9 +42,20 @@ return {
 
 			return nil;
 		end
+
+		if not self[Category] then
+			return
+		end
 			
 		return self[Category][Key];
+	end,
 
+	Modify = function(self, Key: string, Category: string, Val: any)
+		if not Category then
+			return;
+		end
+
+		self[Category][Key] = Val;
 	end,
 
 	--[[

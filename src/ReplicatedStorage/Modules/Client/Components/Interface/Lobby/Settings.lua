@@ -12,19 +12,15 @@ local EffectUtil = require(Shared.Utility.Effects)
 local UIStates = require(Client.States.Interface)
 local Settings = require(Client.Packages.Settings)
 local UIEffects = require(Client.Utility.UIEffects)
+local StringUtil = require(Shared.Utility.String)
 
 local Component = ComponentClass.new("Settings", "Settings");
 local States = {
     Selected = nil,
 }
 
---
-local function SplitCaps(str)
-	str = string.gsub(str, "(%u)", " %1")
-	return string.gsub(str, "^%s", "")
-end
-
-local function HighlightOption(Holder, SelectedOption)
+-- Private functions
+function HighlightOption(Holder, SelectedOption)
     if States.Selected == SelectedOption.Name then
         return
     end
@@ -47,27 +43,32 @@ local function HighlightOption(Holder, SelectedOption)
     end
 end
 
-local function ToggleSetting(Type, SettingName, Holder)
-    local CurrentValue = Settings[Type][SettingName]
-
+function ToggleSetting(Category: string, Key: string, Holder: Instance)
     local SettingObj = Assets.Interface.Lobby.Settings.Setting:Clone()
     local Toggle = Assets.Interface.Lobby.Settings.ToggleButton:Clone()
 
-    local SettingCorrectedName = string.gsub(SettingName, "_", " ")
-    SettingObj.SettingName.Label.Text = SplitCaps(SettingCorrectedName)
+    local SettingCorrectedName = string.gsub(Key, "_", " ")
+    SettingObj.SettingName.Label.Text = StringUtil:SplitTitleCaps(SettingCorrectedName)
+    SettingObj.Name = Key;
     SettingObj.Parent = Holder
-
-    Toggle.Parent = SettingObj
-
-    local Icon = Toggle.Toggle.Icon
-
+    Toggle.Parent = SettingObj;    
     Toggle.Button.MouseButton1Click:Connect(function()
-        CurrentValue = not( CurrentValue )
+        Settings:Modify(Key, Category, not Settings:Get(Key, Category))
+        DisplayValue(Category, Key, Settings:Get(Key, Category));
+    end)
 
-        Settings[SettingName] = CurrentValue
+    DisplayValue(Category, Key, Settings:Get(Key, Category));
+end
 
-        --
-        if CurrentValue then
+function DisplayValue(Category: string, Key: string, State: any)
+    local MainFrame = Component:GetFrame()
+    local Opts = MainFrame.Settings.Options
+    local SettingObj = Opts:FindFirstChild(Category) and Opts[Category].List:FindFirstChild(Key)
+    
+    if typeof(State) == 'boolean' and SettingObj then
+        local Icon = SettingObj.ToggleButton.Toggle.Icon;
+
+        if State then
             EffectUtil:Tween(Icon.UIStroke, {1 / 3, 'Cubic'}, {Color = Color3.fromRGB(130, 255, 47)})
             EffectUtil:Tween(Icon, {1 / 3, 'Cubic'}, {BackgroundColor3 = Color3.fromRGB(79, 182, 0)})
             EffectUtil:Tween(Icon, {.2, 'Sine'}, {Position = UDim2.fromScale(0.775, .5)})
@@ -76,9 +77,8 @@ local function ToggleSetting(Type, SettingName, Holder)
             EffectUtil:Tween(Icon, {1 / 3, 'Cubic'}, {BackgroundColor3 = Color3.fromRGB(182, 0, 0)})
             EffectUtil:Tween(Icon, {.2, 'Sine'}, {Position = UDim2.fromScale(0.33, .5)})
         end
-    end)
+    end
 end
-
 
 --
 function Component:Link()
@@ -114,7 +114,8 @@ function Component:Init()
     end)
 
     local PageLayout = MainFrame.Settings.Options.UIPageLayout
-    for Key, Table in Settings do
+    for _, Key in Settings:ListCategories() do
+        print('Doing category:', Key)
         local Name = (Key == 'QOL' and ('Accessibility') or Key) .. ' Settings'
 
         local TabHolder = Assets.Interface.Lobby.Settings.Tab:Clone()
@@ -133,7 +134,8 @@ function Component:Init()
             HighlightOption(MainFrame.Settings.TabList, TabSideButton)
         end)
 
-        for SettingName, SettingValue in Table do
+        for _, SettingName in Settings:ListOptions(Key) do
+            local SettingValue = Settings:Get(SettingName, Key)
             if typeof(SettingValue) == 'boolean' then
                 ToggleSetting(Key, SettingName, TabHolder.List)
             end
@@ -153,6 +155,14 @@ function Component:Init()
     end)
 
     Component:Set(false)
+end
+
+function Component:Refresh()
+    for _, Cat in Settings:ListCategories() do
+        for _, Key in Settings:ListOptions(Cat) do
+            DisplayValue(Cat, Key, Settings:Get(Key, Cat));
+        end
+    end
 end
 
 return Component

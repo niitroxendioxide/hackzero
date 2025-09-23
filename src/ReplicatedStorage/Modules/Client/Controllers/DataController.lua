@@ -124,8 +124,18 @@ function Controller:Init()
         end
     end)
 
-    Network:On("PlayerSettings", function(Data: {})
+    Network:On("PlayerSettings", function(Data: {})        
         Settings:Set(Data)
+
+        local InMatchComponent = InterfaceController:GetComponent("IngameMenu");
+        if InMatchComponent then
+            InMatchComponent:Refresh();
+        end
+
+        local InLobbyComponent = InterfaceController:GetComponent("Settings");
+        if InLobbyComponent then
+            InLobbyComponent:Refresh();
+        end
     end)
 
     Network:On("SharedData", function(Player: Player, Data: {})

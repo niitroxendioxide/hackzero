@@ -19,8 +19,6 @@ function Companions:GetCompanionsForPlayer(Player: Player)
     local List = {}
 
     for k, Object in Companions.__Objs do
-        print(Object:IsOwner(Player), Object.__Owner_Id)
-
         if Object:IsOwner(Player) then
             table.insert(List, Object)
         end
