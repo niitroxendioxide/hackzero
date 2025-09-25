@@ -63,6 +63,8 @@ export type AgentClass =  {
 	__Locked: boolean,
 	__Skill_Levels: SkillLevels,
 	__Limit_Area: BasePart?,
+	__Listener_Count: number,
+	__Server_Action_Buffer: {number},
 	__current_walking_object: any?,
 	
 	GetId: (self: AgentClass) -> (number),
@@ -82,6 +84,13 @@ export type AgentClass =  {
 	IsAlive: (self: AgentClass) -> boolean,
 	GetUltBar: (self: AgentClass) -> (number),
 	BlockRotation: (self: AgentClass, Time: number) -> (),
+
+	--[[
+		Wait for a replication server action, to occur
+		@param Type The enum value of GameEnum.Replication to wait for.
+	]]
+	AwaitServerTriggeredAction: (self: AgentClass, Type: number) -> (),
+	MarkServerAction: (self: AgentClass, Type: number) -> (),
 
 	--[[
 		Walk forward for the specified time
@@ -262,6 +271,7 @@ export type ServerAgentClass = {
 
 	__Level: number,
 	__User: number,
+	__Ascension: number,
 	__Main_Thread: thread,
 	__Player_Assigned: Player,
 	__Status: AgentStatusClass,
@@ -359,7 +369,12 @@ export type ServerAgentClass = {
 	UseEnergy: (self: ServerAgentClass, Energy: number) -> (),
 
 	GetPivot: (self: ServerAgentClass) -> CFrame,
-	PivotTo: (self: ServerAgentClass, Pivot: CFrame) -> (),
+
+	--[[
+		
+		@param replicator_inside_call `boolean?` Whether this method is being called from the replicator
+	]]
+	PivotTo: (self: ServerAgentClass, Pivot: CFrame, replicator_inside_call: boolean?) -> (),
 	IsAlive: (self: ServerAgentClass) -> boolean,
 
 	AddGear: (self: ServerAgentClass, GearName: string) -> (),

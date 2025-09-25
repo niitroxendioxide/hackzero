@@ -4,15 +4,16 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local Types = require(Shared.Types)
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
+local Types = require(Shared.Types.Agents)
 local AbilityClass = require(Client.Classes.Ability)
 local Effects = require(Client.Libraries.Effects)
 
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.GenericClass)
-	--
+function Base(Caster: Types.AgentClass)
 	local Attack_Time = Ability:FromData("Attack_State_Time")
 
 	Ability:Begin(Caster, {
@@ -26,7 +27,48 @@ function Ability:Play(Caster: Types.GenericClass)
 			Caster:Walk(Ability:FromData('Walk_Time'))
 		end},
 	})
+end
 
+function InMode(Caster: Types.AgentClass)
+	local Attack_Time = Ability:FromData("Attack_State_Time")
+
+	-- since this is a teleportmove, we need to wait for the server response;
+	local InitialCF;
+
+	Ability:Begin(Caster, {
+		{0, function(self)
+			Ability:PlayAnimation(Caster, "Goku.Abilities.Special.TpPrep", {Fade = .03, Active_Time = Attack_Time})
+			Caster:SwitchState('Attacking', Attack_Time)
+			InitialCF = Caster:GetPivot();
+
+			-- yield before any other event
+			Caster:AwaitServerTriggeredAction(GameEnum.Replication.PivotTo);
+		end},
+
+		{1/60, function()
+			print("hey, it works!")	
+			-- this should occur one frame after the teleport
+
+			-- play an effect at InitialCF;
+
+			Effects:Play("Glow", Caster);InitialCF
+		end},
+	})
+end
+
+Ability:SetTargetFinder(function(Caster)
+	return Enemies:GetNearestEnemy(Caster:GetPivot().Position, 35);
+end)
+
+function Ability:Play(Caster: Types.AgentClass)
+	local IsInMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
+	
+	-- // default
+	if IsInMode then
+		InMode(Caster)
+	else
+		Base(Caster)
+	end
 end
 
 return Ability

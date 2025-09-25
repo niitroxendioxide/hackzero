@@ -28,6 +28,10 @@ local function GetPlayerById(Id: number)
 	return;
 end
 
+local function IsOwnId(Id: number)
+	return Id == (Players.LocalPlayer:GetAttribute("ReplicationId") :: number)
+end
+
 --
 local Controller = {}
 
@@ -112,6 +116,10 @@ function Controller:PivotTo(Buffer: buffer)
 
 	local Character = CharacterLibrary:GetCurrent(UserId)
 
+	if IsOwnId(UserId) then
+		Character:MarkServerAction(GameEnum.Replication.PivotTo)
+	end
+
 	Character:PivotTo(CFrame.lookAlong(Vector, Character.__Character.__Controller.__Rotation), true)
 end
 
@@ -189,7 +197,9 @@ function Controller:UpdateEnergy(Buffer: buffer)
 	local AgentId = buffer.readu8(Buffer, 1)
 	local Agent = CharacterLibrary:GetAgent(Players.LocalPlayer:GetAttribute("ReplicationId"), AgentId)
 
+	Agent:MarkServerAction(GameEnum.Replication.UpdateEnergy);
 	Agent:SetEnergy(Energy)
+
 	InterfaceStates.Energy[AgentId]:set(Energy)
 end
 
@@ -198,7 +208,9 @@ function Controller:UpdateUltBar(Buffer: buffer)
 	local UltAmount = math.round(buffer.readu16(Buffer, 2) / 600)
 	local Agent = CharacterLibrary:GetAgent(Players.LocalPlayer:GetAttribute("ReplicationId"), AgentId)
 
+	Agent:MarkServerAction(GameEnum.Replication.UpdateUltBar);
 	Agent:SetUltBar(UltAmount)
+
 	InterfaceStates.UltBar[AgentId]:set(UltAmount)
 end
 

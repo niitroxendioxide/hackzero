@@ -43,10 +43,14 @@ function AbilityClass.new(Holdable: boolean): Types.AbilityClass
 	self.__Signal = Signal.new()
 	self.__Cooldown = Signal.new()
 	self.__Ability_Data = {}
-
+	self.__Target_Finder = nil;
 	self.__Held = {}
 
 	return self
+end
+
+function AbilityClass.SetTargetFinder(self: Types.AbilityClass, handler: (Caster: AgentTypes.AgentClass) -> (number, AgentTypes.ClientEnemy))
+	self.__Target_Finder = handler;
 end
 
 function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.SequenceFrames, DontPlay: boolean?): Types.Sequence
@@ -100,7 +104,11 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 		local LookAtEnemy = self:FromData('NoAutoTrack') ~= true
 		local EnemyId, Enemy;
 		if LookAtEnemy then
-			EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, 15, true)
+			if self.__Target_Finder then
+				EnemyId, Enemy = self.__Target_Finder(Agent);
+			else
+				EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, 15, true)
+			end
 		end
 
 		if Enemy and (self.__Name ~= 'Dodge') then

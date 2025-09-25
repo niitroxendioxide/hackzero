@@ -24,12 +24,14 @@ export type HitboxAttackData = {Size: Vector3, Offset: Vector3, Hit_Function: (T
 
 export type Caster = Agents.ServerAgentClass & Agents.AgentClass & Agents.Enemy & Agents.ClientEnemy
 export type Target = Caster
+export type TargetFinderFunction = (Caster: Agents.AgentClass) -> (number, Agents.ClientEnemy)
 
 export type AbilityClass = {
 	__Cache: {},
 	__Signal: RBXScriptSignal,
 	__Cooldown: any,
 	__Name: string,
+	__Target_Finder: TargetFinderFunction?,
 	Name: string,
 
 	--[[
@@ -51,6 +53,7 @@ export type AbilityClass = {
 		Active_Time: number?,
 	}) -> (),
 	CreateHitbox: (self: AbilityClass, Agent: Caster, Offset: Vector3, Size: Vector3, Event: (Enemy: Agents.ClientEnemy) -> ()) -> (),
+	SetTargetFinder: (self: AbilityClass, fn: TargetFinderFunction) -> (),
 
 	Save: (self: AbilityClass, Agent: Caster, Key: string, Value: any) -> (),
 	Get: <T>(self: AbilityClass, Agent: Caster, Key: string) -> T,

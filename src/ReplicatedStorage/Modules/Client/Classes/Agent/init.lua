@@ -40,12 +40,24 @@ function AgentClass.new(Name: string, Level: number, Skills: {}): AgentTypes.Age
 	self.__Character = CharacterClass.new(Name)
 	self.__Items = ItemsClass.new(self)
 	self.__Gear = ClientGearClass.new()
+	self.__Server_Action_Buffer = {};
+	self.__Listener_Count = 0;
 
 	return self
 end
 
 function AgentClass.GetSkillLevel(self: AgentTypes.AgentClass, Name: string)
 	return (self.__Skill_Levels[Name] or 1)
+end
+
+function AgentClass.MarkServerAction(self: AgentTypes.AgentClass, Type: number)
+	if (self.__Listener_Count <= 0) then
+		return;
+	end
+
+	if not table.find(self.__Server_Action_Buffer, Type) then
+		table.insert(self.__Server_Action_Buffer, Type);
+	end
 end
 
 function AgentClass.SetColliderGroupEnabled(self: AgentTypes.AgentClass, Group: {}, State: boolean)
@@ -255,6 +267,25 @@ end
 
 function AgentClass:GetEffect(...)
 	return self.__Status:GetEffect(...)
+end
+
+function AgentClass.AwaitServerTriggeredAction(self: AgentTypes.AgentClass, Type: number)
+	self.__Listener_Count += 1;
+	
+	if table.find(self.__Server_Action_Buffer, Type) then
+		self.__Listener_Count -= 1;
+	else
+		repeat
+			task.wait()
+		until table.find(self.__Server_Action_Buffer, Type);
+
+		self.__Listener_Count -= 1;
+	end
+
+	if (self.__Listener_Count <= 0) then
+		self.__Listener_Count = 0;
+		table.clear(self.__Server_Action_Buffer);
+	end
 end
 
 function AgentClass:RemoveEffect(...)

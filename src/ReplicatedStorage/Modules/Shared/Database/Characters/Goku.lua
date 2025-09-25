@@ -124,8 +124,17 @@ return {
 				Required_Energy = 60,
 				Walk_Time = 0.3,
 
-				Attack_State_Time = 0.5,
+				Attack_State_Time = 0.85,
 				Animation_Speed = 1,
+
+				--
+				Sledge_Hammer = {
+					Damage = 127,
+				},
+			},
+
+			Upgrade = {
+				
 			},
 		},
 		['EX Special'] = {
@@ -163,6 +172,7 @@ return {
 				SSBuff = {{
 					Type = 'Attack',
 					Value = "25%",
+					Tag = 'GOKU_MODE_BUFF',
 					Time = 10,
 				},{
 					Type = 'Speed',

@@ -27,7 +27,7 @@ ServerAgentClass.__tostring = function()
 end
 
 
-function ServerAgentClass.new(Name: string, Level: number, Skills: {}): Types.ServerAgentClass
+function ServerAgentClass.new(Name: string, Level: number, Skills: {}, Ascensions: number): Types.ServerAgentClass
 	Skills = Skills or {}
 
 	local self = setmetatable({}, ServerAgentClass)
@@ -43,6 +43,7 @@ function ServerAgentClass.new(Name: string, Level: number, Skills: {}): Types.Se
 	self.__Level = Level
 	self.__User = -125
 	self.__Active = false
+	self.__Ascension = Ascensions
 	self.__Skill_Levels = Skills
 	self.__Last_Hit_Time = os.clock()
 	self.__Last_Skill_Cast = os.clock()
@@ -52,6 +53,10 @@ function ServerAgentClass.new(Name: string, Level: number, Skills: {}): Types.Se
 	self.__Gear = ServerGearClass.new(self.__Items)
 
 	return self
+end
+
+function ServerAgentClass.GetAscension(self: Types.ServerAgentClass)
+	return self.__Ascension;
 end
 
 function ServerAgentClass.SetColliderGroupEnabled(self: Types.ServerAgentClass, Group: {}, State: boolean)
@@ -296,8 +301,15 @@ function ServerAgentClass:GetPivot(...)
 	return self.__Character:GetPivot(...)
 end
 
-function ServerAgentClass:PivotTo(...)
-	return self.__Character:PivotTo(...)
+function ServerAgentClass.PivotTo(self: Types.ServerAgentClass, Place: CFrame, replicator_inside_call: boolean)
+	self.__Character:PivotTo(Place)
+
+	if not(replicator_inside_call) then
+		Replicator:PivotTo(self.__Player_Assigned, Place)
+
+		-- second call because it excludes the player
+		Replicator:PivotTo(self.__Player_Assigned, Place, self.__Player_Assigned)
+	end
 end
 
 function ServerAgentClass:SetKey(...)

@@ -112,8 +112,9 @@ function Service:PivotTo(Player: Player, Buffer: buffer, Force: boolean?)
 	local X, Z = buffer.readf32(Buffer, 2), buffer.readf32(Buffer, 6)
 	local Y = buffer.readi16(Buffer, 10) / 100
 	local Vector = Vector3.new(X, Y, Z)
+	local CharacterNewCFrame = CFrame.lookAlong(Vector, CurrentCharacter:GetPivot().LookVector)
 
-	CurrentCharacter:PivotTo(CFrame.lookAlong(Vector, CurrentCharacter:GetPivot().LookVector))
+	CurrentCharacter:PivotTo(CharacterNewCFrame, true);
 
 	Replicator:PivotTo(Player, Vector)
 end
