@@ -28,6 +28,28 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 				Caster:PivotTo(At);
 			end
 		end},
+
+		{.18, function()
+			if InMode then
+				local Data = Ability:FromData('Sledge_Hammer', nil, SkillLevel)
+
+				Ability:CreateHitbox(Caster, Vector3.zAxis*-3.5, vector.one * 6, function(Enemy: Types.Enemy) 
+				
+					Ability:Hit(Caster, Enemy, {
+						Damage = Data.Damage,
+						Affliction = "Physical",
+						Stun = Data.StunTime,
+						Daze = Data.Daze,
+						HitType = "Blunt",
+						Knockback = Data.Knockback,
+						Affliction_Buildup = Data.Affliction_Buildup,
+					})
+
+				end)
+
+			end
+
+		end}
 	})
 end
 

@@ -8,16 +8,15 @@ local AgentTypes = require(Shared.Types.Agents)
 local DefaultTypes = require(Shared.Types)
 local Defense_Factors = require(Shared.Database.Defense)
 
-local Mock = {
+local Mock = require(Shared.Utility.Mock) --[[{
 	RunHook = function() end,
 	RunHitProcesses = function() end
 }
 Mock.__index = function(t, k)
-
 	return function()
 		return nil
 	end
-end
+end]]
 
 --
 local RNG = Random.new()
@@ -57,7 +56,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	local Defense_Mult = Level_Factor / (math.max(Raw_Defense * (1 - (Pen_Ratio / 100)) - Penetration, 0) + Level_Factor)
 
 	--
-	local Damage_Type_Extra = HitType ~= 'None' and AgentGear:GetAddedGearStat((HitType..'%') :: AgentTypes.Stat) or 1
+	local Damage_Type_Extra = math.max(HitType ~= 'None' and AgentGear:GetAddedGearStat((HitType..'%') :: AgentTypes.Stat) or 1, 1)
 	local Resistance_Multiplier = 1 - (EnemyStatus:GetResistanceMultiplier() / 100)
 	local Crit_Mult = Is_Critical and Crit_Damage or 1
 	local Raw_Damage_Mult = Data.Damage / 100

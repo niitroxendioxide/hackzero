@@ -6,6 +6,7 @@ local RunService = game:GetService('RunService')
 --local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 --local Enemies = require(Shared.Libraries.Enemies)
@@ -44,6 +45,12 @@ function AgentClass.new(Name: string, Level: number, Skills: {}): AgentTypes.Age
 	self.__Listener_Count = 0;
 
 	return self
+end
+
+function AgentClass.IsActive(self : AgentTypes.AgentClass)
+	local obtainedActiveAgent = Characters:GetCurrent(self.PlayerId)
+
+	return (obtainedActiveAgent == self)
 end
 
 function AgentClass.GetSkillLevel(self: AgentTypes.AgentClass, Name: string)

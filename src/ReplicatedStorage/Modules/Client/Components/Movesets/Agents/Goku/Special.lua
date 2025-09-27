@@ -34,10 +34,11 @@ function InMode(Caster: Types.AgentClass)
 
 	-- since this is a teleportmove, we need to wait for the server response;
 	local InitialCF;
+	local ActiveTrack;
 
 	Ability:Begin(Caster, {
 		{0, function(self)
-			Ability:PlayAnimation(Caster, "Goku.Abilities.Special.TpPrep", {Fade = .03, Active_Time = Attack_Time})
+			ActiveTrack = Ability:PlayAnimation(Caster, "Goku.Abilities.Special.TpPrep", {Fade = .03, Active_Time = Attack_Time})
 			Caster:SwitchState('Attacking', Attack_Time)
 			InitialCF = Caster:GetPivot();
 
@@ -46,12 +47,15 @@ function InMode(Caster: Types.AgentClass)
 		end},
 
 		{1/60, function()
-			print("hey, it works!")	
 			-- this should occur one frame after the teleport
-
 			-- play an effect at InitialCF;
+			if ActiveTrack then
+				ActiveTrack:Stop();
+			end
 
-			Effects:Play("Glow", Caster);InitialCF
+			Ability:PlayAnimation(Caster, "Goku.Abilities.Special.AfterTpKick", {Fade = .03, Active_Time = Attack_Time, Speed = 1 / 1.3})
+
+			Effects:Play("Glow", Caster);
 		end},
 	})
 end

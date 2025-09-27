@@ -125,16 +125,29 @@ return {
 				Walk_Time = 0.3,
 
 				Attack_State_Time = 0.85,
-				Animation_Speed = 1,
+				Animation_Speed = 1,				
 
 				--
 				Sledge_Hammer = {
 					Damage = 127,
+					StunTime = 0.325,
+					Daze = 160,
+					Affliction_Buildup = 65,
+
+					Knockback = {
+						Vector3.new(0, 0, 1), -- knockback_direction
+						35, -- knockback_strength
+						0.3, -- knockback_time
+					}
 				},
 			},
 
 			Upgrade = {
-				
+				Sledge_Hammer = {
+					Damage = 3.75,
+					Daze = 2.25,
+					Affliction_Buildup = 0.25,
+				}
 			},
 		},
 		['EX Special'] = {
