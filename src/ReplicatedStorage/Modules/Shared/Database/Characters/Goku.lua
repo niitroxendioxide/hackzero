@@ -153,27 +153,33 @@ return {
 		['EX Special'] = {
 			Base = {
 				Speed = 1,
-				Attack_State_Time = 5,
+				Attack_State_Time = {0.85, 5},
+				
 				Required_Energy = 60,
 				Animation_Speed = 1,
-				DontConsumeEnergy = true,
-				Release = true,
 				Hit_Frequency = 14/60,
 				Walk_Time = 5/60,
-				Energy_Per_Hit = 3,
-
-				Damage_Mult = 248,
-				Daze_Mult = 19,
-				Affliction_Buildup = 1.5,
 
 				Knockback_Direction = Vector3.new(0, 0, 1),
 				Knockback_Strength = 3,
 				Knockback_Time = 0.2,
+
+				Default = {
+					Damage_Mult = 248;
+					Daze_Mult = 19;
+					Affliction_Buildup = 1.5;
+					Affliction = 'Physical';
+					HitType = 'Blunt';
+					Stun = 0.75;
+					Airborne = true;
+				};
 			},
 
 			Upgrades = {
-				Damage_Mult = 27,
-				Daze_Mult = 1,
+				Default = {
+					Damage_Mult = 27,
+					Daze_Mult = 1,
+				}
 			}
 		},
 

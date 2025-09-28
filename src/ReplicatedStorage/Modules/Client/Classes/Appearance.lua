@@ -32,13 +32,15 @@ function AppearanceClass.new(ModelName: string, Directory: string?): Types.Appea
 	end
 
 	local self = setmetatable({}, AppearanceClass)
+	self.__Tilt = 0
+	self.__Extra_Height = 0
+	self.__Current_Height_Thread = nil :: thread?
 	self.__Model = AssetsModel:Clone() :: Types.Rig
 	self.__Visible = true
 	self.__Particles = {}
 	self.__Bound_Objects = {}
 	self.__TransparencyValues = {}
 	self.__Trove = Trove.new()
-	self.__Tilt = 0
 
 	-- Saving values
 	self.__Model.Parent = World.Entities.Appearances
@@ -62,6 +64,22 @@ end
 
 function AppearanceClass:Tilt(number: number)
 	self.__Tilt = number
+end
+
+function AppearanceClass:Raise(Factor: number, Time: number)
+	self.__Extra_Height += Factor;
+
+	if self.__Current_Height_Thread then
+		task.cancel(self.__Current_Height_Thread)
+	end
+
+	--
+	self.__Root_Attachment.Position = vector.create(0, self.__Extra_Height);
+
+	self.__Current_Height_Thread = task.delay(Time, function()
+		self.__Extra_Height = 0;
+		self.__Root_Attachment.Position = vector.create(0, 0);
+	end)
 end
 
 function AppearanceClass:SetVisible(State: boolean)
@@ -137,6 +155,8 @@ function AppearanceClass:JoinTo(BasePart: BasePart)
 
 	self.__Orientation = AlignOrientation
 	self.__Position = AlignPosition
+	self.__Root_Attachment = Att0
+	self.__Target_Attachment = Att1
 
 	self.__Trove:Add(Att0)
 	self.__Trove:Add(Att1)

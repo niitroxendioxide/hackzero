@@ -8,6 +8,7 @@ local Heap = require(Shared.Utility.Heap)
 local Types = require(Shared.Types.Agents)
 
 --
+local STUDIO_ENERGY_MULT = 10;
 local StatusClass = {}
 StatusClass.__index = StatusClass
 
@@ -31,7 +32,7 @@ end
 
 function StatusClass.Update(self: Types.AgentStatusClass, delta: number)
 	local Energy_Regen_Rate = self:GetStat('Energy_Regeneration')
-	local Boost_Rate = (1 + self:GetStatEffects('Energy_Regeneration')) * (RunService:IsStudio() and 0.1 or 1)
+	local Boost_Rate = (1 + self:GetStatEffects('Energy_Regeneration')) * (RunService:IsStudio() and STUDIO_ENERGY_MULT or 1)
 
 	self:GiveEnergy(Boost_Rate * Energy_Regen_Rate * delta)
 end

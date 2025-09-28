@@ -67,8 +67,10 @@ function AttackClass.Cancel(self: Types.ServerCompanionAttack)
 end
 
 function AttackClass.Hit(self: Types.ServerCompanionAttack, Caster: Types.CompanionClass, Target: any, Data)
-    local Dealt_Damage = Damage:Deal(Caster, Target, Data)
-
+    local Validated, Dealt_Damage = Damage:Deal(Caster, Target, Data)
+    if not Validated then
+        return;
+    end
 
     Replicator:DisplayDamage(Target, Dealt_Damage, false, Data.Affliction)
 end

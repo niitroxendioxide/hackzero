@@ -13,7 +13,7 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 	--
-	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
+	local SkillLevel = Caster:GetSkillLevel(Ability.__Name);
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
 
 	Ability:Begin(Caster, {
@@ -30,6 +30,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 		end},
 
 		{.18, function()
+			
 			if InMode then
 				local Data = Ability:FromData('Sledge_Hammer', nil, SkillLevel)
 

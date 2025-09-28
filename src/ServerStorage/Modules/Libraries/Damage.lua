@@ -22,9 +22,13 @@ end]]
 local RNG = Random.new()
 local DamageLibrary = {}
 
-function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitEnemyData): (number, boolean, boolean, string, number, number, boolean)
+function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitEnemyData): (boolean, number?, boolean?, boolean?, string?, number?, number?, boolean?) 
 	local EnemyStatus = Enemy.__Status
 	local AgentGear: AgentTypes.ServerGearManager = (Agent.GetGearManager and Agent:GetGearManager()) or Mock
+
+	if Enemy:GetState() == 'Airborne' and not Data.Airborne then
+		return false;
+	end
 
 	-- Pre-process
 	AgentGear:RunHook(GameEnum.GearHookType.HitDataSetup, {Caster = Agent, Target = Enemy, HitData = Data})
@@ -110,7 +114,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	})
 
 
-	return Final_Damage, EnemyDied, Is_Critical, Affliction_Type, Filled_Affliction, Burst_Damage, AfflictionTriggered
+	return true, Final_Damage, EnemyDied, Is_Critical, Affliction_Type, Filled_Affliction, Burst_Damage, AfflictionTriggered
 end
 
 function DamageLibrary:DealEnemyToAgent(Caster: AgentTypes.Enemy, Target: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)

@@ -1,3 +1,5 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local EnemyMovement = require(ReplicatedStorage.Modules.Shared.Classes.Enemy.EnemyMovement)
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Fusion = require(ReplicatedStorage.Modules.Client.Libraries.Fusion)
@@ -35,6 +37,10 @@ export type AppearanceController = {
 	__Model: Rig,
 	__TransparencyValues: {[BasePart]: number},
 	__Trove: {},
+	__Current_Height_Thread: thread?,
+	__Extra_Height: number,
+	__Root_Attachment: Attachment,
+	__Target_Attachment: Attachment,
 	__Bound_Objects: {[Instance]: (self: Instance, State: boolean, ExtraState: number) -> ()},
 
 	--[[
@@ -42,6 +48,8 @@ export type AppearanceController = {
 	]]
 	BindObject: (self: AppearanceController, Object: Instance, Toggle: (self: Instance, State: boolean, ExtraState: number) -> ()) -> (),
 	UnbindObject: (self: AppearanceController, Object: Instance) -> (),
+
+	Raise: (self: AppearanceController, Factor: number, Time: number) -> (),
 
 	GetModel: (self: AppearanceController) -> (Model),
 
@@ -142,7 +150,7 @@ export type StateEffect = {
 	Started: number,
 }
 
-export type State = 'Idle' | 'Attacking' | 'Dashing' | 'Stunned' | 'Frozen'
+export type State = 'Idle' | 'Attacking' | 'Dashing' | 'Stunned' | 'Frozen' | 'Airborne'
 export type StatesClass = {
 	__Effects: {},
 	__Character: string,
@@ -330,6 +338,7 @@ export type EnemyClass = {
 export type EnemyMovementClass = {
 	__World_Speed: number,
 	SetWorldSpeed: (self: EnemyMovementClass, number, number?) -> (),
+	Move: (self: EnemyMovementClass, Direction: vector | Vector3) -> (),
 }
 
 export type ServerEnemyClass = {
@@ -340,13 +349,16 @@ export type ServerEnemyClass = {
 	__Status: EnemyStatus,
 	__EnemyId: number,
 	__Movement: EnemyMovementClass,
+	__Next: number,
+	__LastMovement: number,
+	__Current_Target: any,
 
 	SetWorldSpeed: (self: ServerEnemyClass, Speed: number, Time: number) -> (),
 
 	GetId: (self: ServerEnemyClass) -> (number),
 	Init: (self: ServerEnemyClass, Key: number) -> (),
-	Move: (self: ServerEnemyClass, Direction: Vector3) -> (),
-	Stun: (self: ServerEnemyClass, Time: number) -> (),
+	Move: (self: ServerEnemyClass, Direction: Vector3 | vector) -> (),
+	Stun: (self: ServerEnemyClass, Time: number, is_airborne: boolean?) -> (),
 
 	GetState: (self: ServerEnemyClass) -> State,
 	GetPivot: (self: ServerEnemyClass) -> CFrame,

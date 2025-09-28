@@ -46,6 +46,7 @@ function InMode(Caster: Types.AgentClass)
 			Caster:AwaitServerTriggeredAction(GameEnum.Replication.PivotTo);
 		end},
 
+
 		{1/60, function()
 			-- this should occur one frame after the teleport
 			-- play an effect at InitialCF;

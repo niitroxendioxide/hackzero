@@ -218,13 +218,13 @@ function ServerEnemy:GetId(): number
 	return self.__EnemyId
 end
 
-function ServerEnemy:Stun(Time: number): ()
+function ServerEnemy.Stun(self: Types.ServerEnemyClass, Time: number, is_airborne: boolean): ()
 	self.__Next = Time + 0.15
 	self.__LastMovement = os.clock()
 
 	--
-	self:Move(Vector3.zero)
-	self:SwitchState('Stunned', Time)
+	self:Move(vector.zero)
+	self:SwitchState( not is_airborne and 'Stunned' or 'Airborne' , Time)
 end
 
 function ServerEnemy:SwitchState(State: string, Time: number)
@@ -258,8 +258,8 @@ function ServerEnemy:GetTarget()
 	return self.__Current_Target
 end
 
-function ServerEnemy:Move(Direction: Vector3)
-	if self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5 and Direction.Z < 0 then
+function ServerEnemy.Move(self: Types.ServerEnemyClass, Direction: Vector3 | vector)
+	if self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5 and (Direction :: Vector3).Z < 0 then
 		return
 	end
 

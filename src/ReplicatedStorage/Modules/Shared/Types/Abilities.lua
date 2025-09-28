@@ -60,7 +60,15 @@ export type AbilityClass = {
 	Increase: (self: AbilityClass, Agent: Caster, Key: string, Data: {Rate: number, Limit: number}?) -> (),
 
 	Play: (self: AbilityClass, Agent: Caster, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
-	Begin: (self: AbilityClass, Agent: Caster, SequenceFrames: SequenceFrames) -> (Sequence),
+
+	--[[
+		Begin the ability's sequence of events
+
+		@param Caster The one assigned to the casting of the sequence
+		@param SequenceFrames Each event inside of the sequence
+		@param forceCreationOnly Forces the sequence to not start instantly, and instead be created before started
+	]]
+	Begin: (self: AbilityClass, Agent: Caster, SequenceFrames: SequenceFrames, forceCreationOnly: boolean?) -> (Sequence),
 	Effect: (self: AbilityClass, EffectName: string, ...any) -> (),
 	UseAttackData: (self: AbilityClass, Sequence: Sequence, Caster: Caster, Data: {[number]: number}, Hitbox_Data: HitboxAttackData) -> (),
 
@@ -93,6 +101,8 @@ export type HitEnemyData = {
 	Affliction_Buildup: number?,
 	DontChargeEnergy: boolean,
 	DontChargeUlt: boolean,
+	HitsAirborne: boolean,
+	Airborne: boolean,
 
 	Knockback: {number | number | number}?,
 }
@@ -134,7 +144,9 @@ export type ServerAbilityClass = {
 	__Signal: RBXScriptSignal,
 	__Hit: Default.Signal<AbilityHitInfo>,
 
-	CreateHitbox: (self: ServerAbilityClass, Agent: Caster, Offset: Vector3, Size: Vector3, Event: (Enemy: Agents.Enemy) -> ()) -> (),
+	CreateHitbox: (self: ServerAbilityClass, Agent: Caster, Offset: Vector3, Size: Vector3, Event: (Enemy: Agents.Enemy) -> ()) -> ({
+		Debug: () -> (),
+	}),
 
 	Save: (self: ServerAbilityClass, Caster: any, Key: string, Value: any) -> (),
 	Get: (self: ServerAbilityClass, Caster: any, Key: string) -> any,
@@ -155,4 +167,13 @@ export type ServerAbilityClass = {
 	SetData: (self: ServerAbilityClass, Data: {}) -> (),
 }
 
-return 0
+return {
+	CHARACTER_STATES = {
+		Attacking = 'Attacking',
+		Idle = 'Idle',
+		Stunned = 'Stunned',
+		Dashing = 'Dashing',
+		Airborne = 'Airborne',
+		Frozen = 'Frozen',
+	}
+}

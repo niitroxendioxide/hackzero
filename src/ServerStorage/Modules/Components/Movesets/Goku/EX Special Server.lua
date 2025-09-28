@@ -5,66 +5,52 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 
---
+-->
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.GenericClass, Skill_Name: string, State: string, ...)
+local function Default(Caster: Types.Caster, Attack: Types.Sequence)
+	local Default_Hit_Data = Ability:FromData('Default', nil, Caster:GetSkillLevel(Ability.__Name))
+	Default_Hit_Data.Knockback = Ability:FromData("Knockback");
+
+	Attack:Add(0.25, function()
+	
+		Ability:CreateHitbox(Caster, Vector3.zAxis*-3, vector.create(5, 5, 6.65), function(Enemy)
+			print('so did you hit?')
+
+			Ability:Hit(Caster, Enemy, Default_Hit_Data)
+		end).Debug()
+
+	end)
+end
+
+local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence)
+
+	-- loop through all enemies in an area;
+
+end
+
+function Ability:Play(Caster: Types.Caster)
 	--
-	local SequenceObj = Ability:Get(Caster, 'Sequence')
+	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
+	local AttackTime = Ability:FromData('Attack_State_Time', InMode and 2 or 1);
+	local Attack = Ability:Begin(Caster, {
 
-	if State ~= 'Begin' then
-		Caster:SwitchState('Attacking', 0)
-		local _=SequenceObj and SequenceObj:Destroy()
+		{0, function()
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime)
+		end},
 
-		return;
+	}, true);
+
+	if InMode then
+		ModeVersion(Caster, Attack)
+	else
+		Default(Caster, Attack)
 	end
 
-	local SkillLevel = Caster:GetSkillLevel('Special')
-
-	local Clock = os.clock()
-	local AttackTime = Ability:FromData('Attack_State_Time')
-	local Sequence = Ability:Begin(Caster, {
-		{0, function()
-			Caster:SwitchState('Attacking', AttackTime)
-		end,},
-
-		{.317, AttackTime, function(self)
-			if Caster:GetEnergy() <= Ability:FromData('Energy_Per_Hit') then
-				self:Destroy()
-
-				Ability:ForceRelease(Caster)
-			end
-
-			if (os.clock() - Clock) > Ability:FromData('Hit_Frequency') then
-				Caster:UseEnergy(Ability:FromData('Energy_Per_Hit'))
-
-				Clock = os.clock()
-				Caster:Walk(Ability:FromData('Walk_Time'))
-
-				Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.ServerEnemyClass)
-					Ability:Hit(Caster, Target, {
-						Damage = Ability:FromData('Damage_Mult', nil, SkillLevel),
-						Affliction = 'Physical',
-						Stun = .225,
-						HitType = 'Blunt',
-						Daze = Ability:FromData('Daze_Mult', nil, SkillLevel),
-						Knockback = Ability:FromData('Knockback'),
-						Affliction_Buildup = Ability:FromData('Affliction_Buildup', nil, SkillLevel)
-					})
-				end)
-			end
-		end,},
-	})
-
-	Ability:Save(Caster, 'Sequence', Sequence);
-
-	Sequence:After(function()
-		Ability:Save(Caster, 'Sequence', nil)
-	end)
-
+	Attack:Start()
 end
 
 return Ability

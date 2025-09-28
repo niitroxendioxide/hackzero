@@ -107,7 +107,11 @@ function EnemyClass:EnterDazedState()
 end
 
 function EnemyClass:SwitchState(State: string, Time: number): ()
-	return self.__Status:SwitchState(State, Time)
+	if State == 'Airborne' then
+		self.__Appearance:Raise(3, Time);
+	end
+
+	return self.__Status:SwitchState(State, Time);
 end
 
 function EnemyClass:GetId(): number

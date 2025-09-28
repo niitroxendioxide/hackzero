@@ -56,12 +56,28 @@ function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & A
 
 	--
 	if tostring(Caster) == 'EnemyClass' then
-		return self:CreateAgentHitbox(Caster, Offset, Size, Event, Time, Repeat)
+		self:CreateAgentHitbox(Caster, Offset, Size, Event, Time, Repeat)
 	elseif tostring(Caster) == 'ServerAgentClass' then
-		return self:CreateEnemyHitbox(Caster, Offset, Size, Event, Time, Repeat)
+		self:CreateEnemyHitbox(Caster, Offset, Size, Event, Time, Repeat)
 	end
 
-	return;
+	local Obj;
+	Obj = {
+		Debug = function()
+			local Part = Instance.new("Part");
+			Part.Size = Size;
+			Part.CFrame = At * CFrame.new(Offset);
+			Part.Transparency = 0.5
+			Part.Anchored = true
+			Part.CanCollide = false
+			Part.Color = Color3.new(1)
+			Part.Parent = workspace
+
+			return Obj
+		end,
+	}
+
+	return Obj;
 end
 
 function ServerAbilityClass:CreateEnemyHitbox(Agent: AgentTypes.ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.Enemy) -> (), Time: number?, Repeat: boolean?)
@@ -69,7 +85,7 @@ function ServerAbilityClass:CreateEnemyHitbox(Agent: AgentTypes.ServerAgentClass
 
 	local function Process()
 		local EnemyHitboxes = Enemies:GetHitboxes()
-		local AreaParts = Hitbox:GetPartsInArea({WorldCamera.Enemies}, Size, Agent:GetPivot() * CFrame.new(Offset))
+		local AreaParts 	= Hitbox:GetPartsInArea({WorldCamera.Enemies}, Size, Agent:GetPivot() * CFrame.new(Offset))
 
 		for _, Part in AreaParts do
 			local Enemy = EnemyHitboxes[Part]
@@ -208,11 +224,15 @@ end
 -- Hit functions
 local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Data: Types.HitEnemyData)
 	local AgentPivot = Agent:GetPivot()
-	local _EnemyPivot = Enemy:GetPivot()
+	-- local EnemyPivot = Enemy:GetPivot()
 
 
 	--
-	local Dealt_Damage, EnemyDied, Critical, Affliction, Affliction_Fill, Burst_Damage, Affliction_Triggered = DamageLibrary:Deal(Agent, Enemy, Data)
+	local Validated, Dealt_Damage, EnemyDied, Critical, Affliction, Affliction_Fill, Burst_Damage, Affliction_Triggered = DamageLibrary:Deal(Agent, Enemy, Data)
+	if not Validated then
+		return;
+	end
+	
 	local Dealt_Daze, Is_Dazed = DamageLibrary:Daze(Agent, Enemy, Data.Daze)
 
 	--
@@ -227,7 +247,7 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 
 	--
 
-	Enemy:Stun(Data.Stun)
+	Enemy:Stun(Data.Stun, Data.Airborne)
 	Enemy:Rotate(AgentPivot.Position)
 
 	if Enemy:TimeSinceLastPivot() > 0.5 then
@@ -405,6 +425,15 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 		else
 			return Value[Sub_Key]
 		end
+	elseif typeof(Value) == 'table' and Sub_Key == nil and Upgraded_Value ~= nil then
+		-- support for new architecture;
+		local clonedTable = table.clone(Value);
+		
+		for key, val in Upgraded_Value do
+			clonedTable[key] += (val * Level)
+		end
+		
+		return clonedTable;
 	end
 
 	if Key == "Speed" and Value == nil then

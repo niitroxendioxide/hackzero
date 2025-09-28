@@ -325,6 +325,8 @@ end
 	@param Data Can include 'EffectData' for modifying the effect, or a Custom HitStopDuration
 ]]
 function AbilityClass.Hit(self: Types.AbilityClass, Caster, Target, Data)
+	Data = Data or {};
+	
 	local HitstopDuration = Data.HitstopDuration
 	local Sequence = self:Get(Caster, 'CurrentPlayerSequence')
 	local Animations = self:Get(Caster, "CurrentSkillSavedObjects")
