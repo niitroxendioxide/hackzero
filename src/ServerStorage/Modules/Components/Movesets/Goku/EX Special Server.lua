@@ -18,10 +18,8 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 	Attack:Add(0.25, function()
 	
 		Ability:CreateHitbox(Caster, Vector3.zAxis*-3, vector.create(5, 5, 6.65), function(Enemy)
-			print('so did you hit?')
-
 			Ability:Hit(Caster, Enemy, Default_Hit_Data)
-		end).Debug()
+		end)
 
 	end)
 end

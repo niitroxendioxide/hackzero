@@ -26,6 +26,9 @@ export type Caster = Agents.ServerAgentClass & Agents.AgentClass & Agents.Enemy 
 export type Target = Caster
 export type TargetFinderFunction = (Caster: Agents.AgentClass) -> (number, Agents.ClientEnemy)
 
+
+export type ClientSkillContext = {IsSignal: boolean, Target: Target};
+
 export type AbilityClass = {
 	__Cache: {},
 	__Signal: RBXScriptSignal,
@@ -59,8 +62,18 @@ export type AbilityClass = {
 	Get: <T>(self: AbilityClass, Agent: Caster, Key: string) -> T,
 	Increase: (self: AbilityClass, Agent: Caster, Key: string, Data: {Rate: number, Limit: number}?) -> (),
 
-	Play: (self: AbilityClass, Agent: Caster, Type: string, State: 'Begin' | 'End', Other: {any}) -> (),
+	Play: (self: AbilityClass, Agent: Caster, Type: string, State: 'Begin' | 'End', Context: ClientSkillContext) -> (),
 
+
+	--[[
+		Useful to match the heights of two characters that are attacking each other, raises the character if needed
+
+		@param Caster Perpetrator whose height is to be matched
+		@param Target The target to match heights with
+		@param Time The overwritten time to raise the character for, by default, 1s
+	]]
+	MatchAirborneHeights: (self: AbilityClass, Agent: Caster, Target: Target, time: number?) -> (),
+	
 	--[[
 		Begin the ability's sequence of events
 

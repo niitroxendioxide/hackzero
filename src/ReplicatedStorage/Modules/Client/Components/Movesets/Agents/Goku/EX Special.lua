@@ -15,6 +15,8 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 		
 		Ability:CreateHitbox(Caster, Vector3.zAxis*-3, vector.create(5, 5, 6.65), function(Enemy)
 			Ability:Hit(Caster, Enemy)
+
+			-- effect?!
 		end)
 
 	end)

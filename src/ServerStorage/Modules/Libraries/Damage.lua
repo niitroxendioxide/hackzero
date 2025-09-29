@@ -22,11 +22,30 @@ end]]
 local RNG = Random.new()
 local DamageLibrary = {}
 
+local function ValidateDamageData(given_data: Types.HitEnemyData) 
+	if (given_data.Damage == nil or given_data.Damage < 0) then
+		warn("Given hit data has an invalid damage value.");
+
+		return false;
+	end
+
+	if (given_data.HitType == nil) then
+		given_data.HitType = 'None';
+		warn("Given hit data had no HitType assigned. None was set as default.")
+	end
+
+	return true;
+end
+
 function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitEnemyData): (boolean, number?, boolean?, boolean?, string?, number?, number?, boolean?) 
 	local EnemyStatus = Enemy.__Status
 	local AgentGear: AgentTypes.ServerGearManager = (Agent.GetGearManager and Agent:GetGearManager()) or Mock
 
-	if Enemy:GetState() == 'Airborne' and not Data.Airborne then
+	if not (ValidateDamageData(Data)) then
+		return false;
+	end
+
+	if Enemy:GetState() == 'Airborne' and not Data.HitsAirborne then
 		return false;
 	end
 
@@ -147,7 +166,7 @@ function DamageLibrary:Daze(Agent: AgentTypes.ServerAgentClass, Enemy: AgentType
 	AgentGear:RunHook(GameEnum.GearHookType.OnDazeInflicted, {Caster = Agent, Target = Enemy})
 
 	-- Values
-	local Daze_Bonus_Attacker = AgentGear:GetAddedGearStat("Stun%")
+	local Daze_Bonus_Attacker = math.max(1 + AgentGear:GetAddedGearStat("Stun%"), 1)
 	local Daze = Agent:GetStat('Daze')
 	local Daze_Res = 1 - (EnemyStatus:GetStat('Daze_Resistance') / 100)
 
@@ -167,24 +186,28 @@ local VALUES = {
 	Fire = 0.5,
 }
 
-function DamageLibrary:CalculateAfflictionBurst(Attack: number, Type: DefaultTypes.Element, Defense: number, Resistance: number, Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy)
+function DamageLibrary:CalculateAfflictionBurst(
+	Attack: number, 
+	Type: DefaultTypes.Element, 
+	Defense: number, 
+	Resistance_Multiplier: number, 
+	Agent: AgentTypes.ServerAgentClass, 
+	Enemy: AgentTypes.Enemy
+)
 	local EnemyStatus = Enemy.__Status
 
 	local Damage_Taken_Mult = EnemyStatus:GetDamageTakenMultiplier()
 	local Element_Multiplier = EnemyStatus:GetElementMultiplier(Type)
 
 	local Aptitude_Multiplier = Agent:GetStat('Affliction_Aptitude') / 100
-	local Level_Multiplier = Agent.__Level + (1 / 59) * (Agent.__Level - 1)
+	local Level_Multiplier = 1 + (1/59)*(Agent.__Level - 1)
 	local Stacked_Damage = Enemy:GetAfflictionStackedDamage(Type)
 	local Base_Divider = (100 + Agent:GetStat('Attack')/100)
-	local Taken_Damage = (Base_Divider + Stacked_Damage) / 100
+	local Taken_Damage = Stacked_Damage * (Base_Divider / 100)
 	local Dazed_State_Multiplier = EnemyStatus:IsKnocked() and EnemyStatus:GetDazeMultiplier() or 1
-
-	print(Level_Multiplier)
-
-	local Resistance_Multiplier = 1 - Resistance
 	local Daze_Multiplier = 1
 	local Affliction_Type_Mult = VALUES[Type]
+
 	local Total_Damage = (Attack * Affliction_Type_Mult) * Level_Multiplier * Element_Multiplier * Aptitude_Multiplier * Defense * Resistance_Multiplier * Daze_Multiplier * Taken_Damage * Dazed_State_Multiplier * Damage_Taken_Mult
 
 	return Total_Damage

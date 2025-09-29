@@ -154,7 +154,11 @@ function Controller:EnemyUseSkill(Buffer: buffer)
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	local CharacterMoveset = Movesets:Get(Enemy.Name, true)
 
-	CharacterMoveset:Begin(Key, Enemy, State)
+	if State == 'Begin' then
+		CharacterMoveset:Begin(Key, Enemy)
+	else
+		CharacterMoveset:Release(Key, Enemy)
+	end
 end
 
 function Controller:ProcessDodge(Buffer: buffer)

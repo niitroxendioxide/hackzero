@@ -86,6 +86,8 @@ export type AgentClass =  {
 	GetUltBar: (self: AgentClass) -> (number),
 	BlockRotation: (self: AgentClass, Time: number) -> (),
 
+	GetAppearance: (self: AgentClass) -> (Types.AppearanceController),
+
 	--[[
 		Wait for a replication server action, to occur
 		@param Type The enum value of GameEnum.Replication to wait for.

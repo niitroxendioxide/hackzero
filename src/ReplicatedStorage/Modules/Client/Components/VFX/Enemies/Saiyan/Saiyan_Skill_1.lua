@@ -19,6 +19,10 @@ return function(Caster: Types.EnemyClass, State: string)
 	local RightHand = CasterModel:FindFirstChild('RightHand')
 
 	local function GetCF()
+		if not RightHand then
+			return;
+		end
+
 		return CFrame.lookAlong((RightHand.CFrame * CFrame.new(0, -1.5, 0)).Position, Caster:GetPivot().LookVector)
 	end
 

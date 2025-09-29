@@ -1,6 +1,7 @@
 --
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
@@ -61,9 +62,11 @@ function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & A
 		self:CreateEnemyHitbox(Caster, Offset, Size, Event, Time, Repeat)
 	end
 
-	local Obj;
-	Obj = {
-		Debug = function()
+	--
+	local Obj; Obj = {
+		Debug = function(Time: number?)
+			if not RunService:IsStudio() then return end
+
 			local Part = Instance.new("Part");
 			Part.Size = Size;
 			Part.CFrame = At * CFrame.new(Offset);
@@ -72,6 +75,8 @@ function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & A
 			Part.CanCollide = false
 			Part.Color = Color3.new(1)
 			Part.Parent = workspace
+
+			task.delay(Time or 1, Part.Destroy, Part)
 
 			return Obj
 		end,

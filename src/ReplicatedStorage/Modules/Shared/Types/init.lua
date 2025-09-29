@@ -38,6 +38,7 @@ export type AppearanceController = {
 	__TransparencyValues: {[BasePart]: number},
 	__Trove: {},
 	__Current_Height_Thread: thread?,
+	__Current_Height_Tween: Tween?,
 	__Extra_Height: number,
 	__Root_Attachment: Attachment,
 	__Target_Attachment: Attachment,
@@ -50,6 +51,8 @@ export type AppearanceController = {
 	UnbindObject: (self: AppearanceController, Object: Instance) -> (),
 
 	Raise: (self: AppearanceController, Factor: number, Time: number) -> (),
+	Land: (self: AppearanceController) -> (),
+	GetAddedHeight: (self: AppearanceController) -> (number),
 
 	GetModel: (self: AppearanceController) -> (Model),
 

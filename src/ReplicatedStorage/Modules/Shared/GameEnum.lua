@@ -139,6 +139,13 @@ return {
 		Cancel = 3,
 	},
 
+	AirborneMatchState = {
+		None = 0,
+		Raised = 1,
+		Grounded = 2,
+		Same = 3,
+	},
+
 	Boost_Effects = {
 		DODGE_FLOW_TRIGGER = 'DodgeFlowStateTrigger',
 		SWITCH_ASSIST_DODGE = 'DodgeAssistFollowup',

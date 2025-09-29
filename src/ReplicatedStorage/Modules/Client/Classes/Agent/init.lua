@@ -53,6 +53,10 @@ function AgentClass.IsActive(self : AgentTypes.AgentClass)
 	return (obtainedActiveAgent == self)
 end
 
+function AgentClass.GetAppearance(self: AgentTypes.AgentClass)
+	return self.__Character.__Appearance
+end
+
 function AgentClass.GetSkillLevel(self: AgentTypes.AgentClass, Name: string)
 	return (self.__Skill_Levels[Name] or 1)
 end

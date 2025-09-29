@@ -108,7 +108,7 @@ end
 
 function EnemyClass:SwitchState(State: string, Time: number): ()
 	if State == 'Airborne' then
-		self.__Appearance:Raise(3, Time);
+		self.__Appearance:Raise(5, Time);
 	end
 
 	return self.__Status:SwitchState(State, Time);

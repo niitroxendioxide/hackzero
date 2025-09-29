@@ -53,6 +53,26 @@ function AbilityClass.SetTargetFinder(self: Types.AbilityClass, handler: (Caster
 	self.__Target_Finder = handler;
 end
 
+function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Types.Caster, Target: Types.Target, time: number?)
+	local TargetsHeight = Target.__Appearance:GetAddedHeight()
+	local Difference = TargetsHeight - Agent:GetAppearance():GetAddedHeight()
+	if (Target:GetState() ~= 'Idle' and TargetsHeight > 0) then
+		Agent:GetAppearance():Raise(Difference, time or 1)
+
+		if (Difference == 0) then
+			return GameEnum.AirborneMatchState.Same;
+		end
+
+		return GameEnum.AirborneMatchState.Raised;
+	elseif (TargetsHeight <= 0 and Agent:GetAppearance():GetAddedHeight() > 0) then
+		Agent:GetAppearance():Land()
+
+		return GameEnum.AirborneMatchState.Grounded;
+	end
+
+	return GameEnum.AirborneMatchState.None;
+end
+
 function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.SequenceFrames, DontPlay: boolean?): Types.Sequence
 	if self.__Active_Sequences[Agent] then
 		self.__Active_Sequences[Agent]:Destroy()
@@ -117,7 +137,11 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 
 		Replicator:Replicate(GameEnum.Replication.PivotTo, Agent:GetPivot(), true)
 		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId)
+	
+		return Enemy;
 	end
+	
+	return nil;
 end
 
 function AbilityClass:Effect(Name: string, ...)

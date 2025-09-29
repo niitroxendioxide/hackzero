@@ -12,12 +12,15 @@ local Assets = ReplicatedStorage:WaitForChild("Assets")
 local Agents = require(ServerStorage.Modules.Libraries.Agents)
 local Network = require(ReplicatedStorage.Modules.Shared.Network)
 local Notifications = require(Modules.Packages.Notifications)
+
+-- services
 local TeamService = require(script.Parent.Combat.TeamService)
-local PartyService = require(script.Parent.Lobby.PartyService)
 local ChatService = require(script.Parent.Lobby.ChatService)
 local DataService = require(script.Parent.Data.DataService)
-local SummonService = require(script.Parent.Items.SummonService)
 local GearService = require(script.Parent.Match.GearService)
+local PartyService = require(script.Parent.Lobby.PartyService)
+local SummonService = require(script.Parent.Items.SummonService)
+local AbilityService = require(script.Parent.Combat.AbilityService)
 
 local TeleportService = require(script.Parent.Data.TeleportService)
 local Places = require(Shared.Places)
@@ -73,6 +76,10 @@ function HandlePlayerChat(Player: Player)
 
 			local Agent = Agents:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
 			GearService:PromptOptions(Agent, List)
+		elseif split[1] == '/assist' then
+			local current_agent = Agents:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number);
+
+			AbilityService:PromptAssist(current_agent, 1)
 		end
 	end)
 end

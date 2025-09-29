@@ -129,16 +129,10 @@ return {
 
 				--
 				Sledge_Hammer = {
-					Damage = 127,
-					StunTime = 0.325,
-					Daze = 160,
+					Damage = 133,
+					StunTime = 0.5,
+					Daze = 264,
 					Affliction_Buildup = 65,
-
-					Knockback = {
-						Vector3.new(0, 0, 1), -- knockback_direction
-						35, -- knockback_strength
-						0.3, -- knockback_time
-					}
 				},
 			},
 
@@ -153,7 +147,7 @@ return {
 		['EX Special'] = {
 			Base = {
 				Speed = 1,
-				Attack_State_Time = {0.85, 5},
+				Attack_State_Time = {0.5, 5},
 				
 				Required_Energy = 60,
 				Animation_Speed = 1,
@@ -165,20 +159,20 @@ return {
 				Knockback_Time = 0.2,
 
 				Default = {
-					Damage_Mult = 248;
-					Daze_Mult = 19;
+					Damage = 248;
+					Daze = 19;
 					Affliction_Buildup = 1.5;
 					Affliction = 'Physical';
 					HitType = 'Blunt';
-					Stun = 0.75;
+					Stun = 1.25;
 					Airborne = true;
 				};
 			},
 
 			Upgrades = {
 				Default = {
-					Damage_Mult = 27,
-					Daze_Mult = 1,
+					Damage = 27,
+					Daze = 1,
 				}
 			}
 		},

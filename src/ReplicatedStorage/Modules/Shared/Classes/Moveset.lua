@@ -102,10 +102,11 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 
 		--
 		self.__Assigned[Type].__Held[Agent] = true
-
 		if RunService:IsClient() then
 			if not Type:match('Swap') then
-				self.__Assigned[Type]:Connect(Agent, 1)
+				local Enemy = self.__Assigned[Type]:Connect(Agent, 1);
+				print(Context);			
+				Context.Target = Enemy;
 			end
 
 			-- #TODO: FIX WTV THIS IS

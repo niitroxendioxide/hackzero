@@ -34,6 +34,7 @@ function AppearanceClass.new(ModelName: string, Directory: string?): Types.Appea
 	local self = setmetatable({}, AppearanceClass)
 	self.__Tilt = 0
 	self.__Extra_Height = 0
+	self.__Current_Height_Tween = nil :: Tween?
 	self.__Current_Height_Thread = nil :: thread?
 	self.__Model = AssetsModel:Clone() :: Types.Rig
 	self.__Visible = true
@@ -66,6 +67,8 @@ function AppearanceClass:Tilt(number: number)
 	self.__Tilt = number
 end
 
+
+
 function AppearanceClass:Raise(Factor: number, Time: number)
 	self.__Extra_Height += Factor;
 
@@ -73,13 +76,45 @@ function AppearanceClass:Raise(Factor: number, Time: number)
 		task.cancel(self.__Current_Height_Thread)
 	end
 
+	
 	--
-	self.__Root_Attachment.Position = vector.create(0, self.__Extra_Height);
+	local tween_time = (self.__Extra_Height / 16)
+	local new_tween = EffectsUtil:Tween(self.__Root_Attachment, {tween_time, 'Quart'}, {Position = vector.create(0, -self.__Extra_Height)})
+	if self.__Current_Height_Tween then
+		self.__Current_Height_Tween:Destroy()
+	end
 
+	self.__Current_Height_Tween = new_tween
+	
 	self.__Current_Height_Thread = task.delay(Time, function()
-		self.__Extra_Height = 0;
-		self.__Root_Attachment.Position = vector.create(0, 0);
+		self:__clean_heights();
 	end)
+end
+
+function AppearanceClass:GetAddedHeight()
+	return self.__Extra_Height
+end
+
+function AppearanceClass:Land()
+	if (self.__Current_Height_Tween) then
+		self.__Current_Height_Tween:Pause()
+	end
+
+	self:__clean_heights()
+end
+
+function AppearanceClass:__clean_heights()
+	local timeToFall = (self.__Extra_Height / 11)
+
+	local land_tween = EffectsUtil:Tween(self.__Root_Attachment, {timeToFall, 'Quint', 'In'}, {Position = vector.zero})
+	if self.__Current_Height_Tween then
+		self.__Current_Height_Tween:Destroy()
+		self.__Current_Height_Tween = land_tween
+	end
+
+	self.__Extra_Height = 0;
+	self.__Root_Attachment.Position = vector.create(0, 0);
+	self.__Current_Height_Thread = nil;
 end
 
 function AppearanceClass:SetVisible(State: boolean)
