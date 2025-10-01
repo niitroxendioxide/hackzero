@@ -4,14 +4,18 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local Types = require(Shared.Types.Abilities)
+local GameEnum = require(Shared.GameEnum)
+-- local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Client.Classes.Ability)
 
 --
 local Ability = AbilityClass.new(true)
 
-function Ability:Play(Agent: Types.Caster)
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 5})
+end)
+
+function Ability:Play(Agent)
 	local M1_Count = Ability:Get(Agent, 'Count')
 
 	if Ability:Get(Agent, 'M1_Track') then
@@ -22,7 +26,7 @@ function Ability:Play(Agent: Types.Caster)
 	local EffectObj = {}
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
 	local Sequence = Ability:Begin(Agent, {
-		{0, function(_: Types.Sequence)
+		{0, function(_)
 			local Track = Ability:PlayAnimation(Agent, 'Tanjiro.Abilities.M1.'..Ability:Get(Agent, 'Count'), {
 				Fade = .1,
 				Active_Time = Attack_Time + .125,
@@ -72,7 +76,7 @@ function Ability:Play(Agent: Types.Caster)
 	Ability:UseAttackData(Sequence, Agent, AttackData, {
 		Size = Vector3.new(4, 4, 5),
 		Offset = Vector3.new(0, 0, -2.5),
-		Hit_Function = function(Target: Types.Target)
+		Hit_Function = function(Target)
 			Ability:Hit(Agent, Target, {StopEffect = EffectObj})
 
 			--Target:Hit()
@@ -86,7 +90,7 @@ function Ability:Play(Agent: Types.Caster)
 		Ability:UseAttackData(Sequence, Agent, NewAttackData, {
 			Size = Vector3.new(4, 4, 5),
 			Offset = Vector3.new(0, 0, -2.5),
-			Hit_Function = function(Target: Types.Target)
+			Hit_Function = function(Target)
 				Ability:Hit(Agent, Target, {StopEffect = EffectObj})
 				--Target:Hit()
 				--Ability:Effect('Hit', Target)

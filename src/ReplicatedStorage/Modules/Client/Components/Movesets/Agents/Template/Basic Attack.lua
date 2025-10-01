@@ -4,14 +4,18 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local GameEnum = require(Shared.GameEnum) 
 local Types = require(Shared.Types)
 local AbilityClass = require(Client.Classes.Ability)
 
 --
 local Ability = AbilityClass.new(true)
 
-function Ability:Play(Agent: Types.GenericClass)
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 5})
+end)
+
+function Ability:Play(Agent: Types.GenericClass)
 	local M1_Count = Ability:Get(Agent, 'Count')
 
 	if Ability:Get(Agent, 'M1_Track') then

@@ -4,14 +4,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local Types = require(Shared.Types.Agents)
+local GameEnum = require(Shared.GameEnum)
 local AbilityClass = require(Client.Classes.Ability)
 
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Agent: Types.AgentClass)
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 4})
+end)
+
+function Ability:Play(Agent)
 	local M1_Count = Ability:Get(Agent, 'Count')
 
 	if Ability:Get(Agent, 'M1_Track') then
@@ -50,7 +53,7 @@ function Ability:Play(Agent: Types.AgentClass)
 		{.2, function()
 			local Pos  = IsStand and Vector3.zAxis * -4.5 or Vector3.zAxis*-3
 			local Size = IsStand and Vector3.new(5, 5, 9) or Vector3.one * 5
-			Ability:CreateHitbox(Agent, Pos, Size, function(Target: Types.ClientEnemy)
+			Ability:CreateHitbox(Agent, Pos, Size, function(Target)
 				Target:Hit()
 				Ability:Effect('Hit', Target)
 			end)

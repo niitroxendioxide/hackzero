@@ -82,7 +82,9 @@ function Controller:Replicate(Action: number, ...)
 		buffer.writei8(Buffer, 3, Args[3] or 1)
 
 		EventName = 'Ability'
-		Args = {}
+		table.remove(Args, 3)
+		table.remove(Args, 2)
+		table.remove(Args, 1)
 	end
 
 	buffer.writeu8(Buffer, 0, Action)

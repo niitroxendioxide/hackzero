@@ -52,6 +52,7 @@ return function(Enemy: Types.EnemyClass)
 			return
 		end
 
+		local Height = Enemy.__Appearance:GetAddedHeight()
 		local SpringVal = peek(Health_Spring)
 		local MaxVal = Enemy:GetStat('Max_Health')
 		local TotalDaze = peek(Enemy.__Daze)
@@ -60,6 +61,7 @@ return function(Enemy: Types.EnemyClass)
 
 		local IsDazed = Enemy.__Status:IsKnocked()
 
+		Billboard.Position = Vector3.xAxis * (5 + Height)
 		Gui.Meters.Health.Main.UIGradient.Offset = Vector2.new(-0.81 + HealthValue, 0)
 		Effects:Tween(Gui.Meters.Stun.Main.UIGradient, {.3, 'Quad'}, {Offset = Vector2.new(-0.81 + DazeValue, 0)})
 

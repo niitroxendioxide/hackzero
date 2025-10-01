@@ -90,7 +90,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 			return false
 		end
 
-		if Cooldown:IsOn(CooldownKey) then return false end
+		if Cooldown:IsOn(CooldownKey) then return false, 'In Cooldown' end
 
 		if not Info.Base then
 			error("Skill data is invalid. Make sure to have both Base{} and Upgrade{}")
@@ -98,14 +98,13 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 
 		Cooldown:Add(CooldownKey, Info.Base.Cooldown)
 
-		--local LastUse = self.__Last_Use[Agent][Type] or os.clock()
+		--local LastUse = self.__Last_Use[Agent][Type] or os.clock()	
 
 		--
 		self.__Assigned[Type].__Held[Agent] = true
 		if RunService:IsClient() then
 			if not Type:match('Swap') then
 				local Enemy = self.__Assigned[Type]:Connect(Agent, 1);
-				print(Context);			
 				Context.Target = Enemy;
 			end
 
@@ -202,7 +201,7 @@ function MovesetClass:CancelSkill(SkillKey: string, Agent, Context)
 	if SkillMod then
 		SkillMod:Cancel(Agent, Context)
 
-		if RunService:IsClient() and not Context or not Context.Hit  then
+		if RunService:IsClient() and (not Context or not Context.Hit)  then
 			SkillMod:Connect(Agent, GameEnum.AbilityStates.Cancel)
 		end
 	end

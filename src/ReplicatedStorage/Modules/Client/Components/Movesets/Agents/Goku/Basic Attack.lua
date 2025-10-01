@@ -5,7 +5,6 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
-local Types = require(Shared.Types.Agents)
 local AbilityClass = require(Client.Classes.Ability)
 local Enemies = require(Shared.Libraries.Enemies)
 
@@ -15,7 +14,7 @@ local Ability = AbilityClass.new(true)
 Ability:SetTargetFinder(function(Caster)
 	local last_target = Ability:Get(Caster, "last_hit_enemy");
 	if ((Ability:Get(Caster, 'Count') or 0) >= 5) and (last_target ~= nil) then
-		return (last_target :: Types.ClientEnemy):GetId(), last_target
+		return (last_target):GetId(), last_target
 	end
 
 	local id, nearest = Enemies:GetNearestEnemy(Caster:GetPivot().Position, 15)
@@ -23,8 +22,11 @@ Ability:SetTargetFinder(function(Caster)
 	return id, nearest;
 end)
 
-function Ability:Play(Agent: Types.AgentClass, _, _, Context)
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 6})
+end)
+
+function Ability:Play(Agent, _, _, Context)
 	local M1_Count = Ability:Get(Agent, 'Count')
 
 	if Ability:Get(Agent, 'M1_Track') then
@@ -101,7 +103,7 @@ function Ability:Play(Agent: Types.AgentClass, _, _, Context)
 		end},
 
 		{Ability:FromData("Hit_Times", M1_Count), function()
-			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.ClientEnemy)
+			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
 				Target:Hit()
 				Ability:Effect('Hit', Target)
 			end)
@@ -110,7 +112,7 @@ function Ability:Play(Agent: Types.AgentClass, _, _, Context)
 		{.567, function()
 			if M1_Count ~= 4 then return end
 
-			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.ClientEnemy)
+			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
 				Target:Hit()
 				Ability:Effect('Hit', Target)
 			end)
@@ -119,7 +121,7 @@ function Ability:Play(Agent: Types.AgentClass, _, _, Context)
 		{.5, function()
 			if M1_Count ~= 2 then return end
 
-			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.ClientEnemy)
+			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
 				Target:Hit()
 				Ability:Effect('Hit', Target)
 			end)

@@ -30,10 +30,13 @@ ServerAbilityClass.__index = ServerAbilityClass
 function ServerAbilityClass.new(): Types.ServerAbilityClass
 	local Path = debug.info(2, "s")
 	local Split = string.split(Path, '.')
+	local ConvertedId = string.gsub(string.gsub(Split[#Split], ' Server', ''), ' ', '_');
+	local EnumVal = GameEnum.Skills[ConvertedId]
 
 	local self = setmetatable({}, ServerAbilityClass)
 	self.__Cache = {}
-	self.__Name = string.gsub(string.gsub(Split[#Split], ' Server', ''), ' ', '_')
+	self.__Name = ConvertedId
+	self.__Skill_Type = EnumVal
 	self.__Cooldown = Signal.new()
 	self.__Signal = Signal.new()
 	self.__Hit = Signal.new()
@@ -346,7 +349,7 @@ function ServerAbilityClass:Hit(Agent: any, Enemy: any, Data: Types.HitEnemyData
 	end
 
 	if Result ~= nil then
-		self.__Hit:Fire(Result)
+		self.__Hit:Fire(Result, self.__Skill_Type)
 	end
 
 	return Result

@@ -43,10 +43,31 @@ function AbilityClass.new(Holdable: boolean): Types.AbilityClass
 	self.__Signal = Signal.new()
 	self.__Cooldown = Signal.new()
 	self.__Ability_Data = {}
+	self.__Hooks = {}
 	self.__Target_Finder = nil;
 	self.__Held = {}
 
 	return self
+end
+
+function AbilityClass.ConnectHook(self: Types.AbilityClass, type: number, fn: () -> ())
+	if not self.__Hooks[type] then
+		self.__Hooks[type] = {}
+	end
+
+	table.insert(self.__Hooks[type], fn)
+end
+
+function AbilityClass:__run_hooks(type: number, ...)
+	for Type, List in self.__Hooks do
+		if Type ~= type then
+			continue
+		end
+
+		for _, fn in List do
+			task.spawn(fn, ...)
+		end
+	end
 end
 
 function AbilityClass.SetTargetFinder(self: Types.AbilityClass, handler: (Caster: AgentTypes.AgentClass) -> (number, AgentTypes.ClientEnemy))
@@ -54,6 +75,10 @@ function AbilityClass.SetTargetFinder(self: Types.AbilityClass, handler: (Caster
 end
 
 function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Types.Caster, Target: Types.Target, time: number?)
+	if Target == nil or Agent == nil then
+		return
+	end
+
 	local TargetsHeight = Target.__Appearance:GetAddedHeight()
 	local Difference = TargetsHeight - Agent:GetAppearance():GetAddedHeight()
 	if (Target:GetState() ~= 'Idle' and TargetsHeight > 0) then
@@ -121,6 +146,9 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 	local Id = User:GetAttribute("ReplicationId")
 
 	if Id == Agent.PlayerId then
+		self:__run_hooks(GameEnum.AbilityHooks.BeforeConnection, Agent)
+
+		local IsBasicAttack = self.__Name == 'Basic_Attack'
 		local LookAtEnemy = self:FromData('NoAutoTrack') ~= true
 		local EnemyId, Enemy;
 		if LookAtEnemy then
@@ -131,12 +159,18 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 			end
 		end
 
+
 		if Enemy and (self.__Name ~= 'Dodge') then
 			Agent:Look(CFrame.lookAt(Agent:GetPivot().Position * Vector3.new(1, 0, 1), Enemy:GetPivot().Position * Vector3.new(1, 0 ,1)).LookVector, false, true)
 		end
 
+		local M1_Count: number? = nil;
+		if IsBasicAttack then
+			M1_Count = self:Get(Agent, "Count")
+		end
+
 		Replicator:Replicate(GameEnum.Replication.PivotTo, Agent:GetPivot(), true)
-		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId)
+		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId, M1_Count)
 	
 		return Enemy;
 	end

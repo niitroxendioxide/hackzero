@@ -31,7 +31,7 @@ local function ValidateDamageData(given_data: Types.HitEnemyData)
 
 	if (given_data.HitType == nil) then
 		given_data.HitType = 'None';
-		warn("Given hit data had no HitType assigned. None was set as default.")
+		-- warn("Given hit data had no HitType assigned. None was set as default.")
 	end
 
 	return true;

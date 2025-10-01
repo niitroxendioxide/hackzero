@@ -31,11 +31,14 @@ export type ClientSkillContext = {IsSignal: boolean, Target: Target};
 
 export type AbilityClass = {
 	__Cache: {},
+	__Hooks: {[number]: {(...any) -> ()}},
 	__Signal: RBXScriptSignal,
 	__Cooldown: any,
 	__Name: string,
 	__Target_Finder: TargetFinderFunction?,
 	Name: string,
+
+	ConnectHook: (self: AbilityClass, hook_type: number, fn: (...any) -> ()) -> (),
 
 	--[[
 		Play an animation using any character controller, example:
@@ -153,6 +156,7 @@ export type InputState = 'Begin' | 'End'
 export type SkillContext = {IsSignal: boolean?, Target: Agents.Enemy?}
 export type ServerAbilityClass = {
 	__Name: string,
+	__Skill_Type: number,
 	__Cache: {},
 	__Signal: RBXScriptSignal,
 	__Hit: Default.Signal<AbilityHitInfo>,

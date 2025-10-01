@@ -42,6 +42,7 @@ return {
 		DazeEnemy = 56,
 		EnterDaze = 57,
 		PromptAssist = 58,
+		ChainAttack = 59,
 
 		--
 		ClearPlayerData = 150,
@@ -104,6 +105,10 @@ return {
 		End_Lag = 3,
 		Movement_Length = 4,
 		Movement_Strength = 5,
+	},
+
+	AbilityHooks = {
+		BeforeConnection = 1,
 	},
 
 	Afflictions = {

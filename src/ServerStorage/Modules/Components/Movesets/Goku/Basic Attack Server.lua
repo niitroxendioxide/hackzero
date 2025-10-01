@@ -5,15 +5,16 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
-local Types = require(Shared.Types.Agents)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.ServerAgentClass): ()
-	Ability:Increase(Caster, 'Count', {Limit = 6})
-	local M1_Count = Ability:Get(Caster, 'Count')
+function Ability:Play(Caster, _, _, Context): ()
+	local M1_Count = (Context.M1_Count :: number)
+	if (not M1_Count) then
+		return
+	end
 
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 
@@ -75,7 +76,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 
 
 		{Ability:FromData("Hit_Times", M1_Count), function()
-			Ability:CreateHitbox(Caster, Offset, Size, function(Target: Types.Enemy)
+			Ability:CreateHitbox(Caster, Offset, Size, function(Target)
 				Ability:Hit(Caster, Target, {
 					Damage = Ability:FromData('Damage_Mult', M1_Count, SkillLevel),
 					Affliction = 'Physical',
@@ -92,7 +93,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 		{.54, function()
 			if M1_Count ~= 4 then return end
 
-			Ability:CreateHitbox(Caster, Offset, Size, function(Target: Types.Enemy)
+			Ability:CreateHitbox(Caster, Offset, Size, function(Target)
 				Ability:Hit(Caster, Target, {
 					Damage = Ability:FromData('Damage_Mult', 4.5, SkillLevel),
 					Affliction = 'Physical',
@@ -109,7 +110,7 @@ function Ability:Play(Caster: Types.ServerAgentClass): ()
 		{.5, function()
 			if M1_Count ~= 2 then return end
 
-			Ability:CreateHitbox(Caster, Offset, Size, function(Target: Types.Enemy)
+			Ability:CreateHitbox(Caster, Offset, Size, function(Target)
 				Ability:Hit(Caster, Target, {
 					Damage = Ability:FromData('Damage_Mult', 2.5, SkillLevel),
 					Affliction = 'Physical',

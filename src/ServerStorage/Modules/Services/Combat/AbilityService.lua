@@ -30,6 +30,52 @@ local Service = {
 	__Total_Damage = 0
 }
 
+function UpdateQuestData(Data: {[any]: any}, AgentPlayer: Player)
+	Service.__Total_Damage += Data.Damage
+
+	local PlayerCombatQuests = QuestService:GetPlayerQuestsWithGoals(AgentPlayer, {
+		["Kill"] = true,
+		["Damage"] = true,
+	})
+
+	MatchStats:AddToStat(AgentPlayer, "Kills", Data.IsKill and 1 or 0)
+
+	if Data.IsKill and PlayerCombatQuests["Kill"] then
+		local KillQuests = PlayerCombatQuests["Kill"]
+
+		local TargetName = Data.Enemy.__Name
+
+		for _, KillQuest in KillQuests do
+			local Kills = KillQuest.Progress.Kill
+
+			if Kills[TargetName] then
+				Kills[TargetName] += 1
+				continue
+			elseif Kills.Any then
+				Kills.Any += 1
+			end
+		end
+	end
+end
+
+function HandleSkillHit(Data: AbilityTypes.AbilityHitInfo, SkillId: number)
+	local Agent = Data.Caster :: AgentTypes.ServerAgentClass
+	if not Agent or Data.Hit_Type ~= 'Entity' then return end
+	local AgentPlayer = Agent.__Player_Assigned
+
+	if not AgentPlayer then return end
+
+	if SkillId == GameEnum.Skills.EX_Special then
+		local is_enemy_stunned = Data.Enemy.__Status:IsKnocked()
+		
+		if is_enemy_stunned then
+			Replicator:PromptChainAttack(Agent, Data.Enemy)
+		end
+	end
+
+	task.spawn(UpdateQuestData, Data, Agent)
+end
+
 function Service:Init()
 	--MovesetLibrary:Init()
 
@@ -55,43 +101,12 @@ function Service:Init()
 		local Skills = Moveset:GetAll()
 
 		for _, Skill in Skills do
-			Skill.__Hit:Connect(function(Data: AbilityTypes.AbilityHitInfo)
-				local Agent = Data.Caster :: AgentTypes.ServerAgentClass
-				if not Agent or Data.Hit_Type ~= 'Entity' then return end
-				local AgentPlayer = Agent.__Player_Assigned
-
-				if not AgentPlayer then return end
-				Service.__Total_Damage += Data.Damage
-
-				local PlayerCombatQuests = QuestService:GetPlayerQuestsWithGoals(AgentPlayer, {
-					["Kill"] = true,
-					["Damage"] = true,
-				})
-
-				MatchStats:AddToStat(AgentPlayer, "Kills", Data.IsKill and 1 or 0)
-
-				if Data.IsKill and PlayerCombatQuests["Kill"] then
-					local KillQuests = PlayerCombatQuests["Kill"]
-
-					local TargetName = Data.Enemy.__Name
-
-					for _, KillQuest in KillQuests do
-						local Kills = KillQuest.Progress.Kill
-
-						if Kills[TargetName] then
-							Kills[TargetName] += 1
-							continue
-						elseif Kills.Any then
-							Kills.Any += 1
-						end
-					end
-				end
-			end)
+			Skill.__Hit:Connect(HandleSkillHit)
 		end
 	end
 end
 
-function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
+function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 	local Type = buffer.readu8(ClientBuffer, 0)
 
 	if Type == GameEnum.Replication.UseSkill then
@@ -99,7 +114,7 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer)
 		local EnemyId = buffer.readu8(ClientBuffer, 2)
 		local StateId = buffer.readu8(ClientBuffer, 3)
 
-		local Result = Service:PlaySkill(Player, SkillId, EnemyId, StateId)
+		local Result = Service:PlaySkill(Player, SkillId, EnemyId, StateId, ...)
 
 		if not Result then
 			-- cancel here
@@ -138,9 +153,10 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	end)
 end
 
-function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, StateId: number)
+function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, StateId: number, ...)
 	local ReplicationId = Player:GetAttribute("ReplicationId") :: number
 	local ActiveAgent, _ = AgentLibrary:GetCurrentActive(ReplicationId)
+	local Other = {...}
 
 	local Moveset = Service:GetMoveset(ActiveAgent.Name)
 	local Skill = GameEnum.KeyLookup(GameEnum.Skills, SkillId)
@@ -194,12 +210,18 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 				return
 			end
 
-			Moveset:Begin(Skill, ActiveAgent, {Target = Enemy})
+			local _, Status = Moveset:Begin(Skill, ActiveAgent, {
+				Target = Enemy, 
+				M1_Count = Other and Other[1] or nil
+			})
+			return Status
 		elseif StateId == GameEnum.AbilityStates.End then
 			Moveset:Release(Skill, ActiveAgent)
 		elseif StateId == GameEnum.AbilityStates.Cancel then
 			Moveset:CancelSkill(Skill, ActiveAgent, {ClientInstruction = true})
 		end
+
+		return ''
 	end)
 
 	if not Success then

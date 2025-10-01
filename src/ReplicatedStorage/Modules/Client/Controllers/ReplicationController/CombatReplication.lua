@@ -441,4 +441,8 @@ function Controller:SetEnemySpeed(Buffer: buffer)
 	EnemyObject:SetWorldSpeed(Speed, Time)
 end
 
+function Controller:ChainAttack(Buffer: buffer)
+	print("YOU SHOULD CHAIN TEH ATTACSK")
+end
+
 return Controller

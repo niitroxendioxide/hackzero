@@ -285,6 +285,18 @@ function Replicator:RemoveEnemy(Key: number)
 	Network:FireForAll('Replicate', Object)
 end
 
+function Replicator:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Target: AgentTypes.Enemy)
+	local Id: number = (Agent.__Player_Assigned :: Player):GetAttribute('ReplicationId') :: number
+	local AgentId = Agents:GetIdForPlayer(Id, Agent)
+	
+	local Object = buffer.create(3)
+	buffer.writeu8(Object, 0, GameEnum.Replication.ChainAttack)
+	buffer.writeu8(Object, 1, AgentId)
+	buffer.writeu8(Object, 2, Target:GetId())
+
+	Network:Fire('Replicate', Object)
+end
+
 function Replicator:EnemyUseSkill(EnemyId: number, SkillId: number, State: string)
 	local Object = buffer.create(8)
 	buffer.writeu8(Object, 0, GameEnum.Replication.EnemyUseSkill)

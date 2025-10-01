@@ -12,9 +12,12 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.ServerAgentClass): ()
-	Ability:Increase(Caster, 'Count', {Limit = 4})
-
+function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context): ()
+	local M1_Count = (Context.M1_Count :: number)
+	if (not M1_Count) then
+		return
+	end
+	
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 
 	--

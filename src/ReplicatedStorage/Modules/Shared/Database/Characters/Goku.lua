@@ -40,7 +40,7 @@ return {
 	Moveset_Data = {
 		['Basic Attack'] = {
 			Base = {
-				Cooldown = .05,
+				Cooldown = 0.1,
 				Speed = 1,
 
 				Attack_State_Time = {
