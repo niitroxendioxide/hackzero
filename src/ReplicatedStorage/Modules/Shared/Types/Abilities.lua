@@ -1,7 +1,7 @@
 local Default = require(script.Parent)
 local Agents = require(script.Parent.Agents)
 
-export type SequenceFrames = {{number | (self: Sequence) -> ()}}
+export type SequenceFrames = {{number | (self: Sequence, delta: number) -> ()}}
 export type Sequence = {
 	__cache: {[any]: any},
 	__frames: SequenceFrames,

@@ -74,14 +74,14 @@ function Sequence:Update(delta: number)
 			local secondKey = frameData[2]
 
 			if typeof(secondKey) == 'function' then
-				frameData[2](self)
+				frameData[2](self, delta)
 
 				table.insert(self.__playedFrames, key)
 			else
 				local handler = frameData[3]
 				self.__framePlayCount[key] = (self.__framePlayCount[key] or 0) + 1
 
-				handler(self, self.__framePlayCount[key])
+				handler(self, delta, self.__framePlayCount[key])
 
 				if self.__currentTime >= frameData[2] then
 					table.insert(self.__playedFrames, key)

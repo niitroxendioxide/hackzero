@@ -201,16 +201,29 @@ return {
 			Base = {
 				Speed = 1,
 
-				AssistBuff = {{
-					Type = 'Attack',
-					Value = "10%",
-					Time = 5,
-				},{
-					Type = 'Speed',
-					Value = .25,
-					Time = 7,
-				}}
-			}
+				Hit_Frequency = 4/60,
+				Hit_Data = {
+					Damage = 16,
+					Daze = 3,
+					Affliction = 'Physical',
+					Affliction_Buildup = 0.25,
+					Stun = 0.3,
+					HitType = 'Blunt',
+					
+					Knockback = {
+						Vector3.new(0, 0, 1),
+						10,
+						0.2,
+					},
+				},
+			},
+
+			Upgrades = {
+				Hit_Data = {
+					Damage = 0.5,
+					Daze = 2.25,
+				}
+			},
 		},
 	},
 

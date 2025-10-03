@@ -21,7 +21,6 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context): ()
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 
 	--
-	local M1_Count = Ability:Get(Caster, 'Count')
 	local StandSummoned = Caster:GetEffect('StandSummoned')
 	local IsStand = (M1_Count >= 4 or StandSummoned)
 
