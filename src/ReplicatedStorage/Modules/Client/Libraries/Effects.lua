@@ -14,7 +14,7 @@ function Effects:Init()
 		if Effect:IsA('ModuleScript') then
 			local Success, Required = pcall(require, Effect)
 
-			if Success then
+			if Success and typeof(Required) == 'function' then
 				Effects.__Cached[Effect.Name] = Required
 			else
 				warn('Error when loading effect component:', Effect.Name)

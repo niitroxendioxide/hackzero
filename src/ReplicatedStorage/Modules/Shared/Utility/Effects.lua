@@ -19,9 +19,9 @@ local Effects_Folder = workspace:WaitForChild('World'):WaitForChild('Effects')
 
 
 export type TweenGoals = {
-	Size: (Vector3 | UDim2)?,
+	Size: (Vector3 | UDim2 | vector)?,
 	CFrame: CFrame?,
-	Position: (Vector3 | UDim2)?,
+	Position: (Vector3 | UDim2 | vector)?,
 	Orientation: Vector3?,
 	Transparency: number?,
 	Brightness: number?,

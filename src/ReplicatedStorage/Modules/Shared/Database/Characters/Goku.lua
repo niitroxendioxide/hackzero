@@ -201,6 +201,7 @@ return {
 			Base = {
 				Speed = 1,
 
+				Attack_State_Time = 1.25,
 				Hit_Frequency = 4/60,
 				Hit_Data = {
 					Damage = 16,

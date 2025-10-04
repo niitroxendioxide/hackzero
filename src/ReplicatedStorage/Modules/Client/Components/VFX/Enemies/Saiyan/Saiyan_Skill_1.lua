@@ -16,14 +16,10 @@ return function(Caster: Types.EnemyClass, State: string)
 	--
 	local SaiyanAssets = Assets.Effects.Enemies.Saiyan
 	local CasterModel = Caster:GetModel()
-	local RightHand = CasterModel:FindFirstChild('RightHand')
+	local RightHand = CasterModel:FindFirstChild('Right Arm')
 
 	local function GetCF()
-		if not RightHand then
-			return;
-		end
-
-		return CFrame.lookAlong((RightHand.CFrame * CFrame.new(0, -1.5, 0)).Position, Caster:GetPivot().LookVector)
+		return CFrame.lookAlong((RightHand.CFrame * CFrame.new(0, -2.5, 0)).Position, Caster:GetPivot().LookVector)
 	end
 
 	--
