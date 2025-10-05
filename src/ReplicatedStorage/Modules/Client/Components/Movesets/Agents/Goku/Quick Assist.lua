@@ -12,8 +12,6 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Agent: Types.AgentClass): ()
 
-    print("hi do u ever play")
-
     local AttackTime = Ability:FromData('Attack_State_Time')
 
     Ability:Begin(Agent, {
