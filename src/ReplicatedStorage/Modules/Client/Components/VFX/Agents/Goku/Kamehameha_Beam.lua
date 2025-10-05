@@ -24,7 +24,7 @@ return function(Caster: Types.Caster): ()
     --
 
     local At = Caster:GetPivot() * CFrame.new(0, 0, -3)
-    local Beam = EffectUtil:Create(GokuAssets.Kamehameha.Beam, 1.05)
+    local Beam = EffectUtil:Create(GokuAssets.Kamehameha.Beam, 1.8)
     local Length = 80 
 
     Beam:PivotTo(At)
