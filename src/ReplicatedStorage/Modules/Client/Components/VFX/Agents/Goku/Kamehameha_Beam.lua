@@ -10,8 +10,6 @@ local EffectUtil = require(Shared.Utility.Effects)
 
 ---
 return function(Caster: Types.Caster): ()
-    
-
     --
 
     local Highlight = Instance.new("Highlight")
@@ -24,15 +22,27 @@ return function(Caster: Types.Caster): ()
     --
 
     local At = Caster:GetPivot() * CFrame.new(0, 0, -3)
-    local Beam = EffectUtil:Create(GokuAssets.Kamehameha.Beam, 1.8)
+    local Beam = EffectUtil:Create(GokuAssets.Kamehameha.Beam, 2.5)
     local Length = 80 
 
     Beam:PivotTo(At)
 
+    for _, Ball in Beam.Ball:GetChildren() do
+        local ballSize = Ball.Size
+        Ball.Size = vector.zero
+
+        EffectUtil:Tween(Ball, {.2, 'Back'}, {
+            Size = ballSize,
+        })
+    end
+
     for _, Cylinder in Beam.Beam:GetChildren() do
         local CylSize = Cylinder.Size
 
-        EffectUtil:Tween(Cylinder, {.8}, {
+        Cylinder.CFrame *= CFrame.new(0, 0, Cylinder.Size.Z/2)
+        Cylinder.Size *= vector.create(1, 1, 0);
+
+        EffectUtil:Tween(Cylinder, {.75, 'Quad'}, {
             CFrame = At * CFrame.new(0, 0, -Length/2),
             Size = vector.create(CylSize.X, CylSize.Y, Length),
         })
@@ -45,13 +55,13 @@ return function(Caster: Types.Caster): ()
         
         Attachment.Position = Position * vector.create(1, 1, 0)
         
-        EffectUtil:Tween(Attachment, {.8}, {
+        EffectUtil:Tween(Attachment, {.75, 'Quad'}, {
             Position = vector.create(Position.X, Position.Y, -Length)
         })
     end
 
     --
-    task.delay(.8, function()
+    task.delay(.75, function()
     
         EffectUtil:Tween(Highlight, {.4}, {FillTransparency = 1})
 

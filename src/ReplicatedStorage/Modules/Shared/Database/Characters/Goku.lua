@@ -204,7 +204,7 @@ return {
 				Attack_State_Time = 1.25,
 				Hit_Frequency = 4/60,
 				Hit_Data = {
-					Damage = 16,
+					Damage = 34,
 					Daze = 3,
 					Affliction = 'Physical',
 					Affliction_Buildup = 0.25,
