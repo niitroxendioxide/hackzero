@@ -382,16 +382,22 @@ end
 	@param Target represents whoever is hit by the caster
 	@param Data Can include 'EffectData' for modifying the effect, or a Custom HitStopDuration
 ]]
-function AbilityClass.Hit(self: Types.AbilityClass, Caster, Target, Data)
+function AbilityClass.Hit(self: Types.AbilityClass, Caster: any, Target: any, Data: {[string]: any})
 	Data = Data or {};
 	
 	local HitstopDuration = Data.HitstopDuration
 	local Sequence = self:Get(Caster, 'CurrentPlayerSequence')
 	local Animations = self:Get(Caster, "CurrentSkillSavedObjects")
 
-	if Caster.__Player_Assigned == Players.LocalPlayer then
+	if Caster.__Player_Assigned == Players.LocalPlayer and not Data.NoCameraShake then
 		EffectsLibrary:ShakeCamera("SoftHit")
 	end
+
+	if Target and Target.Hit then
+        local _Anim = Target:Hit(Caster, Data)
+
+		self:Effect("Hit", Target, Data.EffectData)
+    end
 
 	if Animations and #Animations > 0 then
 		for _, Anim in Animations do
@@ -402,12 +408,6 @@ function AbilityClass.Hit(self: Types.AbilityClass, Caster, Target, Data)
 	if Data.StopEffect then
 		HitStop:StopEffect(Data.StopEffect, HitstopDuration)
 	end
-
-    if Target and Target.Hit then
-        Target:Hit(Caster, Data)
-
-		self:Effect("Hit", Target, Data.EffectData)
-    end
 end
 
 

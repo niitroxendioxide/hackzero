@@ -9,9 +9,16 @@ local Types = require(Shared.Types)
 local Effects = require(Shared.Utility.Effects)
 
 ---
-return function(Enemy: Types.EnemyClass,
-	Data: {Emitter: string?, Offset: CFrame?, HueShift: number?, HueShiftFilter: ((any) -> (number))?, HitstopTime: number?}
-)
+return function(
+	Enemy: Types.EnemyClass,
+	Data: {
+		Emitter: string?, 
+		Offset: CFrame?, 
+		HueShift: number?, 
+		HueShiftFilter: ((any) -> (number))?, HitstopTime: number?,
+		Highlight: boolean?,
+	}
+): ()
 
 	Data = Data or {}
 
@@ -31,6 +38,22 @@ return function(Enemy: Types.EnemyClass,
 
 	if Data.HueShift or Data.HueShiftFilter then
 		Effects:HueShift(Object, Data.HueShift or 0, Data.HueShiftFilter)
+	end
+
+	if Data.Highlight then
+		local H, S, V = Color3.new(1, 0.870588, 0.709804):ToHSV()
+		H += Data.HueShift or 0
+		if (H > 1) then H -= 1 elseif (H < -1) then H += 1 end
+
+		local Highlight = Instance.new("Highlight")
+		Highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+		Highlight.FillColor = Color3.fromHSV(H, S, V)
+		Highlight.OutlineTransparency = 1
+		Highlight.FillTransparency = 0
+		Highlight.Parent = Enemy:GetModel()
+
+		Effects:CleanUp(Highlight, .15)
+		Effects:Tween(Highlight, {.15, 'Quad'}, {FillTransparency = 1})
 	end
 
 	Effects:Emit(Object)

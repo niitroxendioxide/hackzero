@@ -104,8 +104,7 @@ function Ability:Play(Agent, _, _, Context)
 
 		{Ability:FromData("Hit_Times", M1_Count), function()
 			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
-				Target:Hit()
-				Ability:Effect('Hit', Target)
+				Ability:Hit(Agent, Target, {EffectData = {Highlight = true}})
 			end)
 		end,},
 
@@ -113,8 +112,7 @@ function Ability:Play(Agent, _, _, Context)
 			if M1_Count ~= 4 then return end
 
 			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
-				Target:Hit()
-				Ability:Effect('Hit', Target)
+				Ability:Hit(Agent, Target, {EffectData = {Highlight = true}})
 			end)
 		end,},
 
@@ -122,8 +120,7 @@ function Ability:Play(Agent, _, _, Context)
 			if M1_Count ~= 2 then return end
 
 			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
-				Target:Hit()
-				Ability:Effect('Hit', Target)
+				Ability:Hit(Agent, Target, {EffectData = {Highlight = true}})
 			end)
 		end,},
 	})

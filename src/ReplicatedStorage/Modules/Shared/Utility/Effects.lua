@@ -106,6 +106,16 @@ function EffectUtil:MultiClean(Objects: {any}, Time: number)
 	end
 end
 
+function EffectUtil:CastMapRaycast(from: Vector3 | vector | CFrame, dir: vector | Vector3)
+	local Params = RaycastParams.new()
+	Params.FilterType = Enum.RaycastFilterType.Include
+	Params.FilterDescendantsInstances = {workspace.World.Map}
+
+	from = (if typeof(from) == 'CFrame' then from.Position else from) :: Vector3
+
+	return workspace:Raycast(from, dir, Params)
+end
+
 function EffectUtil:SetRandomSeed(n: number)
 	Random_Number = Random.new(n)
 end

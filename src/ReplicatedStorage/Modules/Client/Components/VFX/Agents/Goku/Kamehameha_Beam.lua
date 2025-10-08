@@ -23,8 +23,10 @@ return function(Caster: Types.Caster): ()
 
     local At = Caster:GetPivot() * CFrame.new(0, 0, -3)
     local Beam = EffectUtil:Create(GokuAssets.Kamehameha.Beam, 2.5)
+    local Aura = EffectUtil:Create(GokuAssets.Kamehameha.Aura, 2.5)
     local Length = 80 
 
+    Aura:PivotTo(Caster:GetPivot())
     Beam:PivotTo(At)
 
     for _, Ball in Beam.Ball:GetChildren() do
@@ -35,6 +37,7 @@ return function(Caster: Types.Caster): ()
             Size = ballSize,
         })
     end
+    
 
     for _, Cylinder in Beam.Beam:GetChildren() do
         local CylSize = Cylinder.Size
@@ -60,9 +63,22 @@ return function(Caster: Types.Caster): ()
         })
     end
 
+    local Cast = EffectUtil:CastMapRaycast(At, vector.create(0, -25))
+    if Cast then
+        Beam.GroundFX.Size *= vector.create(1, 1, 0)
+        Beam.GroundFX.CFrame = CFrame.lookAlong(Cast.Position, At.LookVector)
+
+        EffectUtil:Tween(Beam.GroundFX, {.75, 'Quint'}, {
+            Size = vector.create(Beam.GroundFX.Size.X, Beam.GroundFX.Size.Y, Length)
+        })
+
+    end
+
     --
     task.delay(.75, function()
-    
+
+        EffectUtil:Toggle(Aura, false)
+
         EffectUtil:Tween(Highlight, {.4}, {FillTransparency = 1})
 
         EffectUtil:CleanUp(Highlight, .4)

@@ -25,7 +25,7 @@ return {
 	},
 
 	Level_Stats = {
-		Attack = 49,
+		Attack = 5,
 		Health = 1720,
 		Defense = 16,
 		Daze = 7.5,
@@ -49,7 +49,7 @@ return {
 			},
 
 			Upgrades = {
-				Damage_Mult = 8,
+				Damage_Mult = 0.3,
 			}
 		},
 
@@ -62,14 +62,14 @@ return {
 				Attack_State_Time = 0.817,
 
 				Agent_Stun_Time = 0.45,
-				Damage_Mult = 102,
+				Damage_Mult = 106,
 
 				Range = 6,
 				Attack_Warning = 0.05,
 			},
 
 			Upgrades = {
-				Damage_Mult = 7.5,
+				Damage_Mult = 0.5,
 			}
 		},
 	},
