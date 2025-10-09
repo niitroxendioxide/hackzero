@@ -72,6 +72,19 @@ return {
 		BuyGamepass = 2,
 	},
 
+	AudioGroups = {
+		Effects = 'Effects',
+		Voices = 'Voices',
+		Music = 'Music',
+		Ambience = 'Ambience',
+	},
+
+	AudioPriorities = {
+		High = 'High',
+		Low = 'Low',
+		Medium = 'Medium',
+	},
+
 	Meter_States = {
 		Fill = 1,
 		Empty = 2,

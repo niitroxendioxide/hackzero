@@ -2,9 +2,13 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Client = ReplicatedStorage.Modules.Client
+local Shared = ReplicatedStorage.Modules.Shared
 
 --
+local Mock = require(Shared.Utility.Mock)
+local Settings = require(Client.Packages.Settings)
 
+local Non_Effects = {'Indicator', 'EnemyStats', 'Barrier'}
 local Effects = {
 	__Cached = {}
 }
@@ -25,6 +29,11 @@ end
 
 function Effects:Play(Name: string, ...)
 	--
+	local HasVFXEnabled = Settings:Get("VisualEffects", "Graphics")
+	if not table.find(Non_Effects, Name) and not(HasVFXEnabled) then
+		return
+	end
+
 	local Module = Effects.__Cached[Name]
 
 	if not Module then
@@ -41,6 +50,11 @@ end
 
 function Effects:PlaySerial(Name: string, ...)
 	--
+	local HasVFXEnabled = Settings:Get("VisualEffects", "Graphics")
+	if not(HasVFXEnabled) then
+		return Mock;
+	end
+
 	local Module = Effects.__Cached[Name]
 
 	if not Module then

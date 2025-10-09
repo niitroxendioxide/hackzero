@@ -18,6 +18,7 @@ return {
     Settings = {
         Graphics = {
             CameraShake = true,
+            VisualEffects = false,
         },
         Sound = {
             Master_Volume = 50,

@@ -223,7 +223,8 @@ function EffectUtil:Quad(p0, p1, p2, t)
 end
 
 function EffectUtil:ShakeCamera(Preset: string)
-	if Settings:Get("CameraShake", "Settings") == false then
+	local IsCameraShakeEnabled = Settings:Get("CameraShake", "Graphics");
+	if not IsCameraShakeEnabled then
 		return Mock;
 	end
 
