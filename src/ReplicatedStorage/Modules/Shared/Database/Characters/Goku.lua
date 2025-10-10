@@ -62,6 +62,14 @@ return {
 					0.483,
 				},
 
+				Effect_Data = {
+					Highlight = true,
+					Audio = {
+						Id = { 9117969687, 175024455 }, -- 8595980577 lighter
+						Volume = 0.5,
+					}
+				},
+
 				Walk_Time = 0.2,
 				Forward_Impulse = 10,
 

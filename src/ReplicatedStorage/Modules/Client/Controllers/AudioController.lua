@@ -2,8 +2,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 
 -- imports
-local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Shared = ReplicatedStorage.Modules.Shared
+local _Client = ReplicatedStorage.Modules.Client
 
+local GameEnum = require(Shared.GameEnum)
 --
 local Controller = {}
 
@@ -77,6 +79,19 @@ function Controller:EditVolume(Category: string, Value: number)
     end
 
     Group.Volume = math.clamp(Value, 0, 2)
+
+    for _, ObjInstance in Group:GetDescendants() do
+        if not ObjInstance:IsA("Attachment") then
+            continue
+        end
+
+        local Volume = ObjInstance:GetAttribute("TrackVolume")
+        if typeof(Volume) ~= 'number' then
+            continue
+        end
+
+        ObjInstance.AudioPlayer.Volume = Volume * Group.Volume
+    end
 end
 
 return Controller

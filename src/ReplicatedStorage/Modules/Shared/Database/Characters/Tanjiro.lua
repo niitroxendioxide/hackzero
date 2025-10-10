@@ -59,6 +59,13 @@ return {
 
 				Walk_Time = 0.1,
 
+				Effect_Data = {
+					Audio = {
+						Id = { 6216173737 },
+						Volume = 0.35,
+					}
+				},
+
 				Damage_Mult = {
 					[1] = 40,
 					[2] = 71,

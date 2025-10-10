@@ -4,7 +4,9 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Assets = ReplicatedStorage.Assets
 local Shared = ReplicatedStorage.Modules.Shared
+local Client = ReplicatedStorage.Modules.Client
 
+local AudioLib = require(Client.Libraries.Audio)
 local Types = require(Shared.Types)
 local Effects = require(Shared.Utility.Effects)
 
@@ -17,6 +19,12 @@ return function(
 		HueShift: number?, 
 		HueShiftFilter: ((any) -> (number))?, HitstopTime: number?,
 		Highlight: boolean?,
+
+		Audio: {
+			Id: string, 
+			Volume: number?, 
+			Priority: string?,
+		}?,
 	}
 ): ()
 
@@ -32,6 +40,7 @@ return function(
 	end
 
 	local Offset = Data.Offset or CFrame.new()
+
 
 	local Object = Effects:Create(CombatFolder[EmitterId], 25)
 	Object.CFrame = Enemy:GetPivot() * Offset
@@ -54,6 +63,15 @@ return function(
 
 		Effects:CleanUp(Highlight, .15)
 		Effects:Tween(Highlight, {.15, 'Quad'}, {FillTransparency = 1})
+	end
+
+	if Data.Audio then
+		AudioLib:PlayId(Data.Audio.Id, {
+			At = Enemy:GetPivot().Position,
+			Volume = Data.Audio.Volume or 1,
+			Category = 'Effects',
+			Priority = Data.Audio.Priority,
+		})
 	end
 
 	Effects:Emit(Object)

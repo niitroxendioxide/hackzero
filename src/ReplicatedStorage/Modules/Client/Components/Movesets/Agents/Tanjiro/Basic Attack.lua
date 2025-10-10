@@ -77,7 +77,7 @@ function Ability:Play(Agent)
 		Size = Vector3.new(4, 4, 5),
 		Offset = Vector3.new(0, 0, -2.5),
 		Hit_Function = function(Target)
-			Ability:Hit(Agent, Target, {StopEffect = EffectObj})
+			Ability:Hit(Agent, Target, {StopEffect = EffectObj, EffectData = Ability:FromData("Effect_Data")})
 
 			--Target:Hit()
 			--Ability:Effect('Hit', Target)
@@ -91,7 +91,7 @@ function Ability:Play(Agent)
 			Size = Vector3.new(4, 4, 5),
 			Offset = Vector3.new(0, 0, -2.5),
 			Hit_Function = function(Target)
-				Ability:Hit(Agent, Target, {StopEffect = EffectObj})
+				Ability:Hit(Agent, Target, {StopEffect = EffectObj, EffectData = Ability:FromData("Effect_Data")})
 				--Target:Hit()
 				--Ability:Effect('Hit', Target)
 			end

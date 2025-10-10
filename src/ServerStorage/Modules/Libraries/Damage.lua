@@ -38,6 +38,10 @@ local function ValidateDamageData(given_data: Types.HitEnemyData)
 end
 
 function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitEnemyData): (boolean, number?, boolean?, boolean?, string?, number?, number?, boolean?) 
+	if not Enemy then
+		return false;
+	end
+	
 	local EnemyStatus = Enemy.__Status
 	local AgentGear: AgentTypes.ServerGearManager = (Agent.GetGearManager and Agent:GetGearManager()) or Mock
 
