@@ -80,6 +80,13 @@ export type Marker = {
 
 export type Rating = "X" | "B" | "A" | "S" | "SSS"
 export type Stage_Act = {
+	--[string]: any,
+	AutoGenerate: boolean?,
+	AutoGenerationData: {
+		Infinite: boolean?,
+		Seed: number, -- when set to 0 it'll be random
+		Source: string, -- From the map base folder
+	}?, 
 	Description: string?,
 	Requisites: {
 

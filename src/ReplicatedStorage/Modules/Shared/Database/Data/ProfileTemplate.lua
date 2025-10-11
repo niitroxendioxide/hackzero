@@ -30,8 +30,12 @@ return {
 
             Sound_Effects = true,
         },
-        QOL = {},
-        Keybinds = {},
+        QOL = {
+            
+        },
+        Keybinds = {
+            
+        },
     },
 
     StagesUnlocked = {
