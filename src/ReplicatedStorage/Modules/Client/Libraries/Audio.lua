@@ -68,13 +68,14 @@ function AudioLib:Create(p_AudioId: string, p_CreationData: AudioCreationData): 
     end
     
     local Group = AudioController:GetGroup(p_CreationData.Category, p_CreationData.Priority);
-    local GroupVolume = Group.Volume;
+    local CategoryVolume = Group.Parent.Volume;
+    local PriorityVolume = Group.Volume;
 
     local Emitter = CreateEmitter(p_CreationData.At :: vector, Sanitized)
     local TrackVolume = p_CreationData.Volume
 
-    Emitter:SetAttribute('TrackVolume', TrackVolume)
-    Emitter.AudioPlayer.Volume = TrackVolume * GroupVolume
+    Emitter:SetAttribute('TrackVolume', TrackVolume * PriorityVolume)
+    Emitter.AudioPlayer.Volume = TrackVolume * PriorityVolume * CategoryVolume
     Emitter.Parent = Group
 
     return Emitter

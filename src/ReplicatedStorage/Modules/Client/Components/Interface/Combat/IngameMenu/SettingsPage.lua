@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Assets = ReplicatedStorage.Assets.Interface.Menu.Settings
@@ -13,7 +14,15 @@ type BoolOption = Frame & {
 }
 
 type SliderOption = Frame & {
-    FagBut: GuiButton
+    Slider: Frame & {
+        Bar: Frame,
+        Grab: Frame & {
+            Btn: TextButton
+        },
+    },
+
+    SetName: TextLabel,
+    Value: TextLabel,
 }
 
 type OptButton = BoolOption & SliderOption
@@ -38,6 +47,9 @@ type SettingsPage = Frame & {
 }
 
 --
+local AudioController = require(ReplicatedStorage.Modules.Client.Controllers.AudioController)
+local Inputs = require(ReplicatedStorage.Modules.Client.Libraries.Inputs)
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local ProfileTemplate = require(Shared.Database.Data.ProfileTemplate)
 
 local Effects = require(Shared.Utility.Effects)
@@ -103,9 +115,26 @@ function SetBoolDisplay(State: boolean, Name: string, Category: string)
     end
 end
 
+function SetSliderDisplay(Value: number, Key: string, Category: string)
+    local ButtonObject: SliderOption = States.MainFrame[Category]:FindFirstChild(Key) :: SliderOption
+    if not ButtonObject then
+        return;
+    end
+
+    -- in case i wanna smooth it later
+    local UdimAt = UDim2.fromScale(math.clamp(Value, 0, 1), 1)
+
+    ButtonObject.Slider.Grab.Position = UdimAt
+    ButtonObject.Slider.Bar.Size = UdimAt
+
+    ButtonObject.Value.Text = tostring(math.floor(Value * 100)) .. "%"
+end
+
 function SwitchValue(NewValue: any, Key: string, Category: string)
     if typeof(NewValue) == 'boolean' then
         SetBoolDisplay(NewValue, Key, Category)
+    elseif typeof(NewValue) == 'number' then
+        SetSliderDisplay(NewValue, Key, Category)
     end
 end
 
@@ -124,6 +153,12 @@ function EditSetting(Key: string, Category: string, Value: any, IgnoreChange: bo
 
     States.ChangedSettings[Category][Key] = Value;
 
+    if string.match(Key, 'Volume') then
+        local Type = string.split(Key, '_')[1]
+
+        AudioController:EditVolume(Type, Value)
+    end
+
     --
     SwitchValue(Value, Key, Category)
 
@@ -136,13 +171,14 @@ end
 
 function CreateButton(Value: any, Name: string, List: CategoryList): ()
     local Category: string = List.Name;
+    local Converted = StringsUtil:SplitTitleCaps(string.gsub(Name, "_", " ") :: string)
 
     if typeof(Value) == 'boolean' then
-        local Converted = string.gsub(Name, "_", " ")
         local Button = Assets.Bool:Clone() :: BoolOption;
         Button.SetName.AutoLocalize = false;
-        Button.SetName.Text = StringsUtil:SplitTitleCaps(Converted);
+        Button.SetName.Text = Converted;
         Button.Name = Name;
+        Button.LayoutOrder = -2 
         Button.Parent = List;
 
         SetBoolDisplay(Value, Name, Category)
@@ -162,6 +198,36 @@ function CreateButton(Value: any, Name: string, List: CategoryList): ()
             
             -- upd state & show
             EditSetting(Name, Category, CurrentState);
+        end)
+    elseif typeof(Value) == 'number' then
+        local Order = Name == 'Master_Volume' and -1.1 or -1
+
+        local Button = Assets.Slider:Clone() :: SliderOption;
+        Button.SetName.AutoLocalize = false;
+        Button.SetName.Text = Converted;
+        Button.Name = Name;
+        Button.LayoutOrder = Order
+        Button.Parent = List;
+
+        SetSliderDisplay(Value, Name, Category)
+
+        Button.Slider.Grab.Btn.MouseButton1Down:Connect(function()
+            local CurrentValue = Settings:Get(Name, Category) :: number;
+            local Mouse = Players.LocalPlayer:GetMouse()
+
+            while task.wait() do
+                local MBDown = Inputs:IsMBDown(Enum.UserInputType.MouseButton1)
+                if Inputs:IsDevice(GameEnum.Device.Desktop) and not MBDown then
+                    break
+                end
+
+                local SliderValue = math.clamp((Mouse.X - Button.AbsolutePosition.X) / Button.AbsoluteSize.X, 0, 1)
+                CurrentValue = SliderValue
+
+                SetSliderDisplay(SliderValue, Name, Category)
+            end
+
+            EditSetting(Name, Category, CurrentValue);
         end)
     end
 end

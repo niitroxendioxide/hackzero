@@ -32,7 +32,7 @@ return {
 
 		@return any The value of the setting key given. Returns nil if invalid
 	]]
-	Get = function(self: {[any]: any}, Key: string, Category: string?): any?
+	Get = function<T>(self: {[any]: any}, Key: string, Category: string?): T?
 		if not Category then
 			for _, CategoryTable in self do
 				if CategoryTable[Key] then

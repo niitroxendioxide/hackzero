@@ -64,8 +64,6 @@ function AudioDatabase:Init()
 
     end
 
-    print(AudioDatabase.General)
-
 end
 
 function AudioDatabase:FromString(p_AudioDir: string): AudioInformation? 

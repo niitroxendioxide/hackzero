@@ -62,6 +62,13 @@ return {
 		SetMovingStatusCompanion = 88,
 	},
 
+	Device = {
+		Mobile = 1,
+		Desktop = 2,
+		Console = 3,
+		VR = 4,
+	},
+
 	InteractionType = {
 		Chest = 1,
 		NPC = 2,

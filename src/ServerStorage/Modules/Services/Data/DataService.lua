@@ -28,7 +28,7 @@ local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 local PlayerCompanionDataClass = require(Classes.Data.PlayerCompanionData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("settingsandgeartest1", ProfileTemplate)
+local DataStore = ProfileStore.New("AUDIO&SETTINGS", ProfileTemplate)
 
 --
 local ReplicatedKeys = {"Gems", "Money"}

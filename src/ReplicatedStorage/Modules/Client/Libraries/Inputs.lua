@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Settings = require(Client.Packages.Settings)
+local GameEnum = require(Shared.GameEnum)
 local Types = require(Shared.Types)
 local Places = require(Shared.Places)
 
@@ -139,6 +140,24 @@ function Inputs:GetEnumFromKey(Name: string | Enum.KeyCode)
 	end
 
 	return Settings.Keybinds.Computer[Name]
+end
+
+function Inputs:IsMBDown(mouseButton: Enum.UserInputType)
+	return UserInputService:IsMouseButtonPressed(mouseButton)
+end
+
+function Inputs:GetDevice(): number
+	if UserInputService.TouchEnabled then
+		return GameEnum.Device.Mobile
+	elseif UserInputService.GamepadEnabled and not UserInputService.KeyboardEnabled then
+		return GameEnum.Device.Console
+	end
+
+	return GameEnum.Device.Desktop
+end
+
+function Inputs:IsDevice(p_DeviceType: number)
+	return p_DeviceType == Inputs:GetDevice()
 end
 
 function Inputs:IsEnumKeyDown(Key: Enum.KeyCode)
