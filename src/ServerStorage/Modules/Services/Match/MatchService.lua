@@ -146,7 +146,7 @@ function Service:End(Won: boolean)
 end
 
 function Service:Begin(Stage: string, Act: string)
-    local CouldLoadMap = Service:CreateMap(Stage)
+    local CouldLoadMap = Service:CreateMap(Stage, Act)
     local Data = StageDatabase:GetAct(Stage, Act)
 
     if not CouldLoadMap or not Data then
@@ -158,7 +158,6 @@ function Service:Begin(Stage: string, Act: string)
     end
 
     if Service.__Active_Match then
-        print(debug.traceback())
         return
     end
 
@@ -229,10 +228,14 @@ function Service:Lose()
     Service.__Active_Match:Finish(false)
 end
 
-function Service:CreateMap(Stage: string): boolean
+function Service:CreateMap(Stage: string, Act: string): boolean
     local StageInformation = StageDatabase:GetStage(Stage)
+    local ActInfo = StageDatabase:GetAct(Stage, Act)
+    if ActInfo.AutoGenerate then
+        return Map:Generate(StageInformation.Map, ActInfo.AutoGenerationData)
+    end
 
-    return Map:Unpack(StageInformation.Map)
+    return Map:Unpack(StageInformation.Map) 
 end
 
 -- ## Private event

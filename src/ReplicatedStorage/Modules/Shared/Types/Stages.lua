@@ -82,11 +82,7 @@ export type Rating = "X" | "B" | "A" | "S" | "SSS"
 export type Stage_Act = {
 	--[string]: any,
 	AutoGenerate: boolean?,
-	AutoGenerationData: {
-		Infinite: boolean?,
-		Seed: number, -- when set to 0 it'll be random
-		Source: string, -- From the map base folder
-	}?, 
+	AutoGenerationData: MapGenerationData?, 
 	Description: string?,
 	Requisites: {
 
@@ -230,6 +226,13 @@ export type StagePlayer = {
 	AddLoot: (self: StagePlayer, LootType: LootType, Data: {Amount: number, Extra: LootExtraData}) -> (),
 	AddModifier: (self: StagePlayer) -> (),
 	AddMatchItem: (self: StagePlayer) -> (),
+}
+
+export type MapGenerationData = {
+	Infinite: boolean?,
+	Seed: number, -- when set to 0 it'll be random
+	Source: string, -- From the map base folder,
+	Extent: number?, -- How far from the source to expand from the initial room
 }
 
 return 0

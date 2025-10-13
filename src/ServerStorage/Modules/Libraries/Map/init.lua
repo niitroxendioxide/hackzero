@@ -8,24 +8,36 @@ local Assets = ReplicatedStorage.Assets
 
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Types = require(Shared.Types.Stages)
+local Generator = require(script.Generator)
 local World = workspace:WaitForChild('World')
 
 --
-local MapLoader = {}
+local MapLoader = {
+    __Current_Loading_Data = {
+        Infinite = false,
+    }
+}
 
-function MapLoader:Unpack(MapPath: string, SpawnToUse: string?)
+function GetMap(p_MapPath: string): Folder?
+    local Split = string.split(p_MapPath, "/")
     local Map = Assets:WaitForChild("Maps") :: Folder
-    local Split = string.split(MapPath, "/")
-    local SpawnId = SpawnToUse or 'SpawnLocation'
 
     for i = 1, #Split do
         Map = Map:FindFirstChild(Split[i])
 
         if Map == nil then
-            return false
+            return nil
         end
     end
 
+    return Map
+end
+
+function MapLoader:Unpack(p_MapPath: string, p_SpawnToUse: string?)
+    local SpawnId = p_SpawnToUse or 'SpawnLocation'
+    local Map = GetMap(p_MapPath)
+
+    --
     local NewMap = Map:Clone()
 
     if NewMap:FindFirstChild('Lighting') then
@@ -82,9 +94,14 @@ function MapLoader:Unpack(MapPath: string, SpawnToUse: string?)
 end
 
 function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destructibles: {}, Chests: {}}?
+    local MapData = {
+        Destructibles = {},
+        Chests = {},
+        NPCS = {},
+    }
     local Map = World:WaitForChild("Map")
     if not Map:FindFirstChild('Markers') then
-        return
+        return MapData;
     end
 
     for _, Part in Map.Markers:GetChildren() do
@@ -97,12 +114,6 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
     local Triggers = Map:FindFirstChild( 'Triggers') or Instance.new('Folder')
     Triggers.Name = 'Triggers'
     Triggers.Parent = Map
-
-    local MapData = {
-        Destructibles = {},
-        Chests = {},
-        NPCS = {},
-    }
 
     for MarkerId, MarkerObj in MarkerData do
         local ObjName = MarkerObj.Name or MarkerId
@@ -176,6 +187,25 @@ function MapLoader:SetupTrigger(Map: Folder & {Markers: Folder}, MarkerId: strin
     Part.Parent = Triggers
 
     return Part
+end
+
+
+--
+function MapLoader:Generate(p_MapPath: string, p_GenerationData: Types.MapGenerationData): (boolean)
+    local MapFolder = GetMap(p_MapPath)
+    
+    MapLoader.__Current_Loading_Data.Infinite = p_GenerationData.Infinite
+
+    local Result, msg = Generator:Create(MapFolder, p_GenerationData)
+    if not Result then
+        warn("Generator error: " .. msg)
+    end
+
+    return Result
+end
+
+function MapLoader:IsInfinite(): boolean
+    return MapLoader.__Current_Loading_Data.Infinite
 end
 
 return MapLoader

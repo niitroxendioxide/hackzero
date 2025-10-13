@@ -19,7 +19,7 @@ return {
 
             Rewards = {
                 Handler = function(State)
-                    return "A" 
+                    return "A"
                 end,
 
                 Items = {
