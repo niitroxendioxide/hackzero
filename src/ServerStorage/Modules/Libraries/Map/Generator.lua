@@ -11,7 +11,7 @@ local Assets = ReplicatedStorage.Assets.Maps
 local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(Shared.Types.Stages)
 
-local MAX_DEFINED_ITER = 8
+local MAX_DEFINED_ITER = 25
 
 type RoomStruct = {
     Model: Model,
@@ -63,26 +63,42 @@ function PlaceRoom(p_Room: CreatedRoom)
         return;
     end
 
+    
     local RoomConnection = Generator.__Rooms[SourceConnection];
-
+    
     local LinkObj = p_Room.Links[RoomConnection.RoomId]
     local OtherLinkObj = RoomConnection.Links[p_Room.RoomId]
-
+    
     local RootOffset = (p_Room.Model.PrimaryPart :: BasePart).CFrame:ToObjectSpace(LinkObj.CFrame)
-    local Base = OtherLinkObj.CFrame;
-
-    local NewCFrame = Base * RootOffset
+    local BaseOffset = OtherLinkObj.CFrame * CFrame.Angles(0, math.pi, 0)
+    
+    LinkObj.Color = Color3.new(1)
+    OtherLinkObj.Color = Color3.new(1)
+                    
+    local NewCFrame = (BaseOffset * RootOffset)
     p_Room.Model:PivotTo(NewCFrame)
+
+    local p = Instance.new("Part")
+    p.Size = vector.create(3, 12, 3)
+    p.CFrame = NewCFrame
+    p.Anchored = true
+    p.CanCollide = false
+    p.Color = Color3.new(1, 0, 1)
+    p.Parent = workspace.World.Effects
 end
 
 function GetRoomWithEnoughConnections(p_ConnectionCountMin: number): RoomStruct?
-    for _, RoomData in Generator.__Cached_Rooms do
-        if #RoomData.Available >= p_ConnectionCountMin then
+    for _, RoomData: RoomStruct in Generator.__Cached_Rooms do
+        if #RoomData.Connections >= p_ConnectionCountMin then
             return RoomData
         end
     end
 
     return;
+end
+
+function IsTileAvailable(p_At: vector): boolean
+    return false
 end
 
 function CreateRoomFromModel(p_Model: Model & { Connections: Folder }, p_Connection: number?): CreatedRoom?
@@ -97,14 +113,19 @@ function CreateRoomFromModel(p_Model: Model & { Connections: Folder }, p_Connect
     end
 
     --
+    local ObjModel = p_Model:Clone()
+    ObjModel.Parent = workspace.World.Map.Design;
+    
     local Object = {
-        Model = p_Model:Clone(),
-        Available = p_Model.Connections:GetChildren(),
-        ConnectionParts = p_Model.Connections:GetChildren(),
+        Model = ObjModel,
+        Available = ObjModel.Connections:GetChildren(),
+        ConnectionParts = ObjModel.Connections:GetChildren(),
 
         RoomId = #Generator.__Rooms + 1,
         Connections = {},
-    } :: CreatedRoom
+        Links = {},
+    } :: CreatedRoom;
+    
 
     if s_Connection then
         local ConnectedAt = Object.Available[math.random(1, #Object.Available)]
@@ -118,7 +139,6 @@ function CreateRoomFromModel(p_Model: Model & { Connections: Folder }, p_Connect
         s_Connection.Links[Object.RoomId] = s_Link
     end
 
-    Object.Parent = workspace.World.Map.Design;
 
     table.insert(Generator.__Rooms, Object)
 
@@ -140,7 +160,6 @@ function Generator:Create(p_Folder: Folder, p_GenerationData: Types.MapGeneratio
 
     for _, Child in Source:GetChildren() do
         if not Child:IsA("Model") then continue end
-        print(Child)
 
         if Child:HasTag("Room") then 
             table.insert(PossibleStartingRooms, Child)
@@ -153,11 +172,8 @@ function Generator:Create(p_Folder: Folder, p_GenerationData: Types.MapGeneratio
         })
     end
 
-    print("Generating... amt: ", PossibleStartingRooms)
-
     -- generated
     local InitialRoom = CreateRoomFromModel(PossibleStartingRooms[math.random(1, #PossibleStartingRooms)])
-    InitialRoom.Model:PivotTo()
 
     Generator:Connect(InitialRoom, 2, 0)
     
@@ -169,13 +185,12 @@ function Generator:Connect(p_BaseRoom: CreatedRoom, p_MinConnections: number, p_
     p_IterCount = p_IterCount or 0
 
     if p_IterCount >= MAX_DEFINED_ITER then
-        print("Iterations surpassed limit")
         return
     end
 
     local ConnectionsToCreate = #p_BaseRoom.Available
 
-    for i = 1, #ConnectionsToCreate do
+    for i = 1, ConnectionsToCreate do
         p_IterCount += 1;
 
         local Room = GetRoomWithEnoughConnections(p_MinConnections)
