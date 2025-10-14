@@ -47,4 +47,38 @@ function TableUtil:WriteValues(dict: {any})
     return vals;
 end
 
+function TableUtil.PopRandom(p_tab: {any})
+    local len = #p_tab
+    if (len == 0) then return nil end
+
+    local idx = math.random(1, len)
+    local val = p_tab[idx]
+    table.remove(p_tab, idx)
+
+    return val
+end
+
+function TableUtil.GetRand(p_tab: {any})
+    local len = #p_tab
+    if (len == 0) then return nil end
+
+    local idx = math.random(1, len)
+    local val = p_tab[idx]
+
+    return val
+end
+
+function TableUtil.CopyDeep<T, V>(p_Table: {[T]: V}): {[T]: V}
+    local Copy = {}
+    for Key, Val in p_Table do
+        if typeof(Val) == "table" then
+            Copy[Key] = TableUtil.CopyDeep(Val)
+        else
+            Copy[Key] = Val
+        end
+    end
+
+    return Copy
+end
+
 return TableUtil

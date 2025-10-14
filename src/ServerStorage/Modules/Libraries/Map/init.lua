@@ -8,7 +8,7 @@ local Assets = ReplicatedStorage.Assets
 
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Types = require(Shared.Types.Stages)
-local Generator = require(script.Generator)
+local Generator = require(script.gen_v2)
 local World = workspace:WaitForChild('World')
 
 --
@@ -191,14 +191,37 @@ end
 
 
 --
+function GetRoomsSource(p_MapFolder: Folder, p_Source: string): Folder?
+    local SourceDirs = string.split(p_Source, '/')
+    local MapFolder = p_MapFolder
+    local index = 1;
+
+    if SourceDirs[1] == 'Maps' then
+        MapFolder = Assets
+        index = 2
+    end
+
+    for i = index, #SourceDirs do
+        MapFolder = MapFolder:FindFirstChild(SourceDirs[i])
+        if MapFolder == nil then
+            return nil
+        end
+    end
+
+    return MapFolder
+end
+
 function MapLoader:Generate(p_MapPath: string, p_GenerationData: Types.MapGenerationData): (boolean)
     local MapFolder = GetMap(p_MapPath)
     
     MapLoader.__Current_Loading_Data.Infinite = p_GenerationData.Infinite
 
-    local Result, msg = Generator:Create(MapFolder, p_GenerationData)
+    --
+    local Source = GetRoomsSource(MapFolder, p_GenerationData.Source)
+
+    local Result, msg = Generator:Create(Source, p_GenerationData)
     if not Result then
-        warn("Generator error: " .. msg)
+        warn("Generator error: " .. (msg or " no message"))
     end
 
     return Result
