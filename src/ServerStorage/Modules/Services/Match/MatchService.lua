@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local Modules = ServerStorage.Modules
 local Shared = ReplicatedStorage.Modules.Shared
@@ -47,6 +48,10 @@ function Service:Init()
     Service.__Total_Players = TotalPlayers
 
     while LoadedPlayers < TotalPlayers do
+        if (RunService:IsRunMode()) then
+            break
+        end
+
         LoadedPlayers = 0
 
         for _, Player in Players:GetPlayers() do

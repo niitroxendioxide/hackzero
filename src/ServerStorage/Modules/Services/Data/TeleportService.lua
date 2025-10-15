@@ -20,6 +20,8 @@ local Service = {
     __Reserving = {},
 }
 
+local Mock = require(Shared.Utility.Mock)
+
 
 -- Private functions
 
@@ -285,12 +287,12 @@ function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: n
 end
 
 function Service:GetStageData(): {Stage: string, Act: string, TotalPlayers: number}
-    if #Players:GetPlayers() < 1 then
+    if #Players:GetPlayers() < 1 and not RunService:IsRunMode() then
         Players.PlayerAdded:Wait()
     end
 
-    local RandomPlayer = Players:GetPlayers()[1] :: Player
-    local JoinData = RandomPlayer:GetJoinData()
+    local RandomPlayer = RunService:IsRunMode() and Mock or  Players:GetPlayers()[1] :: Player
+    local JoinData = RunService:IsRunMode() and {} or  RandomPlayer:GetJoinData()
     local StageData = {}
 
     if not JoinData.TeleportData then
