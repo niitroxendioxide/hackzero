@@ -4,7 +4,6 @@
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ThirdPartyUserService = game:GetService("ThirdPartyUserService")
 local Shared = ReplicatedStorage.Modules.Shared
 
 local _Print = require(ReplicatedStorage.Modules.Shared.Utility.Print)
@@ -18,8 +17,7 @@ type RoomTemplate = {
 }
 
 type RoomStruct = {
-    [string]: any,
-
+    Id: number,
     Tags: { string }, 
     Model: Model,
     Connectors: { Part },
@@ -31,7 +29,7 @@ type RoomStruct = {
 
 --
 local RNG = Random.new()
-local VIEW_TIME = 0.01
+local VIEW_TIME = 0.1
 local TILE_SIZE = 76
 local BASE_CFRAME = CFrame.new(0, 0, 0)
 local Generator = {

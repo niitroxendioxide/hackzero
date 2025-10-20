@@ -12,7 +12,13 @@ return {
                 Source = 'Rooms',
                 Extent = 15,
             },
-            Description = "Investigate the place",
+            Description = "Find clues about what's shifted in the timeline",
+
+            Guide = {
+                Room_1 = {
+                    Objective = "Find the key",
+                }
+            }
         },
 
         SecondMission = {
@@ -20,7 +26,7 @@ return {
             AutoGenerationData = {
                 Seed = 0x1525, 
                 Source = 'Rooms',
-                Extent = 15,
+                Extent = 19,
             },
             Description = "Investigate the place",
         },
@@ -30,7 +36,7 @@ return {
             AutoGenerationData = {
                 Seed = 0x1525, 
                 Source = 'Rooms',
-                Extent = 15,
+                Extent = 21,
             },
             Description = "Investigate the place",
         },
