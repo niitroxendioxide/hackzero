@@ -105,7 +105,8 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 		return
 	end
 
-	local Size = (TriggerObject:GetAttribute("AreaSize") or (TriggerObject.Size * 1.25)) :: Vector3
+	local SIZE_K = workspace.World.Map.Design:GetAttribute("Generated") and 1.1 or 1.25
+	local Size = (TriggerObject:GetAttribute("AreaSize") or (TriggerObject.Size * SIZE_K)) :: Vector3
 
     local Sizes = {
         Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, -Size.Z/2 - 1),

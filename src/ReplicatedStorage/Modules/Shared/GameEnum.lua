@@ -361,6 +361,12 @@ return {
 		Challenge = "EXTREME"
 	},
 
+	StageHook = {
+		Begin = 1,
+		TriggerEnter = 2,
+		BreakStructure = 3,
+	},
+
 	KeyLookup = function(Table: {}, val: number)
 		for Key, Value in Table do
 			if Value == val then

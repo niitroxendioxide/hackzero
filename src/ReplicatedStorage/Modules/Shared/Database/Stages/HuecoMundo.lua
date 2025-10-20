@@ -14,10 +14,46 @@ return {
             },
             Description = "Find clues about what's shifted in the timeline",
 
+            Markers = {
+                ['Room_2'] = {Type = 'Trigger'},
+                ['Room_3'] = {Type = 'Trigger'},
+                ['Room_4'] = {Type = 'Trigger'},
+            },
+
+            Rewards = {
+                Handler = function(Objectives)
+                    if Objectives.Investigated then
+                        return "S"
+                    end
+
+                    return "X"
+                end
+            },
+
             Guide = {
-                Room_1 = {
-                    Objective = "Find the key",
-                }
+                Begin = {
+                    Objective = "Investigate the place",
+                    Goal = {Investigated = true},
+                    Enemies = {},
+                    Global = true,
+
+                    Finished = function(State)
+                        return "End"
+                    end
+                },
+
+                Room_2 = {
+                    Objective = "Beat those guys up!",
+                    Goal = {
+                        KillEnemies = 3,
+                    },
+
+                    Enemies = {
+                        [1] = {'Template', 3, 3},
+                    },
+
+                    Finished = function() end
+                },
             }
         },
 

@@ -117,14 +117,16 @@ export type Stage = {
 }
 
 export type MissionClass = {
-	Finished: Signal<boolean>,
+	Finished: Signal<{[string]: any}>,
 
 	__Active: boolean,
 	__Act: string,
 	__Stage: string,
 	__Is_Finished: boolean,
-	__Current_Active_Triggers: {RBXScriptConnection},
+	__Current_Active_Triggers: {thread | RBXScriptConnection},
 	__Current_Events: {[string]: EventClass},
+	__Current_State: {[string]: any},
+	__Hooks: {[string]: (...any) -> ()},
 
 	--
 	Begin: (self: MissionClass) -> (),
@@ -137,12 +139,7 @@ export type MissionClass = {
 	]]
 	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?, Players: {StagePlayer}, Ignore_Replay: boolean?, Trigger: BasePart?) -> (),
 	SummonEnemyWave: (self: MissionClass, Wave: number) -> (),
-
-	--[[
-		@param WinStatus Whether or not the match was won
-	]]
-
-	Finish: (self: MissionClass, WinStatus: boolean) -> (),
+	Finish: (self: MissionClass) -> (),
 
 	--[[
 		Sync with all clients the current events and information
@@ -160,7 +157,7 @@ export type MissionClass = {
 }
 
 export type EventClass = {
-	Finished: Signal<string>,
+	Finished: Signal<string, {[string]: any}>,
 
 	__Current_Barrier_State: boolean,
 	__Players: {StagePlayer},

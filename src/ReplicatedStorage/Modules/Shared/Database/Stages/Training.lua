@@ -75,6 +75,7 @@ return {
                     Objective = "Test out new skills",
                     Goal = {ReachPlace = "End"},
                     Enemies = {
+                        -- Name, Amount, Level
                         [1] = {"Saiyan", 1, 60}
                     },
                     Dialogue = {

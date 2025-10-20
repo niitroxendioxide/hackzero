@@ -227,6 +227,10 @@ function MapLoader:Generate(p_MapPath: string, p_GenerationData: Types.MapGenera
     return Result
 end
 
+function MapLoader:CreateMarkersForGeneratedMap()
+    --local Rooms = World:FindFirstChild("Map"):FindFirstChild("Design")
+end
+
 function MapLoader:IsInfinite(): boolean
     return MapLoader.__Current_Loading_Data.Infinite
 end

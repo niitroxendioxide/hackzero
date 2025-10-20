@@ -1,3 +1,10 @@
+--[[
+    @niitroxendioxide 2025-07
+
+    @class Event
+    In charge of managing an event in the stage, can summon enemies, make areas, etc.
+]]
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -136,7 +143,8 @@ function EventClass.CreateEventAreaModel(self: Types.EventClass, Trigger: BasePa
 
     self.__Current_Barriers = {Trigger}
 
-    local Size = (Trigger:GetAttribute("AreaSize") or (Trigger.Size * 1.25)) :: Vector3
+    local SIZE_K = workspace.World.Map.Design:GetAttribute("Generated") and 1.1 or 1.25
+    local Size = (Trigger:GetAttribute("AreaSize") or (Trigger.Size * SIZE_K)) :: Vector3
     local Sizes = {
         Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
         Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, Size.Z/2 - 1),
@@ -280,11 +288,12 @@ function EventClass.Destroy(self: Types.EventClass)
     --
     local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
 
-    local Next_Stage = EventData.Finished(self:GetCorrectedState())
+    local CorrectedState = self:GetCorrectedState()
+    local Next_Stage = EventData.Finished()
     self:SetBarrierCollision(false)
 
     self.__Finish_Status = true
-    self.Finished:Fire(Next_Stage)
+    self.Finished:Fire(Next_Stage, CorrectedState)
 end
 
 function EventClass.AddPlayer(self: Types.EventClass, Player: Types.StagePlayer)

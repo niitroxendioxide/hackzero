@@ -28,6 +28,7 @@ type RoomStruct = {
 }
 
 --
+local SIZE_CONSTANT = 1 / 1.1
 local RNG = Random.new()
 local VIEW_TIME = 0.1
 local TILE_SIZE = 76
@@ -341,7 +342,7 @@ function ConnectRoom(p_RoomSource: RoomStruct, p_RoomNew: RoomStruct, p_SuccessR
         end
 
         p_RoomNew.Model:PivotTo(Base * CFrame.Angles(0, math.pi * 0.5 * i, 0))
-        task.wait(VIEW_TIME)
+        --task.wait(VIEW_TIME)
     end
 
     local ToFallback = IsOneConnector and not IsRoomOnCFrame(p_RoomNew:GetCF())
@@ -421,6 +422,22 @@ function CreateRoom(p_Model: RoomTemplate, p_ConnectedToId: number?, p_OnlyFreeD
     --
     AddRoom(Room)
 
+    --
+    local MarkerFolder = workspace.World.Map:FindFirstChild('Markers')
+    if MarkerFolder then
+        local Base = Room.Model.PrimaryPart
+        local NewMarker = Instance.new("Part")
+        NewMarker.Size = vector.create(Base.Size.X, TILE_SIZE, Base.Size.Z) * SIZE_CONSTANT
+        NewMarker.CFrame = Base.CFrame * CFrame.new(0, TILE_SIZE/2, 0)
+        NewMarker.Anchored = true
+        NewMarker.CanCollide = false
+        NewMarker.CanQuery = false
+        NewMarker.Transparency = 1
+        NewMarker.Color = Color3.new(1)
+        NewMarker.Name = 'Room_' .. tostring(Room.Id)
+        NewMarker.Parent = MarkerFolder
+    end
+
     return Room
 end
 
@@ -460,6 +477,17 @@ function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGener
         DesignFolder = Instance.new('Folder')
         DesignFolder.Name = 'Design'
         DesignFolder.Parent = workspace.World.Map
+    end
+
+    DesignFolder:SetAttribute('Generated', true)
+
+    local MarkerFolder = workspace.World.Map:FindFirstChild('Markers')
+    if MarkerFolder then
+        MarkerFolder:ClearAllChildren()
+    else
+        MarkerFolder = Instance.new('Folder')
+        MarkerFolder.Name = 'Markers'
+        MarkerFolder.Parent = workspace.World.Map
     end
 
     local InitTemplates = Generator:CacheRooms(p_RoomSource);
@@ -569,6 +597,7 @@ function Generator:Generate(p_RoomId: number, list: { RoomTemplate }?, onlyfreed
         return;
     end
 
+    --
     p_RoomId += 1;
 
     Generator:Generate(p_RoomId)
