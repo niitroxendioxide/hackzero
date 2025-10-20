@@ -8,7 +8,7 @@ local Assets = ReplicatedStorage.Assets
 
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Types = require(Shared.Types.Stages)
-local Generator = require(script.gen_v3)
+local Generator = require(script.Generator)
 local World = workspace:WaitForChild('World')
 
 --

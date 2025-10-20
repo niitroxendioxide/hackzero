@@ -233,6 +233,7 @@ export type MapGenerationData = {
 	Seed: number, -- when set to 0 it'll be random
 	Source: string, -- From the map base folder,
 	Extent: number?, -- How far from the source to expand from the initial room
+	Trail: number?,
 }
 
 return 0

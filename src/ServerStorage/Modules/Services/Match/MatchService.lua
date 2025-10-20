@@ -17,6 +17,7 @@ local Map = require(ServerStorage.Modules.Libraries.Map)
 local MatchStats = require(ServerStorage.Modules.Libraries.MatchStats)
 local Network = require(Shared.Network)
 local Targets = require(ServerStorage.Modules.Libraries.Targets)
+local AgentService = require(ServerStorage.Modules.Services.Combat.AgentService)
 local CompanionService = require(ServerStorage.Modules.Services.Combat.CompanionService)
 local AchievementService = require(ServerStorage.Modules.Services.Data.AchievementService)
 local DataService = require(ServerStorage.Modules.Services.Data.DataService)
@@ -171,6 +172,12 @@ function Service:Begin(Stage: string, Act: string)
     local Marker_Data = Map:SetupMarkers(Data.Markers)
 
     --
+    local AllPlayers = Players:GetPlayers()
+    if #AllPlayers == 0 then
+        warn('No players found. Match is debug')
+        return
+    end
+
     local MissionClass = MissionClass.new(Stage, Act)
     Map:AssignCurrentMission(MissionClass)
 
@@ -191,9 +198,11 @@ function Service:Begin(Stage: string, Act: string)
 
 
     --
-    local Companions = DataService:GetCompanions((Players:GetPlayers())[math.random(1, #Players:GetPlayers())])
+    local RandomPlayer = AllPlayers[math.random(1, #AllPlayers)]
+    local Companions = DataService:GetCompanions(RandomPlayer)
+    local FirstAgent = AgentService:GetCurrentCharacter(RandomPlayer)
 
-    CompanionService:CreateCompanion(Companions[1])
+    CompanionService:CreateCompanion(Companions[1], FirstAgent)
 
     --
     MissionClass.Finished:Once(function(State: boolean)

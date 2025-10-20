@@ -4,9 +4,10 @@
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ThirdPartyUserService = game:GetService("ThirdPartyUserService")
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Print = require(ReplicatedStorage.Modules.Shared.Utility.Print)
+local _Print = require(ReplicatedStorage.Modules.Shared.Utility.Print)
 local Types = require(Shared.Types.Stages)
 
 -- Definitions
@@ -19,6 +20,7 @@ type RoomTemplate = {
 type RoomStruct = {
     [string]: any,
 
+    Tags: { string }, 
     Model: Model,
     Connectors: { Part },
     UsedConnectors: { [Part] : number },
@@ -33,9 +35,15 @@ local VIEW_TIME = 0.01
 local TILE_SIZE = 76
 local BASE_CFRAME = CFrame.new(0, 0, 0)
 local Generator = {
-    __Room_Counter = 0;
-    __Room_List = {},
-    __Room_Types = {} :: { RoomTemplate },
+    __Infinite = false  :: boolean,
+    __Side = -1         :: number,
+    __Debug = false     :: boolean,
+    __Room_Count = 0    :: number,
+    __Trail = math.huge :: number,
+    __Max = 0           :: number,
+    __Room_Counter = 0  :: number;
+    __Room_List = {}    :: { RoomStruct },
+    __Room_Types = {}   :: { RoomTemplate },
 }
 
 
@@ -47,6 +55,8 @@ function AddRoom(p_Room)
     p_Room.Id = NewId;
     p_Room.Model.Name = 'Room_'..tostring(NewId)
     Generator.__Room_List[NewId] = p_Room;
+
+    Generator.__Room_Count += 1
 end
 
 function RemoveRoom(p_Room)
@@ -57,6 +67,8 @@ function RemoveRoom(p_Room)
 
     p_Room.Model:Destroy()
     p_Room.Model = nil
+
+    Generator.__Room_Count -= 1
 end
 
 function RemoveLast()
@@ -89,11 +101,37 @@ function GetRoom(p_Id: number)
     return Generator.__Room_List[p_Id];
 end
 
-function GetRoomWithMinConnections(p_MinConnections: number, Ignore: { RoomTemplate }?): RoomTemplate?
+function GetRoomWithMinConnections(p_MinConnections: number, Ignore: { RoomTemplate }?, exludeTags: { [string]: boolean }?): RoomTemplate?
     local List = {}
     Ignore = Ignore or {}
+    
     for _, RoomData in Generator.__Room_Types do
+        local skip = false;
+        if exludeTags :: { [string]: boolean } then
+            for _, t in RoomData.Tags do
+                if exludeTags[t] then skip = true; break end
+            end
+            if skip then continue end
+        end
+
         if RoomData.ConnectionCount >= p_MinConnections and not table.find(Ignore :: { RoomTemplate }, RoomData) then
+            table.insert(List, RoomData)
+        end
+    end
+
+    if (#List == 0) then
+        return nil;
+    end
+
+    return List[RNG:NextInteger(1, #List)];
+end
+
+
+function GetRoomsWithConnectionCount(p_ConnectionCount: number): RoomTemplate?
+    local List = {}
+    
+    for _, RoomData in Generator.__Room_Types do
+        if RoomData.ConnectionCount == p_ConnectionCount then
             table.insert(List, RoomData)
         end
     end
@@ -132,7 +170,7 @@ function ShowDirection(p_Cf: CFrame, name)
     return Part
 end
 
-function ClearArrows()
+function _ClearArrows()
     local ar = workspace:FindFirstChild("arrows")
     if ar then
         ar:ClearAllChildren()
@@ -177,8 +215,9 @@ function IsRoomOnDirection(p_Origin: RoomStruct, p_ConnectorCF: CFrame, p_TileMi
     end
 
     if Found and (TotalDistance < (TILE_SIZE * Minimum)) then
-        print('There is a tile in that direction!')
-        ShowDirection(p_ConnectorCF, 'Obstruction for struct: ' .. p_Origin.Model.Name)
+        if Generator.__Debug then
+            ShowDirection(p_ConnectorCF, 'Obstruction for struct: ' .. p_Origin.Model.Name)
+        end
 
         return Found, RoomId
     end
@@ -189,8 +228,11 @@ end
 function ConnectRoom(p_RoomSource: RoomStruct, p_RoomNew: RoomStruct, p_SuccessRoomId: number, p_OnlyFreeDirections: boolean?)
     --
     --ClearArrows()
-
     local SourceConnector = p_RoomSource.Connectors[RNG:NextInteger(1, #p_RoomSource.Connectors)]
+    if not SourceConnector then
+        return false;
+    end
+    
     SourceConnector.Color = Color3.new(1)
     SourceConnector.CanTouch = false
     SourceConnector.CanQuery = false
@@ -201,7 +243,8 @@ function ConnectRoom(p_RoomSource: RoomStruct, p_RoomNew: RoomStruct, p_SuccessR
     local Fallback = {}
 
     --
-    for i = -4, 4 do
+    local IsOneConnector = #p_RoomNew.Connectors == 1
+    for i = 0, Generator.__Side * 8, Generator.__Side do
         local RoomCF = p_RoomNew:GetCF()
         for key, Connector in p_RoomNew.Connectors do
             local LookVec = CFrame.lookAt(Connector.Position, RoomCF.Position)
@@ -213,8 +256,11 @@ function ConnectRoom(p_RoomSource: RoomStruct, p_RoomNew: RoomStruct, p_SuccessR
                 local CanJoin = true;
                 local HasFutureObstruction = false;
 
-                local Next, _ = IsRoomOnDirection(p_RoomNew, SourceConnector.CFrame, 70)
+                local Next, _ = IsRoomOnDirection(p_RoomNew, SourceConnector.CFrame, IsOneConnector and 1 or 70)
                 if Next then
+                    if Generator.__Debug then
+                        print(p_RoomSource.Id, ' has directions obstructed!')
+                    end
                     --if p_OnlyFreeDirections then
                        -- CanJoin = false
                        -- continue
@@ -225,6 +271,10 @@ function ConnectRoom(p_RoomSource: RoomStruct, p_RoomNew: RoomStruct, p_SuccessR
                 for _, OtherConnector in p_RoomNew.Connectors do
                     if (OtherConnector == Connector) then continue end
                     if not CanJoin then break end
+
+                    if Generator.__Debug then
+                        print(p_RoomSource.Id, ' obstructing prediction for next room.')
+                    end
                     
                     local OtherCF = OtherConnector.CFrame * CFrame.new(0, 0, -TILE_SIZE / 2)
                     if IsRoomOnCFrame(OtherCF) then
@@ -232,8 +282,8 @@ function ConnectRoom(p_RoomSource: RoomStruct, p_RoomNew: RoomStruct, p_SuccessR
                         break
                     end
 
-                    local Limit = p_OnlyFreeDirections and 100000 or nil
-                    local DirectionCollide, RoomId = IsRoomOnDirection(p_RoomNew, OtherConnector.CFrame, Limit)
+                    local Limit = p_OnlyFreeDirections and 100000 or (IsOneConnector and 1 or nil)
+                    local DirectionCollide, _RoomId = IsRoomOnDirection(p_RoomNew, OtherConnector.CFrame, Limit)
                     if DirectionCollide then
                         HasFutureObstruction = true;
 
@@ -249,7 +299,7 @@ function ConnectRoom(p_RoomSource: RoomStruct, p_RoomNew: RoomStruct, p_SuccessR
                         local Extend = OtherConnector.CFrame * CFrame.new(0, 0, -TILE_SIZE)
                         local NextRoom = (Extend * CFrame.Angles(0, math.pi * 0.5 * i, 0)) * CFrame.new(0, 0, -(TILE_SIZE/2))
 
-                        local IsOccupied, ri = IsRoomOnCFrame(NextRoom)
+                        local IsOccupied, _ = IsRoomOnCFrame(NextRoom)
                         if not IsOccupied then
                             FreeDirections += 1
                             --print(RoomId, ' obstructing prediction for next room.')
@@ -269,6 +319,10 @@ function ConnectRoom(p_RoomSource: RoomStruct, p_RoomNew: RoomStruct, p_SuccessR
                         f_Cf = RoomCF,
                         f_Connector = Connector,
                     }
+
+                    if Generator.__Debug then
+                        print('Setup fallback')
+                    end
 
                     continue
                 end
@@ -292,7 +346,15 @@ function ConnectRoom(p_RoomSource: RoomStruct, p_RoomNew: RoomStruct, p_SuccessR
         task.wait(VIEW_TIME)
     end
 
-    if Fallback.f_Connector and typeof(Fallback.f_Cf) == 'CFrame' then
+    local ToFallback = IsOneConnector and not IsRoomOnCFrame(p_RoomNew:GetCF())
+    if ToFallback then
+        Fallback = {
+            f_Cf = p_RoomNew:GetCF(),
+            f_Connector = p_RoomNew.Connectors[1],
+        }
+    end
+
+    if (Fallback.f_Connector and typeof(Fallback.f_Cf) == 'CFrame') then
         local AllConnectors = p_RoomNew.Connectors
         local Id = table.find(AllConnectors, Fallback.f_Connector)
         if not Id then
@@ -322,11 +384,12 @@ function CreateRoom(p_Model: RoomTemplate, p_ConnectedToId: number?, p_OnlyFreeD
 
     local Latestid = Generator.__Room_Counter + 1
     local Room = {
-        Id = 0,
+        Id = Generator.__Room_Count + 1,
         Model = Cloned,
         Connectors = Cloned.Connections:GetChildren(),
         UsedConnectors = {},
         Extends = 0,
+        Tags = p_Model.Tags,
 
         GetCF = function(self: RoomStruct)
             return self.Model:GetPivot();
@@ -340,7 +403,14 @@ function CreateRoom(p_Model: RoomTemplate, p_ConnectedToId: number?, p_OnlyFreeD
     end
 
     if p_ConnectedToId then
-        local CouldConnect = ConnectRoom(GetRoom(p_ConnectedToId), Room, Latestid, p_OnlyFreeDirections)
+        local RoomConnectedTo = GetRoom(p_ConnectedToId)
+        if RoomConnectedTo == nil then
+            Cloned:Destroy()
+
+            return false
+        end
+
+        local CouldConnect = ConnectRoom(RoomConnectedTo, Room, Latestid, p_OnlyFreeDirections)
         if not CouldConnect then
             Cloned:Destroy()
 
@@ -401,9 +471,9 @@ function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGener
     CreateRoom(RandomTemplate)
 
     --
-    local trail = 15
-    local max = (p_GenerationData.Infinite and 2500) or p_GenerationData.Extent
-    if max == nil then
+    local Trail = p_GenerationData.Trail or math.huge
+    local MaximumRoomCount = (p_GenerationData.Infinite and 10000) or p_GenerationData.Extent
+    if MaximumRoomCount == nil then
         return false,  "Extent is required for non-infinite generations"
     end
 
@@ -411,51 +481,111 @@ function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGener
         RNG = Random.new(p_GenerationData.Seed)
     end
 
-    local function extend(i, list, onlyfreedir)
-        task.wait(VIEW_TIME)
-        if (i > max) then
-            return;
-        end
-
-        local Template = GetRoomWithMinConnections(2, list)
-        local Created = CreateRoom(Template, i, onlyfreedir)
-        if Created == false then
-            if onlyfreedir then
-                RemoveLast()
-                extend(i - 1, list, true)
-
-                return;
-            end
-
-            local new_list = list or {}
-            table.insert(new_list, Template)
-            
-            extend(i, new_list)
-
-            return;
-        elseif Created == nil and i < max then
-            if onlyfreedir then
-                return;
-            end
-
-            RemoveLast()
-            extend(i - 1, {}, true);
-
-            return;
-        end
-
-        if (i > trail) then
-            local OldRoom = GetRoom(i - trail)
-            RemoveRoom(OldRoom)
-        end
-
-        i += 1;
-        extend(i)
+    if p_GenerationData.Infinite and not Trail then
+        return false, "Trail is required for infinite generations"
     end
 
-    task.spawn(extend, 1)
+    Generator.__Infinite = p_GenerationData.Infinite
+    Generator.__Side = RNG:NextInteger(0, 1) == 0 and -1 or 1
+    Generator.__Trail = p_GenerationData.Infinite and Trail or math.huge;
+    Generator.__Max = MaximumRoomCount;
+
+    Generator:Generate(1)
+
+    if not p_GenerationData.Infinite and Generator.__Room_Counter >= Generator.__Max then
+        --Generator.__Debug = true
+        Generator:CompleteThirdPathRooms()
+    end
 
     return true
 end
+
+function Generator:CompleteThirdPathRooms()
+    for id = 1, #Generator.__Room_List do
+        local Room = GetRoom(id)
+        if #Room.Connectors <= 0 then
+            continue
+        end
+
+        for _ = 1, #Room.Connectors do
+            local Connector = Room.Connectors[1]
+            if IsRoomOnCFrame(Connector.CFrame * CFrame.new(0, 0, -TILE_SIZE / 2)) then
+                continue
+            end
+
+            local res = CreateRoom(
+                GetRoomsWithConnectionCount(1) :: RoomTemplate, 
+                Room.Id, 
+                false
+            )
+
+            if res == false then
+                print("Why did it fail? on room: ", id)
+            end
+        end
+    end
+end
+
+function Generator:Generate(p_RoomId: number, list: { RoomTemplate }?, onlyfreedir: boolean?)
+    task.wait(VIEW_TIME)
+    if (Generator.__Room_Counter > Generator.__Max or p_RoomId + 1 > Generator.__Trail) then
+        if p_RoomId + 1 > Generator.__Trail and Generator.__Infinite then
+            Generator:CompleteThirdPathRooms()
+        end
+
+        return;
+    end
+
+    local LastRoom = GetRoom(p_RoomId)
+    local ExcludeTags = {}
+    if LastRoom and LastRoom.Tags then
+        if table.find(LastRoom.Tags, "Hall") then
+            ExcludeTags["Hall"] = true
+        end
+    end
+
+    local Template = GetRoomWithMinConnections(2, list, ExcludeTags)
+    local Created = CreateRoom(Template, p_RoomId, onlyfreedir)
+    if Created == false then
+        if onlyfreedir then
+            RemoveLast()
+            Generator:Generate(p_RoomId - 1, list, true)
+
+            return;
+        end
+
+        local new_list = list or {}
+        table.insert(new_list, Template)
+        
+        Generator:Generate(p_RoomId, new_list)
+
+        return;
+    elseif Created == nil and p_RoomId < Generator.__Max then
+        if onlyfreedir then
+            return;
+        end
+
+        RemoveLast()
+        Generator:Generate(p_RoomId - 1, {}, true);
+
+        return;
+    end
+
+    p_RoomId += 1;
+
+    Generator:Generate(p_RoomId)
+end
+
+function Generator:Expand(At: number)
+    local LastRoom = Generator.__Room_Counter
+
+    if Generator.__Room_Count >= Generator.__Trail then
+        local OldRoom = GetRoom(LastRoom - Generator.__Trail)
+        RemoveRoom(OldRoom)
+    end
+
+    Generator:Generate(LastRoom)
+end
+
 
 return Generator
