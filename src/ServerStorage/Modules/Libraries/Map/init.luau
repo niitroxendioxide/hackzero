@@ -219,12 +219,14 @@ function MapLoader:Generate(p_MapPath: string, p_GenerationData: Types.MapGenera
     --
     local Source = GetRoomsSource(MapFolder, p_GenerationData.Source)
 
-    local Result, msg = Generator:Create(Source, p_GenerationData)
-    if not Result then
-        warn("Generator error: " .. (msg or " no message"))
-    end
+    local Result = Generator:Create(Source, p_GenerationData)
+    Result:Err(function(msg): ()
+        warn(msg)
+    end)
 
-    return Result
+    print('Generation result: ' .. Result)
+
+    return Result();
 end
 
 function MapLoader:CreateMarkersForGeneratedMap()

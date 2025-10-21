@@ -20,7 +20,10 @@ local CameraLibrary = require(Client.Libraries.Camera)
 local CharacterLibrary = require(Client.Libraries.Characters)
 local CutscenesLibrary = require(Client.Libraries.Cutscenes)
 
+
+local Match = require(Client.Controllers.MatchController)
 local Replicator = require(Client.Controllers.ReplicationController)
+
 local GameEnum = require(Shared.GameEnum)
 local Places = require(Shared.Places)
 local UIGroups = require(Client.Libraries.UIGroups)
@@ -108,7 +111,7 @@ function Controller:Init(): ()
 
 		debug.profileend()
 
-		if Controller.__Dead then return end
+		if Controller.__Dead or not Match:HasBegun() then return end
 
 		debug.profilebegin('Moving character')
 		local CharacterState = CurrentCharacter:GetState()

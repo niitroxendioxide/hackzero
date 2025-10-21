@@ -19,7 +19,13 @@ local InterfaceController = require(script.Parent.InterfaceController)
 local CombatController = require(script.Parent.CombatController)
 local Camera = require(Client.Libraries.Camera)
 
-local Controller = {}
+local Controller = {
+    __Began = false :: boolean,
+}
+
+function Controller:HasBegun(): boolean
+    return Controller.__Began
+end
 
 function Controller:Init()
     Network:On("Match", function(Type: number, ...)
@@ -34,6 +40,7 @@ function Controller:Init()
         elseif Type == GameEnum.MatchEvents.MatchEnded then
             Controller:MatchEnded(...)
         elseif Type == GameEnum.MatchEvents.MatchBegin then
+            Controller.__Began = true
             Controller:BeginMatch(...)
         end
     end)

@@ -6,7 +6,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 
-local _Print = require(ReplicatedStorage.Modules.Shared.Utility.Print)
+local Result = require(Shared.Utility.Result)
 local Types = require(Shared.Types.Stages)
 
 -- Definitions
@@ -469,7 +469,7 @@ function Generator:CacheRooms(p_RoomSource: Folder): { RoomTemplate }
     return PossibleStartingRooms;
 end
 
-function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGenerationData): boolean
+function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGenerationData): Result.Result<boolean, string>
     local DesignFolder = workspace.World.Map:FindFirstChild('Design')
     if DesignFolder then
         DesignFolder:ClearAllChildren()
@@ -500,7 +500,7 @@ function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGener
     local Trail = p_GenerationData.Trail or math.huge
     local MaximumRoomCount = (p_GenerationData.Infinite and 10000) or p_GenerationData.Extent
     if MaximumRoomCount == nil then
-        return false,  "Extent is required for non-infinite generations"
+        return Result.new(false, "Extent is required for non-infinite generations")
     end
 
     if p_GenerationData.Seed ~= 0 then
@@ -508,7 +508,7 @@ function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGener
     end
 
     if p_GenerationData.Infinite and not Trail then
-        return false, "Trail is required for infinite generations"
+        return Result.new(false, "Trail is required for infinite generations")
     end
 
     Generator.__Infinite = p_GenerationData.Infinite
@@ -523,7 +523,7 @@ function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGener
         Generator:CompleteThirdPathRooms()
     end
 
-    return true
+    return Result.new(true)
 end
 
 function Generator:CompleteThirdPathRooms()
