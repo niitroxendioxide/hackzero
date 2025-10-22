@@ -6,7 +6,7 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local Statics = require(Shared.Database.Statics)
 local Enemies = require(Shared.Libraries.Enemies)
 
 local Types = require(Shared.Types.Abilities)

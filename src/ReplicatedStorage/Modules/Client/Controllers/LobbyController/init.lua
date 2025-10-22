@@ -2,7 +2,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = ReplicatedStorage.Modules.Client
+local Places = require(ReplicatedStorage.Modules.Shared.Places)
 local AreaClass = require(Client.Classes.Area)
+local NPCS = require(script.NPCS)
 
 --
 local AreaFolder: Folder;
@@ -13,6 +15,11 @@ local Controller = {
 }
 
 function Controller:Init(): ()
+    if not Places:IsInPlace("Lobby") then
+        return;
+    end
+
+    NPCS:Init()
     Controller:RequireModules()
 
     AreaFolder = (workspace:WaitForChild("World"):WaitForChild("Zones", 15) :: Folder)

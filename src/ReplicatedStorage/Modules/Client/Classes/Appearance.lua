@@ -163,7 +163,7 @@ function AppearanceClass:UnbindParticles(Part: Instance)
 	end
 end
 
-function AppearanceClass:JoinTo(BasePart: BasePart)
+function AppearanceClass:JoinTo(BasePart: BasePart, Responsiveness: number?)
 	local Root =  self.__Model:FindFirstChild('HumanoidRootPart') or self.__Model.PrimaryPart
 
 	local AlignPosition =  Instance.new('AlignPosition')
@@ -182,7 +182,7 @@ function AppearanceClass:JoinTo(BasePart: BasePart)
 
 	AlignPosition.Responsiveness = 100
 	AlignPosition.MaxForce = 1e7
-	AlignOrientation.Responsiveness = 200
+	AlignOrientation.Responsiveness = Responsiveness
 	AlignOrientation.MaxTorque = 1e7
 
 	AlignPosition.Parent = Att0
