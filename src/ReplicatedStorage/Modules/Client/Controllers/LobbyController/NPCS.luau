@@ -10,8 +10,14 @@ local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
-local Appearance = require(ReplicatedStorage.Modules.Client.Classes.Appearance)
-local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
+local Client = ReplicatedStorage.Modules.Client
+local Shared = ReplicatedStorage.Modules.Shared
+
+local UIController = require(Client.Controllers.InterfaceController)
+local Appearance = require(Client.Classes.Appearance)
+local Prompts = require(Client.Libraries.Prompts)
+local GameEnum = require(Shared.GameEnum)
+local Effects = require(Shared.Utility.Effects)
 
 
 -- typedef
@@ -29,6 +35,7 @@ type Character = {
 
     Moving: boolean,
     Available: boolean,
+    Talking: boolean,
 }
 
 --
@@ -54,7 +61,6 @@ function MainThread(): ()
         ProcessNpcMovements(Delta)
 
     end
-
 end
 
 function RemoveNPC(p_NPC_Id: string)
@@ -62,7 +68,8 @@ function RemoveNPC(p_NPC_Id: string)
         if Character.Id == p_NPC_Id then
             table.remove(Controller.__Present_Npcs, Index)
             
-            Character.Model:SetVisible(false)
+            Character.Collider:Destroy()
+            Character.Model:Destroy(true)
 
             break
         end
@@ -76,7 +83,7 @@ function ProcessNpcMovements(Delta: number): ()
 end
 
 function Update(NPC: Character, Delta: number): ()
-    if (os.clock() - NPC.Created) >= NPC.Lifetime then
+    if (os.clock() - NPC.Created) >= NPC.Lifetime and not NPC.Talking then
         return RemoveNPC(NPC.Id)
     end
 
@@ -95,7 +102,7 @@ function Update(NPC: Character, Delta: number): ()
         NPC.Moving = true
     end
 
-    if not NPC.Moving then
+    if not NPC.Moving or NPC.Talking then
         return
     end
 
@@ -114,6 +121,13 @@ function HandleNewNPCCreation(): ()
     if not NewNpc then
         return
     end
+
+    local Prompt = Prompts:CreatePromptOnPart(NewNpc.Collider, GameEnum.InteractionType.LobbyNPC, "Talk", "Agent")
+    Prompt:SetAttribute("NpcId", NewNpc.Id)
+
+    task.delay(.5, function()
+        NewNpc.Model:SetVisible(true)
+    end)
 
     table.insert(Controller.__Present_Npcs, NewNpc)
 end
@@ -144,7 +158,7 @@ function NewCharacter(): Character?
     Base.CFrame = BasePos
     Base.Parent = workspace.World.Entities.Colliders
 
-    local Model = Appearance.new("Template", "Agents")
+    local Model = Appearance.new("SecretAgent", "Agents", true)
     Model:JoinTo(Base, 45)
 
     local Char: Character = {
@@ -176,6 +190,61 @@ function Controller:Init()
     task.spawn(MainThread)
 end
 
+function Controller:GetById(Id: string): CPIharacter?
+    for _, Npc in Controller.__Present_Npcs do
+        if Npc.Id == Id then
+            return Npc
+        end
+    end
+
+    return;
+end
+
+function Controller:TalkToNPC(NpcId: string)
+    local NPC = Controller:GetById(NpcId)
+    if not NPC then
+        return
+    end
+
+    local DialogueComponent = UIController:GetComponent("Dialogue") :: {[string]: any}
+    if not DialogueComponent then
+        return
+    end
+
+    local RootPos = Players.LocalPlayer.Character.HumanoidRootPart.Position
+    local Direction = CFrame.lookAt(RootPos * Vector3.new(1, 0, 1), (NPC.Position :: Vector3) * Vector3.new(1, 0, 1)).LookVector
+
+    Prompts:DisableAll()
+
+    NPC.Collider.CFrame = CFrame.lookAlong(NPC.Position:: Vector3, -Direction)
+    NPC.Talking = true
+
+    local CurrentIndex = 1
+    local Dialogues = {
+        "Hello! I need some help",
+        "So, I want you to go into those places and get back my suitcase",
+        "Thanks in advance!",
+    }
+
+    local Available = DialogueComponent:OpenDialogue("Agent Worker", Dialogues)
+    if not Available then
+        return
+    end
+    
+    DialogueComponent:BoxSkipped(function()
+        if CurrentIndex >= #Dialogues then
+            DialogueComponent:CloseDialogue()
+            NPC.Talking = false
+            Prompts:EnableAll()
+
+            return
+        end
+        
+
+        CurrentIndex += 1
+        DialogueComponent:DisplayDialogue(Dialogues[CurrentIndex])
+    end)
+end
 
 
 return Controller;

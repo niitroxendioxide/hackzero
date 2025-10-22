@@ -31,7 +31,7 @@ local function ToggleTab(State: boolean)
     local Buttons = MainFrame.Buttons
     local Tab = MainFrame.MainButtonTab
 
-    if not UIStates:Get('MENU_BLOCKED') then
+    if not UIStates:Get('MENU_BLOCKED') or UIStates:Get("DIALOGUE") then
         State = false
     end
 
@@ -270,7 +270,7 @@ function Component:Init(): ()
     --
     local function ActivateAgentsMenu()
         local Element = UIGroups:GetElementClass("Lobby", 'Agents')
-        if not Element or not UIStates:Get("MENU_BLOCKED") then return end
+        if not Element or not UIStates:Get("MENU_BLOCKED") or UIStates:Get("DIALOGUE") then return end
 
         ToggleTab(false)
         Element:Set(true)
@@ -332,7 +332,7 @@ function Component:Init(): ()
             end
 
             local Element = UIGroups:GetElementClass("Lobby", 'Inventory')
-            if not Element or not UIStates:Get("MENU_BLOCKED") then return end
+            if not Element or not UIStates:Get("MENU_BLOCKED") or UIStates:Get("DIALOGUE") then return end
 
             ToggleTab(false)
             Element:Set(true)

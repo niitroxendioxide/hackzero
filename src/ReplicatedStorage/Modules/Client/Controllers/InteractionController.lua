@@ -14,13 +14,13 @@ local StageDatabase = require(Database.Stages)
 local Chests = require(Client.Libraries.Chests)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
+local Npcs = require(Client.Controllers.LobbyController.NPCS)
 
 local Controller = {
     __Current_Action = {},
 }
 
 function Controller:Init()
-
     ProximityPromptService.PromptTriggered:Connect(function(Prompt, Player)
         if Prompt:GetAttribute("Type") == GameEnum.InteractionType.Chest then
             local ChestId = Prompt:GetAttribute("ChestId")
@@ -34,10 +34,10 @@ function Controller:Init()
             Network:Fire("ChestInteraction", GameEnum.ChestInteractions.Open, ChestId)
         elseif Prompt:GetAttribute("Type") == GameEnum.InteractionType.NPC then
             Controller:InteractWithNPC(Prompt)
+        elseif Prompt:GetAttribute("Type") == GameEnum.InteractionType.LobbyNPC then
+            Npcs:TalkToNPC(Prompt:GetAttribute("NpcId"))
         end
-
     end)
-
 end
 
 function Controller:InteractWithNPC(Prompt: ProximityPrompt)

@@ -1,6 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
-local Prompts = {}
+local Prompts = {
+    __Disabled = false,
+}
 
 local All = {}
 local States = {}
@@ -20,6 +22,7 @@ function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number, ActionText
     Prompt.ObjectText = ObjectText or GameEnum.KeyLookup(GameEnum.InteractionType, Type)
     Prompt.MaxActivationDistance = 25
     Prompt.ClickablePrompt = false
+    Prompt.Enabled = not Prompts.__Disabled
     Prompt.Parent = Attachment
 
     States[Prompt] = true
@@ -31,12 +34,16 @@ function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number, ActionText
 end
 
 function Prompts:DisableAll()
+    Prompts.__Disabled = true
+
     for _, Prompt in All do
         Prompt.Enabled = false
     end
 end
 
 function Prompts:EnableAll()
+    Prompts.__Disabled = false
+
     for _, Prompt in All do
         Prompt.Enabled = States[Prompt]
     end

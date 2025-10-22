@@ -1,4 +1,4 @@
---
+
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 --
@@ -12,10 +12,10 @@ local Trove = require(Shared.Utility.Trove)
 local EffectsUtil = require(Shared.Utility.Effects)
 
 --
-local AppearanceClass = {} :: {[string]: (self: Types.AppearanceController, any) -> (), new: (ModelName: string, Directory: string?) -> Types.AppearanceController}
+local AppearanceClass = {} :: {[string]: (self: Types.AppearanceController, any) -> (), new: (ModelName: string, Directory: string?, BeginTransparet: boolean?) -> Types.AppearanceController}
 AppearanceClass.__index = AppearanceClass
 
-function AppearanceClass.new(ModelName: string, Directory: string?): Types.AppearanceController
+function AppearanceClass.new(ModelName: string, Directory: string?, BeginTransparet: boolean?): Types.AppearanceController
 	local FolderToLookIn = Directory and Assets:FindFirstChild(Directory) or Assets
 
 	if not FolderToLookIn:FindFirstChild(ModelName, true) then
@@ -49,6 +49,9 @@ function AppearanceClass.new(ModelName: string, Directory: string?): Types.Appea
 	for _, Child: Instance in self.__Model:GetDescendants() do
 		if Child:IsA('BasePart') or Child:IsA('Texture') or Child:IsA('Decal') then
 			self.__TransparencyValues[Child] = Child.Transparency
+			if BeginTransparet then
+				(Child :: BasePart).Transparency = 1
+			end
 
 			if Child:IsA("BasePart") then
 				Child.CollisionGroup = "Characters"
@@ -201,7 +204,19 @@ function AppearanceClass:SetRotationResponsiveness(n)
 	self.__Orientation.Responsiveness = n
 end
 
-function AppearanceClass:Destroy()
+function AppearanceClass:Destroy(IncludeFade: boolean?)
+	self.__Model.PrimaryPart.Anchored = true
+
+	if IncludeFade then
+		self:SetVisible(false)
+
+		task.delay(1, function(): ()
+			self:Destroy()
+		end)
+
+		return
+	end
+
 	self.__TransparencyValues = {}
 
 	if not self.__Trove then

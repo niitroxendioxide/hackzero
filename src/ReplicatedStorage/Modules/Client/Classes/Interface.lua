@@ -84,7 +84,7 @@ function ComponentClass:Set(Visible: boolean?, Raw: boolean)
 	end
 
 	if (self.__State_Change_Callback ~= nil and typeof(self.__State_Change_Callback) == 'function') and not Raw then
-		self.__State_Change_Callback(self.__UI_State)
+		task.spawn(self.__State_Change_Callback, self.__UI_State)
 	end
 end
 

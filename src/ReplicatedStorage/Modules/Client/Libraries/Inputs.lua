@@ -108,7 +108,7 @@ function Inputs.OverrideDefaults()
 	end
 end
 
-function Inputs:Bind(Key: string | Enum.KeyCode, Data: Types.KeybindData): (number?, Types.BoundKeybind)
+function Inputs:Bind(Key: string | Enum.KeyCode | Enum.UserInputType, Data: Types.KeybindData): (number?, Types.BoundKeybind)
 	--assert(Data, 'Cannot bind key to no action')
 	assert(Data.Callback, 'Cannot bind key to no action')
 	

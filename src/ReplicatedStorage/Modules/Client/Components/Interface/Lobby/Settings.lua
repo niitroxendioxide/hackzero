@@ -115,7 +115,6 @@ function Component:Init()
 
     local PageLayout = MainFrame.Settings.Options.UIPageLayout
     for _, Key in Settings:ListCategories() do
-        print('Doing category:', Key)
         local Name = (Key == 'QOL' and ('Accessibility') or Key) .. ' Settings'
 
         local TabHolder = Assets.Interface.Lobby.Settings.Tab:Clone()
