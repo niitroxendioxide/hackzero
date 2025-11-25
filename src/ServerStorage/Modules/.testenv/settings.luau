@@ -5,7 +5,7 @@ return table.freeze({
     },
 
     STAGE = {
-        Stage = 'HuecoMundo',
+        Stage = 'Training',
         Act = 'Intro',
     },
 

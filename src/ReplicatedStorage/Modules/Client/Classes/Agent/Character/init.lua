@@ -18,9 +18,9 @@ CharacterClass.__index = CharacterClass
 function CharacterClass.new(Character: string)
 	local self = setmetatable({}, {__index = function(self, key)
 		if key == 'Collider' then
-			return rawget(self, '__Controller'):GetCollider()
+			return (rawget(self, '__Controller') :: any):GetCollider()
 		elseif key == 'Humanoid' then
-			return rawget(self, '__Appearance').__Model:FindFirstChild('Humanoid')
+			return (rawget(self, '__Appearance') :: any).__Model:FindFirstChild('Humanoid')
 		end
 
 		return CharacterClass[key]

@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Types = require(Shared.Types.Agents)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 
@@ -31,7 +32,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 
 		{.18, function()
 			
-			if InMode then
+			if not InMode then
 				local Data = Ability:FromData('Sledge_Hammer', nil, SkillLevel)
 
 				Ability:CreateHitbox(Caster, Vector3.zAxis*-3.5, vector.one * 6, function(Enemy: Types.Enemy) 
@@ -48,7 +49,30 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 
 				end)
 
-			end
+			elseif InMode then
+
+				local Data = Ability:FromData('Sledge_Hammer', nil, SkillLevel)
+
+				Ability:CreateHitbox(Caster, Vector3.zAxis*-3.5, vector.one * 6, function(Enemy: Types.Enemy) 
+					local NearestEnemyExcludingHit = Enemies:GetNearestEnemy(Enemy:GetPivot().Position, 100, true, {})
+
+					local RelativeDirection = Enemy:GetPivot()
+
+					Ability:Hit(Caster, Enemy, {
+						Damage = Data.Damage,
+						Affliction = "Physical",
+						Stun = Data.StunTime,
+						Daze = Data.Daze,
+						HitType = "Blunt",
+						Knockback = {
+
+						},
+						Affliction_Buildup = Data.Affliction_Buildup,
+					})
+
+				end)
+
+			else error("This shouldn't ever happen really") end
 
 		end}
 	})

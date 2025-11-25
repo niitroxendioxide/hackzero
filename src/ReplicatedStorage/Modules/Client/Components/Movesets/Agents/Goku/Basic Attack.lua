@@ -46,7 +46,7 @@ function Ability:Play(Agent, _, _, Context)
 			end
 
 			Agent:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
-
+			
 			local Track = Ability:PlayAnimation(Agent, 'Goku.Abilities.M1.'..Ability:Get(Agent, 'Count'), {
 				Fade = .1,
 				Active_Time = Attack_Time + .25,

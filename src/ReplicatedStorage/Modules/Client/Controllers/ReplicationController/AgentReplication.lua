@@ -50,6 +50,8 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 	local AgentData = SharedData:GetAgentData(AgentOwner, CharacterName)-- or {Level = 1, Name = CharacterName, Artifacts = {}, Drive = nil}
 
 	local CharacterInstance = AgentClass.new(CharacterName, AgentData.Level)
+	print(UserId)
+
 	CharacterInstance:Init(UserId)
 
 	--CharacterInstance.__Controller:GetCollider().Transparency = 0.9

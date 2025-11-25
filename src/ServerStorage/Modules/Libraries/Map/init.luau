@@ -78,7 +78,13 @@ function MapLoader:Unpack(p_MapPath: string, p_SpawnToUse: string?)
     local SpawnObjectExists = NewMap:FindFirstChild(SpawnId, true)
 
     if SpawnObjectExists then
-        SpawnObjectExists.Name = "MatchSpawnPlace"
+        for _, e_Spawn in workspace:GetChildren() do
+            if e_Spawn:IsA("SpawnLocation") then
+                e_Spawn:Destroy()
+            end
+        end
+
+        SpawnObjectExists.Name = "SpawnLocation"
         SpawnObjectExists.CanCollide = false
         SpawnObjectExists.CanQuery = false
         SpawnObjectExists.Parent = workspace

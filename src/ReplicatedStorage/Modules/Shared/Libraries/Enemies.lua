@@ -55,14 +55,19 @@ function EnemyLibrary:GetEnemyCount()
 	return k
 end
 
-function EnemyLibrary:GetNearestEnemy(Point: Vector3, MaxDistance: number, LineOfSight: boolean?): (number?, Types.EnemyClass?)
+function EnemyLibrary:GetNearestEnemy(Point: Vector3, MaxDistance: number, LineOfSight: boolean?, to_Exclude: {}?): (number?, Types.EnemyClass?)
 	local Distance = MaxDistance or math.huge
 	local Selected = nil
+	local Exclude = to_Exclude or {}
 	local Params = RaycastParams.new()
 	Params.FilterDescendantsInstances = {workspace.World.Entities:FindFirstChild("Destructibles")}
 	Params.FilterType = Enum.RaycastFilterType.Include
 
 	for Key, Enemy in EnemyLibrary:GetAll() do
+		if table.find(Exclude, Enemy) then
+			continue
+		end
+
 		local DistanceToEnemy = (Point - Enemy:GetPivot().Position).Magnitude
 		if LineOfSight then
 			local LookAt = CFrame.lookAt(Point, Enemy:GetPivot().Position)
