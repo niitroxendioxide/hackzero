@@ -234,6 +234,37 @@ return {
 				}
 			},
 		},
+
+
+		['Dodge Counter'] = {
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.9,
+				Cooldown = 1,
+
+				Last_Knockback = {
+					Vector3.new(0, 0, 1),
+					20,
+					0.2,
+				},
+
+				Default_Hit_Data = {
+					Damage = 55,
+					Daze = 7,
+					Affliction = 'Energy',
+					Affliction_Buildup = 0.1,
+					Stun = 0.22,
+					HitType = 'Blunt',
+				},
+			},
+
+			Upgrades = {
+				Default_Hit_Data = {
+					Damage = 2.5,
+				}
+			}
+		},
 	},
 
 	Ascension_Data = {

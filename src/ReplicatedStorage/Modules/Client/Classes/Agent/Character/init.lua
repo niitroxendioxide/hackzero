@@ -25,10 +25,11 @@ function CharacterClass.new(Character: string)
 
 		return CharacterClass[key]
 	end,})
+
 	self.__Tags = {}
 	self.__Appearance = Appearance.new(Character)
 	self.__States = States.new(Character)
-	self.__Controller = Physics.new(self.__States)
+	self.__Controller = Physics.new(self.__States, nil, Character == 'Goku' and true)
 	self.__Animator = Animator.new(self, Character)
 
 	self.Name = Character
@@ -39,6 +40,14 @@ end
 function CharacterClass:AddTag(Tag: string)
 	if not table.find(self.__Tags, Tag) then
 		table.insert(self.__Tags, Tag)
+	end
+end
+
+function CharacterClass:SetPhysicsEnabled(State: boolean)
+	if State then
+		self.__Controller:Resume()
+	else
+		self.__Controller:Pause()
 	end
 end
 

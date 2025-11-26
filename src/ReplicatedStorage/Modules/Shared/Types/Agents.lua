@@ -85,6 +85,7 @@ export type AgentClass =  {
 	IsActive: (self: AgentClass) -> boolean,
 	GetUltBar: (self: AgentClass) -> (number),
 	BlockRotation: (self: AgentClass, Time: number) -> (),
+	SetPhysicsEnabled: (self: AgentClass, State: boolean) -> (),
 
 	GetAppearance: (self: AgentClass) -> (Types.AppearanceController),
 

@@ -54,9 +54,12 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 				local Data = Ability:FromData('Sledge_Hammer', nil, SkillLevel)
 
 				Ability:CreateHitbox(Caster, Vector3.zAxis*-3.5, vector.one * 6, function(Enemy: Types.Enemy) 
-					local NearestEnemyExcludingHit = Enemies:GetNearestEnemy(Enemy:GetPivot().Position, 100, true, {})
-
-					local RelativeDirection = Enemy:GetPivot()
+					local _, NearestEnemyExcludingHit = Enemies:GetNearestEnemy(Enemy:GetPivot().Position, 100, true, {Enemy})
+					local RelativeDirection = if NearestEnemyExcludingHit then
+						Enemy:GetPivot():VectorToObjectSpace(CFrame.lookAt(Enemy:GetPivot().Position, NearestEnemyExcludingHit:GetPivot().Position).LookVector)
+					else
+						vector.create(0, 0, 1)
+					
 
 					Ability:Hit(Caster, Enemy, {
 						Damage = Data.Damage,
@@ -65,7 +68,9 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 						Daze = Data.Daze,
 						HitType = "Blunt",
 						Knockback = {
-
+							RelativeDirection,
+							15,
+							0.3,
 						},
 						Affliction_Buildup = Data.Affliction_Buildup,
 					})

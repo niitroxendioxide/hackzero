@@ -76,7 +76,7 @@ return {
                     Goal = {ReachPlace = "End"},
                     Enemies = {
                         -- Name, Amount, Level
-                        [1] = {"Saiyan", 1, 60}
+                        [1] = {"Saiyan", 10, 60}
                     },
                     Dialogue = {
                         {

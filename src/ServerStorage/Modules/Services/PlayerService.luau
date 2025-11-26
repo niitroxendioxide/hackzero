@@ -67,6 +67,7 @@ end
 
 function HandlePlayerChat(Player: Player)
 	Player.Chatted:Connect(function(msg)
+		local current_agent = Agents:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
 		local split = string.split(msg, ' ')
 		if split[1] == '/promptgear' then
 			local List = {}
@@ -74,12 +75,12 @@ function HandlePlayerChat(Player: Player)
 				table.insert(List, split[k])
 			end
 
-			local Agent = Agents:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
-			GearService:PromptOptions(Agent, List)
+			
+			GearService:PromptOptions(current_agent, List)
 		elseif split[1] == '/assist' then
-			local current_agent = Agents:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number);
-
 			AbilityService:PromptAssist(current_agent, 1)
+		elseif split[1] == '/ult' then
+			current_agent:GiveUltimate(100000)
 		end
 	end)
 end

@@ -31,7 +31,11 @@ end
 
 function Component:Link(Player: Player): Instance?
     local GUI = Player.PlayerGui
-    local HUD = GUI:WaitForChild("LobbyHUD"):WaitForChild("Screen", 2)
+    if not GUI:FindFirstChild("LobbyHUD") then
+        return
+    end
+
+    local HUD = GUI.LobbyHUD:WaitForChild("Screen", 2)
     if not HUD then
         return
     end

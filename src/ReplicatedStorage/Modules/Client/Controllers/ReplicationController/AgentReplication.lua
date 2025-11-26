@@ -118,6 +118,8 @@ function Controller:PivotTo(Buffer: buffer)
 
 	local Character = CharacterLibrary:GetCurrent(UserId)
 
+	print('Hello, is it myself?', IsOwnId(UserId))
+
 	if IsOwnId(UserId) then
 		Character:MarkServerAction(GameEnum.Replication.PivotTo)
 	end

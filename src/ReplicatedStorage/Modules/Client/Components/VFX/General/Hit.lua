@@ -41,9 +41,8 @@ return function(
 
 	local Offset = Data.Offset or CFrame.new()
 
-
 	local Object = Effects:Create(CombatFolder[EmitterId], 25)
-	Object.CFrame = Enemy:GetPivot() * Offset
+	Object.CFrame = Enemy:GetModel():GetPivot() * Offset
 
 	if Data.HueShift or Data.HueShiftFilter then
 		Effects:HueShift(Object, Data.HueShift or 0, Data.HueShiftFilter)

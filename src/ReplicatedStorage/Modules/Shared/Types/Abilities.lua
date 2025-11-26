@@ -5,6 +5,7 @@ export type SequenceFrames = {{number | (self: Sequence, delta: number) -> ()}}
 export type Sequence = {
 	__cache: {[any]: any},
 	__frames: SequenceFrames,
+	__currentTime: number,
 
 	--
 	Start: (self: Sequence) -> Sequence,
@@ -16,7 +17,8 @@ export type Sequence = {
 	Update: (self: Sequence) -> (),
 	After: (self: Sequence, fn: (self: Sequence) -> ()) -> Sequence,
 
-	Add: (self: Sequence, Time: number, fn: (self: Sequence) -> ()) -> (),
+	Add: (self: Sequence, Time: number, fn: (self: Sequence) -> ()) -> () 
+	& (self: Sequence, Start_Time: number, End_Time: number, fn: (self: Sequence) -> ()) -> (),
 }
 
 export type HitboxAttackData = {Size: Vector3, Offset: Vector3, Hit_Function: (Target: any) -> ()}
@@ -67,6 +69,12 @@ export type AbilityClass = {
 
 	Play: (self: AbilityClass, Agent: Caster, Type: string, State: 'Begin' | 'End', Context: ClientSkillContext) -> (),
 
+
+	--[[
+		Push a value to the connection buffer before stablishing the connection, this method is only usable with hooks prior to the skill connection
+		@param Value the value to add to the context buffer
+	]]
+	PushToContextBuffer: (self: AbilityClass, value: any) -> (),
 
 	--[[
 		Useful to match the heights of two characters that are attacking each other, raises the character if needed

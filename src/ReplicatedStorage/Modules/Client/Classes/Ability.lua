@@ -44,6 +44,7 @@ function AbilityClass.new(Holdable: boolean): Types.AbilityClass
 	self.__Cooldown = Signal.new()
 	self.__Ability_Data = {}
 	self.__Hooks = {}
+	self.__Context_Buffer = {}
 	self.__Target_Finder = nil;
 	self.__Held = {}
 
@@ -146,6 +147,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 	local Id = User:GetAttribute("ReplicationId")
 
 	if Id == Agent.PlayerId then
+		self.__Context_Buffer = {}
 		self:__run_hooks(GameEnum.AbilityHooks.BeforeConnection, Agent)
 
 		local IsBasicAttack = self.__Name == 'Basic_Attack'
@@ -159,7 +161,6 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 			end
 		end
 
-
 		if Enemy and (self.__Name ~= 'Dodge') then
 			Agent:Look(CFrame.lookAt(Agent:GetPivot().Position * Vector3.new(1, 0, 1), Enemy:GetPivot().Position * Vector3.new(1, 0 ,1)).LookVector, false, true)
 		end
@@ -170,7 +171,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 		end
 
 		Replicator:Replicate(GameEnum.Replication.PivotTo, Agent:GetPivot(), true)
-		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId, M1_Count)
+		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId, M1_Count, table.unpack(self.__Context_Buffer))
 	
 		return Enemy;
 	end
@@ -186,6 +187,9 @@ function AbilityClass:EffectSerial(Name: string, ...)
 	return Effects:PlaySerial(Name, ...)
 end
 
+function AbilityClass:PushToContextBuffer(key: string, value: any)
+	table.insert(self.__Context_Buffer, value)
+end
 
 function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?): ()
 	if Key == 'Knockback' then

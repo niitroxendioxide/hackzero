@@ -212,7 +212,8 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 
 			local _, Status = Moveset:Begin(Skill, ActiveAgent, {
 				Target = Enemy, 
-				M1_Count = Other and Other[1] or nil
+				M1_Count = Other and Other[1] or nil,
+				Buffer = Other,
 			})
 			return Status
 		elseif StateId == GameEnum.AbilityStates.End then

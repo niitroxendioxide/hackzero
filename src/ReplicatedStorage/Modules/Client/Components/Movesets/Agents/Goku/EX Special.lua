@@ -1,14 +1,45 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Client.Classes.Ability)
 
 --
+local EnemyList = {}
 local Ability = AbilityClass.new(true)
+
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeConnection, function(Caster: Types.Caster)  
+	EnemyList = {}
+
+	local AllEnemies = Enemies:GetAll()
+
+	local TempList = {}
+	for _, Enemy in AllEnemies do
+		if (Enemy:GetPivot().Position - Caster:GetPivot().Position).Magnitude < 55 and #TempList < 10 then
+			table.insert(TempList, Enemy)
+		end
+	end
+
+	table.sort(TempList, function(a, b)
+		local d_a = (a:GetPivot().Position - Caster:GetPivot().Position).Magnitude
+		local d_b = (b:GetPivot().Position - Caster:GetPivot().Position).Magnitude
+
+		return d_a > d_b
+	end)
+
+	for _, obj in TempList do
+		table.insert(EnemyList, obj:GetId())
+	end
+
+	Ability:PushToContextBuffer(EnemyList)
+end)
+
 
 local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 	Attack:Add(0.25, function()
@@ -22,11 +53,31 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 	end)
 end
 
-local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence)
-	
+local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Context: {[any]: any})
+	local EnemiesToCycle = Context.Buffer ~= nil and (typeof(Context.Buffer[1]) == 'table' and #Context.Buffer[1] > 0) and Context.Buffer 
+	or #EnemyList > 0 and EnemyList
+
+	for idx = 1, #EnemiesToCycle do
+		local EnemyObject = Enemies:GetEnemy(EnemiesToCycle[idx])
+		local Start = (idx - 1) * 0.25
+
+		Attack:Add(0.35 + Start, function()
+			local StartPivot = Caster:GetPivot()
+			local EnemyPosition = EnemyObject:GetPivot()
+			local Direction = CFrame.lookAt(EnemyPosition.Position, StartPivot.Position).LookVector
+
+			local LerpGoal = CFrame.lookAlong(EnemyPosition.Position + Direction*6, Direction*-1)
+			Caster:PivotTo(LerpGoal)
+		end)
+
+		Attack:Add(0.5 + Start, function()
+			Ability:Hit(Caster, EnemyObject, {})
+		end)
+	end
+
 end
 
-function Ability:Play(Caster: Types.Caster)
+function Ability:Play(Caster: Types.Caster, _, _, Context: {[any]: any})
 	--
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
 	local AttackTime = Ability:FromData('Attack_State_Time', InMode and 2 or 1);
@@ -39,7 +90,7 @@ function Ability:Play(Caster: Types.Caster)
 	}, true);
 
 	if InMode then
-		ModeVersion(Caster, Attack)
+		ModeVersion(Caster, Attack, Context)
 	else
 		Default(Caster, Attack)
 	end

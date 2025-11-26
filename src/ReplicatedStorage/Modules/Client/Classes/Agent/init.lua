@@ -61,6 +61,10 @@ function AgentClass.GetSkillLevel(self: AgentTypes.AgentClass, Name: string)
 	return (self.__Skill_Levels[Name] or 1)
 end
 
+function AgentClass.SetPhysicsEnabled(self: AgentTypes.AgentClass, State: boolean)
+	return self.__Character:SetPhysicsEnabled(State)
+end
+
 function AgentClass.MarkServerAction(self: AgentTypes.AgentClass, Type: number)
 	if (self.__Listener_Count <= 0) then
 		return;

@@ -24,26 +24,28 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 	end)
 end
 
-local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence)
+local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Buffer: {})
+	print(Buffer, Buffer[1])
 
 	-- loop through all enemies in an area;
 
 end
 
-function Ability:Play(Caster: Types.Caster)
+function Ability:Play(Caster: Types.Caster, _, _, Context: { Buffer: {} })
 	--
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
 	local AttackTime = Ability:FromData('Attack_State_Time', InMode and 2 or 1);
 	local Attack = Ability:Begin(Caster, {
-
+		
 		{0, function()
 			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime)
 		end},
-
+		
 	}, true);
-
+	
 	if InMode then
-		ModeVersion(Caster, Attack)
+		Caster:AddTag("Invulnerability", AttackTime)
+		ModeVersion(Caster, Attack, Context.Buffer)
 	else
 		Default(Caster, Attack)
 	end

@@ -14,11 +14,12 @@ local Types = require(Shared.Types)
 local PhysicsClass = {} :: {[string]: (self: Types.PhysicsController, any) -> any, new: () -> Types.PhysicsController}
 PhysicsClass.__index = PhysicsClass
 
-function PhysicsClass.new(States: Types.StatesClass, Height: number): Types.PhysicsController
+function PhysicsClass.new(States: Types.StatesClass, Height: number, debug_t: boolean?): Types.PhysicsController
 	local WorldSpawn = workspace:WaitForChild('SpawnLocation') :: BasePart
 
 	local self = setmetatable({}, PhysicsClass)
 	self.__States = States
+	self.__Debug = debug_t
 	self.__Height = Height or 3.15
 	self.__Normal = Vector3.yAxis
 	self.__Position = WorldSpawn.Position + Vector3.new(0, self.__Height, 0)
@@ -58,6 +59,10 @@ function PhysicsClass:Run()
 
 	self.__Active = true
 	self.__ActiveThread = RunService.PreRender:Connect(function(Delta: number)
+		if self.__Debug then
+
+		end
+
 		if not self.__Active then
 			return
 		end

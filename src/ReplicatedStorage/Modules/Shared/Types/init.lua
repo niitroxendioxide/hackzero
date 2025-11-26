@@ -122,6 +122,7 @@ export type CharacterClass = {
 	__Appearance: AppearanceController,
 	__Animator: AnimatorController,
 	__States: StatesClass,
+	__Physics_Enabled: boolean,
 
 	Init: (self: CharacterClass) -> (),
 	Move: (self: CharacterClass) -> (),
@@ -134,6 +135,7 @@ export type CharacterClass = {
 	PivotTo: (self: CharacterClass) -> CFrame,
 	IsMoving: (self: CharacterClass) -> boolean,
 	GetMovementSpeed: (self: CharacterClass) -> number,
+	SetPhysicsEnabled: (self: CharacterClass, State: boolean) -> (),
 
 	SetKey: (self: CharacterClass, Key: string, State: boolean) -> (),
 	GetKey: (self: CharacterClass, Key: string) -> boolean,
