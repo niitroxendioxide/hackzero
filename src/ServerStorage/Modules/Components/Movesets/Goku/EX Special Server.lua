@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 
@@ -24,17 +25,31 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 	end)
 end
 
-local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Buffer: {})
-	print(Buffer, Buffer[1])
+local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Buffer: { [number]: { number } })
+	local EnemyIds = Buffer[1]
 
-	-- loop through all enemies in an area;
+	for i, EnemyId in EnemyIds do
+		local EnemyObject = Enemies:GetEnemy(EnemyId)
+		if (EnemyObject:GetPivot().Position - Caster:GetPivot().Position).Magnitude > 60 then
+			continue
+		end
+
+		Attack:Add(0.5 + (i-1) * 0.25, function()
+			Ability:Hit(Caster, EnemyObject, Ability:FromData('Hit_Mode', nil, 1))
+		end)
+
+	end
 
 end
 
-function Ability:Play(Caster: Types.Caster, _, _, Context: { Buffer: {} })
+function Ability:Play(Caster: Types.Caster, _, _, Context: { Buffer: {any | {number}} })
 	--
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
-	local AttackTime = Ability:FromData('Attack_State_Time', InMode and 2 or 1);
+	local AttackTime = Ability:FromData('Attack_State_Time', 1);
+	if InMode then
+		AttackTime = 0.6 + math.max(#Context.Buffer[1] - 1, 0) * 0.25
+	end
+
 	local Attack = Ability:Begin(Caster, {
 		
 		{0, function()

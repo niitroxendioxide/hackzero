@@ -150,19 +150,24 @@ return {
 
 	--
 	Difficulty_Targetting_Priorities = {
+		PASSIVE = {
+			SAME_ATTACKER = 1000,
+			DIFFERENT_ATTACKER = 2500,
+		},
+
 		EASY = {
-			SAME_ATTACKER = 3,
-			DIFFERENT_ATTACKER = 2.25,
+			SAME_ATTACKER = 5,
+			DIFFERENT_ATTACKER = 4.25,
 		},
 
 		MEDIUM = {
-			SAME_ATTACKER = 2.5,
-			DIFFERENT_ATTACKER = 1.75,
+			SAME_ATTACKER = 3.75,
+			DIFFERENT_ATTACKER = 3,
 		},
 
 		HARD = {
-			SAME_ATTACKER = 1.75,
-			DIFFERENT_ATTACKER = 1.3,
+			SAME_ATTACKER = 2,
+			DIFFERENT_ATTACKER = 1.75,
 		},
 
 		EXTREME = {

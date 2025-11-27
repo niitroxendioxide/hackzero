@@ -95,7 +95,7 @@ function ServerEnemy:Attack()
 	local MovesetData = EnemyDatabase:GetMovesetData(self.__Name)
 	local Target = self:GetTarget()
 
-	if not Target or self.__Status:IsKnocked() or not self.__Status:IsAlive() or self.__Movement.__World_Speed <= 0 then
+	if not Target or self.__Status:IsKnocked() or not self.__Status:IsAlive() or self.__Movement.__World_Speed <= 0 or self.__Status:IsAirborne() then
 		return
 	end
 

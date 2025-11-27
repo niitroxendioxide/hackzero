@@ -170,6 +170,8 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 			M1_Count = self:Get(Agent, "Count")
 		end
 
+		print(table.unpack(self.__Context_Buffer))
+
 		Replicator:Replicate(GameEnum.Replication.PivotTo, Agent:GetPivot(), true)
 		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId, M1_Count, table.unpack(self.__Context_Buffer))
 	
@@ -187,7 +189,7 @@ function AbilityClass:EffectSerial(Name: string, ...)
 	return Effects:PlaySerial(Name, ...)
 end
 
-function AbilityClass:PushToContextBuffer(key: string, value: any)
+function AbilityClass:PushToContextBuffer(value: any)
 	table.insert(self.__Context_Buffer, value)
 end
 

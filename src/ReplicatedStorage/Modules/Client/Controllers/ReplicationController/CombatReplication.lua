@@ -26,7 +26,7 @@ local DestructiblesDatabase = require(Shared.Database.Destructibles)
 local Colliders = {}
 local Controller = {}
 
-function Controller:UseSkill(Buffer: buffer)
+function Controller:UseSkill(Buffer: buffer, Extra: {})
 	local Skill = buffer.readu8(Buffer, 1)
 	local EnemyId = buffer.readu8(Buffer, 2)
 	local StateId = buffer.readu8(Buffer, 3)
@@ -70,9 +70,9 @@ function Controller:UseSkill(Buffer: buffer)
 			return
 		end
 
-		CharacterMoveset:Begin(Key, ActiveAgent, {IsSignal = true})
+		CharacterMoveset:Begin(Key, ActiveAgent, {IsSignal = true, Buffer = Extra})
 	elseif State == "End" then
-		CharacterMoveset:Release(Key, ActiveAgent, {IsSignal = true})
+		CharacterMoveset:Release(Key, ActiveAgent, {IsSignal = true, Buffer = Extra})
 	elseif State == "Cancel" then
 		CharacterMoveset:CancelSkill(Key, ActiveAgent)
 	end

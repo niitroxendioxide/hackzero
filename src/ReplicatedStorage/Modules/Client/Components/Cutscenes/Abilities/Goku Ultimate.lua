@@ -1,6 +1,7 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
 
 --
 local Client = ReplicatedStorage.Modules.Client
@@ -22,6 +23,14 @@ local AgentCache = {
     __Methods = {},
 }
 local GokuUltimate = CutsceneClass.new("GokuSSJ", 0.967)
+
+GokuUltimate:FilterCameraUsage(function(Agent: AgentTypes.AgentClass)
+    if Agent.__Player_Assigned == Players.LocalPlayer then
+        return true
+    end
+
+    return false
+end)
 
 function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     if AgentCache.__Methods[Agent] then

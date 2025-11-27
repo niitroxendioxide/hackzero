@@ -30,9 +30,22 @@ function CutsceneClass.new(Name: string, Time: number): Types.CutsceneClass
     self.__Cache = {}
     self.__Objects = {}
     self.__Thread = nil;
+    self.__Camera_Filter = function()
+        return true
+    end
     self.__Camera_User = nil;
 
     return self
+end
+
+function CutsceneClass.FilterCameraUsage(self: Types.CutsceneClass, fn: (...any) -> boolean)
+    assert(typeof(fn) == 'function', string.format('Invalid function passed to "FilterCameraUsage for cutscene: " %s', self.__Name))
+
+    self.__Camera_Filter = fn;
+end
+
+function CutsceneClass.WillUseCamera(self: Types.CutsceneClass, ...): boolean
+    return self.__Camera_Filter(...)
 end
 
 function CutsceneClass.GetPlayerEnvironment(self: Types.CutsceneClass): {}
@@ -46,9 +59,8 @@ function CutsceneClass.GetPlayerEnvironment(self: Types.CutsceneClass): {}
 end
 
 --
-function CutsceneClass.Sequence(self: Types.CutsceneClass, Data: {}): ()
+function CutsceneClass.Sequence(self: Types.CutsceneClass, ...): ()
     print("Cutscene sequence", self.__Name, "began!")
-    -- empty method!
 end
 
 function CutsceneClass.SetCameraUser(self: Types.CutsceneClass, Player: Player)
@@ -88,7 +100,7 @@ function CutsceneClass.AnimateCamera(self: Types.CutsceneClass, At: Model | CFra
         Weld.Part1 = At.PrimaryPart
     end
 
-    self.__Objects.CameraRig.Parent = (workspace:FindFirstChild("World") :: Folder):FindFirstChild("Effects"    )
+    self.__Objects.CameraRig.Parent = (workspace:FindFirstChild("World") :: Folder):FindFirstChild("Effects")
 
     local AnimObject = typeof(GivenAnim) == 'Instance' and GivenAnim or AnimLib:GetAnim('Cutscenes.'..(GivenAnim :: string))
     local Track = AnimLib:Play(self.__Objects.CameraRig, AnimObject)
@@ -132,7 +144,6 @@ function CutsceneClass.SetFOV(self: Types.CutsceneClass, FOV: number, Info: {any
         return
     end
 
-
     if Info then
         local Tween = EffectsUtil:Tween(workspace.CurrentCamera, Info, {FieldOfView = FOV})
 
@@ -146,7 +157,7 @@ function CutsceneClass.SetFOV(self: Types.CutsceneClass, FOV: number, Info: {any
     return;
 end
 
-function CutsceneClass.Play(self: Types.CutsceneClass, Data: {})
+function CutsceneClass.Play(self: Types.CutsceneClass, ...)
     if self.__Active then
         return
     end
@@ -157,9 +168,10 @@ function CutsceneClass.Play(self: Types.CutsceneClass, Data: {})
         self.__Thread = nil
     end
 
+    local Args = {...}
     self.__Active = true
     self:Add(task.spawn(function()
-        self:Sequence(Data)
+        self:Sequence(table.unpack(Args))
     end))
 
     --

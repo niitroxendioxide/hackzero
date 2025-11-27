@@ -320,7 +320,7 @@ function Replicator:ProcessDodge(Agent: AgentTypes.ServerAgentClass)
 	Network:FireForAll('Replicate', Object)
 end
 
-function Replicator:UseSkill(Player: Player, SkillId: number, IncludePlayer: boolean, EnemyNumber: number, StateId: number)
+function Replicator:UseSkill(Player: Player, SkillId: number, IncludePlayer: boolean, EnemyNumber: number, StateId: number, Extra: {any}?)
 	local Object = buffer.create(8)
 	buffer.writeu8(Object, 0, GameEnum.Replication.UseSkill)
 	buffer.writeu8(Object, 1, SkillId)
@@ -329,9 +329,9 @@ function Replicator:UseSkill(Player: Player, SkillId: number, IncludePlayer: boo
 	buffer.writeu8(Object, 4,  Player:GetAttribute("ReplicationId") :: number)
 
 	if IncludePlayer then
-		Network:FireForAll('ReliableReplication', Object)
+		Network:FireForAll('ReliableReplication', Object, Extra)
 	else
-		Network:FireForAllBut(Player, 'ReliableReplication', Object)
+		Network:FireForAllBut(Player, 'ReliableReplication', Object, Extra)
 	end
 
 end

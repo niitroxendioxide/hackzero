@@ -32,12 +32,12 @@ end
 --[[
     Start a cutscene for stuffs
     @param Name Cutscene name defined in the module for the cutscene
-    @param Data Any extra data that the cutscene might need
+    @param ... **(Data)** Any extra data that the cutscene might need
 
     @return Status whether the cutscene could run or not
     @return FailMessage The error message
 ]]
-function CutsceneLibrary:Start(Name: string, Data: {any}?): (boolean, string?)
+function CutsceneLibrary:Start(Name: string, ...: any): (boolean, string?)
     local CutsceneClass = CutsceneLibrary:Find(Name)
     if not CutsceneClass then
         return false, "Cutscene not found";
@@ -47,10 +47,14 @@ function CutsceneLibrary:Start(Name: string, Data: {any}?): (boolean, string?)
         return false, "Cannot interrupt other cutscene";
     end
 
-    Camera:MarkUsage(Name)
+    local Data = {...}
+    local WillUseCamera = CutsceneClass:WillUseCamera(table.unpack(Data))
+    if WillUseCamera then
+        Camera:MarkUsage(Name)
+    end
 
     local Success, FailMsg = pcall(function()
-        CutsceneClass:Play(Data)
+        CutsceneClass:Play(table.unpack(Data))
     end)
 
     if not Success then
@@ -60,7 +64,9 @@ function CutsceneLibrary:Start(Name: string, Data: {any}?): (boolean, string?)
     CutsceneLibrary.__Current = CutsceneClass
 
     CutsceneClass.Completed:Once(function()
-        Camera:FreeUsage()
+        if WillUseCamera then
+            Camera:FreeUsage()
+        end
         CutsceneLibrary.__Current = nil
     end)
 

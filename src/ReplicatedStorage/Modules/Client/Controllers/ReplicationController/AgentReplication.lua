@@ -50,8 +50,6 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 	local AgentData = SharedData:GetAgentData(AgentOwner, CharacterName)-- or {Level = 1, Name = CharacterName, Artifacts = {}, Drive = nil}
 
 	local CharacterInstance = AgentClass.new(CharacterName, AgentData.Level)
-	print(UserId)
-
 	CharacterInstance:Init(UserId)
 
 	--CharacterInstance.__Controller:GetCollider().Transparency = 0.9
@@ -99,12 +97,11 @@ function Controller:RemoveAgent(Buffer: buffer)
 end
 
 function Controller:Rotate(Buffer: buffer)
-	local Angle = math.rad(buffer.readi16(Buffer, 1) / 5133)
+	local Angle = math.rad(buffer.readi16(Buffer, 1) / 180)
 	local X, Z = math.sin(Angle), math.cos(Angle)
 	local Rebuilt = Vector3.new(X, 0, Z)
 
 	local UserId = buffer.readu8(Buffer, 3)
-
 	local Character = CharacterLibrary:GetCurrent(UserId)
 
 	Character:Look(Rebuilt, true)
@@ -117,9 +114,6 @@ function Controller:PivotTo(Buffer: buffer)
 	local Vector = Vector3.new(X, Y, Z)
 
 	local Character = CharacterLibrary:GetCurrent(UserId)
-
-	print('Hello, is it myself?', IsOwnId(UserId))
-
 	if IsOwnId(UserId) then
 		Character:MarkServerAction(GameEnum.Replication.PivotTo)
 	end

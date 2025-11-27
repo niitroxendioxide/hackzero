@@ -116,7 +116,7 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 	end
 
 	if typeof(At) == 'table' and At.GetPivot then
-		Indicator.Position = At:GetPivot().Position
+		Indicator.Position = At:GetModel():GetPivot().Position
 		Indicator.Name = At:GetId()..'indicatorobj'
 
 		Effects:Tween(Indicator, {.4, 'Back'}, {Position = Indicator.Position + Effects:RandomV3() * Effects:Random(0.8, 1.3)})

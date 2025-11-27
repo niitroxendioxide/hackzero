@@ -9,6 +9,7 @@ return table.freeze({
         Act = 'Intro',
     },
 
+    DIFFICULTY = 'EASY',
     BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {

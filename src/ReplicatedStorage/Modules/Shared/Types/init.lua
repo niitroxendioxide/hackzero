@@ -413,6 +413,7 @@ export type EnemyStatus = {
 	GetHealth: (self: EnemyStatus) -> number,
 	IsAlive: (self: EnemyStatus) -> (boolean),
 	IsKnocked: (self: EnemyStatus) -> (boolean),
+	IsAirborne: (self: EnemyStatus) -> (boolean),
 	SwitchState: (self: EnemyStatus, State: State) -> (),
 
 	GetStat: (self: EnemyStatus, Stat: Stat) -> (number),
@@ -780,12 +781,13 @@ export type CutsceneClass = {
 	__Time: number,
 	__Camera_User: Player?,
 	__Thread: thread?,
+	__Camera_Filter: (...any) -> boolean,
 
 	--
 	IsCameraUser: (self: CutsceneClass) -> (boolean),
 	SetCameraUser: (self: CutsceneClass, Player: Player) -> (),
-	Sequence: (self: CutsceneClass, Data: {any}) -> (),
-	Play: (self: CutsceneClass, Data: {any}) -> (),
+	Sequence: (self: CutsceneClass, ...any) -> (),
+	Play: (self: CutsceneClass, ...any) -> (),
 	CleanUp: (self: CutsceneClass) -> (),
 	MoveCamera: (self: CutsceneClass, To: CFrame, Info: {number | string}?) -> (Tween?),
 
@@ -794,6 +796,21 @@ export type CutsceneClass = {
 	GetPlayerEnvironment: (self: CutsceneClass) -> {Model: Rig, CFrame: CFrame, AgentName: string},
 
 	AnimateCamera: (self: CutsceneClass, At: CFrame, Animation: string) -> (AnimationTrack?),
+
+
+	--[[
+		Add a handler to filter the parameters used to determine whether the camera will be used or not in this cutscnee
+		@param Handler
+	]]
+	FilterCameraUsage: (self: CutsceneClass, fn: (...any) -> boolean) -> (),
+
+	--[[
+		Given any parameters, the cutscene handler will automatically manage whether it will use the camera or not, so that the usage can be marked and free'd afterwards, without
+		any worry of misusage of the cutscenes camera handler
+
+		@param any
+	]]
+	WillUseCamera: (self: CutsceneClass, ...any) -> boolean,
 
 	--[[
 		Wait the given amount of seconds

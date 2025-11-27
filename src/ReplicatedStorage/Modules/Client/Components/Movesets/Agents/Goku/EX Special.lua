@@ -53,9 +53,8 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 	end)
 end
 
-local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Context: {[any]: any})
-	local EnemiesToCycle = Context.Buffer ~= nil and (typeof(Context.Buffer[1]) == 'table' and #Context.Buffer[1] > 0) and Context.Buffer 
-	or #EnemyList > 0 and EnemyList
+local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, EnemiesToCycle: {[any]: any})
+	
 
 	for idx = 1, #EnemiesToCycle do
 		local EnemyObject = Enemies:GetEnemy(EnemiesToCycle[idx])
@@ -67,6 +66,7 @@ local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Context
 			local Direction = CFrame.lookAt(EnemyPosition.Position, StartPivot.Position).LookVector
 
 			local LerpGoal = CFrame.lookAlong(EnemyPosition.Position + Direction*6, Direction*-1)
+			Ability:MatchAirborneHeights(Caster, EnemyObject, 0.5)
 			Caster:PivotTo(LerpGoal)
 		end)
 
@@ -79,8 +79,15 @@ end
 
 function Ability:Play(Caster: Types.Caster, _, _, Context: {[any]: any})
 	--
+	local EnemiesToCycle = Context.Buffer ~= nil and (typeof(Context.Buffer[1]) == 'table' and #Context.Buffer[1] > 0) and Context.Buffer[1]
+	or #EnemyList > 0 and EnemyList
+
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
-	local AttackTime = Ability:FromData('Attack_State_Time', InMode and 2 or 1);
+	local AttackTime = Ability:FromData('Attack_State_Time', 1);
+	if InMode then
+		AttackTime = 0.6 + math.max(#EnemiesToCycle - 1, 0) * 0.25
+	end
+
 	local Attack = Ability:Begin(Caster, {
 
 		{0, function()
@@ -90,7 +97,7 @@ function Ability:Play(Caster: Types.Caster, _, _, Context: {[any]: any})
 	}, true);
 
 	if InMode then
-		ModeVersion(Caster, Attack, Context)
+		ModeVersion(Caster, Attack, EnemiesToCycle)
 	else
 		Default(Caster, Attack)
 	end

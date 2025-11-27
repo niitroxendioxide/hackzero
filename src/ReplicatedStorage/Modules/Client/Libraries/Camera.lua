@@ -100,15 +100,13 @@ function Camera:Update(delta: number)
 	local CameraRotation = CFrame.Angles(0, -Camera.__Rotation.X, 0) * CFrame.Angles(-Camera.__Rotation.Y, 0, 0)
 	local CameraPosition;
 
-	--if Camera.__Track_Type == 1 then
-		--CameraPosition = Model:FindFirstChild(self.__Target_Part).Position + Settings.Offset
-	--else
-		local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
-		local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
-		local Goal = Vector3.new(Root.X, Torso:Lerp(Root, 0.5).Y, Root.Z)
+	local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
+	local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
+	local Goal = Vector3.new(Root.X, Torso:Lerp(Root, 0.5).Y, Root.Z)
 
-		CameraPosition = Goal + Settings.Offset
-	--end
+	print(Goal.Y)
+
+	CameraPosition = Goal + Settings.Offset
 
 	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * 24)
 

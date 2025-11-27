@@ -70,6 +70,10 @@ function EnemyStatus:IsKnocked()
 	return self.__Dazed
 end
 
+function EnemyStatus:IsAirborne()
+	return self.__State == 'Airborne'
+end
+
 function EnemyStatus:Daze(Amount: number): boolean
 	if self.__Dazed and Amount > 0 then
 		return false

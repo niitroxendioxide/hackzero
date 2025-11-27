@@ -169,18 +169,40 @@ return {
 				Default = {
 					Damage = 248;
 					Daze = 19;
-					Affliction_Buildup = 1.5;
+					Affliction_Buildup = 22;
 					Affliction = 'Physical';
 					HitType = 'Blunt';
 					Stun = 1.25;
 					Airborne = true;
 				};
+
+				Hit_Mode = {
+					Damage = 312;
+					Daze = 22;
+					Affliction_Buildup = 33;
+					Affliction = 'Physical';
+					HitType = 'Blunt';
+					Stun = 2.5;
+					HitsAirborne = true;
+					Airborne = true;
+
+					Knockback = {
+						vector.create(0, 0, 1),
+						6,
+						0.2
+					},
+				};
 			},
 
 			Upgrades = {
 				Default = {
-					Damage = 27,
+					Damage = 11,
 					Daze = 1,
+				},
+
+				Hit_Mdoe = {
+					Damage = 9.8,
+					Daze = 1.5,
 				}
 			}
 		},

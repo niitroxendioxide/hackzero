@@ -21,6 +21,7 @@ local AgentService = require(ServerStorage.Modules.Services.Combat.AgentService)
 local CompanionService = require(ServerStorage.Modules.Services.Combat.CompanionService)
 local AchievementService = require(ServerStorage.Modules.Services.Data.AchievementService)
 local DataService = require(ServerStorage.Modules.Services.Data.DataService)
+local settings = require(ServerStorage.Modules[".testenv"].settings)
 local GameEnum = require(Shared.GameEnum)
 local MissionClass = require(Classes.Game.Mission)
 local StageDatabase = require(Database.Stages)
@@ -167,7 +168,8 @@ function Service:Begin(Stage: string, Act: string)
         return
     end
 
-    Targets:SetDifficulty(GameEnum.Difficulties.Easy)
+    local Difficulty = RunService:IsStudio() and settings.DIFFICULTY or GameEnum.Difficulties.Easy
+    Targets:SetDifficulty(Difficulty)
 
     local Marker_Data = Map:SetupMarkers(Data.Markers)
 

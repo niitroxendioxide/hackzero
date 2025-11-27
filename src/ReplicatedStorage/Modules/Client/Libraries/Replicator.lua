@@ -85,6 +85,17 @@ function Controller:Replicate(Action: number, ...)
 		table.remove(Args, 3)
 		table.remove(Args, 2)
 		table.remove(Args, 1)
+		
+		-- (for some reason, this seems to add a ["n"] = {} key, i have no idea what causes it, nor can trace it, so we rebuild the list)
+		local n_args = {};
+		for key, Arg in Args do
+			if typeof(key) ~= 'number' then
+				continue
+			end
+			table.insert(n_args, Arg)
+		end
+
+		Args = n_args;
 	end
 
 	buffer.writeu8(Buffer, 0, Action)
