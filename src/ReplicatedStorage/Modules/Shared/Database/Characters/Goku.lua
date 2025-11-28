@@ -176,13 +176,24 @@ return {
 					Airborne = true;
 				};
 
+				Slam_Hit_Mode = {
+					Damage = 102;
+					Daze = 19;
+					Affliction_Buildup = 8;
+					Affliction = 'Physical';
+					HitType = 'Blunt';
+					Stun = 2.5;
+					HitsAirborne = true;
+					Airborne = true;
+				};
+
 				Hit_Mode = {
 					Damage = 312;
 					Daze = 22;
 					Affliction_Buildup = 33;
 					Affliction = 'Physical';
 					HitType = 'Blunt';
-					Stun = 2.5;
+					Stun = 1.75;
 					HitsAirborne = true;
 					Airborne = true;
 
@@ -200,7 +211,12 @@ return {
 					Daze = 1,
 				},
 
-				Hit_Mdoe = {
+				Slam_Hit_Mode = {
+					Damage = 3,
+					Daze = 0.5,
+				},
+
+				Hit_Mode = {
 					Damage = 9.8,
 					Daze = 1.5,
 				}

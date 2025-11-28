@@ -27,17 +27,31 @@ end
 
 local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Buffer: { [number]: { number } })
 	local EnemyIds = Buffer[1]
+	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
+
+	local Center = Caster:GetPivot().Position
+	local Hit_Data = Ability:FromData('Hit_Mode', nil, SkillLevel)
+	local Slam = Ability:FromData('Slam_Hit_Mode', nil, SkillLevel)
 
 	for i, EnemyId in EnemyIds do
 		local EnemyObject = Enemies:GetEnemy(EnemyId)
-		if (EnemyObject:GetPivot().Position - Caster:GetPivot().Position).Magnitude > 60 then
+		if (EnemyObject:GetPivot().Position - Caster:GetPivot().Position).Magnitude > 45 then
 			continue
 		end
 
-		Attack:Add(0.5 + (i-1) * 0.25, function()
-			Ability:Hit(Caster, EnemyObject, Ability:FromData('Hit_Mode', nil, 1))
+		Attack:Add(0.5, function()
+			Ability:Hit(Caster, EnemyObject, Slam)
 		end)
 
+		Attack:Add(0.9 + (i-1) * 0.25, function()
+			Hit_Data.Knocback = {
+				EnemyObject:GetPivot():VectorToObjectSpace(CFrame.lookAt(EnemyObject:GetPivot().Position, Center).LookVector),
+				15, -- strength
+				0.3 -- time
+			}
+
+			Ability:Hit(Caster, EnemyObject, Hit_Data)
+		end)
 	end
 
 end

@@ -21,7 +21,7 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeConnection, function(Caster: Typ
 
 	local TempList = {}
 	for _, Enemy in AllEnemies do
-		if (Enemy:GetPivot().Position - Caster:GetPivot().Position).Magnitude < 55 and #TempList < 10 then
+		if (Enemy:GetPivot().Position - Caster:GetPivot().Position).Magnitude < 20 and #TempList < 10 then
 			table.insert(TempList, Enemy)
 		end
 	end
@@ -46,31 +46,32 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 		
 		Ability:CreateHitbox(Caster, Vector3.zAxis*-3, vector.create(5, 5, 6.65), function(Enemy)
 			Ability:Hit(Caster, Enemy)
-
-			-- effect?!
 		end)
 
 	end)
 end
 
 local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, EnemiesToCycle: {[any]: any})
-	
+	--
+	Ability:Effect("Goku_GroundSlam", Caster)
+
+	--
+	local Center = Caster:GetPivot().Position
 
 	for idx = 1, #EnemiesToCycle do
 		local EnemyObject = Enemies:GetEnemy(EnemiesToCycle[idx])
 		local Start = (idx - 1) * 0.25
 
-		Attack:Add(0.35 + Start, function()
-			local StartPivot = Caster:GetPivot()
+		Attack:Add(0.75 + Start, function()
 			local EnemyPosition = EnemyObject:GetPivot()
-			local Direction = CFrame.lookAt(EnemyPosition.Position, StartPivot.Position).LookVector
+			local Direction = CFrame.lookAt(EnemyPosition.Position, Center).LookVector
 
-			local LerpGoal = CFrame.lookAlong(EnemyPosition.Position + Direction*6, Direction*-1)
+			local LerpGoal = CFrame.lookAlong(EnemyPosition.Position - Direction*6, Direction)
 			Ability:MatchAirborneHeights(Caster, EnemyObject, 0.5)
 			Caster:PivotTo(LerpGoal)
 		end)
 
-		Attack:Add(0.5 + Start, function()
+		Attack:Add(0.9 + Start, function()
 			Ability:Hit(Caster, EnemyObject, {})
 		end)
 	end
