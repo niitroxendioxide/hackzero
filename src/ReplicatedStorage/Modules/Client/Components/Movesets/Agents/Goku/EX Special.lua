@@ -21,7 +21,7 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeConnection, function(Caster: Typ
 
 	local TempList = {}
 	for _, Enemy in AllEnemies do
-		if (Enemy:GetPivot().Position - Caster:GetPivot().Position).Magnitude < 20 and #TempList < 10 then
+		if (Enemy:GetPivot().Position - Caster:GetPivot().Position).Magnitude < 24 and #TempList < 10 then
 			table.insert(TempList, Enemy)
 		end
 	end
@@ -45,7 +45,7 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 	Attack:Add(0.25, function()
 		
 		Ability:CreateHitbox(Caster, Vector3.zAxis*-3, vector.create(5, 5, 6.65), function(Enemy)
-			Ability:Hit(Caster, Enemy)
+			Ability:Hit(Caster, Enemy, {EffectData = Ability:FromData("Hit_Effect_Data")})
 		end)
 
 	end)
@@ -53,9 +53,12 @@ end
 
 local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, EnemiesToCycle: {[any]: any})
 	--
-	Ability:Effect("Goku_GroundSlam", Caster)
+	Attack:Add(0.35, function()
+		Ability:Effect("Goku_GroundSlam", Caster)
+	end)
 
 	--
+	local HitEffectData = Ability:FromData("Hit_Effect_Data")
 	local Center = Caster:GetPivot().Position
 
 	for idx = 1, #EnemiesToCycle do
@@ -63,16 +66,26 @@ local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Enemies
 		local Start = (idx - 1) * 0.25
 
 		Attack:Add(0.75 + Start, function()
+			local Previous = Caster:GetPivot() -- to use for effect later :p
 			local EnemyPosition = EnemyObject:GetPivot()
 			local Direction = CFrame.lookAt(EnemyPosition.Position, Center).LookVector
 
 			local LerpGoal = CFrame.lookAlong(EnemyPosition.Position - Direction*6, Direction)
-			Ability:MatchAirborneHeights(Caster, EnemyObject, 0.5)
+			Ability:MatchAirborneHeights(Caster, EnemyObject, 0.5, true)
 			Caster:PivotTo(LerpGoal)
 		end)
 
+		Attack:Add(0.8 + Start, function()
+			Ability:PlayAnimation(Caster, 'Goku.Abilities.Special.EX_Kick', {
+				Active_Time = 0.75,
+				Fade = 0.1,
+				Weight = 1,
+				Speed = 1,
+			})
+		end)
+
 		Attack:Add(0.9 + Start, function()
-			Ability:Hit(Caster, EnemyObject, {})
+			Ability:Hit(Caster, EnemyObject, {EffectData = HitEffectData})
 		end)
 	end
 

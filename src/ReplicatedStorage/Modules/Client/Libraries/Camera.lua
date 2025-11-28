@@ -104,8 +104,6 @@ function Camera:Update(delta: number)
 	local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
 	local Goal = Vector3.new(Root.X, Torso:Lerp(Root, 0.5).Y, Root.Z)
 
-	print(Goal.Y)
-
 	CameraPosition = Goal + Settings.Offset
 
 	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * 24)

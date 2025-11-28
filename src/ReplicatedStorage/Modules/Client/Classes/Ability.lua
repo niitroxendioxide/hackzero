@@ -75,7 +75,7 @@ function AbilityClass.SetTargetFinder(self: Types.AbilityClass, handler: (Caster
 	self.__Target_Finder = handler;
 end
 
-function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Types.Caster, Target: Types.Target, time: number?)
+function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Types.Caster, Target: Types.Target, time: number?, instant: boolean?)
 	if Target == nil or Agent == nil then
 		return
 	end
@@ -83,7 +83,7 @@ function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Type
 	local TargetsHeight = Target.__Appearance:GetAddedHeight()
 	local Difference = TargetsHeight - Agent:GetAppearance():GetAddedHeight()
 	if (Target:GetState() ~= 'Idle' and TargetsHeight > 0) then
-		Agent:GetAppearance():Raise(Difference, time or 1)
+		Agent:GetAppearance():Raise(Difference, time or 1, instant)
 
 		if (Difference == 0) then
 			return GameEnum.AirborneMatchState.Same;
@@ -169,8 +169,6 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 		if IsBasicAttack then
 			M1_Count = self:Get(Agent, "Count")
 		end
-
-		print(table.unpack(self.__Context_Buffer))
 
 		Replicator:Replicate(GameEnum.Replication.PivotTo, Agent:GetPivot(), true)
 		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId, M1_Count, table.unpack(self.__Context_Buffer))

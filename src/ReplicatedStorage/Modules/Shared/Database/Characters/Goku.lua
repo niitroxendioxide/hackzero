@@ -155,10 +155,10 @@ return {
 		['EX Special'] = {
 			Base = {
 				Speed = 1,
+				Animation_Speed = 1,
 				Attack_State_Time = {0.5, 5},
 				
 				Required_Energy = 60,
-				Animation_Speed = 1,
 				Hit_Frequency = 14/60,
 				Walk_Time = 5/60,
 
@@ -186,6 +186,14 @@ return {
 					HitsAirborne = true;
 					Airborne = true;
 				};
+				
+				Hit_Effect_Data = {
+					Highlight = true,
+					Audio = {
+						Id = { 9117969687, 175024455 }, -- 8595980577 lighter
+						Volume = 0.5,
+					}
+				},
 
 				Hit_Mode = {
 					Damage = 312;
@@ -195,7 +203,7 @@ return {
 					HitType = 'Blunt';
 					Stun = 1.75;
 					HitsAirborne = true;
-					Airborne = true;
+
 
 					Knockback = {
 						vector.create(0, 0, 1),

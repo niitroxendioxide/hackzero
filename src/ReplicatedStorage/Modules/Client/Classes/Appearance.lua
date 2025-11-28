@@ -72,7 +72,7 @@ end
 
 
 
-function AppearanceClass:Raise(Factor: number, Time: number)
+function AppearanceClass:Raise(Factor: number, Time: number, Instant: boolean?): ()
 	self.__Extra_Height += Factor;
 
 	if self.__Current_Height_Thread then
@@ -81,7 +81,7 @@ function AppearanceClass:Raise(Factor: number, Time: number)
 
 	
 	--
-	local tween_time = (self.__Extra_Height / 16)
+	local tween_time = (Instant == true and 0) or (self.__Extra_Height / 16)
 	local new_tween = EffectsUtil:Tween(self.__Root_Attachment, {tween_time, 'Quart'}, {Position = vector.create(0, -self.__Extra_Height)})
 	if self.__Current_Height_Tween then
 		self.__Current_Height_Tween:Destroy()

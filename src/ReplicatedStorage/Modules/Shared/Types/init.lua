@@ -50,7 +50,7 @@ export type AppearanceController = {
 	BindObject: (self: AppearanceController, Object: Instance, Toggle: (self: Instance, State: boolean, ExtraState: number) -> ()) -> (),
 	UnbindObject: (self: AppearanceController, Object: Instance) -> (),
 
-	Raise: (self: AppearanceController, Factor: number, Time: number) -> (),
+	Raise: (self: AppearanceController, Factor: number, Time: number, Instant: boolean?) -> (),
 	Land: (self: AppearanceController) -> (),
 	GetAddedHeight: (self: AppearanceController) -> (number),
 
