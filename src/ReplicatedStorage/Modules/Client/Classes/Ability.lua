@@ -418,17 +418,21 @@ end
 function AbilityClass.Cancel(self: Types.AbilityClass, Agent: any, Context: {Hit: boolean?})
 	Context = Context or {}
 
+	if not Context.Hit then
+		Agent:SwitchState("Idle", 0)
+	end
+
+	--
+	local Cache = self:Get(Agent, "CurrentSkillSavedObjects")
+	for _, Animation: AnimationTrack in (Cache or {}) do
+		Animation:Stop()
+	end
+
 	-- destroy after u  clear anims, else the value resets to nil hehe
 	local Sequence = self:Get(Agent, "CurrentPlayerSequence")
 	if Sequence then
 		Sequence:Destroy()
 	end
-
-	if not Context.Hit then
-		Agent:SwitchState("Idle", 0)
-	end
-
-	self:Save(Agent, "CurrentSkillSavedObjects", nil)
 end
 
 return AbilityClass

@@ -272,7 +272,7 @@ function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: n
             table.insert(Converted, {
                 Name = Name,
                 Level = settings.BORROWED_AGENT_LEVEL,
-                IsBorrowed = true,
+                IsBorrowed = settings.USE_BORROW,
             })
         end
 

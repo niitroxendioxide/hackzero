@@ -1,4 +1,3 @@
---!strict
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService('Players')
 
@@ -149,7 +148,7 @@ local function SetUltBarFill(Coefficient: number)
         local Rotated = H - 25
         if Rotated < 0 then Rotated += 360 end
 
-        UltBar.UIStroke.Color = Color
+        EffectUtil:Tween(UltBar.UIStroke, {.3}, {Color = Color})
         UltBar.UIStroke.UIGradient.Color = ColorSequence.new{
             ColorSequenceKeypoint.new(0, Color3.fromHSV(Rotated/360, 50/255, 200/255)),
             ColorSequenceKeypoint.new(1, Color3.new(1, 1, 1))

@@ -45,10 +45,14 @@ function StatesClass:GetLastChangeTime(): number
 	return (os.clock() - self.__Last_Change)
 end
 
+function StatesClass:CanStartMoving(): boolean
+	return self:GetLastChangeTime() > 0.25
+end
+
 function StatesClass:GetVelocityMod(): number
 	local Mod =  math.clamp((os.clock() - self.__Last_Change - 0.3) / 0.1, 0, 1)
 
-	return Mod
+	return self:CanStartMoving() and 1 or 0 -- od
 end
 
 function StatesClass:Switch(State: string, Time: number)

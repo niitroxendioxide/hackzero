@@ -82,4 +82,5 @@ export type Result<T, E> = typeof(setmetatable({}, ResultClass)) & {
     IsErr: (self: Result<T, E>) -> (boolean),
 }
 
+
 return ResultClass

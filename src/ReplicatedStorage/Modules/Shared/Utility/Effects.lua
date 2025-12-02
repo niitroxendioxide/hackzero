@@ -1,4 +1,5 @@
 --
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService('TweenService')
 
@@ -51,6 +52,12 @@ function EffectUtil:Tween(Object: Instance, Info: {number | string | boolean | n
 	end)
 
 	return Tween
+end
+
+function EffectUtil:FromGui<T>(name: string): T & GuiObject
+	local PlayerGui = Players.LocalPlayer.PlayerGui
+
+	return PlayerGui:FindFirstChild("Effects"):FindFirstChild(name)
 end
 
 function EffectUtil:CleanUp(Object: any, Time: number)

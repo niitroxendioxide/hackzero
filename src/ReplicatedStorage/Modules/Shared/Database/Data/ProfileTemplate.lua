@@ -31,7 +31,7 @@ return {
             Sound_Effects = true,
         },
         QOL = {
-            
+            MultipleIndicators = false,
         },
         Keybinds = {
             

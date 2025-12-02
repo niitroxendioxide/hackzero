@@ -202,6 +202,7 @@ function MovesetClass:CancelSkill(SkillKey: string, Agent, Context)
 		SkillMod:Cancel(Agent, Context)
 
 		if RunService:IsClient() and (not Context or not Context.Hit)  then
+			
 			SkillMod:Connect(Agent, GameEnum.AbilityStates.Cancel)
 		end
 	end

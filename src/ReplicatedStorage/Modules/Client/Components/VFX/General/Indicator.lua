@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Assets = ReplicatedStorage.Assets
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
 local Types = require(Shared.Types)
 local Effects = require(Shared.Utility.Effects)
 local GameEnum = require(Shared.GameEnum)
@@ -49,7 +50,7 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 	local Indicator = typeof(At) == 'table' and Parent:FindFirstChild(At:GetId()..'indicatorobj') or nil
 	local ClearThread: thread = nil
 	local NumberToString = tostring(Data.Number)..(Data.Critical and '!' or '')
-	local Multiple_Indicators_Setting = false
+	local Multiple_Indicators_Setting = not Settings:Get("Multiple_Indicators", "QOL")
 
 	if Multiple_Indicators_Setting and Indicator and Threads[Indicator] then
 		local Previous = Indicator:GetAttribute('Total')

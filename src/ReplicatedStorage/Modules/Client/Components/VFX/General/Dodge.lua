@@ -4,9 +4,14 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
+local Camera = require(ReplicatedStorage.Modules.Client.Libraries.Camera)
 local Characters = require(Client.Libraries.Characters)
 local EffectsLib = require(Client.Libraries.Effects)
+local AudioLib = require(Client.Libraries.Audio)
 local Effects = require(Shared.Utility.Effects)
+
+--
+local TextCache = {}
 
 ---
 return function(Duration: number)
@@ -25,12 +30,43 @@ return function(Duration: number)
 		end
 	end
 
+	
+	local Frame = Effects:FromGui("Dodge")
+	local DodgeTextobj: ImageLabel = Frame.text;
+	if #TextCache > 0 then
+		for _, tween in TextCache do
+			tween:Cancel()
+		end
+
+		TextCache = {}
+	end
+
+	DodgeTextobj.ImageTransparency = 0.75
+	DodgeTextobj.Scaler.Scale = 0.25
+	TextCache[#TextCache + 1] = Effects:Tween(DodgeTextobj, {Duration * 0.75, 'Quad'}, {ImageTransparency = 1})
+	TextCache[#TextCache + 1] = Effects:Tween(DodgeTextobj.Scaler, {Duration * 0.5, 'Quad'}, {Scale = 1})
+
+	AudioLib:PlayId(126570676614497, {
+		At = Current:GetPivot().Position,
+		Volume = 0.75,
+		Category = "Effects",
+	})
+
+	local CameraObj = workspace.CurrentCamera
+	Camera:UseFov(Duration + 0.1)
+	CameraObj.FieldOfView = 60
+
+	task.delay(0.1, function()
+		Effects:Tween(CameraObj, {Duration, 'Quad'}, {FieldOfView = 70})
+	end)
+
+	
 	--
 	EffectsLib:Play('Glow', Current)
-
+	
 	Effects:Tween(ColorCorrection, {.1}, Goals)
 	Effects:Tween(BloomEffect, {0.4}, {Intensity = 1.25, Size = 24, Threshold = 1})
-
+	
 	task.wait(Duration + 0.1)
 	Effects:Tween(BloomEffect, {0.4}, {Intensity = 1, Size = 24, Threshold = 2})
 	Effects:Tween(ColorCorrection, {.6}, {Saturation = 0, Contrast = 0, Brightness = 0})

@@ -10,6 +10,7 @@ return table.freeze({
     },
 
     DIFFICULTY = 'EASY',
+    USE_BORROW = false,
     BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {

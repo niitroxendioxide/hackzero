@@ -30,6 +30,7 @@ local Camera = {
 	__UsedBy = nil,
 	__Target_Part = "Head",
 	__Focused = true,
+	__Using_fov = false,
 }
 
 function Camera:RotateTo(GivenCFrame: CFrame)
@@ -84,6 +85,18 @@ function Camera:SetTargetPart(TargetPart: string)
 	self.__Target_Part = TargetPart
 end
 
+function Camera:UseFov(p_Usage_Time: number)
+	if Camera.__Using_fov then
+		return
+	end
+
+	Camera.__Using_fov = true;
+
+	task.delay(p_Usage_Time, function()
+		Camera.__Using_fov = false;
+	end)
+end
+
 function Camera:Update(delta: number)
 	if not(Camera.__Subject) or Camera.__UsedBy then
 		return
@@ -115,7 +128,9 @@ function Camera:Update(delta: number)
 		CameraCFrame = CFrame.lookAlong(Cast.Position, CameraRotation.LookVector)
 	end
 
-	CameraObject.FieldOfView = 70
+	if not Camera.__Using_fov then
+		CameraObject.FieldOfView = 70
+	end
 	CameraObject.CameraType = Enum.CameraType.Scriptable
 	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * 45)
 end

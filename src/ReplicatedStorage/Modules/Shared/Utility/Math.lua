@@ -4,12 +4,13 @@ local Math = {}
 --
 local Database = script.Parent.Parent.Database
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local ArtifactDatabase = require(Database.Artifacts)
 local DrivesDatabase = require(Database.Drives)
 local AgentsDatabase = require(Database.Characters)
 
 --
-function Math:ApplyPercents(StatsTable: {}, AgentStats: {})
+function Math:ApplyPercents(StatsTable: { [string]: number }, AgentStats: {})
 
     for StatBuffName, StatBuffValue in StatsTable do
         if string.match(StatBuffName, "%%") then
@@ -80,7 +81,8 @@ function Math:WriteArtifactsStats(StatsTable: {}, Artifacts)
                 continue
             end
 
-            local Amount = TickTable[ArtifactTier] * SubValue
+            local StrToIdx = typeof(ArtifactTier) == 'string' and GameEnum.Tiers[ArtifactTier] or ArtifactTier
+            local Amount = TickTable[StrToIdx] * SubValue
 
             if StatsTable[SubName] == nil then
                 StatsTable[SubName] = 0
