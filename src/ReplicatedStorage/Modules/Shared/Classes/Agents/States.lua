@@ -101,7 +101,7 @@ function StatesClass:SetKey(Key: string, Value: boolean): ()
 	self.__Keys[Key] = Value
 end
 
-function StatesClass:GetSpeed(Ignore_States: boolean)
+function StatesClass:GetSpeed(Ignore_States: boolean, debug: boolean?)
 	local CharStats = self.__Base_Stats
 
 	--
@@ -112,9 +112,15 @@ function StatesClass:GetSpeed(Ignore_States: boolean)
 		return Max * Time
 	end
 
+	
 	local TimePassed = (os.clock() - self.__Last_Dash_State)
 	local DashSpeedBoost = Statics.Dash_Speed_Buff
 	local DashBoostEffect = self.__State == "Dashing" and DashSpeedBoost or (1 - math.min(TimePassed, Statics.Dash_Speed_Buff_Vanish_Time)) * DashSpeedBoost
+	
+	if debug then
+		print(DashBoostEffect)
+	end
+
 
 	if self:GetKey('Sprint') or Ignore_States then
 		return CharStats.Sprint_Speed + (CharStats.Sprint_Speed * DashBoostEffect * (Ignore_States and 0 or 1))

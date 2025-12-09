@@ -28,6 +28,10 @@ function Ability:Play(Agent: Types.AgentClass, Key: string)
 		return
 	end
 
+	if TargetId then
+		self:Effect("Switch")
+	end
+
 	local NewAgent = CharacterLibrary:GetCurrent(Localplr)
 	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, NewIndex, Direction, NewAgent:GetRotation())
 end

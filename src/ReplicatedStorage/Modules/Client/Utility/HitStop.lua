@@ -12,21 +12,23 @@ function HitStop:Apply(Agent: any, Sequence: any, AnimTrack: AnimationTrack, Dur
     end
 
     if ActiveHitStops[Agent] then
-        task.cancel(ActiveHitStops[Agent])
-        ActiveHitStops[Agent] = nil
+        task.cancel(ActiveHitStops[Agent].Thread)
     end
     
-    local originalAnimSpeed = AnimTrack.Speed or 1
+    local originalAnimSpeed = ActiveHitStops[Agent] and ActiveHitStops[Agent].OriginalSpeed or (AnimTrack.Speed or 1)
 
     Sequence:Pause()
     AnimTrack:AdjustSpeed(0)
 
-    ActiveHitStops[Agent] = task.delay(DurationOverride or HITSTOP_DURATION, function()
-        Sequence:Start()
-        AnimTrack:AdjustSpeed(originalAnimSpeed)
+    ActiveHitStops[Agent] = {
+        OriginalSpeed = originalAnimSpeed,
+        Thread = task.delay(DurationOverride or HITSTOP_DURATION, function()
+            Sequence:Start()
+            AnimTrack:AdjustSpeed(ActiveHitStops[Agent].OriginalSpeed)
 
-        ActiveHitStops[Agent] = nil
-    end)
+            ActiveHitStops[Agent] = nil
+        end)
+    }
 end
 
 function HitStop:StopEffect(Effect: Instance, Time: number)
@@ -35,8 +37,7 @@ function HitStop:StopEffect(Effect: Instance, Time: number)
     end
 
     if ActiveHitStops[Effect] then
-        task.cancel(ActiveHitStops[Effect])
-        ActiveHitStops[Effect] = nil
+        return
     end
 
     local Array = {}

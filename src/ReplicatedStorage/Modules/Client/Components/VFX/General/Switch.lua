@@ -10,18 +10,16 @@ local EffectsLib = require(Client.Libraries.Effects)
 local AudioLib = require(Client.Libraries.Audio)
 local Effects = require(Shared.Utility.Effects)
 
---
-local TextCache = {}
-
 ---
-return function(Duration: number)
+return function()
+    local Duration = 0.3
 	local Current = Characters:GetCurrent()
 	local ColorCorrection = Instance.new('ColorCorrectionEffect')
 	local BloomEffect = Instance.new('BloomEffect')
 	BloomEffect.Parent = Lighting
 	ColorCorrection.Parent = Lighting
 
-	local Goals = {Saturation = -0.75, Contrast = 0.355, Brightness = -.075}
+	local Goals = {Saturation = -0.25, Contrast = 0.15, Brightness = 0.06}
 	for _, OtherCorrections in Lighting:GetChildren() do
 		if OtherCorrections:IsA("ColorCorrectionEffect") then
 			Goals.Saturation -= OtherCorrections.Saturation
@@ -30,13 +28,7 @@ return function(Duration: number)
 		end
 	end
 
-	EffectsLib:Play("Screen_Text", "Dodge")
-
-	AudioLib:PlayId(126570676614497, {
-		At = Current:GetPivot().Position,
-		Volume = 0.75,
-		Category = "Effects",
-	})
+	EffectsLib:Play("Screen_Text", "Switch")
 
 	local CameraObj = workspace.CurrentCamera
 	Camera:UseFov(Duration + 0.1)

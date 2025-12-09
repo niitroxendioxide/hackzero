@@ -255,7 +255,7 @@ return {
 			Base = {
 				Speed = 1,
 
-				Attack_State_Time = 1.25,
+				Attack_State_Time = 1.75,
 				Hit_Frequency = 4/60,
 				Hit_Data = {
 					Damage = 34,
