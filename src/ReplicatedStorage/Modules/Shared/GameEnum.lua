@@ -43,6 +43,8 @@ return {
 		EnterDaze = 57,
 		PromptAssist = 58,
 		ChainAttack = 59,
+		UseChainAttack = 60,
+		CancelChainAttack = 61,
 
 		--
 		ClearPlayerData = 150,

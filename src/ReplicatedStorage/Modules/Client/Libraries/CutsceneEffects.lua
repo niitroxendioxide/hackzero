@@ -6,7 +6,9 @@ local Shared = ReplicatedStorage.Modules.Shared
 local EffectUtil = require(Shared.Utility.Effects)
 local Util = {}
 
-local OriginalScreenTransparency = {}
+local OriginalScreenTransparency = {} :: { [any] : { string | number} }
+
+local null_func = function() end
 
 --[[
     Hides the player HUD
@@ -20,7 +22,7 @@ function Util:HideHUD(Time: number?, IgnoreDescendantOf: string?): (() -> ())?
     local HUD = Gui:FindFirstChild("PlayerHUD")
     local Screen = HUD and HUD:FindFirstChild("Screen")
     if not (HUD) or not (Screen) then
-        return
+        return null_func
     end
 
 
@@ -31,7 +33,7 @@ function Util:HideHUD(Time: number?, IgnoreDescendantOf: string?): (() -> ())?
             continue
         end
 
-        if Object:IsA("Frame") then
+        if Object:IsA("Frame") or Object:IsA("CanvasGroup") then
             if not OriginalScreenTransparency[Object] then
                 OriginalScreenTransparency[Object] = {Object.BackgroundTransparency, 'BackgroundTransparency'}
             end

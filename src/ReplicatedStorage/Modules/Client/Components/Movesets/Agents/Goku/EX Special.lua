@@ -1,6 +1,6 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
+--local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
@@ -66,7 +66,7 @@ local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Enemies
 		local Start = (idx - 1) * 0.25
 
 		Attack:Add(0.75 + Start, function()
-			local Previous = Caster:GetPivot() -- to use for effect later :p
+			--local Previous = Caster:GetPivot() -- to use for effect later :p
 			local EnemyPosition = EnemyObject:GetPivot()
 			local Direction = CFrame.lookAt(EnemyPosition.Position, Center).LookVector
 
@@ -93,8 +93,9 @@ end
 
 function Ability:Play(Caster: Types.Caster, _, _, Context: {[any]: any})
 	--
-	local EnemiesToCycle = Context.Buffer ~= nil and (typeof(Context.Buffer[1]) == 'table' and #Context.Buffer[1] > 0) and Context.Buffer[1]
-	or #EnemyList > 0 and EnemyList
+	local EnemiesToCycle = if #EnemyList > 0 then EnemyList 
+		elseif Context.Buffer ~= nil and (typeof(Context.Buffer[1]) == 'table' and #Context.Buffer[1] > 0) then Context.Buffer[1] 
+		else {}
 
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
 	local AttackTime = Ability:FromData('Attack_State_Time', 1);

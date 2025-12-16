@@ -139,6 +139,7 @@ return {
 	Dash_Speed_Buff = 0.5,
 	Dash_Speed_Buff_Vanish_Time = 1,
 
+	Chain_Attack_Invulnerability_Time = 2,
 	Assist_Counter_Invulnerability_Time = 0.75,
 
 	Stat_Tier_Mults = {

@@ -65,15 +65,24 @@ function HandleSkillHit(Data: AbilityTypes.AbilityHitInfo, SkillId: number)
 
 	if not AgentPlayer then return end
 
+	-- Handle chain attacks!
 	if SkillId == GameEnum.Skills.EX_Special then
 		local is_enemy_stunned = Data.Enemy.__Status:IsKnocked()
 		
 		if is_enemy_stunned then
-			Replicator:PromptChainAttack(Agent, Data.Enemy)
+			Service:PromptChainAttack(Agent, Data.Enemy)
 		end
 	end
 
 	task.spawn(UpdateQuestData, Data, Agent)
+end
+
+function Service:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy)
+
+	Agent:AddTag('Invulnerability', Statics.Chain_Attack_Invulnerability_Time)
+
+	--
+	Replicator:PromptChainAttack(Agent, Enemy)
 end
 
 function Service:Init()
@@ -120,6 +129,12 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 			-- cancel here
 			print("Cancel the current move!")
 		end
+	elseif Type == GameEnum.Replication.UseChainAttack then
+
+	elseif Type == GameEnum.Replication.CancelChainAttack then
+		local Agent = AgentLibrary:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
+
+		Agent:RemoveTag("Invulnerability")
 	end
 
 	return;

@@ -135,7 +135,7 @@ end
 function Replicator:KeySwitch(Player: Player, Key: string, Value: boolean, Target: Player?)
 	local Object = buffer.create(3)
 	buffer.writeu8(Object, 0, GameEnum.Replication.KeySwitch)
-	buffer.writeu8(Object, 1, GameEnum.Agent_Keys[Key])
+	buffer.writeu8(Object, 1, GameEnum.Agent_Keys[Key] :: number)
 	buffer.writeu8(Object, 2,  Player:GetAttribute("ReplicationId") :: number)
 
 	if Target then
@@ -294,7 +294,7 @@ function Replicator:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Target
 	buffer.writeu8(Object, 1, AgentId)
 	buffer.writeu8(Object, 2, Target:GetId())
 
-	Network:Fire('Replicate', Object)
+	Network:Fire('Replicate', Agent.__Player_Assigned, Object)
 end
 
 function Replicator:EnemyUseSkill(EnemyId: number, SkillId: number, State: string)
@@ -456,7 +456,7 @@ function Replicator:FillAffliction(Enemy: Types.ServerEnemyClass, Type: Types.El
 	local Object = buffer.create(5)
 	buffer.writeu8(Object, 0, GameEnum.Replication.FillAffliction)
 	buffer.writeu8(Object, 1, Enemy.__EnemyId)
-	buffer.writeu8(Object, 2, GameEnum.Afflictions[Type])
+	buffer.writeu8(Object, 2, GameEnum.Afflictions[Type] :: number)
 	buffer.writei16(Object, 3, Amount * 500)
 
 	Network:FireForAll('Replicate', Object)
@@ -467,7 +467,7 @@ function Replicator:ResetAffliction(Enemy: Types.ServerEnemyClass, Type: Types.E
 	local Object = buffer.create(3)
 	buffer.writeu8(Object, 0, GameEnum.Replication.ResetAffliction)
 	buffer.writeu8(Object, 1, Enemy.__EnemyId)
-	buffer.writeu8(Object, 2, GameEnum.Afflictions[Type])
+	buffer.writeu8(Object, 2, GameEnum.Afflictions[Type] :: number)
 
 	Network:FireForAll('Replicate', Object)
 end

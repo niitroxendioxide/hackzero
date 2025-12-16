@@ -15,6 +15,7 @@ local Characters = require(Client.Libraries.Characters)
 local GameEnum = require(Shared.GameEnum)
 local Enemies = require(Shared.Libraries.Enemies)
 local Effects = require(Client.Libraries.Effects)
+local CutsceneUtils = require(Client.Libraries.CutsceneEffects)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
 local InterfaceController = require(Client.Controllers.InterfaceController)
 
@@ -443,7 +444,13 @@ function Controller:SetEnemySpeed(Buffer: buffer)
 end
 
 function Controller:ChainAttack(Buffer: buffer)
-	print("YOU SHOULD CHAIN TEH ATTACSK")
+	local ChainAttackComponent = InterfaceController:GetComponent("ChainAttack")
+	CutsceneUtils:HideHUD(2)
+
+	Effects:Play("Chain")
+
+	ChainAttackComponent:Show()
+
 end
 
 return Controller

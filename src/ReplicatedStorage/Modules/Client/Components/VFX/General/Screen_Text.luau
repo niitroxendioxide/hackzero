@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local TextCache = {}
 
-return function(Text: string)
+return function(Text: string, Length: number)
     local Frame = Effects:FromGui(Text)
 	if not Frame then
         return;
@@ -22,8 +22,11 @@ return function(Text: string)
 		TextCache[Text] = {}
 	end
 
+	local Time = Length or 0.375
+
+
 	DodgeTextobj.ImageTransparency = 0.6
 	DodgeTextobj.Scaler.Scale = 0.25
-	TextCache[Text][#TextCache[Text] + 1] = Effects:Tween(DodgeTextobj, {0.375, 'Quad'}, {ImageTransparency = 1})
-	TextCache[Text][#TextCache[Text] + 1] = Effects:Tween(DodgeTextobj.Scaler, {.25, 'Quad'}, {Scale = 1})
+	TextCache[Text][#TextCache[Text] + 1] = Effects:Tween(DodgeTextobj, {Time, 'Quad'}, {ImageTransparency = 1})
+	TextCache[Text][#TextCache[Text] + 1] = Effects:Tween(DodgeTextobj.Scaler, {Time * 0.67, 'Quad'}, {Scale = 1})
 end
