@@ -70,6 +70,10 @@ function HandleSkillHit(Data: AbilityTypes.AbilityHitInfo, SkillId: number)
 		local is_enemy_stunned = Data.Enemy.__Status:IsKnocked()
 		
 		if is_enemy_stunned then
+			for _, SubAgent in AgentLibrary:GetAlive(AgentPlayer:GetAttribute("ReplicationId") :: number) do
+				SubAgent:GiveUltimate(Statics.Chain_Attack_Ult_Bar_Fill)
+			end
+
 			Service:PromptChainAttack(Agent, Data.Enemy)
 		end
 	end
@@ -78,7 +82,7 @@ function HandleSkillHit(Data: AbilityTypes.AbilityHitInfo, SkillId: number)
 end
 
 function Service:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy)
-
+	
 	Agent:AddTag('Invulnerability', Statics.Chain_Attack_Invulnerability_Time)
 
 	--
@@ -168,6 +172,10 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	end
 
 	--
+	for _, Agent in AllAgents do
+		Agent:GiveUltimate(Statics.Assist_Ult_Bar_Fill)
+	end
+
 	local Player = CasterAgent.__Player_Assigned
 	local Prompt = CasterAgent:MarkTarget(AgentPerpetratorId, Time)
 	Replicator:PromptAssist(Player, AgentToSwitch, Time, AgentPerpetratorId)

@@ -8,8 +8,8 @@ local General = Animations.General
 --
 local AnimationLibrary = {}
 
-function AnimationLibrary:GetAnim(Directory: string)
-	local Split = string.split(Directory, '.')
+function AnimationLibrary:GetAnim(Path: string)
+	local Split = string.split(Path, '.')
 	local Object = Animations
 
 	for i = 1, #Split - 1 do

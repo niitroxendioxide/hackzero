@@ -235,8 +235,6 @@ end
 function EventClass.UpdateProgress(self: Types.EventClass, GoalType: Types.Stage_Objective, Value: any)
     local Type = typeof(self.__Current_Goals[GoalType])
     if Type == "nil" or Type ~= typeof(Value) then
-        print("Invalid type.", Type, GoalType, Value)
-
         return
     end
 

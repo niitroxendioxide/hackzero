@@ -56,6 +56,10 @@ function EnemyClass:Destroy()
 	self.__Appearance:Destroy()
 end
 
+function EnemyClass:IsAirborne()
+	return self.__Appearance:IsRaised()
+end
+
 
 --
 function EnemyClass:TakeDamage(number: number)

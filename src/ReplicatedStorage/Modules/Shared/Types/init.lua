@@ -335,6 +335,7 @@ export type EnemyClass = {
 	GetHitbox: (self: EnemyClass) -> BasePart,
 	IsMoving: (self: EnemyClass) -> EnemyClass,
 	Rotate: (self: EnemyClass, Direction: Vector3) -> (),
+	IsAirborne: (self: EnemyClass) -> (boolean),
 
 	SetWorldSpeed: (self: ServerEnemyClass, Speed: number, Time: number) -> (),
 	SwitchState: (self: EnemyClass, State: string, Time: number) -> (),

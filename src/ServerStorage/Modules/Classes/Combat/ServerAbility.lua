@@ -21,6 +21,7 @@ local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local DamageLibrary = require(ServerStorage.Modules.Libraries.Damage)
 local AgentsLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local MatchStats = require(ServerStorage.Modules.Libraries.MatchStats)
+local settings = require(ServerStorage.Modules[".testenv"].settings)
 local WorldCamera = workspace:WaitForChild('Camera')
 
 --
@@ -139,13 +140,13 @@ function ServerAbilityClass:CreateAgentHitbox(Enemy: AgentTypes.Enemy, Offset: V
 			end
 
 			if Target:HasTag('Invulnerability') or Target:GetCurrentSkill() == "Ultimate" then
-				
 				return
 			end
 
 			local Is_Dodge = Target:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
 			if Is_Dodge or Target:HasTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE) then
 				if Is_Dodge then
+					Target:GiveUltimate(Statics.Dodge_Ult_Bar_Fill)
 					Replicator:ProcessDodge(Target)
 				else
 					self:Effect('Dodge', {Target}, {Target.__Player_Assigned})
@@ -251,7 +252,25 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 	end
 
 	if not Data.DontChargeUlt then
-		Agent:GiveUltimate(10)
+		local UltBarCharged = 10 * (Dealt_Damage / Enemy.__Status:GetStat('Max_Health'))
+		if Affliction_Triggered then
+			UltBarCharged *= 1.25;
+			UltBarCharged += 5;
+		end
+
+		if Critical then
+			UltBarCharged += 3;
+		end
+
+		if EnemyDied then
+			UltBarCharged += 2;
+		end
+
+		if Is_Dazed then
+			UltBarCharged *= 2;
+		end
+
+		Agent:GiveUltimate(RunService:IsStudio() and settings.FILL_ULT_BAR and 100 or UltBarCharged)
 	end
 
 	--

@@ -240,11 +240,11 @@ return {
 					Type = 'Attack',
 					Value = "25%",
 					Tag = 'GOKU_MODE_BUFF',
-					Time = 10,
+					Time = 15,
 				},{
 					Type = 'Speed',
 					Value = .3,
-					Time = 10,
+					Time = 15,
 				}}
 			},
 			Upgrades = {},

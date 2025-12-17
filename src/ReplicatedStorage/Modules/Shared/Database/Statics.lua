@@ -126,6 +126,10 @@ return {
 	Dodge_Invulnerability_Time = 0.5,
 	Dodge_Counter_React_Time = 0.75,
 
+	Assist_Ult_Bar_Fill = 3,
+	Dodge_Ult_Bar_Fill = 4,
+	Chain_Attack_Ult_Bar_Fill = 8,
+
 	Switch_Character_Dash_Strength = 35,
 
 	Get_Health_By_Level = function(Level: number, Health: number)

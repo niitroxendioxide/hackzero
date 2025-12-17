@@ -55,7 +55,13 @@ function EnemyLibrary:GetEnemyCount()
 	return k
 end
 
-function EnemyLibrary:GetNearestEnemy(Point: Vector3, MaxDistance: number, LineOfSight: boolean?, to_Exclude: {}?): (number?, Types.EnemyClass?)
+function EnemyLibrary:GetNearestEnemy(
+	Point: Vector3, 
+	MaxDistance: number, 
+	LineOfSight: boolean?, 
+	to_Exclude: {}?, 
+	filter: ((Enemy: any) -> (number))?
+): (number?, Types.EnemyClass?)
 	local Distance = MaxDistance or math.huge
 	local Selected = nil
 	local Exclude = to_Exclude or {}
@@ -63,6 +69,7 @@ function EnemyLibrary:GetNearestEnemy(Point: Vector3, MaxDistance: number, LineO
 	Params.FilterDescendantsInstances = {workspace.World.Entities:FindFirstChild("Destructibles")}
 	Params.FilterType = Enum.RaycastFilterType.Include
 
+	local Options = {}
 	for Key, Enemy in EnemyLibrary:GetAll() do
 		if table.find(Exclude, Enemy) then
 			continue
@@ -77,11 +84,32 @@ function EnemyLibrary:GetNearestEnemy(Point: Vector3, MaxDistance: number, LineO
 			end
 		end
 
+		if typeof(filter) == 'function' then
+			if DistanceToEnemy <= MaxDistance then
+				Options[Enemy] = filter(Enemy) * DistanceToEnemy
+			end
+			
+			continue
+		end
+
 
 		if DistanceToEnemy < Distance then
+
 			Distance = DistanceToEnemy
 			Selected = Key
 		end
+	end
+
+	if filter then
+		local Chosen, CurrentWeight = next(Options)
+		for Enemy, Weight in Options do
+			if Weight < CurrentWeight then
+				CurrentWeight = Weight
+				Chosen = Enemy
+			end
+		end
+
+		return (if Chosen then Chosen:GetId() else nil), Chosen
 	end
 
 	if Selected then

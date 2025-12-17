@@ -7,6 +7,7 @@ local Client = ReplicatedStorage.Modules.Client
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local AbilityClass = require(Client.Classes.Ability)
 local Enemies = require(Shared.Libraries.Enemies)
+local Types = require(Shared.Types.Agents)
 
 --
 local Ability = AbilityClass.new(true)
@@ -17,7 +18,15 @@ Ability:SetTargetFinder(function(Caster)
 		return (last_target):GetId(), last_target
 	end
 
-	local id, nearest = Enemies:GetNearestEnemy(Caster:GetPivot().Position, 15)
+
+	--
+	local id, nearest = Enemies:GetNearestEnemy(Caster:GetPivot().Position, 15, false, nil, function(Target: Types.ClientEnemy)
+		if Target:IsAirborne() then
+			return 0.5
+		end
+
+		return 1;
+	end)
 
 	return id, nearest;
 end)
@@ -82,6 +91,7 @@ function Ability:Play(Agent, _, _, Context)
 		-- 3RD M1
 		{0.2, function()
 			if M1_Count == 3 then
+				Ability:Effect("Goku_M1_2", Agent, 3);
 				Agent:Walk(Ability:FromData('Walk_Time'))
 			end
 		end},
@@ -102,6 +112,10 @@ function Ability:Play(Agent, _, _, Context)
 
 		-- 6TH M1
 		{0.18, function()
+			if M1_Count == 2 then
+				Ability:Effect("Goku_M1_2", Agent);
+			end
+
 			if M1_Count == 6 then
 				Agent:Walk(Ability:FromData('Walk_Time') + 0.18, 2.5)
 			end

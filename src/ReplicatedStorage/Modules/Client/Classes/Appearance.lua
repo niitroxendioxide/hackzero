@@ -116,6 +116,10 @@ function AppearanceClass:__clean_heights()
 	self.__Current_Height_Thread = nil;
 end
 
+function AppearanceClass:IsRaised()
+	return self.__Extra_Height > 0;
+end
+
 function AppearanceClass:SetVisible(State: boolean)
 	self.__Visible = State
 

@@ -9,6 +9,7 @@ return table.freeze({
         Act = 'Intro',
     },
 
+    FILL_ULT_BAR = false,
     DIFFICULTY = 'EASY',
     USE_BORROW = true, -- whether to replace agents with your own ones
     BORROWED_AGENT_LEVEL = 60,

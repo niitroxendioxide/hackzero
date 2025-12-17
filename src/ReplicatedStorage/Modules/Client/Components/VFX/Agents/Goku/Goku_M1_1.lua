@@ -12,11 +12,12 @@ local Effects = require(Shared.Utility.Effects)
 
 ---
 return function(
-    Caster: Types.Caster
+    Caster: Types.Caster,
+    Offset: CFrame?
 ): ()
     --
-    local Hit_Effect = Effects:Create(Assets.Goku.BasicAttack.First, 10)
-    Hit_Effect:PivotTo(Caster:GetModel():GetPivot())
+    local Hit_Effect = Effects:Create(Assets.Goku.BasicAttack.First, 3)
+    Hit_Effect:PivotTo(Caster:GetModel():GetPivot() * (Offset or CFrame.new()))
 
     Effects:ForModelParts(Hit_Effect, {
         Outer = function(Outermesh)
