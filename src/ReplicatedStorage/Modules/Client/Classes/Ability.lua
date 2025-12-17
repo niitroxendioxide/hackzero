@@ -84,14 +84,18 @@ function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Type
 	local Difference = TargetsHeight - Agent:GetAppearance():GetAddedHeight()
 	if (Target:GetState() ~= 'Idle' and TargetsHeight > 0) then
 		Agent:GetAppearance():Raise(Difference, time or 1, instant)
+		Replicator:Replicate(GameEnum.Replication.MatchAirborne, time or 1)
 
 		if (Difference == 0) then
 			return GameEnum.AirborneMatchState.Same;
 		end
 
+
 		return GameEnum.AirborneMatchState.Raised;
 	elseif (TargetsHeight <= 0 and Agent:GetAppearance():GetAddedHeight() > 0) then
 		Agent:GetAppearance():Land()
+
+		Replicator:Replicate(GameEnum.Replication.MatchAirborne, 0)
 
 		return GameEnum.AirborneMatchState.Grounded;
 	end
@@ -257,6 +261,9 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	local Type = tostring(Agent) == 'AgentClass' and 'Characters.' or 'Enemies.'
 	local TrackObject = AnimLibrary:GetAnim(Type..Track)
 	local AnimTrack = AnimLibrary:Play(Model, TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
+	AnimLibrary:StopTracksWithTag(Model, "Attacking")
+
+	AnimTrack:AddTag('Attacking')
 	AnimTrack.Priority = Enum.AnimationPriority.Action2 or Data.Priority
 
 	if tostring(Agent) == 'AgentClass' then

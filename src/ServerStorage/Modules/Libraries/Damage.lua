@@ -1,22 +1,13 @@
---!strict
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
-local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Types = require(Shared.Types.Abilities)
+local GameEnum = require(Shared.GameEnum)
 local AgentTypes = require(Shared.Types.Agents)
 local DefaultTypes = require(Shared.Types)
 local Defense_Factors = require(Shared.Database.Defense)
 
-local Mock = require(Shared.Utility.Mock) --[[{
-	RunHook = function() end,
-	RunHitProcesses = function() end
-}
-Mock.__index = function(t, k)
-	return function()
-		return nil
-	end
-end]]
+local Mock = require(Shared.Utility.Mock)
 
 --
 local RNG = Random.new()
@@ -143,6 +134,11 @@ end
 function DamageLibrary:DealEnemyToAgent(Caster: AgentTypes.Enemy, Target: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
 	local AgentStun = Data.Stun
 	local CasterStatus = Caster.__Status
+
+	if Target:HasTag("Airborne") and not(Data.HitsAirborne) then
+		print('airborne!')
+		return;
+	end
 
 	local Level_Factor = Defense_Factors[math.clamp(Target.__Level, 0, 60)]
 	local Raw_Defense = Target:GetStat('Defense')

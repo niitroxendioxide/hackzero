@@ -21,6 +21,7 @@ function Ability:Play(Caster: Types.ServerAgentClass)
             end
 
             Caster:SwitchState('Attacking', 1, true)
+            Caster:AddTag('Invulnerability', 1)
         end},
     })
 end

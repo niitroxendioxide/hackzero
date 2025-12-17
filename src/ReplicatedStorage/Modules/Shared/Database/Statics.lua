@@ -1,6 +1,6 @@
 local GetExpForLevel; GetExpForLevel = function(level)
 	if type(level) ~= "number" or level < 1 or level > 60 then
-		return nil, "Invalid level. Must be between 1 and 60."
+		return math.huge, "Invalid level. Must be between 1 and 60."
 	end
 
 	if level == 1 then return 0 end

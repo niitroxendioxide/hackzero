@@ -13,6 +13,7 @@ function HitStop:Apply(Agent: any, Sequence: any, AnimTrack: AnimationTrack, Dur
 
     if ActiveHitStops[Agent] then
         task.cancel(ActiveHitStops[Agent].Thread)
+        ActiveHitStops[Agent].Track:AdjustSpeed(ActiveHitStops[Agent].OriginalSpeed)
     end
     
     local originalAnimSpeed = ActiveHitStops[Agent] and ActiveHitStops[Agent].OriginalSpeed or (AnimTrack.Speed or 1)
@@ -21,6 +22,7 @@ function HitStop:Apply(Agent: any, Sequence: any, AnimTrack: AnimationTrack, Dur
     AnimTrack:AdjustSpeed(0)
 
     ActiveHitStops[Agent] = {
+        Track = AnimTrack,
         OriginalSpeed = originalAnimSpeed,
         Thread = task.delay(DurationOverride or HITSTOP_DURATION, function()
             Sequence:Start()

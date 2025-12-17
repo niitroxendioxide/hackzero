@@ -78,7 +78,6 @@ function SelectSingularCard(Name: string, Order: number, Holder: Frame)
 
         if OtherCard == Holder then
             Effects:Tween(Holder, {.4, 'Cubic', 'InOut'}, {Position = UDim2.fromScale(0.5, .5)})
-
         else
             Effects:Tween(OtherCard.ActualCard, {.3, 'Back', 'In'}, {Position = UDim2.fromScale(0.5, -4)})
             Effects:Tween(Button.UIScale, {.25, 'Back', 'In'}, {Scale = 0})
@@ -92,7 +91,7 @@ function SelectSingularCard(Name: string, Order: number, Holder: Frame)
 end
 
 function CalculateCardPosition(Order: number, Total: number)
-    local Padding = 0.17
+    local Padding = 0.2
 
     if Total == 2 then
         return Order == 1 and 0.5-(Padding/2) or 0.5+(Padding/2)
@@ -177,8 +176,8 @@ function CreateCard(Name: string, Order: number, Total: number)
             end
 
             CardObject.Frontdesign.Description.TextSize = 0
-            CardObject.Frontdesign.Icon.Image = 'rbxassetid://' .. GearData.Icon
-            CardObject.Frontdesign.IconBg.Image = 'rbxassetid://' .. GearData.Icon
+            CardObject.Frontdesign.Icon.Image = 'rbxassetid://' .. (GearData.Icon or 0)
+            CardObject.Frontdesign.IconBg.Image = 'rbxassetid://' .. (GearData.Icon or 0)
 
             Effects:Tween(CardObject, {RNG:NextNumber(0.15, 0.3), 'Cubic', 'Out'}, {Size = UDim2.fromScale(1, 1)})
             Effects:Tween(CardObject.Frontdesign.Description, {.2, 'Back'}, {TextSize = TextSize})

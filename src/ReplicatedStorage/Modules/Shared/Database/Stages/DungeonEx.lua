@@ -11,7 +11,7 @@ return {
             AutoGenerationData = {
                 Infinite = true,
                 Seed = 0, -- can be a number, 0 means random
-                Trail = 250,
+                Trail = 15,
                 Extent = 25,
                 Source = 'Rooms',-- by default it'l lsearch for this folder, but as example
             },

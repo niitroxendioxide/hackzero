@@ -121,7 +121,7 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
     Triggers.Name = 'Triggers'
     Triggers.Parent = Map
 
-    for MarkerId, MarkerObj in MarkerData do
+    for MarkerId, MarkerObj in (MarkerData or {}) do
         local ObjName = MarkerObj.Name or MarkerId
 
         if MarkerObj.Type == 'Trigger' then

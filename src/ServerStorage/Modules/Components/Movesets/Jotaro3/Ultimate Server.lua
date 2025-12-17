@@ -24,7 +24,7 @@ function Ability:Play(Caster: Types.ServerAgentClass)
 
     Ability:Begin(Caster, {
         {0, function()
-            Caster:SwitchState('Attacking', Attack_Time)
+            Caster:SwitchState('Attacking', Attack_Time, true)
         end},
 
         {0.35, function()

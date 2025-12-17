@@ -81,6 +81,16 @@ function AnimationLibrary:Play(Character: Model, TrackObject: Animation, ...)
 	return Track
 end
 
+function AnimationLibrary:StopTracksWithTag(Character: Model, Type: string)
+
+	for _, Track in AnimationLibrary:GetAnimator(Character):GetPlayingAnimationTracks() do
+		if Track:HasTag(Type) then
+			Track:Stop(0)
+		end
+	end
+
+end
+
 function AnimationLibrary:GetTracks(Character: Model): {AnimationTrack}
 	local Animator = AnimationLibrary:GetAnimator(Character)
 

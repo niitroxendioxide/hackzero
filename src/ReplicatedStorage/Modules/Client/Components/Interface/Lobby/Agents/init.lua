@@ -437,7 +437,7 @@ local function SelectArtifact(NewObject: Frame & {Selected: Frame & {UIStroke: U
             local Delta = task.wait()
             Angle += Delta * 400
 
-            local Thickness = 2 + math.cos(math.rad(Angle)) * 1
+            local Thickness = 0.45 - math.cos(math.rad(Angle)) * 0.15
             NewObject.Selected.UIStroke.Thickness = Thickness
             NewObject.UsedSelected.UIStroke.Thickness = Thickness
         end
@@ -586,16 +586,21 @@ function Component:ShowArtifactInfo(ArtifactId: string?)
     end
 
     if ArtifactId == nil then
-        DataFrame.Visible = false;
+        EffectUtil:Tween(DataFrame, {.15, 'Cubic', 'In'}, {Position = UDim2.fromScale(0.4, 0.548)})
 
         return
     end
 
     local Artifact = LocalData:GetArtifactById(ArtifactId)
 
-    Component:ShowDriveInfo(nil)
+    if not DataFrame.Visible then
+        DataFrame.Position = UDim2.fromScale(0.4, 0.548)
+        DataFrame.Visible = true
+    end
 
-    DataFrame.Visible = true;
+    EffectUtil:Tween(DataFrame, {.2, 'Cubic'}, {Position = UDim2.fromScale(1.25, 0.548)})
+
+    Component:ShowDriveInfo(nil)
 
     DataFrame.ArtifactName.Text = Artifact.Name
     DataFrame.Level.Text = `Level: {Artifact.Level}`
@@ -634,14 +639,19 @@ function Component:ShowDriveInfo(DriveId: string?)
     local DataFrame = ItemsFrame.DriveData
 
     if DriveId == nil then
-        DataFrame.Visible = false;
+        EffectUtil:Tween(DataFrame, {.15, 'Cubic', 'In'}, {Position = UDim2.fromScale(0.4, 0.548)})
 
         return
     end
 
     Component:ShowArtifactInfo(nil)
 
-    DataFrame.Visible = true;
+    if not DataFrame.Visible then
+        DataFrame.Position = UDim2.fromScale(0.4, 0.548)
+        DataFrame.Visible = true
+    end
+
+    EffectUtil:Tween(DataFrame, {.2, 'Cubic'}, {Position = UDim2.fromScale(1.25, 0.548)})
 
     local Drive = LocalData:GetDriveById(DriveId)
     local DriveData = DrivesDatabase:GetDriveData(Drive.Name)
@@ -729,7 +739,7 @@ function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
 
         SelectButton.MouseButton1Click:Connect(function()
             NewSlot.UIScale.Scale = .85
-            Tween = EffectUtil:Tween(NewSlot.UIScale, {.3, 'Back'}, {Scale = 1.1})
+            Tween = EffectUtil:Tween(NewSlot.UIScale, {.3, 'Back'}, {Scale = 1.25})
 
             if States.__Current_Slot_Picked == i then
                 Component:SelectArtifactSlot(0)
@@ -746,7 +756,7 @@ function Component:ShowArtifacts(AgentData: Types.ClientAgentData)
                 Tween:Destroy()
             end
 
-            Tween = EffectUtil:Tween(NewSlot.UIScale, {.25, 'Quad'}, {Scale = 1.1})
+            Tween = EffectUtil:Tween(NewSlot.UIScale, {.25, 'Quad'}, {Scale = 1.25})
         end)
 
         SelectButton.MouseLeave:Connect(function()
@@ -830,14 +840,20 @@ function Component:SetItemList(Type: string)
     end
 end
 
+local CircleSelectedArtifactThread: thread? = nil;
 function Component:SelectArtifactSlot(SlotId: number?)
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
+
+    if CircleSelectedArtifactThread then
+        task.cancel(CircleSelectedArtifactThread)
+    end
 
     Component:SetItemList("Artifacts")
 
     local OldSlot = ItemsFrame.Build.Items:FindFirstChild('Slot'..States.__Current_Slot_Picked)
     if OldSlot then
+        OldSlot.UIStroke.Enabled = true
         OldSlot.Outline.Visible = false
     end
 
@@ -845,6 +861,7 @@ function Component:SelectArtifactSlot(SlotId: number?)
         ItemsFrame.ItemData.Visible = false
         ItemsFrame.DriveData.Visible = false
         Component:SetItemList(nil)
+
         States.__Current_Slot_Picked = 0
 
         SelectArtifact(States.__Current_Selected_Item_Object, nil)
@@ -853,9 +870,19 @@ function Component:SelectArtifactSlot(SlotId: number?)
     end
 
     local NewSlot = ItemsFrame.Build.Items:FindFirstChild('Slot'..SlotId)
+    NewSlot.UIStroke.Enabled = false
     NewSlot.Outline.Visible = true
 
     States.__Current_Slot_Picked = SlotId
+
+    CircleSelectedArtifactThread = task.spawn(function()
+        local Angle = 0;
+        while true do
+            Angle += task.wait() * math.pi;
+
+            NewSlot.Outline.UIStroke.Thickness = 0.08 + math.cos(Angle) * 0.015
+        end
+    end)
 
     --
     Component:FilterArtifacts(function(ArtifactFrame)
@@ -1030,7 +1057,7 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
     AgentDataFrame.Playstyle.Role.RoleName.Text = AgentInfo.Role
     AgentDataFrame.Playstyle.Element.ElementName.Text = AgentInfo.Element
 
-    AgentDataFrame.Level.AgentLevel.Text = `Level: {AgentData.Level}/{math.ceil(AgentData.Level / 10) * 10}`
+    AgentDataFrame.Level.AgentLevel.Text = `Level: {AgentData.Level}/60`
 end
 
 function Component:ShowSkills()

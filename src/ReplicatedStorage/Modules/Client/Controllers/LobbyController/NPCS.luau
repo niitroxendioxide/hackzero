@@ -38,10 +38,15 @@ type Character = {
     Talking: boolean,
 }
 
---
+--- Constants / Statics
 local RNG = Random.new()
-local MAX_NPC_COUNT = 7
+local MAX_NPC_COUNT = 6
 local SPAWN_RATE = 2
+local MIN_SPAWN_RANGE = 12
+local MAX_SPAWN_RANGE = 80
+
+
+
 local Controller = {
     __Inited = false,
     __Present_Npcs = {} :: { Character },
@@ -133,15 +138,15 @@ function HandleNewNPCCreation(): ()
 end
 
 function NewCharacter(): Character?
-    local BaseChar = Players.LocalPlayer.Character
+    local BaseChar = Players.LocalPlayer.Character :: Model
     if not BaseChar then
         return nil
     end
 
-    local BaseCF = BaseChar.HumanoidRootPart:GetPivot()
+    local BaseCF = (BaseChar:FindFirstChild("HumanoidRootPart") :: BasePart):GetPivot()
     local RandomId = HttpService:GenerateGUID(false)
     local DirCF = BaseCF * CFrame.Angles(0, RNG:NextNumber(-math.pi * 2, math.pi * 2), 0)
-    local Len = RNG:NextInteger(9, 25)
+    local Len = RNG:NextInteger(MIN_SPAWN_RANGE, MAX_SPAWN_RANGE)
 
     local BasePos = DirCF * CFrame.new(0, 0, -Len)
     local IsColliding = Effects:CastMapRaycast(DirCF.Position, DirCF.LookVector * Len)
@@ -190,14 +195,14 @@ function Controller:Init()
     task.spawn(MainThread)
 end
 
-function Controller:GetById(Id: string): CPIharacter?
+function Controller:GetById(Id: string): Character?
     for _, Npc in Controller.__Present_Npcs do
         if Npc.Id == Id then
             return Npc
         end
     end
 
-    return;
+    return nil;
 end
 
 function Controller:TalkToNPC(NpcId: string)
@@ -206,12 +211,13 @@ function Controller:TalkToNPC(NpcId: string)
         return
     end
 
-    local DialogueComponent = UIController:GetComponent("Dialogue") :: {[string]: any}
+    local DialogueComponent = UIController:GetComponent("LobbyDialogue") :: {[string]: any}
     if not DialogueComponent then
         return
     end
 
-    local RootPos = Players.LocalPlayer.Character.HumanoidRootPart.Position
+    local UserCharacter = Players.LocalPlayer.Character :: Model
+    local RootPos = (UserCharacter:FindFirstChild('HumanoidRootPart') :: BasePart).Position
     local Direction = CFrame.lookAt(RootPos * Vector3.new(1, 0, 1), (NPC.Position :: Vector3) * Vector3.new(1, 0, 1)).LookVector
 
     Prompts:DisableAll()

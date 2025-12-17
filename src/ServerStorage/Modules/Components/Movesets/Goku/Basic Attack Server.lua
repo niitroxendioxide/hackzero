@@ -11,6 +11,7 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 local Ability = AbilityClass.new()
 
 function Ability:Play(Caster, _, _, Context): ()
+	--local Is_Airborne = Context.Buffer[2];
 	local M1_Count = (Context.M1_Count :: number)
 	if (not M1_Count) then
 		return

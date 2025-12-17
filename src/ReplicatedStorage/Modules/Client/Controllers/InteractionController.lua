@@ -22,7 +22,9 @@ local Controller = {
 
 function Controller:Init()
     ProximityPromptService.PromptTriggered:Connect(function(Prompt, Player)
-        if Prompt:GetAttribute("Type") == GameEnum.InteractionType.Chest then
+        local PromptType = Prompt:GetAttribute("Type")
+
+        if PromptType == GameEnum.InteractionType.Chest then
             local ChestId = Prompt:GetAttribute("ChestId")
             local ChestObject = Chests:GetById(ChestId)
             if not ChestObject or ChestObject.Opened then
@@ -32,9 +34,9 @@ function Controller:Init()
             Chests:SetOpenState(ChestId, true)
 
             Network:Fire("ChestInteraction", GameEnum.ChestInteractions.Open, ChestId)
-        elseif Prompt:GetAttribute("Type") == GameEnum.InteractionType.NPC then
+        elseif PromptType == GameEnum.InteractionType.NPC then
             Controller:InteractWithNPC(Prompt)
-        elseif Prompt:GetAttribute("Type") == GameEnum.InteractionType.LobbyNPC then
+        elseif PromptType == GameEnum.InteractionType.LobbyNPC then
             Npcs:TalkToNPC(Prompt:GetAttribute("NpcId"))
         end
     end)

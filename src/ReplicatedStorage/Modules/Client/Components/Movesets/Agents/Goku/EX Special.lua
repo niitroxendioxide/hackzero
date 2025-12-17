@@ -42,10 +42,22 @@ end)
 
 
 local function Default(Caster: Types.Caster, Attack: Types.Sequence)
+	Attack:Add(0, function()
+		Ability:PlayAnimation(Caster, 'Goku.Abilities.Special.EX_Default_Kick', {})
+	end)
+	
 	Attack:Add(0.25, function()
 		
+		local Hit_Counter = 0;
 		Ability:CreateHitbox(Caster, Vector3.zAxis*-3, vector.create(5, 5, 6.65), function(Enemy)
-			Ability:Hit(Caster, Enemy, {EffectData = Ability:FromData("Hit_Effect_Data")})
+			Hit_Counter += 1;
+
+			if Hit_Counter == 1 then
+				Ability:Effect("Goku_UpliftEffect", Caster);
+			else
+				Ability:Hit(Caster, Enemy, {EffectData = Ability:FromData("Hit_Effect_Data")})
+			end
+
 		end)
 
 	end)

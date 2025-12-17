@@ -102,6 +102,8 @@ function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
     local Agent = DataService:GetAgent(Player, AgentName)
 
     if Agent.Level >= Statics.Max_Character_Level then
+        
+
         return
     end
 
@@ -135,6 +137,10 @@ function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
         Agent.Experience -= Next
         Agent.Level += 1
         Next = Statics.Experience_For_Level(Agent.Level + 1)
+
+        if Next == nil then
+            break;
+        end
     end
 
     DataService:SyncPlayerItems(Player)

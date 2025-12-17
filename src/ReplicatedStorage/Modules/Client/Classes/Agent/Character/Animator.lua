@@ -47,7 +47,7 @@ function AnimatorClass:Init()
 
 	self:Play('Idle')
 	self:Play('Sprint', {Weight = NON_ZERO, Speed = .825})
-	self:Play('Jog', {Weight = NON_ZERO, Speed = 1.05})
+	self:Play('Jog', {Weight = NON_ZERO, Speed = 0.95})
 	self:Play('Walk', {Weight = NON_ZERO, Speed = 0.7})
 
 	self.__Thread = RunService.PostSimulation:Connect(function(delta: number)

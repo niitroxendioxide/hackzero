@@ -139,6 +139,7 @@ function ServerAbilityClass:CreateAgentHitbox(Enemy: AgentTypes.Enemy, Offset: V
 			end
 
 			if Target:HasTag('Invulnerability') or Target:GetCurrentSkill() == "Ultimate" then
+				
 				return
 			end
 

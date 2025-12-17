@@ -172,7 +172,7 @@ return {
 					Affliction_Buildup = 22;
 					Affliction = 'Physical';
 					HitType = 'Blunt';
-					Stun = 1.25;
+					Stun = 2.5;
 					Airborne = true;
 				};
 
@@ -182,7 +182,7 @@ return {
 					Affliction_Buildup = 8;
 					Affliction = 'Physical';
 					HitType = 'Blunt';
-					Stun = 2.5;
+					Stun = 3.5;
 					HitsAirborne = true;
 					Airborne = true;
 				};
@@ -201,7 +201,7 @@ return {
 					Affliction_Buildup = 33;
 					Affliction = 'Physical';
 					HitType = 'Blunt';
-					Stun = 1.75;
+					Stun = 3;
 					HitsAirborne = true;
 
 
@@ -296,6 +296,7 @@ return {
 				},
 
 				Default_Hit_Data = {
+					HitsAirborne = true,
 					Damage = 55,
 					Daze = 7,
 					Affliction = 'Energy',

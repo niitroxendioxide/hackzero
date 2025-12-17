@@ -434,11 +434,11 @@ export type UIComponent = {
 	__Name: string,
 	__Group: string,
 	__Scope: Fusion.Scope,
-	__Main_Frame: CanvasGroup | Frame,
+	__Main_Frame: (CanvasGroup | Frame) & { [any] : GuiObject },
 	__Bound_To_Key: Enum.KeyCode,
 
 	GetScope: (self: UIComponent) -> (Fusion.Scope & {Value: Fusion.Value<any, any>, Observer: Fusion.Observer}),
-	GetFrame: (self: UIComponent) -> CanvasGroup | Frame,
+	GetFrame: (self: UIComponent) -> Frame & { [string] : any },
 	Peek: (self: UIComponent, Value: Fusion.Value<any, any>) -> (any),
 	CheckAvailable: (self: UIComponent) -> (boolean),
 

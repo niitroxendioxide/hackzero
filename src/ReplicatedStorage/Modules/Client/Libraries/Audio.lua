@@ -37,7 +37,7 @@ export type EmitterAttachment = Attachment & {
 
 function CreateEmitter(p_Location: vector, p_AudioId: string): EmitterAttachment
     local AudioAttachment = Instance.new("Attachment")
-    AudioAttachment.Visible = RunService:IsStudio()
+    AudioAttachment.Visible = false-- RunService:IsStudio()
     AudioAttachment.Position = p_Location;
 
     local AudioPlayer = Instance.new("AudioPlayer")

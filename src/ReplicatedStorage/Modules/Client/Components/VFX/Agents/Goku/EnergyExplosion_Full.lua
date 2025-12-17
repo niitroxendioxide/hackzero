@@ -5,7 +5,7 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Lighting = game:GetService("Lighting")
 
-local Assets = ReplicatedStorage.Assets.Effects.Agents.Goku.EnergyExplosion
+local Assets = ReplicatedStorage.Assets.Effects.Agents
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
@@ -19,7 +19,7 @@ return function(
     Caster: Types.Caster
 ): ()
 
-    local ChargeUp = Effects:Create(Assets.ChargeUp, 10)
+    local ChargeUp = Effects:Create(Assets.Goku.EnergyExplosion.ChargeUp, 10)
     ChargeUp:PivotTo(Caster:GetPivot())
 
     local Correction = Instance.new('ColorCorrectionEffect')
@@ -36,7 +36,7 @@ return function(
     Effects:Toggle(ChargeUp, false)
 
     --
-    local Explosion = Effects:Create(Assets.Explosion, 10)
+    local Explosion = Effects:Create(Assets.Goku.EnergyExplosion.Explosion, 10)
     Explosion:PivotTo(Caster:GetPivot())
 
     Effects:Emit(Explosion, true)

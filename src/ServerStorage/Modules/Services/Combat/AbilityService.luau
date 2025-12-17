@@ -135,6 +135,17 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 		local Agent = AgentLibrary:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
 
 		Agent:RemoveTag("Invulnerability")
+	elseif Type == GameEnum.Replication.MatchAirborne then
+		local Agent = AgentLibrary:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
+		
+		local Time = buffer.readu16(ClientBuffer, 1) / 100
+		if Time <= 0 then
+			Agent:RemoveTag('Airborne')
+
+			return;
+		end
+
+		Agent:AddTag('Airborne', Time)
 	end
 
 	return;
@@ -228,7 +239,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 			local _, Status = Moveset:Begin(Skill, ActiveAgent, {
 				Target = Enemy, 
 				M1_Count = Other and Other[1] or nil,
-				Buffer = Other,
+				Buffer = Other or {},
 			})
 			return Status
 		elseif StateId == GameEnum.AbilityStates.End then

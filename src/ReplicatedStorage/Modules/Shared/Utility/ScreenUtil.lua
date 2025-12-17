@@ -47,6 +47,10 @@ end
 
 
 function ScreenUtils:AdjustStrokes(Frame: Frame)
+    if true then 
+        return;
+    end
+
     local Screen = Frame:FindFirstAncestorOfClass("ScreenGui")
 
     if not ScreenUtils.BoundConnection and Screen then

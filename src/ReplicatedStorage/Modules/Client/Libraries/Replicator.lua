@@ -27,6 +27,13 @@ function Controller:Replicate(Action: number, ...)
 		Buffer = buffer.create(3)
 		buffer.writeu8(Buffer, 1, Agent:GetKey("Sprint") == true and 1 or 0)
 		buffer.writeu8(Buffer, 2, Agent:GetKey("Jog") == true and 1 or 0)
+	elseif Action == GameEnum.Replication.MatchAirborne then
+		local Time = Args[1]
+
+		EventName = 'Ability'
+		Args = {}
+		Buffer = buffer.create(3);
+		buffer.writeu16(Buffer, 1, Time * 100);
 	elseif Action == GameEnum.Replication.Stop then
 		Buffer = buffer.create(1)
 	elseif Action == GameEnum.Replication.KeySwitch then

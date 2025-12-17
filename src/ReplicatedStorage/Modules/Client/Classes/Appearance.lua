@@ -83,10 +83,6 @@ function AppearanceClass:Raise(Factor: number, Time: number, Instant: boolean?):
 	--
 	local tween_time = (Instant == true and 0) or (self.__Extra_Height / 16)
 	local new_tween = EffectsUtil:Tween(self.__Root_Attachment, {tween_time, 'Quart'}, {Position = vector.create(0, -self.__Extra_Height)})
-	if self.__Current_Height_Tween then
-		self.__Current_Height_Tween:Destroy()
-	end
-
 	self.__Current_Height_Tween = new_tween
 	
 	self.__Current_Height_Thread = task.delay(Time, function()
@@ -100,16 +96,16 @@ end
 
 function AppearanceClass:Land()
 	if (self.__Current_Height_Tween) then
-		self.__Current_Height_Tween:Pause()
+		--self.__Current_Height_Tween:Pause()
 	end
 
 	self:__clean_heights()
 end
 
 function AppearanceClass:__clean_heights()
-	local timeToFall = (self.__Extra_Height / 11)
+	local timeToFall = (self.__Extra_Height / 1)
 
-	local land_tween = EffectsUtil:Tween(self.__Root_Attachment, {timeToFall, 'Quint', 'In'}, {Position = vector.zero})
+	local land_tween = EffectsUtil:Tween(self.__Root_Attachment, {timeToFall, 'Sine', 'In'}, {Position = vector.zero})
 	if self.__Current_Height_Tween then
 		self.__Current_Height_Tween:Destroy()
 		self.__Current_Height_Tween = land_tween

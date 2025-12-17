@@ -72,7 +72,7 @@ function Util:AnimateReturnButton(Button: Frame, Callback: (...any) -> ()): ()
 
                 Angle += Delta * 360
 
-                ReturnHolder.UIStroke.Thickness = 2 + math.sin(math.rad(Angle))
+                ReturnHolder.UIStroke.Thickness = 0.12 - math.cos(math.rad(Angle)) * 0.02
             end
         end)
 
@@ -85,7 +85,7 @@ function Util:AnimateReturnButton(Button: Frame, Callback: (...any) -> ()): ()
             task.cancel(Thread)
         end
 
-        ReturnHolder.UIStroke.Thickness = 1
+        ReturnHolder.UIStroke.Thickness = 0.07
         ReturnHolder.UIStroke.Color = Color3.new()
         EffectsUtil:Tween(ReturnHolder.UIScale, {.25, 'Cubic'}, {Scale = 1})
     end)

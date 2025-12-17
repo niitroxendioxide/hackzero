@@ -40,9 +40,9 @@ function Ability:Play(Agent, _, _, Context)
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
 	Ability:Begin(Agent, {
 		{0, function()
-			local Result = Ability:MatchAirborneHeights(Agent, Context.Target);
+			local Result = Ability:MatchAirborneHeights(Agent, Context.Target, 1.7);
 			if Result == GameEnum.AirborneMatchState.Raised then
-				-- play some effecct here idk
+				Ability:Effect("Goku_RaiseVfx", Agent)
 			end
 
 			Agent:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
@@ -64,6 +64,10 @@ function Ability:Play(Agent, _, _, Context)
 
 		-- 2ND M1
 		{0.15, function()
+			if M1_Count == 1 then
+				Ability:Effect("Goku_M1_1", Agent);
+			end
+
 			if M1_Count == 2 then
 				Agent:Walk(Ability:FromData('Walk_Time'))
 			end
@@ -110,6 +114,9 @@ function Ability:Play(Agent, _, _, Context)
 		end,},
 
 		{.567, function()
+			if M1_Count == 2 then
+				Ability:Effect("Goku_M1_1", Agent);
+			end
 			if M1_Count ~= 4 then return end
 
 			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)

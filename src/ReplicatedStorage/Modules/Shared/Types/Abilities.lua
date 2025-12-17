@@ -46,7 +46,7 @@ export type AbilityClass = {
 		Play an animation using any character controller, example:
 
 		```lua
-			local Path = "Characters.Goku.Abilities.Special.Default"
+			local Path = "Goku.Abilities.Special.Default" -- Starts from 'Characters' directory, by default.
 			Ability:PlayAnimation(CasterAgent, Path, {Fade = 0.15, Speed = 1.125})
 		```
 
@@ -161,7 +161,7 @@ export type AbilityHitInfo = {
 	Hit_Type: 'Entity' | 'Structure',
 }
 export type InputState = 'Begin' | 'End'
-export type SkillContext = {IsSignal: boolean?, Target: Agents.Enemy?}
+export type SkillContext = {IsSignal: boolean?, Target: Agents.Enemy?, M1_Count: number?, Buffer: { any }}
 export type ServerAbilityClass = {
 	__Name: string,
 	__Skill_Type: number,

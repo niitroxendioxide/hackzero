@@ -45,6 +45,7 @@ return {
 		ChainAttack = 59,
 		UseChainAttack = 60,
 		CancelChainAttack = 61,
+		MatchAirborne = 62,
 
 		--
 		ClearPlayerData = 150,

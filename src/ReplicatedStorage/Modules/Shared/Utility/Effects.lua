@@ -247,4 +247,17 @@ function EffectUtil:ShakeCamera(Preset: string)
 	return NewCamShake;
 end
 
+function EffectUtil:ForModelParts(Model: Model, Functions: { [string]: (BasePart) -> () })
+	if not Functions then
+		return;
+	end
+
+	for _, Part in Model:GetChildren() do
+		if Functions[Part.Name] then
+			Functions[Part.Name](Part);
+		end
+	end
+
+end
+
 return EffectUtil
