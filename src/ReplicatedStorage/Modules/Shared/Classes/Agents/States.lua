@@ -105,15 +105,12 @@ function StatesClass:GetSpeed(Ignore_States: boolean, debug: boolean?)
 	local CharStats = self.__Base_Stats
 
 	--
-	if self.__State == 'Attacking' then
-		return 0;
-	end
 
 	if (self.__State ~= 'Idle' and self.__State ~= 'Dashing') and not Ignore_States then
 		local Max = self:GetKey("Sprint") and CharStats.Sprint_Speed or self:GetKey("Jog") and CharStats.Jog_Speed or CharStats.Walk_Speed
 		local Time = 1 - math.min((os.clock() - self.__Last_Change) / self.__Current_State_Max_Time, 1) * 0.9
 
-		return Max * Time
+		return (Max * Time)
 	end
 
 	

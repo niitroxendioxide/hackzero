@@ -5,7 +5,7 @@ local Types = require("../../Types/Stages")
 --
 return {
     Name = "Training",
-    Map = "General/Training",
+    Map = "Dragon Ball/Namek",--"General/Training",
 
     Acts = {
         Intro = {
@@ -76,7 +76,7 @@ return {
                     Goal = {ReachPlace = "End"},
                     Enemies = {
                         -- Name, Amount, Level
-                        [1] = {"Saiyan", 1, 60}
+                        [1] = {"Saiyan", 1, 60,} --"Dazed", 1, 60}
                     },
                     Dialogue = {
                         {
@@ -93,7 +93,7 @@ return {
                     Global = true,
 
                     Finished = function(State: Types.EventHandlerState): string
-                        return "End"
+                        return "Begin"
                     end
                 },
 

@@ -21,6 +21,7 @@ local QuestService = require(ServerStorage.Modules.Services.Data.QuestService)
 
 --
 local HELP_ASSIST_PROMPT_TIME = 1.25
+local CHAIN_ATTACKS_ENABLED = false
 
 --
 local Service = {
@@ -66,7 +67,7 @@ function HandleSkillHit(Data: AbilityTypes.AbilityHitInfo, SkillId: number)
 	if not AgentPlayer then return end
 
 	-- Handle chain attacks!
-	if SkillId == GameEnum.Skills.EX_Special then
+	if SkillId == GameEnum.Skills.EX_Special and CHAIN_ATTACKS_ENABLED then
 		local is_enemy_stunned = Data.Enemy.__Status:IsKnocked()
 		
 		if is_enemy_stunned then
@@ -126,8 +127,9 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 		local SkillId = buffer.readu8(ClientBuffer, 1)
 		local EnemyId = buffer.readu8(ClientBuffer, 2)
 		local StateId = buffer.readu8(ClientBuffer, 3)
+		local IsCancel = buffer.readu8(ClientBuffer, 4) == 1
 
-		local Result = Service:PlaySkill(Player, SkillId, EnemyId, StateId, ...)
+		local Result = Service:PlaySkill(Player, SkillId, EnemyId, StateId, IsCancel, ...)
 
 		if not Result then
 			-- cancel here
@@ -183,11 +185,11 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	Prompt.Accepted:Once(function()
 		CasterAgent:MarkTarget(nil)
 
-		Service:PlaySkill(Player, GameEnum.Skills.Quick_Assist, AgentPerpetratorId, 1)
+		Service:PlaySkill(Player, GameEnum.Skills.Quick_Assist, AgentPerpetratorId, 1, false)
 	end)
 end
 
-function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, StateId: number, ...)
+function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, StateId: number, IsCancel: boolean, ...)
 	local ReplicationId = Player:GetAttribute("ReplicationId") :: number
 	local ActiveAgent, _ = AgentLibrary:GetCurrentActive(ReplicationId)
 	local Other = {...}
@@ -239,7 +241,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 
 		if StateId == GameEnum.AbilityStates.Begin then
 			if not Moveset:HasSkill(Skill) and SpacelessSkill == "Dodge" then
-				MovesetLibrary:RunFromTemplate("Dodge", ActiveAgent)
+				MovesetLibrary:RunFromTemplate("Dodge", ActiveAgent, {IsCancel = IsCancel})
 
 				return
 			end
@@ -248,6 +250,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 				Target = Enemy, 
 				M1_Count = Other and Other[1] or nil,
 				Buffer = Other or {},
+				IsCancel = IsCancel,
 			})
 			return Status
 		elseif StateId == GameEnum.AbilityStates.End then

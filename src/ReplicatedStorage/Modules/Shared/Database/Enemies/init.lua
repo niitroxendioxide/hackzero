@@ -15,7 +15,7 @@ function EnemyData:Init()
 		local Success, Character = pcall(require, Module)
 
 		if Success then
-			EnemyData.__Saved[Module.Name] = table.freeze(Character)
+			EnemyData.__Saved[Module.Name] = table.freeze(Character :: {})
 
 			table.insert(EnemyData.__Ids, Module.Name)
 		else

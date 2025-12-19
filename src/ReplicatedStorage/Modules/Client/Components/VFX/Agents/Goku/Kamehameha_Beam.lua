@@ -8,10 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(Shared.Types.Abilities)
 local EffectUtil = require(Shared.Utility.Effects)
 
----
-return function(Caster: Types.Caster): ()
-    --
-
+function Shoot(Caster)
     local Highlight = Instance.new("Highlight")
     Highlight.FillColor = Color3.new()
     Highlight.OutlineTransparency = 1
@@ -114,4 +111,45 @@ return function(Caster: Types.Caster): ()
         end
     
     end)
+end
+
+local function GetBallCF(Caster: Types.Caster)
+    local Model = Caster:GetModel()
+    local LArm = Model:FindFirstChild("Left Arm")
+    local RArm = Model:FindFirstChild("Right Arm")
+
+    local LCF, RCF = LArm.CFrame * CFrame.new(0, -1, 0), RArm.CFrame * CFrame.new(0, -1, 0)
+    local Centre = LCF:Lerp(RCF, 0.5) * CFrame.new(0, .3, 0)
+
+    return Centre
+end
+
+---
+return function(Caster: Types.Caster, State: boolean): ()
+    --
+
+    if State then
+        Shoot(Caster)
+    else
+        local ChargeBall = EffectUtil:Create(GokuAssets.Kamehameha.KameBall, 3)
+        ChargeBall:PivotTo(GetBallCF(Caster))
+
+        ChargeBall.Size *= 0;
+        EffectUtil:Tween(ChargeBall, {.1, 'Quad'}, {Size = vector.one * 1.085})
+
+        local Aura = EffectUtil:Create(GokuAssets.Kamehameha.ChargeAura, 2.5)
+
+        Aura:PivotTo(Caster:GetPivot())
+
+        local Active_Time = 0;
+        while Active_Time < 0.35 do
+            Active_Time += EffectUtil:Wait()
+
+            ChargeBall:PivotTo(GetBallCF(Caster))
+        end
+
+        ChargeBall.Transparency = 1
+        EffectUtil:Toggle(ChargeBall, false)
+        EffectUtil:Toggle(Aura, false)
+    end
 end 

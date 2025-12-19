@@ -240,7 +240,7 @@ function EffectUtil:Toggle(Object: Instance, State: boolean, Filter: ((Object: P
 			continue
 		end
 
-		if Filter and Filter(Object) or Filter == nil then
+		if (Filter and Filter(Object)) or Filter == nil then
 			Child.Enabled = State
 		end
 	end

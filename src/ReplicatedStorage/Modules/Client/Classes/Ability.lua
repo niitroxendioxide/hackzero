@@ -146,7 +146,7 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 	return AbilitySequence
 end
 
-function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
+function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsCancel: boolean)
 	local User = Players.LocalPlayer
 	local Id = User:GetAttribute("ReplicationId")
 
@@ -175,7 +175,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number)
 		end
 
 		Replicator:Replicate(GameEnum.Replication.PivotTo, Agent:GetPivot(), true)
-		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId, M1_Count, table.unpack(self.__Context_Buffer))
+		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId, IsCancel, M1_Count, table.unpack(self.__Context_Buffer))
 	
 		return Enemy;
 	end

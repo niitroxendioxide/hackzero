@@ -247,7 +247,8 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 
 	--
 	local PercentDealt = (Dealt_Damage / Enemy.__Status:GetStat('Max_Health'))
-	local EnergyAmount = Random.new():NextNumber(0.7 + (PercentDealt*2), 4 + (PercentDealt*2))
+	local Total = math.min(Dealt_Damage / 3000, 1)
+	local EnergyAmount = Random.new():NextNumber(0.7 + (PercentDealt*2), 4 + (PercentDealt*2)) * Total
 	if not Data.DontChargeEnergy then
 		Agent:GiveEnergy(EnergyAmount)
 	end

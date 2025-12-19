@@ -8,7 +8,7 @@ local Heap = require(Shared.Utility.Heap)
 local Types = require(Shared.Types.Agents)
 
 --
-local STUDIO_ENERGY_MULT = 1;
+local STUDIO_ENERGY_MULT = 5;
 local StatusClass = {}
 StatusClass.__index = StatusClass
 

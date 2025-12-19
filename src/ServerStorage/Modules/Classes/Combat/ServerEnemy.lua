@@ -39,7 +39,7 @@ function ServerEnemy.new(At: Vector3, Name: string, Level: number)
 	--
 	self.__Name = Name or 'Default'
 	self.__Level = Level or 1
-	self.__Movement = MovementClass.new(At, nil, EnemyDBData.Appearance.Height)
+	self.__Movement = MovementClass.new(At, EnemyDBData.Stats.Movement_Speed, EnemyDBData.Appearance.Height)
 	self.__Status = EnemyStatus.new(self.__Name, self.__Level)
 
 	self.__LastMovement = os.clock()
@@ -120,6 +120,8 @@ function ServerEnemy:Attack()
 	for SkillName, Skill in MovesetData do
 		if Skill.Base and Skill.Base.Range then
 			Ranges[SkillName] = Skill.Base.Range
+		else
+			Ranges[SkillName] = 1000
 		end
 	end
 

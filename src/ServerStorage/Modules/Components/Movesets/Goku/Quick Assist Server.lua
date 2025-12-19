@@ -26,8 +26,8 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context)
 		end,},
 
 		-- kamehameha hitbox
-		{0.2, 1, function(Sequence, delta: number)
-			Current_Hitbox_Size = Current_Hitbox_Size + (Vector3.zAxis * delta * 40 / 0.8)
+		{0.35, 1.15, function(Sequence, delta: number)
+			Current_Hitbox_Size = Current_Hitbox_Size + (Vector3.zAxis * delta * 60 / 0.8)
 
 			local Offset  = Vector3.zAxis * -(Current_Hitbox_Size.Z/2 - 0.5);
 

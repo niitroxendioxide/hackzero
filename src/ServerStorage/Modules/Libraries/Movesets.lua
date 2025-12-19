@@ -27,7 +27,7 @@ end
 
 function Movesets:Get(Name: string, default): Types.MovesetClass
 	if not Movesets.__Cache[Name] then
-		return Movesets.__Cache[default and 'Saiyan' or 'Template']
+		return Movesets.__Cache[default and 'Saiyan' or 'Saiyan']
 	end
 
 	return Movesets.__Cache[Name]

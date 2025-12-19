@@ -46,7 +46,6 @@ function Effects:Play(Name: string, ...)
 
 	task.spawn(function()
 		Module(table.unpack(Args))
-
 	end)
 end
 

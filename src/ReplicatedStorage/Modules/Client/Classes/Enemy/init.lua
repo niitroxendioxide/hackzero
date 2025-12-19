@@ -29,7 +29,7 @@ function EnemyClass.new(At: Vector3, Name: string, Level: number): Types.EnemyCl
 
 	--
 	self.__Status = EnemyStatus.new(self.Name, Level)
-	self.__Movement = MovementClass.new(At, nil, EnemyDBData.Appearance.Height)
+	self.__Movement = MovementClass.new(At, EnemyDBData.Stats.Movement_Speed, EnemyDBData.Appearance.Height)
 	self.__Animator = AnimatorClass.new(self, self.Name)
 	self.__Appearance = AppearanceClass.new(self.Name, 'Agents')
 	self.__EnemyId = 0

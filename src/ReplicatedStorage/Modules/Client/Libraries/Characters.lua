@@ -115,8 +115,8 @@ function Characters:HandleSwitchFor(RepId: number, Previous: Types.AgentClass, A
 	NewCharacter:SetVisible(true)
 
 	if not HasTarget then
-		Animator:Play('Dash'..(Data.Last_Anim == 2 and 'Right' or 'Left'), {Name = 'Dash', Speed = 1.25})
-		NewCharacter:ApplyImpulse(At.LookVector * Statics.Switch_Character_Dash_Strength)
+		Animator:Play('DashForth', {Name = 'Dash', Speed = 1.25})
+		NewCharacter:ImpulseForward(Statics.Switch_Character_Dash_Strength, 0.75)
 	end
 
 	return true

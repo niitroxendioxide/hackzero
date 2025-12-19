@@ -184,7 +184,7 @@ function EnemyStatus:EnterDazedState(fn: (DazeValue: number) -> ())
 	if self.__Dazed then
 		return
 	end
-
+	
 	--
 	self.__Dazed = true
 
@@ -200,7 +200,7 @@ function EnemyStatus:EnterDazedState(fn: (DazeValue: number) -> ())
 		end
 		
 		--
-		local Loss = (self.__Max_Daze * Level_Mult * delta) / Daze_Length
+		local Loss = ((self.__Max_Daze) / (Daze_Length * (1 + Level_Mult))) * delta
 		
 		self:Daze(-Loss)
 		
@@ -221,7 +221,7 @@ function EnemyStatus.AddEffect(self: Types.EnemyStatus, Effect: Types.EnemyEffec
 
 	if typeof(Effect.Value) == 'string' and Effect.Value:find("%%") and Effect.Type then
 		local Number = tonumber(string.sub(Effect.Value, 1, #Effect.Value-1), 10)
-		local Stat = self.__Base_Stats[Effect.Type]
+		local Stat = self.__Stats[Effect.Type]
 
 		Effect.Value = Stat * (Number / 100)
 	end

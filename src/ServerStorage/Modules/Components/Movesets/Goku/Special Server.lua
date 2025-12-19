@@ -41,7 +41,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 					if Enemy_Stack_Counter[Enemy] > 3 then
 						Enemy_Stack_Counter[Enemy] = 0;
 
-						Enemy:AddEffect(Data)
+						Enemy:AddEffect(Ability:FromData("Sledge_Hammer_Effect", nil, nil))
 					end
 
 					Ability:Hit(Caster, Enemy, {

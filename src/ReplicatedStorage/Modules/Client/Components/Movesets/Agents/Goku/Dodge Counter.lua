@@ -29,6 +29,7 @@ function Ability:Play(Caster: Types.Caster)
     local Seq = Ability:Begin(Caster, {
         {0, function()
             Ability:Effect("EnergyExplosion_Full", Caster)
+            Ability:PlayAnimation(Caster, 'Goku.Abilities.Counter.Default', {})
 
             Caster:SwitchState('Attacking', Ability:FromData("Attack_State_Time"))
         end},

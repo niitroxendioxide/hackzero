@@ -1,5 +1,5 @@
 return {
-	Display_Name = 'Template Enemy',
+	Display_Name = 'Dazed Enemy',
 
 	Appearance = {
 		Height = 3.15
@@ -10,8 +10,8 @@ return {
 		Health = 150,
 		Attack = 100,
 		Defense = 50,
-		Daze = 662,
-		Daze_Length = 3.5,
+		Daze = 10,
+		Daze_Length = 60,
 
 		Weakness = {'Physical'},
 		Strength = {},

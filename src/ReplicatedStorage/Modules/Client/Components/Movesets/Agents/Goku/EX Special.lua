@@ -78,6 +78,8 @@ local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Enemies
 		local Start = (idx - 1) * 0.25
 
 		Attack:Add(0.75 + Start, function()
+			Ability:Effect("Teleport", Caster)
+
 			--local Previous = Caster:GetPivot() -- to use for effect later :p
 			local EnemyPosition = EnemyObject:GetPivot()
 			local Direction = CFrame.lookAt(EnemyPosition.Position, Center).LookVector

@@ -47,6 +47,13 @@ function Service:Init()
     local TotalPlayers = MatchData.TotalPlayers
     local LoadedPlayers = 0
 
+    local Success_Loading = Service:CreateMap(MatchData.Stage, MatchData.Act)
+    if not Success_Loading then
+        TeleportService:ReturnToLobby(Players:GetPlayers())
+
+        return;
+    end
+
     Service.__Total_Players = TotalPlayers
 
     while LoadedPlayers < TotalPlayers do
@@ -152,11 +159,19 @@ function Service:End(Won: boolean)
     end
 end
 
+function Service:CreateMap(Stage: string, Act: string): boolean
+    local MapLoaded = Service:GenerateMap(Stage, Act)
+    if not MapLoaded then
+        return false
+    end
+
+    return true;
+end
+
 function Service:Begin(Stage: string, Act: string)
-    local CouldLoadMap = Service:CreateMap(Stage, Act)
     local Data = StageDatabase:GetAct(Stage, Act)
 
-    if not CouldLoadMap or not Data then
+    if not Data then
         warn('Could not fetch stage data.')
 
         TeleportService:ReturnToLobby(Players:GetPlayers())
@@ -171,8 +186,6 @@ function Service:Begin(Stage: string, Act: string)
     local Difficulty = RunService:IsStudio() and settings.DIFFICULTY or GameEnum.Difficulties.Easy
     Targets:SetDifficulty(Difficulty)
 
-    local Marker_Data = Map:SetupMarkers(Data.Markers)
-
     --
     local AllPlayers = Players:GetPlayers()
     if #AllPlayers == 0 then
@@ -180,8 +193,16 @@ function Service:Begin(Stage: string, Act: string)
         return
     end
 
+    local Marker_Data = Map:SetupMarkers(Data.Markers)
     local MissionClass = MissionClass.new(Stage, Act)
     Map:AssignCurrentMission(MissionClass)
+
+    NPCService.__Stage = Stage
+    NPCService.__Act = Act
+
+    DestructibleService:SetupStage(Marker_Data.Destructibles)
+    LootService:SetupChests(Marker_Data.Chests)
+    NPCService:SetupNPCS(Marker_Data.NPCS)
 
     Service.__Current_Stage = Stage
     Service.__Current_Act = Act
@@ -190,13 +211,6 @@ function Service:Begin(Stage: string, Act: string)
     MissionClass:Begin()
 
     Network:FireForAll("Match", GameEnum.MatchEvents.MatchBegin)
-
-    NPCService.__Stage = Stage
-    NPCService.__Act = Act
-
-    DestructibleService:SetupStage(Marker_Data.Destructibles)
-    LootService:SetupChests(Marker_Data.Chests)
-    NPCService:SetupNPCS(Marker_Data.NPCS)
 
 
     --
@@ -244,7 +258,7 @@ function Service:Lose()
     Service.__Active_Match:Finish(false)
 end
 
-function Service:CreateMap(Stage: string, Act: string): boolean
+function Service:GenerateMap(Stage: string, Act: string): boolean
     local StageInformation = StageDatabase:GetStage(Stage)
     local ActInfo = StageDatabase:GetAct(Stage, Act)
     if ActInfo.AutoGenerate then

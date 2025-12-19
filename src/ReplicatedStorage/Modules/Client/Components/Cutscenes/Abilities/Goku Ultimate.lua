@@ -16,6 +16,7 @@ local CutsceneClass = require(Classes.Cutscene)
 local CutsceneEffects = require(Client.Libraries.CutsceneEffects)
 local AnimLib = require(Client.Libraries.Animation)
 local Dir = "Characters.Goku.Abilities.Ultimate."
+local Settings = require(Client.Packages.Settings)
 
 --
 local AgentCache = {
@@ -72,7 +73,9 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     local CameraAnimObj = AnimLib:GetAnim(Dir..'Camera')
     local AgentAnimObj = AnimLib:GetAnim(Dir..'Agent')
 
-    AnimLib:Play(AgentModel, AgentAnimObj)
+    local TrackAnim = AnimLib:Play(AgentModel, AgentAnimObj)
+    Agent:AddTrackToState('Attacking', TrackAnim, 1)
+
     local _ = GokuUltimate:AnimateCamera(AgentModel, CameraAnimObj)
 
     local BaseHair = ModelParts.BaseHair
@@ -99,6 +102,16 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     EffectsUtil:Weld(SuperSaiyanAura, AgentModel.PrimaryPart)
     SuperSaiyanAura:PivotTo(AgentModel:GetPivot())
     SuperSaiyanAura.Parent = workspace.World.Effects
+
+    if not Settings:Get("AuraEffects", 'Graphics') then
+        EffectsUtil:Toggle(SuperSaiyanAura, false, function(Object: Beam | Instance | ParticleEmitter): boolean  
+            if Object.Parent.Name == 'Ground' then
+                return false
+            end
+
+            return true
+        end)
+    end
 
     Appearance:EditPartValue(BaseHair, 1)
     Appearance:EditPartValue(SSHair, 0)

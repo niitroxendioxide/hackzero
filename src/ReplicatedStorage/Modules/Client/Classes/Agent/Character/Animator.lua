@@ -155,7 +155,7 @@ function AnimatorClass:Update(delta: number)
 	end
 
 	if Dash then
-		local Timeleft = .35
+		local Timeleft = .5
 		local ExpectedWeight = (Moving and Dash.TimePosition > .19) or (not Dash.IsPlaying)
 		local LoweredWeight = 1 - math.max(Dash.TimePosition - Dash.Length * (1 - Timeleft), 0) / Dash.Length * Timeleft
 

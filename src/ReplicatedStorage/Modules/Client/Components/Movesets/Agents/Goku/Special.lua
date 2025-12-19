@@ -55,6 +55,9 @@ function InMode(Caster: Types.AgentClass)
 
 			-- yield before any other event
 			Caster:AwaitServerTriggeredAction(GameEnum.Replication.PivotTo);
+
+			
+			Ability:Effect("Teleport", InitialCF)
 		end},
 
 

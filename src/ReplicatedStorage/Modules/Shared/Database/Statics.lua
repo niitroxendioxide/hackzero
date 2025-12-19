@@ -139,7 +139,7 @@ return {
 	Dodge_Ult_Bar_Fill = 4,
 	Chain_Attack_Ult_Bar_Fill = 8,
 
-	Switch_Character_Dash_Strength = 35,
+	Switch_Character_Dash_Strength = 45,
 
 	Get_Health_By_Level = function(Level: number, Health: number, HealthIncrease: number)
 		local Ascensions = Level // 10
@@ -164,6 +164,8 @@ return {
 	end,
 
 	--
+	Dash_Time = 0.5,
+	Dash_Strength = 50,
 	Dash_Speed_Buff = 0.5,
 	Dash_Speed_Buff_Vanish_Time = 1,
 

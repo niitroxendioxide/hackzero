@@ -207,7 +207,7 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 
 	if not Target then
 		New:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, Statics.Dodge_Active_Time)
-		New:ApplyImpulse(New:GetPivot().LookVector * Statics.Switch_Character_Dash_Strength)
+		New:ImpulseForward(Statics.Switch_Character_Dash_Strength, 0.75)
 	end
 
 	if WasMoving then

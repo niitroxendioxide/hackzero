@@ -152,6 +152,17 @@ function AgentClass:IsAlive(): boolean
 	return self.__Status:IsAlive()
 end
 
+function AgentClass:LookAtTarget(obj: any)
+	if obj == nil then
+		return
+	end
+
+	local XZ = vector.create(1, 0, 1)
+	local LookAt = CFrame.lookAt(self:GetPivot().Position * XZ, obj:GetPivot().Position * XZ).LookVector
+
+	return self:Look(LookAt, true, true)
+end
+
 function AgentClass:Revive()
 	self.__Status:Revive()
 end

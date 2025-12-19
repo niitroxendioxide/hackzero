@@ -82,13 +82,15 @@ function Controller:Replicate(Action: number, ...)
 
 		Args = {}
 	elseif Action == GameEnum.Replication.UseSkill then
-		Buffer = buffer.create(4)
+		Buffer = buffer.create(5)
 
 		buffer.writei8(Buffer, 1, Args[1])
 		buffer.writeu8(Buffer, 2, Args[2] or 0)
 		buffer.writei8(Buffer, 3, Args[3] or 1)
+		buffer.writei8(Buffer, 4, Args[4] == true and 1 or 0)
 
 		EventName = 'Ability'
+		table.remove(Args, 4)
 		table.remove(Args, 3)
 		table.remove(Args, 2)
 		table.remove(Args, 1)

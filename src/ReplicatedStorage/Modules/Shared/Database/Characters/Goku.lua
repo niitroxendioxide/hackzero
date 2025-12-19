@@ -100,14 +100,14 @@ return {
 				},
 
 				Affliction_Buildup = {
-					[1] = 89,
-					[2] = 102,
-					[2.5] = 245,
-					[3] = 125,
-					[4] = 83,
-					[4.5] = 72,
-					[5] = 192,
-					[6] = 100,
+					[1] = 101,
+					[2] = 122,
+					[2.5] = 285,
+					[3] = 155,
+					[4] = 103,
+					[4.5] = 92,
+					[5] = 212,
+					[6] = 170,
 				}
 			},
 
@@ -261,7 +261,7 @@ return {
 			Base = {
 				Speed = 1,
 				Animation_Speed = 1,
-				Attack_State_Time = 1.75,
+				Attack_State_Time = 1.45,
 				Hit_Frequency = 4/60,
 				Hit_Data = {
 					Damage = 34,

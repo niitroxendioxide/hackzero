@@ -98,6 +98,10 @@ function Controller:EnterDaze(Buffer: buffer)
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	if not Enemy then return end
 
+	if Enemy.__Status.__Daze <= 0 then
+		Enemy.__Status:Daze(Enemy.__Status.__Max_Daze)
+	end
+
 	Enemy:EnterDazedState()
 end
 

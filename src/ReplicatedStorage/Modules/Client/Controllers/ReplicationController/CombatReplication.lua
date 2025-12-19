@@ -71,9 +71,9 @@ function Controller:UseSkill(Buffer: buffer, Extra: {})
 			return
 		end
 
-		CharacterMoveset:Begin(Key, ActiveAgent, {IsSignal = true, Buffer = Extra})
+		CharacterMoveset:Begin(Key, ActiveAgent, {IsSignal = true, Buffer = Extra, Enemy = AgentEnemy})
 	elseif State == "End" then
-		CharacterMoveset:Release(Key, ActiveAgent, {IsSignal = true, Buffer = Extra})
+		CharacterMoveset:Release(Key, ActiveAgent, {IsSignal = true, Buffer = Extra, Enemy = AgentEnemy})
 	elseif State == "Cancel" then
 		CharacterMoveset:CancelSkill(Key, ActiveAgent)
 	end

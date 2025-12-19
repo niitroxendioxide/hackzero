@@ -124,7 +124,9 @@ function Controller:Init(): ()
 		if CurrentCharacter:IsAlive() then
 			if (Direction.Magnitude > 0 and not CutscenesLibrary:IsInCutscene()) then
 				CurrentCharacter:Look(Direction.Unit)
-				CurrentCharacter:Move()
+				if CurrentCharacter:GetState() ~= 'Attacking' then
+					CurrentCharacter:Move()
+				end
 			else
 				CurrentCharacter:Stop()
 			end

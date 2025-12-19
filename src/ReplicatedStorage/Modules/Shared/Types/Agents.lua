@@ -87,6 +87,7 @@ export type AgentClass =  {
 	BlockRotation: (self: AgentClass, Time: number) -> (),
 	SetPhysicsEnabled: (self: AgentClass, State: boolean) -> (),
 
+	LookAtTarget: (self: AgentClass, Target: ClientEnemy) -> (),
 	GetAppearance: (self: AgentClass) -> (Types.AppearanceController),
 
 	--[[

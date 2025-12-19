@@ -87,21 +87,23 @@ function Controller:HandleInput(Key: string, State: string)
 		return
 	end
 
+	local Is_Cancel = false
 	local CurrentSkill = CurrentAgent:GetCurrentSkill()
 	if CurrentSkill == "Basic Attack" and Key == "Dodge" then
+		Is_Cancel = true
 		CharacterMoveset:CancelSkill("Basic Attack", CurrentAgent)
 	end
 
-	local Success;
+	local Success;	
 
 	if CharacterMoveset:HasSkill(Key) then
 		if State == 'Begin' then
-			Success = CharacterMoveset:Begin(Key, CurrentAgent)
+			Success = CharacterMoveset:Begin(Key, CurrentAgent, {IsCancel = Is_Cancel})
 		else
 			Success = CharacterMoveset:Release(Key, CurrentAgent)
 		end
 	elseif Key == "Dodge" then
-		Movesets:RunFromTemplate("Dodge", CurrentAgent)
+		Movesets:RunFromTemplate("Dodge", CurrentAgent, {IsCancel = Is_Cancel})
 	end
 
 	--
