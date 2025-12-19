@@ -96,6 +96,12 @@ function Ability:Play(Agent, _, _, Context)
 			end
 		end},
 
+		{0.233, function()
+			if M1_Count == 4 then
+				Ability:Effect("Goku_M1_4", Agent);
+			end
+		end},
+
 		-- 4TH M1
 		{0.06, function()
 			if M1_Count == 4 then
@@ -106,6 +112,7 @@ function Ability:Play(Agent, _, _, Context)
 		-- 5TH M1
 		{0.27, function()
 			if M1_Count == 5 then
+				Ability:Effect("Goku_M1_5", Agent)
 				Agent:WalkBack(Ability:FromData('Walk_Time') + 0.3, 2)
 			end
 		end},
@@ -117,11 +124,16 @@ function Ability:Play(Agent, _, _, Context)
 			end
 
 			if M1_Count == 6 then
+				Ability:Effect("Goku_M1_6", Agent)
 				Agent:Walk(Ability:FromData('Walk_Time') + 0.18, 2.5)
 			end
 		end},
 
 		{Ability:FromData("Hit_Times", M1_Count), function()
+			if M1_Count == 6 then
+				Ability:Effect("Goku_M1_1", Agent);
+			end
+
 			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
 				Ability:Hit(Agent, Target, {EffectData = Effect_Data})
 			end)
@@ -139,6 +151,9 @@ function Ability:Play(Agent, _, _, Context)
 		end,},
 
 		{.5, function()
+			if M1_Count == 4 then
+				Ability:Effect("Goku_M1_4", Agent, 2);
+			end
 			if M1_Count ~= 2 then return end
 
 			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)

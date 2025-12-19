@@ -18,7 +18,7 @@ local CharacterDatabase = require(Shared.Database.Characters)
 
 -- STATICS
 local FULL_COLOR = Color3.fromRGB(51, 211, 255);
-local NOT_COLOR = Color3.fromRGB(134, 148, 152);
+local NOT_COLOR = Color3.fromRGB(86, 127, 152);
 
 --
 local peek = Fusion.peek
@@ -38,7 +38,7 @@ local function GetEnergyNeededById(Id: number): number
 
 	local CharacterInfo = CharacterDatabase:GetMovesetData(Agent.Name) -- Agent.Name
 	if not CharacterInfo.Special or not CharacterInfo.Special.Base or not CharacterInfo.Special.Base.Required_Energy then
-		return 100
+		return 0
 	end
 
 	return CharacterInfo.Special.Base.Required_Energy :: number
@@ -62,6 +62,8 @@ function Component:Init()
 	if not Places:CanFight() then
 		return
 	end
+
+	Frame.Visible = true;
 
 	for _, MeterHandler: ModuleScript in script:GetChildren() do
 		Handlers[MeterHandler.Name] = require(MeterHandler)
@@ -158,9 +160,10 @@ function Component:Init()
 		local Next = Active + 1 > 3 and 1 or Active + 1
 		local Prev = Active - 1 < 1 and 3 or Active - 1
 
+		
 		Icon_Positions[Active]:set(Active_Pos)
 		Icon_Positions[Next]:set(Next_Pos)
-		Icon_Positions[Prev]:set(Previous_Pos)
+		Icon_Positions[Prev]:set(#Characters == 2 and Next_Pos or Previous_Pos)
 		Icon_Positions[Active + 3]:set(1)
 		Icon_Positions[Next + 3]:set(.6)
 		Icon_Positions[Prev + 3]:set(.6)
@@ -176,8 +179,17 @@ function Component:Init()
 		Info.CharacterName.Text = Data.Nickname
 
 		for _, Item in Icons:GetChildren() do
+			if not Item:IsA('Frame') then
+				return;
+			end
+
 			local Number = tonumber(Item.Name, 10) :: number
-			if not Characters[Number] then continue end
+			if not Characters[Number] then 
+				Item.Visible = false
+				continue 
+			end
+
+			Item.Visible = true
 
 			local Assets: Folder = ReplicatedStorage:WaitForChild("Assets") :: Folder & { Characters: Folder }
 			local CharacterFolder = Assets:FindFirstChild("Characters") :: Folder & { Agents: Folder };
@@ -270,12 +282,17 @@ function Component:Init()
 
 			--
 			local TransparencyMod = (Icon_Scale - 0.6) / 0.4
+			local IsFull = Energy_Size >= GetEnergyNeededById(Index)
+			local UltBarFill = Component:Peek(InterfaceStates.UltBar[Index]) / 100
 
 			Icon_Object.Main.LightColor = Light;
 			Icon_Object.Info.GroupTransparency = TransparencyMod
 			Icon_Object.Info.Meters.Health.Fill.Size = UDim2.fromScale(Health_Size, 1)
 			Icon_Object.Info.Meters.Energy.Fill.Size = UDim2.fromScale(Energy_Size / 100, 1)
-			Icon_Object.Info.Meters.Energy.Fill.BackgroundColor3 = (Energy_Size >= GetEnergyNeededById(Index)) and FULL_COLOR or NOT_COLOR
+			Icon_Object.Info.Meters.Energy.Fill.BackgroundColor3 = (IsFull) and FULL_COLOR or NOT_COLOR
+			Icon_Object.Info.Meters.Energy.Ready.Visible = IsFull
+			Icon_Object.Info.Meters.Ult.Ready.Visible = UltBarFill >= 1
+			Icon_Object.Info.Meters.Ult.Fill.Size = UDim2.fromScale(UltBarFill, 1)
 			Icon_Object.IconScale.Scale = Icon_Scale
 			Icon_Object.Position = peek(Spring_Value)
 		end

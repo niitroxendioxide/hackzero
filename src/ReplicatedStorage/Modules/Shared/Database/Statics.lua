@@ -50,6 +50,15 @@ local function CompanionExperiencePerLevel(Level: number)
 	return (Level * math.exp(Ascension * (1.5/Level)) + (Level * 100)) * (math.pi/2.75*(Level / 5))
 end
 
+local Health_Level_Divisors = {
+	[1] = 0.25,
+	[2] = 0.5,
+	[3] = 1,
+	[4] = 1.25,
+	[5] = 2,
+	[6] = 0,
+}
+
 return {
 	GameVersion = '0.01',
 
@@ -132,11 +141,26 @@ return {
 
 	Switch_Character_Dash_Strength = 35,
 
-	Get_Health_By_Level = function(Level: number, Health: number)
-		local TotalAdded = math.max(Level - 1, 0)
-		local Total = math.max(Level // 5, 1)
+	Get_Health_By_Level = function(Level: number, Health: number, HealthIncrease: number)
+		local Ascensions = Level // 10
+		local Added = 0
 
-		return Health + (math.exp(Total/12)/2.71828 * Health * TotalAdded)
+		local Total = math.max(Level // 5, 1)
+		local RandomFactor = math.exp(Total / 12) / 2.71828
+
+		local TotalMult = 0
+
+		for i = 1, Ascensions do
+			local Mult = 10
+			if i == Ascensions then
+				Mult = (Level - 1) % 10
+			end
+
+			TotalMult += Mult
+			Added += Mult * Health_Level_Divisors[i] * RandomFactor * HealthIncrease
+		end
+
+		return Health + Added
 	end,
 
 	--

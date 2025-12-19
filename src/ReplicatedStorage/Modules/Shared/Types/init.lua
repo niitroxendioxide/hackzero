@@ -374,6 +374,10 @@ export type ServerEnemyClass = {
 	Knockback: (self: ServerEnemyClass, Direction: Vector3, Power: number, Time: number) -> (),
 	EnterDazedState: (self: ServerEnemyClass) -> (),
 
+	AddEffect: (self: ServerEnemyClass, Data: EnemyEffectParameters) -> (),
+	GetEffect: (self: ServerEnemyClass, Tag: string) -> (),
+	RemoveEffect: (self: ServerEnemyClass, Effect: string) -> (),
+
 	TakeDaze: (self: ServerEnemyClass, Amount: number) -> (boolean),
 
 	--[[
@@ -392,6 +396,15 @@ export type ServerEnemyClass = {
 	Destroy: (self: ServerEnemyClass) -> ();
 
 	SwitchState: (self: ServerEnemyClass, State: string, Time: number) -> (),
+}
+
+export type EnemyEffectParameters = { 
+	Tag: string?,
+	Unique: boolean?,
+	Type: string,
+	Value: (number | string),
+	Time: number,
+	Callback: (() -> ())?,
 }
 
 export type EnemyStatus = {
@@ -429,6 +442,11 @@ export type EnemyStatus = {
 	GetAffliction: (self: EnemyStatus, Type: Element) -> (number),
 	GetAfflictionStackedDamage: (self: EnemyStatus, Type: Element) -> (number),
 	EnterDazedState: (self: EnemyStatus, fn: (DazeValue: number) -> ()) -> (),
+
+	--- Effects
+	AddEffect: (self: EnemyStatus, Data: EnemyEffectParameters) -> (),
+	GetEffect: (self: EnemyStatus, Tag: string) -> (),
+	RemoveEffect: (self: EnemyStatus, Effect: string) -> (),
 }
 
 export type UIComponent = {

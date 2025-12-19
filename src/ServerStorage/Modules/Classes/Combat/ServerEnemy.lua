@@ -219,12 +219,17 @@ function ServerEnemy:GetId(): number
 end
 
 function ServerEnemy.Stun(self: Types.ServerEnemyClass, Time: number, is_airborne: boolean): ()
+	
 	self.__Next = Time + 0.15
 	self.__LastMovement = os.clock()
-
+	
 	--
 	self:Move(vector.zero)
-	self:SwitchState( not is_airborne and 'Stunned' or 'Airborne' , Time)
+	
+	if self:GetState() == 'Airborne' and not is_airborne then
+		return;
+	end
+	self:SwitchState( is_airborne and 'Airborne' or 'Stunned' , Time)
 end
 
 function ServerEnemy:SwitchState(State: string, Time: number)
@@ -252,6 +257,18 @@ function ServerEnemy:Knockback(Dir: Vector3, Pow: number, Time: number)
 	local Velocity = self:GetPivot():VectorToWorldSpace(Dir) * Pow
 
 	return self.__Movement:Knockback(Velocity, Time)
+end
+
+function ServerEnemy.AddEffect(self: Types.ServerEnemyClass, Data: Types.EnemyEffectParameters)
+	return self.__Status:AddEffect(Data)
+end
+
+function ServerEnemy.GetEffect(self: Types.ServerEnemyClass, Tag: string)
+	return self.__Status:GetEffect(Tag)
+end
+
+function ServerEnemy.RemoveEffect(self: Types.ServerEnemyClass, Id: string)
+	return self.__Status:RemoveEffect(Id)
 end
 
 function ServerEnemy:GetTarget()

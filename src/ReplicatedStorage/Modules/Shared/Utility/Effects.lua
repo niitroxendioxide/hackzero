@@ -60,6 +60,20 @@ function EffectUtil:FromGui<T>(name: string): T & GuiObject
 	return PlayerGui:FindFirstChild("Effects"):FindFirstChild(name)
 end
 
+
+function EffectUtil:RecolorToGroundColor(At: Vector3, Particles: {})
+	local MapParams = World:GetMapParams()
+	local Cast = workspace:Raycast(At, vector.create(0, -1000), MapParams )
+
+	if Cast then
+		local Seq = ColorSequence.new(Cast.Instance.Color)
+		for _, Particle in Particles do
+			Particle.Color = Seq
+		end
+	end
+
+end
+
 function EffectUtil:CleanUp(Object: any, Time: number)
 	return task.delay(Time, function()
 		local typeOf = typeof(Object)
@@ -137,6 +151,13 @@ end
 
 function EffectUtil:RandomV3(): Vector3
 	return Random_Number:NextUnitVector()
+end
+
+--[[
+	Returns the waited time divided by world speed, so it's useful for effects
+]]
+function EffectUtil:Wait(time_to_wait: number)
+	return task.wait(time_to_wait) / World:GetSpeed()
 end
 
 function EffectUtil:Create<T>(Asset: T & Instance, Time: number?): (T, thread)

@@ -105,6 +105,10 @@ function StatesClass:GetSpeed(Ignore_States: boolean, debug: boolean?)
 	local CharStats = self.__Base_Stats
 
 	--
+	if self.__State == 'Attacking' then
+		return 0;
+	end
+
 	if (self.__State ~= 'Idle' and self.__State ~= 'Dashing') and not Ignore_States then
 		local Max = self:GetKey("Sprint") and CharStats.Sprint_Speed or self:GetKey("Jog") and CharStats.Jog_Speed or CharStats.Walk_Speed
 		local Time = 1 - math.min((os.clock() - self.__Last_Change) / self.__Current_State_Max_Time, 1) * 0.9
@@ -116,10 +120,6 @@ function StatesClass:GetSpeed(Ignore_States: boolean, debug: boolean?)
 	local TimePassed = (os.clock() - self.__Last_Dash_State)
 	local DashSpeedBoost = Statics.Dash_Speed_Buff
 	local DashBoostEffect = self.__State == "Dashing" and DashSpeedBoost or (1 - math.min(TimePassed, Statics.Dash_Speed_Buff_Vanish_Time)) * DashSpeedBoost
-	
-	if debug then
-		print(DashBoostEffect)
-	end
 
 
 	if self:GetKey('Sprint') or Ignore_States then

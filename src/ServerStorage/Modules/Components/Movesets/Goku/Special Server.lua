@@ -10,6 +10,7 @@ local Types = require(Shared.Types.Agents)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 
 --
+local Enemy_Stack_Counter = {}
 local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
@@ -30,13 +31,19 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 			end
 		end},
 
-		{.18, function()
+		{.267, function()
 			
 			if not InMode then
 				local Data = Ability:FromData('Sledge_Hammer', nil, SkillLevel)
 
 				Ability:CreateHitbox(Caster, Vector3.zAxis*-3.5, vector.one * 6, function(Enemy: Types.Enemy) 
-				
+					Enemy_Stack_Counter[Enemy] = (Enemy_Stack_Counter[Enemy] or 0) + 1
+					if Enemy_Stack_Counter[Enemy] > 3 then
+						Enemy_Stack_Counter[Enemy] = 0;
+
+						Enemy:AddEffect(Data)
+					end
+
 					Ability:Hit(Caster, Enemy, {
 						Damage = Data.Damage,
 						Affliction = "Physical",
@@ -44,6 +51,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 						Daze = Data.Daze,
 						HitType = "Blunt",
 						Knockback = Data.Knockback,
+						HitsAirborne = true,
 						Affliction_Buildup = Data.Affliction_Buildup,
 					})
 

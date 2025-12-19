@@ -50,9 +50,9 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 	local Indicator = typeof(At) == 'table' and Parent:FindFirstChild(At:GetId()..'indicatorobj') or nil
 	local ClearThread: thread = nil
 	local NumberToString = tostring(Data.Number)..(Data.Critical and '!' or '')
-	local Multiple_Indicators_Setting = not Settings:Get("Multiple_Indicators", "QOL")
+	local Multiple_Indicators_Setting = Settings:Get("MultipleIndicators", "QOL")
 
-	if Multiple_Indicators_Setting and Indicator and Threads[Indicator] then
+	if not Multiple_Indicators_Setting and Indicator and Threads[Indicator] then
 		local Previous = Indicator:GetAttribute('Total')
 		local NewTotal = Data.Number + Previous
 		NumberToString = tostring(NewTotal)..(Data.Critical and '!' or '')

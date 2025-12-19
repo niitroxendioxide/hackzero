@@ -1,6 +1,7 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
@@ -44,7 +45,9 @@ function ComponentClass:CheckAvailable(): boolean
 end
 
 function ComponentClass:Init()
-	print('Component', self.__Name, 'inited')
+	if RunService:IsStudio() then
+		print('Component', self.__Name, 'inited')
+	end
 end
 
 function ComponentClass:GetScope()

@@ -6,6 +6,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
 --
+local World = require(ReplicatedStorage.Modules.Shared.World)
 local Mock = require(Shared.Utility.Mock)
 local Settings = require(Client.Packages.Settings)
 

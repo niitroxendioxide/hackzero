@@ -97,7 +97,7 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     end
 
     EffectsUtil:Weld(SuperSaiyanAura, AgentModel.PrimaryPart)
-    SuperSaiyanAura:PivotTo(Agent:GetPivot())
+    SuperSaiyanAura:PivotTo(AgentModel:GetPivot())
     SuperSaiyanAura.Parent = workspace.World.Effects
 
     Appearance:EditPartValue(BaseHair, 1)
@@ -116,14 +116,11 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     Highlight.Parent = AgentModel
 
     AgentCache.__Methods[Agent] = function()
-        BaseHair.Transparency = 1
-        SSHair.Transparency = 0
-
         Appearance:EditPartValue(SSHair, 1)
-        Appearance:EditPartValue(BaseHair, 0)
+        Appearance:EditPartValue(BaseHair, 0, not Agent:IsActive())
         Appearance:EditPartValue(SSFace, 1)
-        Appearance:EditPartValue(BaseFace, 0)
-        Appearance:EditPartValue(BaseFace.Face, 0)
+        Appearance:EditPartValue(BaseFace, 0, not Agent:IsActive())
+        Appearance:EditPartValue(BaseFace.Face, 0, not Agent:IsActive())
         Appearance:UnbindParticles(SuperSaiyanAura)
 
         EffectsUtil:Toggle(SuperSaiyanAura, false, nil, true)
@@ -134,7 +131,7 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     end
 
     --
-    AgentCache.__Threads[Agent] = task.delay(10, AgentCache.__Methods[Agent])
+    AgentCache.__Threads[Agent] = task.delay(15, AgentCache.__Methods[Agent])
 end
 
 return GokuUltimate

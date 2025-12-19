@@ -188,7 +188,7 @@ function ServerAbilityClass:Save(Agent: AgentTypes.AgentClass, Key: string, Valu
 	self.__Cache[Agent][Key] = Value
 end
 
-function ServerAbilityClass:Increase(Agent: AgentTypes.ServerAgentClass, Key: string, Data: {Rate: number?, Limit: number?})
+function ServerAbilityClass:Increase(Agent: AgentTypes.ServerAgentClass, Key: string, Data: {Rate: number?, Limit: number?, Min: number?})
 	Data = Data or {}
 
 	local Limit = Data.Limit or math.huge
@@ -196,7 +196,7 @@ function ServerAbilityClass:Increase(Agent: AgentTypes.ServerAgentClass, Key: st
 	local CurrentValue = self:Get(Agent, Key) or 0
 
 	if CurrentValue + Added > Limit then
-		self:Save(Agent, Key, 1)
+		self:Save(Agent, Key, Data.Min or 1)
 	else
 		self:Save(Agent, Key, CurrentValue + Added)
 	end
@@ -246,13 +246,14 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 	local Dealt_Daze, Is_Dazed = DamageLibrary:Daze(Agent, Enemy, Data.Daze)
 
 	--
-	local EnergyAmount = (Dealt_Damage / Enemy.__Status:GetStat("Max_Health")) / 1.25
+	local PercentDealt = (Dealt_Damage / Enemy.__Status:GetStat('Max_Health'))
+	local EnergyAmount = Random.new():NextNumber(0.7 + (PercentDealt*2), 4 + (PercentDealt*2))
 	if not Data.DontChargeEnergy then
 		Agent:GiveEnergy(EnergyAmount)
 	end
 
 	if not Data.DontChargeUlt then
-		local UltBarCharged = 10 * (Dealt_Damage / Enemy.__Status:GetStat('Max_Health'))
+		local UltBarCharged = 10 * PercentDealt
 		if Affliction_Triggered then
 			UltBarCharged *= 1.25;
 			UltBarCharged += 5;

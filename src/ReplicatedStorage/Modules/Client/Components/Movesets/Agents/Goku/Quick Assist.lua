@@ -17,9 +17,10 @@ function Ability:Play(Agent: Types.AgentClass): ()
     Ability:Begin(Agent, {
         {0, function()
             Agent:SwitchState('Attacking', AttackTime)
+            Ability:PlayAnimation(Agent, 'Goku.Abilities.Assist.Default', {})
         end,},
 
-        {.2, function()
+        {.25, function()
             Ability:Effect('Kamehameha_Beam', Agent)
         end}
     })

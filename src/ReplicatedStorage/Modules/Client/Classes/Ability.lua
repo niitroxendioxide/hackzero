@@ -334,7 +334,7 @@ function AbilityClass:Get(Agent: AgentTypes.AgentClass, Key: string)
 	return self.__Cache[Agent][Key]
 end
 
-function AbilityClass:Increase(Agent: AgentTypes.AgentClass, Key: string, Data: {Rate: number?, Limit: number?})
+function AbilityClass:Increase(Agent: AgentTypes.AgentClass, Key: string, Data: {Rate: number?, Limit: number?, Min: number})
 	Data = Data or {}
 
 	local Limit = Data.Limit or math.huge
@@ -342,7 +342,7 @@ function AbilityClass:Increase(Agent: AgentTypes.AgentClass, Key: string, Data: 
 	local CurrentValue = self:Get(Agent, Key) or 0
 
 	if CurrentValue + Added > Limit then
-		self:Save(Agent, Key, 1)
+		self:Save(Agent, Key, Data.Min or 1)
 	else
 		self:Save(Agent, Key, CurrentValue + Added)
 	end

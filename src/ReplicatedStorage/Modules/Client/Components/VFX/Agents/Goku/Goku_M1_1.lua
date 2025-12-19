@@ -13,7 +13,8 @@ local Effects = require(Shared.Utility.Effects)
 ---
 return function(
     Caster: Types.Caster,
-    Offset: CFrame?
+    Offset: CFrame?,
+    no_vfx: boolean?
 ): ()
     --
     local Hit_Effect = Effects:Create(Assets.Goku.BasicAttack.First, 3)
@@ -40,6 +41,7 @@ return function(
             Effects:Tween(Outermesh, { .6, 'Quart' }, { CFrame = Outermesh.CFrame * CFrame.new(-5, 0, 0) * CFrame.Angles(math.pi * .5, 0, 0) })
         end,
         Effect = function(vfx)
+            if no_vfx then return end
             Effects:Emit(vfx)
         end
     })

@@ -26,7 +26,7 @@ return function(
         VfxRig.PrimaryPart.Anchored = false
         Effects:Weld(VfxRig.PrimaryPart, Caster:GetModel().PrimaryPart)
 
-        EffectsLib:Play('Goku_M1_1', Caster, CFrame.new(0.071, 3.801, -2.707) * CFrame.Angles(math.rad(72), 0, 0))
+        EffectsLib:Play('Goku_M1_1', Caster, CFrame.new(0.071, 1.801, -2.707) * CFrame.Angles(math.rad(72), 0, 0))
     end
 
     Animation:Play(VfxRig, Animation:GetAnim('Characters.Goku.Abilities.Vfx.Trail_'..(Id or 2)))

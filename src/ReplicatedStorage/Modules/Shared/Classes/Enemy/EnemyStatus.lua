@@ -1,4 +1,5 @@
 --
+local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
 
@@ -30,7 +31,7 @@ function EnemyStatus.new(Name: string, Level: number)
 	self.__Daze = 0
 	self.__Dazed = false
 	self.__Stats = EnemyDatabase:GetStatsAtLevel(Name, self.__Level)
-	self.__Health = Statics.Get_Health_By_Level(self.__Level, EnemyData.Level_Stats.Health)
+	self.__Health = Statics.Get_Health_By_Level(self.__Level, EnemyData.Stats.Health, EnemyData.Level_Stats.Health)
 
 	self.__Max_Health = self.__Health
 	self.__Max_Daze = self.__Stats.Daze
@@ -108,7 +109,11 @@ function EnemyStatus:GetStat(Name: string)
 		return self.__Max_Daze
 	end
 
-	return self.__Stats[Name]
+	if not self.__Stats[Name] then
+		return nil
+	end
+
+	return self.__Stats[Name] + self:GetStatEffects(Name)
 end
 
 function EnemyStatus:Damage(Amount: number)
@@ -204,5 +209,80 @@ function EnemyStatus:EnterDazedState(fn: (DazeValue: number) -> ())
 		end
 	end)
 end
+
+function EnemyStatus.AddEffect(self: Types.EnemyStatus, Effect: Types.EnemyEffectParameters)
+	if Effect.Tag and Effect.Unique then
+		for _, Other in self.__Effects do
+			if Other.Tag ~= nil and Other.Tag == Effect.Tag then
+				Other.Remove();
+			end
+		end
+	end
+
+	if typeof(Effect.Value) == 'string' and Effect.Value:find("%%") and Effect.Type then
+		local Number = tonumber(string.sub(Effect.Value, 1, #Effect.Value-1), 10)
+		local Stat = self.__Base_Stats[Effect.Type]
+
+		Effect.Value = Stat * (Number / 100)
+	end
+
+	local NewId = HttpService:GenerateGUID(false)
+	local Callback = Effect.Callback
+
+	local EffectObject = {
+		Id = NewId,
+		Type = Effect.Type,
+		Time = Effect.Time,
+		Tag = Effect.Tag,
+		Value = Effect.Value,
+		Created = os.clock(),
+
+		Remove = function()
+			self:RemoveEffect(NewId)
+
+			if Callback then
+				task.spawn(Callback, NewId)
+			end
+		end,
+	}
+
+	if Effect.Time then
+		task.delay(Effect.Time, EffectObject.Remove)
+	end
+
+	self.__Effects[NewId] = EffectObject
+
+	return EffectObject
+end
+
+function EnemyStatus.GetEffect(self: Types.EnemyStatus, Tag: string)
+	for _, Effect in self.__Effects do
+		if Effect.Tag == Tag then
+			return Effect;
+		end
+	end
+
+	return;
+end
+
+function EnemyStatus.RemoveEffect(self: Types.EnemyStatus, Id: number)
+	local PreviousEffect = self.__Effects[Id]
+	if PreviousEffect ~= nil then
+		self.__Effects[Id] = nil
+	end
+end
+
+function EnemyStatus.GetStatEffects(self: Types.EnemyStatus, Type: Types.Stat)
+	local Amount = 0
+
+	for _, Effect in self.__Effects do
+		if Effect.Type == Type then
+			Amount += Effect.Value
+		end
+	end
+
+	return Amount
+end
+
 
 return EnemyStatus

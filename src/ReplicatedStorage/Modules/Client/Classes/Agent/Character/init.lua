@@ -79,8 +79,8 @@ function CharacterClass:Stop()
 	return self.__Controller:StopMovement()
 end
 
-function CharacterClass:GetMovementSpeed()
-	return self.__States:GetSpeed()
+function CharacterClass:GetMovementSpeed(...)
+	return self.__States:GetSpeed(...)
 end
 
 function CharacterClass:SetKey(Key: string, State: boolean)

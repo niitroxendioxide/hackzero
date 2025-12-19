@@ -96,23 +96,22 @@ end
 
 function AppearanceClass:Land()
 	if (self.__Current_Height_Tween) then
-		--self.__Current_Height_Tween:Pause()
+		self.__Current_Height_Tween:Pause()
 	end
 
 	self:__clean_heights()
 end
 
 function AppearanceClass:__clean_heights()
-	local timeToFall = (self.__Extra_Height / 1)
+	local timeToFall = (self.__Extra_Height / 12)
 
-	local land_tween = EffectsUtil:Tween(self.__Root_Attachment, {timeToFall, 'Sine', 'In'}, {Position = vector.zero})
+	local Land_Tween = EffectsUtil:Tween(self.__Root_Attachment, {timeToFall, 'Quart', 'In'}, {Position = vector.zero})
 	if self.__Current_Height_Tween then
 		self.__Current_Height_Tween:Destroy()
-		self.__Current_Height_Tween = land_tween
+		self.__Current_Height_Tween = Land_Tween
 	end
 
 	self.__Extra_Height = 0;
-	self.__Root_Attachment.Position = vector.create(0, 0);
 	self.__Current_Height_Thread = nil;
 end
 
@@ -146,8 +145,12 @@ function AppearanceClass:UnbindObject(Object: Instance)
 	self.__Bound_Objects[Object] = nil
 end
 
-function AppearanceClass:EditPartValue(Part: BasePart, Value: number)
+function AppearanceClass:EditPartValue(Part: BasePart, Value: number, DontChange: boolean?)
 	self.__TransparencyValues[Part] = Value
+
+	if DontChange then
+		return
+	end
 	Part.Transparency = Value
 end
 

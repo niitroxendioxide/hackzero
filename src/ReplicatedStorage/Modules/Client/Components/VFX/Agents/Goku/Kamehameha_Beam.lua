@@ -21,7 +21,7 @@ return function(Caster: Types.Caster): ()
 
     --
 
-    local At = Caster:GetPivot() * CFrame.new(0, 0, -3)
+    local At = Caster:GetPivot() * CFrame.new(0, 0, -3.35)
     local Beam = EffectUtil:Create(GokuAssets.Kamehameha.Beam, 2.5)
     local Aura = EffectUtil:Create(GokuAssets.Kamehameha.Aura, 2.5)
     local Length = 80 
@@ -78,6 +78,7 @@ return function(Caster: Types.Caster): ()
     task.delay(.75, function()
 
         EffectUtil:Toggle(Aura, false)
+        EffectUtil:Tween(Aura.Attachment.PointLight, {.25}, {Brightness = 0})
 
         EffectUtil:Tween(Highlight, {.4}, {FillTransparency = 1})
 

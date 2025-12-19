@@ -65,7 +65,7 @@ return {
 				Effect_Data = {
 					Highlight = true,
 					Audio = {
-						Id = { 9117969687, 175024455 }, -- 8595980577 lighter
+						Id = {8595980577}, --{ 9117969687, 175024455 }, -- 8595980577 lighter
 						Volume = 0.5,
 					}
 				},
@@ -130,15 +130,21 @@ return {
 				Speed = 1,
 
 				Required_Energy = 60,
-				Walk_Time = 0.3,
+				Walk_Time = 0.1,
 
-				Attack_State_Time = 0.85,
+				Attack_State_Time = 0.5,
 				Animation_Speed = 1,				
 
 				--
+				Sledge_Hammer_Effect = {
+					Type = 'Defense',
+					Value = "-10%",
+					Time = 5,
+				},
+
 				Sledge_Hammer = {
-					Damage = 133,
-					StunTime = 0.5,
+					Damage = 237,
+					StunTime = 0.75,
 					Daze = 264,
 					Affliction_Buildup = 65,
 				},
@@ -158,7 +164,7 @@ return {
 				Animation_Speed = 1,
 				Attack_State_Time = {0.5, 5},
 				
-				Required_Energy = 60,
+				Required_Energy = 45,
 				Hit_Frequency = 14/60,
 				Walk_Time = 5/60,
 
@@ -254,7 +260,7 @@ return {
 		['Quick Assist'] = {
 			Base = {
 				Speed = 1,
-
+				Animation_Speed = 1,
 				Attack_State_Time = 1.75,
 				Hit_Frequency = 4/60,
 				Hit_Data = {

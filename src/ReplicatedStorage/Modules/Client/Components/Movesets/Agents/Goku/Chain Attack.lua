@@ -12,6 +12,8 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.GenericClass)
     
+    
+
 end
 
 return Ability
