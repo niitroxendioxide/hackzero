@@ -6,6 +6,7 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
+local World = require(ReplicatedStorage.Modules.Shared.World)
 local Statics = require(Shared.Database.Statics)
 local Enemies = require(Shared.Libraries.Enemies)
 
@@ -53,17 +54,17 @@ function ServerAbilityClass:Play(Agent: AgentTypes.ServerAgentClass)
 	self:Begin(Agent, {})
 end
 
-function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & AgentTypes.Enemy, Offset, Size, Event, Time: number?, Repeat: boolean?)
-	local At = Caster:GetPivot()
+function ServerAbilityClass:CreateHitbox(Caster: (AgentTypes.ServerAgentClass & AgentTypes.Enemy) | CFrame, Offset, Size, Event, Time: number?, Repeat: boolean?)
+	local At = typeof(Caster) == 'CFrame' and Caster or Caster:GetPivot()
 	ServerHitboxUtil:ForStructuresInZone(Size,  At * CFrame.new(Offset), function(Structure)
 		Event(Structure)
 	end)
 
 	--
-	if tostring(Caster) == 'EnemyClass' then
-		self:CreateAgentHitbox(Caster, Offset, Size, Event, Time, Repeat)
-	elseif tostring(Caster) == 'ServerAgentClass' then
-		self:CreateEnemyHitbox(Caster, Offset, Size, Event, Time, Repeat)
+	if (tostring(Caster) == 'EnemyClass') then
+		self:CreateAgentHitbox(At, Offset, Size, Event, Time, Repeat)
+	elseif tostring(Caster) == 'ServerAgentClass' or typeof(Caster) == 'CFrame' then
+		self:CreateEnemyHitbox(At, Offset, Size, Event, Time, Repeat)
 	end
 
 	--
@@ -89,12 +90,12 @@ function ServerAbilityClass:CreateHitbox(Caster: AgentTypes.ServerAgentClass & A
 	return Obj;
 end
 
-function ServerAbilityClass:CreateEnemyHitbox(Agent: AgentTypes.ServerAgentClass, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.Enemy) -> (), Time: number?, Repeat: boolean?)
+function ServerAbilityClass:CreateEnemyHitbox(At: CFrame, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.Enemy) -> (), Time: number?, Repeat: boolean?)
 	local Targets = {}
 
 	local function Process()
 		local EnemyHitboxes = Enemies:GetHitboxes()
-		local AreaParts 	= Hitbox:GetPartsInArea({WorldCamera.Enemies}, Size, Agent:GetPivot() * CFrame.new(Offset))
+		local AreaParts 	= Hitbox:GetPartsInArea({WorldCamera.Enemies}, Size, At * CFrame.new(Offset))
 
 		for _, Part in AreaParts do
 			local Enemy = EnemyHitboxes[Part]
@@ -126,11 +127,11 @@ function ServerAbilityClass:CreateEnemyHitbox(Agent: AgentTypes.ServerAgentClass
 	end
 end
 
-function ServerAbilityClass:CreateAgentHitbox(Enemy: AgentTypes.Enemy, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> (), Time: number?, Repeat: boolean?)
+function ServerAbilityClass:CreateAgentHitbox(At: CFrame, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> (), Time: number?, Repeat: boolean?)
 	local Targets = {}
 
 	local function Process()
-		ServerHitboxUtil:ForAgentsInZone(Size, Enemy:GetPivot() * CFrame.new(Offset), function(Target: AgentTypes.ServerAgentClass, ...)
+		ServerHitboxUtil:ForAgentsInZone(Size, At * CFrame.new(Offset), function(Target: AgentTypes.ServerAgentClass, ...)
 			if Targets[Target] then
 				return
 			end
@@ -228,6 +229,65 @@ function ServerAbilityClass:Begin(Agent: AgentTypes.ServerAgentClass, Frames: Se
 	end
 
 	return AbilitySequence
+end
+
+function ServerAbilityClass:CreateMovingHitbox(
+	Caster: Types.Caster,
+	From: CFrame, 
+	Size: vector, 
+	Speed: number, 
+	Max_Time: number, 
+	Hit_Function: (Target: AgentTypes.Enemy) -> ()
+): Types.MovingHitboxObject
+	
+	local ClassObject = {
+		CFrame = From,
+		Speed = Speed,
+		Time_Alive = 0,
+		Max_Time = Max_Time,
+		Connection = nil,
+		Size = Size,
+		Active = true,
+	}
+
+	ClassObject.Destroy = function()
+		if ClassObject.Connection then
+			ClassObject.Connection:Disconnect()
+		end
+
+		ClassObject.Active = false
+	end
+
+	ClassObject.Connection = RunService.PostSimulation:Connect(function(Delta: number)  
+		local WorldSpeed = World:GetSpeed()
+		if ClassObject.Time_Alive > ClassObject.Max_Time then
+			ClassObject:Destroy()
+
+			return;
+		end
+
+		if not ClassObject.Active then
+			return;
+		end
+
+		local Difference = Delta * ClassObject.Speed * WorldSpeed
+
+		self:CreateHitbox(ClassObject.CFrame, vector.zero, vector.create(ClassObject.Size.X, ClassObject.Size.Y, Difference), Hit_Function)
+
+		--
+		ClassObject.CFrame = ClassObject.CFrame * CFrame.new(0, 0, -Difference)
+		ClassObject.Time_Alive += (Delta * WorldSpeed)
+	end)
+
+	ClassObject.GetPivot = function()
+		return ClassObject.CFrame
+	end
+
+	ClassObject.PivotTo = function(_, At: CFrame)
+		ClassObject.CFrame = At;
+	end
+
+	return ClassObject :: Types.MovingHitboxObject
 end
 
 

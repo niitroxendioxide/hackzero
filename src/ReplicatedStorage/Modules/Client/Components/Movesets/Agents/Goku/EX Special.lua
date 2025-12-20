@@ -78,15 +78,15 @@ local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Enemies
 		local Start = (idx - 1) * 0.25
 
 		Attack:Add(0.75 + Start, function()
-			Ability:Effect("Teleport", Caster)
-
+			
 			--local Previous = Caster:GetPivot() -- to use for effect later :p
 			local EnemyPosition = EnemyObject:GetPivot()
 			local Direction = CFrame.lookAt(EnemyPosition.Position, Center).LookVector
-
+			
 			local LerpGoal = CFrame.lookAlong(EnemyPosition.Position - Direction*6, Direction)
 			Ability:MatchAirborneHeights(Caster, EnemyObject, 0.5, true)
 			Caster:PivotTo(LerpGoal)
+			Ability:Effect("Teleport", Caster)
 		end)
 
 		Attack:Add(0.8 + Start, function()

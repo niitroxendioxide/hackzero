@@ -18,7 +18,7 @@ function Shoot(Caster)
 
     --
 
-    local At = Caster:GetPivot() * CFrame.new(0, 0, -3.35)
+    local At = Caster:GetPivot() * CFrame.new(0, 0.078, -4.41)
     local Beam = EffectUtil:Create(GokuAssets.Kamehameha.Beam, 2.5)
     local Aura = EffectUtil:Create(GokuAssets.Kamehameha.Aura, 2.5)
     local Length = 80 

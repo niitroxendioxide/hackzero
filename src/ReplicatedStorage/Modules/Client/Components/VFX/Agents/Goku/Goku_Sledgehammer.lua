@@ -20,7 +20,7 @@ return function(
     --
     if State == false then
         local SledgeHammerVFX = Effects:Create(Assets.Goku.SledgehammerCharge, 10)
-        SledgeHammerVFX:PivotTo(Caster:GetPivot())
+        SledgeHammerVFX:PivotTo(Caster:GetModel():GetPivot())
         Effects:Weld(SledgeHammerVFX, Caster:GetModel().PrimaryPart)
 
         Effects:Emit(SledgeHammerVFX)
@@ -29,7 +29,7 @@ return function(
         while act_time <= 0.18 do
             act_time += Effects:Wait()
 
-            local Cast = Effects:CastMapRaycast(Caster:GetPivot(), vector.create(0, -1000))
+            local Cast = Effects:CastMapRaycast(Caster:GetModel():GetPivot(), vector.create(0, -3))
             if not Cast then
                 Effects:Toggle(SledgeHammerVFX.Ground, false)
             else

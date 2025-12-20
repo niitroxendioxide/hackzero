@@ -151,6 +151,12 @@ export type MovesetClass = {
 	SetAbilityInformation: (self: MovesetClass, Data: {}) -> (),
 }
 
+export type MovingHitboxObject = {
+	PivotTo: (self: MovingHitboxObject, At: CFrame) -> (),
+	GetPivot: (self: MovingHitboxObject) -> (),
+	Destroy: (self: MovingHitboxObject) -> (),
+}
+
 export type AbilityHitInfo = {
 	Enemy: Agents.Enemy,
 	Caster: {},
@@ -169,7 +175,7 @@ export type ServerAbilityClass = {
 	__Signal: RBXScriptSignal,
 	__Hit: Default.Signal<AbilityHitInfo>,
 
-	CreateHitbox: (self: ServerAbilityClass, Agent: Caster, Offset: Vector3, Size: Vector3, Event: (Enemy: Agents.Enemy) -> ()) -> ({
+	CreateHitbox: (self: ServerAbilityClass, Agent: Caster & CFrame, Offset: Vector3, Size: Vector3, Event: (Enemy: Agents.Enemy) -> ()) -> ({
 		Debug: () -> (),
 	}),
 
@@ -183,12 +189,52 @@ export type ServerAbilityClass = {
 	Begin: (self: ServerAbilityClass, Agent: Caster, SequenceFrames: SequenceFrames) -> (Sequence),
 
 	Effect: (self: ServerAbilityClass, Name: string, Params: {any}, Targets: boolean | {}) -> (),
+
+	--[[
+		Loops through all the other agents in the team, useful for giving buffs, debuffs or applying specific attacks
+
+	]]
 	ForOtherAgents: (self: ServerAbilityClass, Agent: Caster, Callback: (Agent: Caster, Data: {IsNext: boolean}) -> ()) -> (),
+
+	--[[
+		Hit a target and deal specific amounts of damage and daze.
+
+		@param Caster The one dealing the damage
+		@param Enemy The one receiving damage
+		@param Hit All the data conforming to the damage to be dealt, along with stun, affliction, etc. See "HitEnemyData"
+	]]
 	Hit: (self: ServerAbilityClass, Agent: Caster, Enemy: Agents.Enemy, Hit: HitEnemyData) -> (number),
 
+	--[[
+		Useful for projectile-like moves, creates a hitbox that moves on its own, for a set amount of time, and at a specific speed.
+
+		@param Caster Exclusively Agents can create hitboxes as of now, as non-agent hitboxes will hit enemies
+		@param From CFrame, origin of the projectile and it's direction too
+		@param Size Vector3
+		@param Speed number Speed in studs/second
+		@param Max_Time number The time after which the projectile will disappear
+		@param Hit_Function fn(**Target**) -> () The handler of the hit event
+	]]
+	CreateMovingHitbox: (
+		self: ServerAbilityClass, 
+		Caster: Caster,
+		From: CFrame, 
+		Size: vector, 
+		Speed: number, 
+		Max_Time: number, 
+		Hit_Function: (Target: Agents.Enemy) -> ()
+	) -> MovingHitboxObject,
+
+	--[[
+		@internal
+	]]
 	UseAttackData: (self: ServerAbilityClass, Sequence: Sequence, Caster: Caster, Data: {[number]: number}, Hitbox_Data: HitboxAttackData) -> (),
 
 	FromData: (self: ServerAbilityClass, Key: Default.AbilityDataKey, SubKey: string?, Level: number?) -> (any),
+	
+	--[[
+		@internal
+	]]
 	SetData: (self: ServerAbilityClass, Data: {}) -> (),
 }
 

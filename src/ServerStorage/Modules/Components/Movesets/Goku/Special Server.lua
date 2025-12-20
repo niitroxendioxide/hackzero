@@ -18,18 +18,23 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name);
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
 
+
+	local KiBlastData = Ability:FromData('Ki_Blast_Hit', nil, SkillLevel)
+
+	local function CreateBlast()
+		local Object do
+			Object = Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * CFrame.new(0, 0, -2.5), vector.create(4, 4), 120, 1, function(Target)  
+				Object:Destroy()
+
+				Ability:Hit(Caster, Target, KiBlastData)
+			end)
+		end
+	end
+
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time'))
 		end,},
-
-		{.15, function()
-			if InMode and Context.Target then
-				local At = Context.Target:GetPivot() * CFrame.new(0, 0, -3) * CFrame.Angles(0, math.pi, 0);
-
-				Caster:PivotTo(At);
-			end
-		end},
 
 		{.267, function()
 			
@@ -59,35 +64,25 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 
 			elseif InMode then
 
-				local Data = Ability:FromData('Sledge_Hammer', nil, SkillLevel)
-
-				Ability:CreateHitbox(Caster, Vector3.zAxis*-3.5, vector.one * 6, function(Enemy: Types.Enemy) 
-					local _, NearestEnemyExcludingHit = Enemies:GetNearestEnemy(Enemy:GetPivot().Position, 100, true, {Enemy})
-					local RelativeDirection = if NearestEnemyExcludingHit then
-						Enemy:GetPivot():VectorToObjectSpace(CFrame.lookAt(Enemy:GetPivot().Position, NearestEnemyExcludingHit:GetPivot().Position).LookVector)
-					else
-						vector.create(0, 0, 1)
-					
-
-					Ability:Hit(Caster, Enemy, {
-						Damage = Data.Damage,
-						Affliction = "Physical",
-						Stun = Data.StunTime,
-						Daze = Data.Daze,
-						HitType = "Blunt",
-						Knockback = {
-							RelativeDirection,
-							15,
-							0.3,
-						},
-						Affliction_Buildup = Data.Affliction_Buildup,
-					})
-
-				end)
+				CreateBlast()
 
 			else error("This shouldn't ever happen really") end
 
+		end},
+
+		{0.4, function()
+			if InMode then
+				CreateBlast()
+			end
+		end},
+
+		{0.517, function()
+			if InMode then
+				CreateBlast()
+			end
 		end}
+
+
 	})
 end
 

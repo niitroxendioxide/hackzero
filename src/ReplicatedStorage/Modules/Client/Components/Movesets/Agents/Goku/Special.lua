@@ -4,13 +4,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+--local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Types = require(Shared.Types.Agents)
 local AbilityClass = require(Client.Classes.Ability)
 
 --
 local Ability = AbilityClass.new()
+
+Ability:SetTargetFinder(function(Caster: Types.AgentClass)  
+	return Enemies:GetNearestEnemy(Caster:GetPivot().Position, 150, true)
+end)
 
 function Base(Caster: Types.AgentClass)		
 	local Attack_Time = Ability:FromData("Attack_State_Time")
@@ -40,46 +44,34 @@ function Base(Caster: Types.AgentClass)
 	})
 end
 
-function InMode(Caster: Types.AgentClass)
+function InMode(Caster: Types.AgentClass, Target: Types.ClientEnemy)
 	local Attack_Time = Ability:FromData("Attack_State_Time")
-
-	-- since this is a teleportmove, we need to wait for the server response;
-	local InitialCF: CFrame? = nil;
-	local ActiveTrack;
 
 	Ability:Begin(Caster, {
 		{0, function(self)
-			ActiveTrack = Ability:PlayAnimation(Caster, "Goku.Abilities.Special.TpPrep", {Fade = .03, Active_Time = Attack_Time})
+			Ability:PlayAnimation(Caster, "Goku.Abilities.Special.Ki_Blasts", {Fade = .03, Active_Time = Attack_Time, Speed = 0.77})
 			Caster:SwitchState('Attacking', Attack_Time)
-			InitialCF = Caster:GetPivot();
-
-			-- yield before any other event
-			Caster:AwaitServerTriggeredAction(GameEnum.Replication.PivotTo);
-
-			
-			Ability:Effect("Teleport", InitialCF)
 		end},
 
-
-		{1/60, function()
-			-- this should occur one frame after the teleport
-			-- play an effect at InitialCF;
-			if ActiveTrack then
-				ActiveTrack:Stop();
-			end
-
-			Ability:PlayAnimation(Caster, "Goku.Abilities.Special.AfterTpKick", {Fade = .03, Active_Time = Attack_Time, Speed = 1 / 1.3})
-
-			Ability:Effect("Glow", Caster)
+		{0.267, function()
+			-- ki blast
+			--Caster:LookAtTarget()
+			Ability:Effect("Goku_KiBlast", Caster, false)
 		end},
+
+		{0.4, function()
+			-- ki blast
+			Ability:Effect("Goku_KiBlast", Caster, true)
+		end},
+
+		{0.533, function()
+			-- ki blast
+			Ability:Effect("Goku_KiBlast", Caster, false)
+		end}
 	})
 end
 
-Ability:SetTargetFinder(function(Caster)
-	return Enemies:GetNearestEnemy(Caster:GetPivot().Position, 35);
-end)
-
-function Ability:Play(Caster: Types.AgentClass)
+function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 	local IsInMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
 	
 	-- // default

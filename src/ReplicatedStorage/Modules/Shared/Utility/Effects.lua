@@ -1,6 +1,7 @@
 --
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService('TweenService')
 
 --
@@ -196,6 +197,28 @@ function EffectUtil:ReverseEmitter(Particle: ParticleEmitter)
 	Particle.EmissionDirection = Face
 end
 
+function EffectUtil:TweenModel(Model: Model, ScaleGoal: number, Time: number, Style: string?, Direction: string?)
+	
+	task.spawn(function()
+		local StartScale = Model:GetScale()
+		local ActiveTime = 0;
+		local EaseStyle = Enum.EasingStyle[Style or 'Quad']
+		local EaseDirection = Enum.EasingDirection[Direction or 'Out']
+
+		while ActiveTime <= Time do
+			ActiveTime += EffectUtil:Wait()
+
+			local TotalTime = ActiveTime / Time;
+			local Alpha = TweenService:GetValue(TotalTime, EaseStyle, EaseDirection)
+
+			Model:ScaleTo(StartScale + (ScaleGoal - StartScale) * Alpha)
+		end
+			
+
+	end)
+
+end
+
 function EffectUtil:Emit(Asset: Instance, Light: boolean?): ()
 	local WorldSpeed = World:GetSpeed() :: number
 
@@ -266,6 +289,37 @@ function EffectUtil:ShakeCamera(Preset: string)
 	NewCamShake:Shake(CameraShaker.Presets[Preset]);
 
 	return NewCamShake;
+end
+
+function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: () -> (boolean))
+	local Loop do
+		local Max_Time = 0;
+		local Params = World:GetEnemyColliderParams(true)
+
+		Loop = RunService.PostSimulation:Connect(function(Delta: number)  
+			local DeltaTime = Delta * World:GetSpeed()
+			Max_Time += DeltaTime
+
+			if Max_Time >= Time then
+				Loop:Disconnect()
+				return;
+			end
+
+			Model:PivotTo(Model:GetPivot() * CFrame.new(0, 0, -DeltaTime * Speed))
+
+			--
+			local PartBounds = workspace:GetPartBoundsInBox(Model:GetPivot(), Size, Params)
+			if #PartBounds > 0 then
+				local Stop = Hit()
+
+				if Stop then
+					Loop:Disconnect()
+
+					return;
+				end
+			end
+		end)
+	end
 end
 
 function EffectUtil:ForModelParts(Model: Model, Functions: { [string]: (BasePart) -> () })

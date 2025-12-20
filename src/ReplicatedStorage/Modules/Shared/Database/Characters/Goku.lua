@@ -142,6 +142,16 @@ return {
 					Time = 5,
 				},
 
+				Ki_Blast_Hit = {
+					Damage = 130,
+					Affliction = "Energy",
+					Stun = 0.4,
+					Daze = 30,
+					HitType = "Blunt",
+					HitsAirborne = true,
+					Affliction_Buildup = 70,
+				},
+
 				Sledge_Hammer = {
 					Damage = 237,
 					StunTime = 0.75,
@@ -151,6 +161,12 @@ return {
 			},
 
 			Upgrade = {
+				Ki_Blast_Hit = {
+					Damage = 3.75,
+					Daze = 1,
+					Affliction_Buildup = 3,
+				},
+
 				Sledge_Hammer = {
 					Damage = 3.75,
 					Daze = 2.25,
