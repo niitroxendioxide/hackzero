@@ -50,11 +50,10 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 	local AgentData = SharedData:GetAgentData(AgentOwner, CharacterName)-- or {Level = 1, Name = CharacterName, Artifacts = {}, Drive = nil}
 
 	local CharacterInstance = AgentClass.new(CharacterName, AgentData.Level)
-	CharacterInstance:Init(UserId)
+	
 
 	--CharacterInstance.__Controller:GetCollider().Transparency = 0.9
 
-	CharacterInstance.__Character.__Appearance.__Orientation.Responsiveness = 50
 	CharacterLibrary:Add(UserId, CharacterInstance)
 	CharacterInstance:Stop()
 
@@ -78,6 +77,9 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 			CharacterInstance.__Items:BindDrive(DriveObj)
 		end
 	end
+
+	CharacterInstance:Init(UserId)
+	CharacterInstance.__Character.__Appearance.__Orientation.Responsiveness = 50
 
 	if CharacterLibrary:GetCurrent(UserId) ~= CharacterInstance then
 		CharacterInstance:SetVisible(false)

@@ -102,9 +102,15 @@ function AgentClass:GetStat(Key: string)
 	local Base = self.__Status:GetStat(Key)
 	local Effects = self.__Status:GetStatEffects(Key)
 	local Added = self.__Items:GetTotalAddedStat(Key)
+	local GearAdded = self.__Gear:GetAddedGearStat(Key)
 
-	local Total = Base + Added + Effects
+	local Total = Base + Added + Effects + GearAdded
+	
 	return Total
+end
+
+function AgentClass:SetMaxHealth(Amount: number, Fill: boolean)
+	self.__Status:SetMaxHealth(Amount, Fill)
 end
 
 function AgentClass:GetAnimator(): Types.AnimatorController
@@ -214,6 +220,8 @@ function AgentClass:Init(PlayerId: number)
 			self.__Player_Assigned = Player
 		end
 	end
+
+	self:SetMaxHealth(self:GetStat("Health"), true)
 
 	self.__Main_Thread = RunService.Heartbeat:Connect(function(Delta: number)
 		self.__Status:Update(Delta)

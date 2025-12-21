@@ -124,8 +124,12 @@ function ServerAgentClass.GetStat(self: Types.ServerAgentClass, Name: Types.Stat
 	local ItemAdded = self.__Items:GetTotalAddedStat(Name)
 	local GearAdded = self.__Gear:GetAddedGearStat(Name)
 
+	
 	local Total = Base + ItemAdded + GearAdded + Effects
-
+	if Name == 'Attack' then
+		print(Total)
+	end
+	
 	return Total
 end
 
@@ -172,6 +176,8 @@ function ServerAgentClass.Init(self: Types.ServerAgentClass, Player: Player)
 
 	--
 	local ReplicationClock = os.clock()
+
+	self:SetMaxHealth(self:GetStat("Health"), true)
 
 	self.__Main_Thread = RunService.Heartbeat:Connect(function(Delta: number)
 		self.__Status:Update(Delta)
@@ -412,6 +418,10 @@ end
 
 function ServerAgentClass:Heal(...)
 	return self.__Status:Heal(...)
+end
+
+function ServerAgentClass:SetMaxHealth(Amount: number, Fill: boolean)
+	self.__Status:SetMaxHealth(Amount, Fill)
 end
 
 function ServerAgentClass:GetHealth(): (number, number)

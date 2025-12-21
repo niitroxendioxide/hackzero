@@ -11,7 +11,7 @@ return {
 
     Main_Stat = {
         StatName = "Attack", -- To access % attacks, you must search with %%, double percent
-        Base = 280,
+        Base = 520,
         UpgradePerLevel = 4.25,
     },
 

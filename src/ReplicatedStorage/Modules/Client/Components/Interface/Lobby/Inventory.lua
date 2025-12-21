@@ -19,6 +19,7 @@ local ItemDatabase = require(Database.Items)
 local ComponentClass = require(Client.Classes.Interface)
 local DrivesDatabase = require(Database.Drives)
 local ArtifactDatabase = require(Database.Artifacts)
+local UIUtils = require(Client.Libraries.UIUtils)
 
 local Component = ComponentClass.new("Inventory", "Lobby")
 
@@ -65,6 +66,8 @@ local function ShowItemInfo(ItemId: string?)
     DataFrame.ItemName.Text = string.gsub(OtherData.DisplayName or ItemInfo.Name, 'AgentToken:', '')
 
     DataFrame.ItemInfo.Visible = ItemType == 'Item'
+    DataFrame.ItemInfo.Viewport.WorldModel:ClearAllChildren()
+
     if ItemType == 'Drive' then
         --
         DataFrame.LvlBar.Visible = true
@@ -76,6 +79,7 @@ local function ShowItemInfo(ItemId: string?)
         DataFrame.ArtLvl.Visible = true
 
         DataFrame.ArtLvl.Text = `Level: <b>{ItemInfo.Level}</b>`;
+        UIUtils:CreateArtifactModel(ItemInfo.Name, ItemInfo.Slot, DataFrame.ItemInfo.Viewport, ItemId)
         --
     else
         DataFrame.LvlBar.Visible = false
@@ -248,9 +252,12 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
         InventoryObject.ItemIcon.Visible = false
     else
         InventoryObject.DriveIcon.Visible = false
-        InventoryObject.ItemIcon.Visible = true
-
-        if ItemInfo and ItemInfo.Icon then
+        
+        local HasModel = UIUtils:CreateArtifactModel(ItemData.Name, ItemData.Slot, InventoryObject.Viewport, ItemId)
+        if HasModel then
+            InventoryObject.ItemIcon.Visible = false
+        elseif (ItemInfo and ItemInfo.Icon)then
+            InventoryObject.ItemIcon.Visible = true
             InventoryObject.ItemIcon.Image = Prefix .. ItemInfo.Icon
         end
     end

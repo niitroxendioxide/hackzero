@@ -11,6 +11,7 @@ ClientGearStore.__index = ClientGearStore
 function ClientGearStore.new(): AgentTypes.ClientGearManager
     local self = setmetatable({}, ClientGearStore)
     self.__Gears = {}
+    self.__Gear_Calculations = {}
 
     return self
 end
@@ -71,7 +72,23 @@ function ClientGearStore.RemoveGear(self: AgentTypes.ClientGearManager, GearName
 end
 
 function ClientGearStore.GetAddedGearStat(self: AgentTypes.ClientGearManager, Stat: AgentTypes.Stat)
-    return 0
+    local Amount = 0
+
+    if self.__Gear_Calculations[Stat] then
+        return self.__Gear_Calculations[Stat]
+    end
+
+    for _, Gear in self.__Gears do
+        local Data = GearDatabase:GetGearData(Gear.Name)
+
+        if Data.Mods[Stat] then
+            Amount += Data.Mods[Stat] * Gear.Amount
+        end
+    end
+
+    self.__Gear_Calculations[Stat] = Amount
+
+    return Amount
 end
 
 return ClientGearStore

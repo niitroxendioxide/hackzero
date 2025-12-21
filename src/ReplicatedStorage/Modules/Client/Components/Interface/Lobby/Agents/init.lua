@@ -10,6 +10,7 @@ local Assets = ReplicatedStorage.Assets
 local World = workspace:FindFirstChild("World")
 
 
+local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Types = require(Shared.Types)
@@ -531,7 +532,7 @@ function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
         SelectArtifact(NewObject, Artifact)
     end)
 
-    local HasModel = CreateArtifactModel(Artifact.Name, Artifact.Slot, NewObject.Viewport)
+    local HasModel = UIUtils:CreateArtifactModel(Artifact.Name, Artifact.Slot, NewObject.Viewport, Artifact.Id)
     NewObject.ItemIcon.Visible = not HasModel
 
     NewObject.Parent = Holder
@@ -627,9 +628,10 @@ function Component:ShowArtifactInfo(ArtifactId: string?)
         local Tick = PerUpg and PerUpg[Artifact.Tier] or 0
         local Extras = TotalUpgrades - 1
 
+        local Value = Tick * TotalUpgrades
         local NewAsset = Assets.Interface.Agents.Items.ArtifactSubStat:Clone()
         NewAsset.SubName.Text = string.gsub(StatName, '_', " ")
-        NewAsset.Value.Text = string.format("%.f2", Tick * TotalUpgrades)
+        NewAsset.Value.Text = Value
         NewAsset.Amount.Visible = Extras > 0
         NewAsset.Amount.Text = '+'..Extras
         NewAsset.Parent = DataFrame.SubStatList
@@ -893,46 +895,6 @@ function Component:SelectArtifactSlot(SlotId: number?)
     end)
 end
 
-function CreateArtifactModel(Artifact_Name: string, SlotId: number, Parent: ViewportFrame): boolean
-    
-    local ArtifactsFolder = Assets:FindFirstChild('Items'):FindFirstChild('Artifacts')
-    local Target = ArtifactsFolder:FindFirstChild(Artifact_Name)
-
-    if not Target then return false end
-
-    local ClonedModel;
-    if Target:IsA('Folder') then
-        if Target:FindFirstChild(tostring(SlotId)) then
-            ClonedModel = Target[tostring(SlotId)]:Clone()
-        else
-            local Children = Target:GetChildren()
-            ClonedModel = Children[math.random(1, #Children)]
-        end
-
-    elseif Target:IsA('Model') then
-        ClonedModel = Target:Clone()
-    end
-
-    Parent.WorldModel:ClearAllChildren()
-
-    ClonedModel:PivotTo(CFrame.new())
-    ClonedModel.Parent = Parent.WorldModel
-
-    if Parent:FindFirstChild('Camera') then
-        Parent.Camera:Destroy()
-    end
-
-    --
-    local CamOffset = Target:GetAttribute('CameraOffset') or Vector3.new(0, 0, -5)
-    local NewCamera = Instance.new("Camera")
-    NewCamera.FieldOfView = 10
-    NewCamera.CFrame = CFrame.new(CamOffset) * CFrame.Angles(0, math.pi, 0)
-    NewCamera.Parent = Parent
-
-    Parent.CurrentCamera = NewCamera
-
-    return true
-end
 
 function Component:UpdateSlotInfo(Agent: string, SlotId: number, ArtifactId: string?): ()
     local MainFrame = Component:GetFrame()
@@ -963,7 +925,7 @@ function Component:UpdateSlotInfo(Agent: string, SlotId: number, ArtifactId: str
         SlotFrame.Item.Tier.Text = TierLetters[Artifact.Tier :: number]
         SlotFrame.Item.Level.Text = `Lvl. {Artifact.Level}`
 
-        local HasModel = CreateArtifactModel(Artifact.Name, SlotId, SlotFrame.Item.Viewport)
+        local HasModel = UIUtils:CreateArtifactModel(Artifact.Name, SlotId, SlotFrame.Item.Viewport, ArtifactId)
         SlotFrame.Item.ItemIcon.Visible = not HasModel
 
         SlotFrame.SlotNum.Visible = false
@@ -1079,8 +1041,12 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
         end
 
         local NewFrame = Assets.Interface.Agents.Stats.Stat:Clone()
-        NewFrame.StatName.Text = string.gsub(Stat, "_", " ")
-        NewFrame.StatValue.Text = ShownValue .. (table.find(AddPercent, Stat) and '%' or '')
+        NewFrame.StatName.Text = (string.gsub(Stat, "_", " "))
+        NewFrame.StatValue.Text = math.floor(ShownValue * 10) / 10 .. (table.find(AddPercent, Stat) and '%' or '')
+        if Stat == 'Energy_Regeneration' then
+            NewFrame.StatValue.Text = NewFrame.StatValue.Text.."/s"
+        end
+
         NewFrame.Parent = Frame.Stats.ValuesArea.Holder
     end
 
