@@ -57,6 +57,26 @@ local function RefreshUltimateIcon(AgentName: string)
     ObjectInFrame.Icon.Image = IconDatabase.PREFIX .. AgentUltIcon.Id
 end
 
+local function SetupKey(Object: Frame)
+    local SkillNameType = Object.Name
+    local KeyBinding = Inputs:GetEnumFromKey(SkillNameType)
+    if not KeyBinding then return end
+
+    local KeyEnum = (typeof(KeyBinding) == 'table' and KeyBinding[#KeyBinding] or KeyBinding) :: EnumItem
+    local KeyName = FixKeyName(KeyEnum.Name)
+    local KeyIcon = IconDatabase.Keybinds[KeyEnum]
+    Object.Key.BG.KeyText.Text = string.gsub(KeyName, 'Button', '');
+
+    if KeyIcon then
+        Object.Key.BG.KeyText.Visible = false
+    Object.Key.Icon.Visible = true
+        Object.Key.Icon.Image = IconDatabase.PREFIX .. KeyIcon
+    else
+        --Object.Key.BG.Size = UDim2.fromScale(KeySize, 0.3)
+        Object.Key.Icon.Visible = false
+    end
+end
+
 -- Create the skill object on screen
 local function CreateSkillObject(Name: string)
     if not FramePositions[Name] then
@@ -67,29 +87,37 @@ local function CreateSkillObject(Name: string)
     local KeyBinding = Inputs:GetEnumFromKey(Name)
     if not KeyBinding then return end
 
-    local KeyEnum = (typeof(KeyBinding) == 'table' and KeyBinding[#KeyBinding] or KeyBinding) :: EnumItem
-    local KeyName = FixKeyName(KeyEnum.Name)
-
     local InterfaceFolder = Assets:FindFirstChild('Interface') :: Types.GenericFolderContainer<Types.FrameButtonStructure>
     local ObjName = InterfaceFolder.Combat.Skill:FindFirstChild(Name == 'Ultimate' and 'UltFrame' or 'SkillFrame')
     if not ObjName then return end
 
     local Object = ObjName:Clone() :: Types.FrameButtonStructure
-    local KeySize = 0.3 + (0.04 * #KeyName)
+    --local KeySize = 0.48 + (0.0667 * #KeyName)
 
     local Icon = (IconDatabase.Skills[Name] or 0)
+
     Object.Name = Name
     Object.UIScale.Scale = FrameScales[Name] or 1
     Object.Icon.Image = IconDatabase.PREFIX .. Icon
-    Object.Key.Size = UDim2.fromScale(KeySize, 0.3)
-    Object.Key.KeyBind.Text = KeyName
+    SetupKey(Object)
     Object.Position = FramePositions[Name]
     Object.Parent = MainFrame.Buttons
+    Object:SetAttribute('Active', true)
 
     if Name == 'Ultimate' then
         local CurrentAgentName = AgentsLib:GetCurrentName(Player:GetAttribute('ReplicationId') :: number)
 
         RefreshUltimateIcon(CurrentAgentName)
+
+        task.spawn(function()
+            local Angle = 0;
+            while true do
+                local Delta = task.wait()
+                Angle += Delta * math.pi*0.5
+
+                Object.Meter.Fill.Rotation = math.sin(Angle) * 7
+            end
+        end)
     end
 end
 
@@ -130,8 +158,9 @@ local function SetUltBarFill(Coefficient: number)
     local Offset = Vector2.new(0, 0.5 - Coefficient)
 
     EffectUtil:Tween(FillStroke.UIGradient, {.2, 'Sine'}, {Offset = Offset})
-    EffectUtil:Tween(UltBar.Meter.Fill, {.2, 'Sine'}, {Size = UDim2.fromScale(1, Coefficient)})
+    EffectUtil:Tween(UltBar.Meter.Fill, {.2, 'Sine'}, {Size = UDim2.fromScale(1.25, 0.1 + Coefficient)})
     EffectUtil:Tween(UltBar.Meter.Fill, {.2}, {BackgroundColor3 = Color})
+    UltBar.Meter.Fill.UIStroke.Color = Color
     FillStroke.UIGradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
         ColorSequenceKeypoint.new(0.499, Color3.new(1, 1, 1)),
@@ -148,6 +177,7 @@ local function SetUltBarFill(Coefficient: number)
         local Rotated = H - 25
         if Rotated < 0 then Rotated += 360 end
 
+        UltBar.Meter.Fill.UIStroke.Enabled = false
         EffectUtil:Tween(UltBar.UIStroke, {.3}, {Color = Color})
         UltBar.UIStroke.UIGradient.Color = ColorSequence.new{
             ColorSequenceKeypoint.new(0, Color3.fromHSV(Rotated/360, 50/255, 200/255)),
@@ -156,8 +186,8 @@ local function SetUltBarFill(Coefficient: number)
 
         UltBar.UIScale.Scale = .8
         EffectUtil:Tween(UltBar.UIScale, {.25, 'Back'}, {Scale = FrameScales.Ultimate})
-        UltBar.UICorner.CornerRadius = UDim.new(.5, 0)
-        EffectUtil:Tween(UltBar.UICorner, {.3, 'Back'}, {CornerRadius = UDim.new(.3)})
+        UltBar.UICorner.CornerRadius = UDim.new(.3, 0)
+        EffectUtil:Tween(UltBar.UICorner, {.3, 'Back'}, {CornerRadius = UDim.new(.5)})
 
         Thread = task.spawn(function()
             local Angle = 0
@@ -166,14 +196,15 @@ local function SetUltBarFill(Coefficient: number)
             while true do
                 local Delta = task.wait()
 
-                UltBar.UIStroke.Thickness = 3.5 - math.cos(math.rad(Angle)) * 1.5
+                UltBar.UIStroke.Thickness = 0.08 + math.cos(math.rad(Angle)) * 0.02
                 Angle += Delta * 280
                 Rotation += Delta * 133
                 Grad.Rotation = Rotation
             end
         end)
     elseif Coefficient < 1 then
-        EffectUtil:Tween(UltBar.UIStroke, {.3}, {Thickness = 3, Color = Color3.new()})
+        UltBar.Meter.Fill.UIStroke.Enabled = true
+        EffectUtil:Tween(UltBar.UIStroke, {.3}, {Thickness = 0.05, Color = Color3.new()})
     end
 
     LastCoefficient = Coefficient
@@ -258,14 +289,26 @@ function Component:DeletePopUp()
         ToggleButton("Swap_Forth", true)
 
         EffectUtil:Tween(AgentPopup, {.25}, {GroupTransparency = 1})
-        EffectUtil:Tween(AgentPopup.UIStroke, {.25}, {Transparency = 1})
+        for _, UIStroke in AgentPopup:GetChildren() do
+            if UIStroke:IsA("UIStroke") then
+                EffectUtil:Tween(UIStroke, {.25}, {Transparency = 1})
+            end
+        end
         EffectUtil:Tween(AgentPopup.UIScale, {.3, 'Quad', 'In'}, {Scale = 0.6})
     end
 end
 
 function Component:Init()
     --
-    --local MainFrame = Component:GetFrame()
+    local MainFrame = Component:GetFrame()
+
+    Inputs:OnInputTypeChanged(function(Type: Enum.UserInputType)  
+        for _, Button in MainFrame.Buttons:GetChildren() do
+            if Button:IsA('Frame') then
+                SetupKey(Button)
+            end
+        end
+    end)
 
     --
     for ButtonName in FramePositions do

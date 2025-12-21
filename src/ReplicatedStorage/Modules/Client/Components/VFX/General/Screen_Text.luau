@@ -1,9 +1,14 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local TextCache = {}
 
 return function(Text: string, Length: number)
+	if not Settings:Get("ScreenTextEffects", 'Graphics') then
+		return
+	end
+
     local Frame = Effects:FromGui(Text)
 	if not Frame then
         return;

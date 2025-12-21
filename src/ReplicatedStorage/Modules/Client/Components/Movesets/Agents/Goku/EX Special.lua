@@ -65,6 +65,15 @@ end
 
 local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, EnemiesToCycle: {[any]: any})
 	--
+	Attack:Add(0, function()
+		Ability:PlayAnimation(Caster, 'Goku.Abilities.Special.EX_Slam', {
+			Active_Time = 0.65,
+			Fade = 0.1,
+			Weight = 1,
+			Speed = 1,
+		})
+	end)
+
 	Attack:Add(0.35, function()
 		Ability:Effect("Goku_GroundSlam", Caster)
 	end)
@@ -77,25 +86,34 @@ local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Enemies
 		local EnemyObject = Enemies:GetEnemy(EnemiesToCycle[idx])
 		local Start = (idx - 1) * 0.25
 
+		local Anim_Id_Random = math.random(1, 3)
 		Attack:Add(0.75 + Start, function()
-			
-			--local Previous = Caster:GetPivot() -- to use for effect later :p
+			if idx == 1 then
+				Ability:Effect("Teleport", Caster)
+			end
+
 			local EnemyPosition = EnemyObject:GetPivot()
 			local Direction = CFrame.lookAt(EnemyPosition.Position, Center).LookVector
 			
 			local LerpGoal = CFrame.lookAlong(EnemyPosition.Position - Direction*6, Direction)
-			Ability:MatchAirborneHeights(Caster, EnemyObject, 0.5, true)
+			Ability:MatchAirborneHeights(Caster, EnemyObject, 0.75, true)
 			Caster:PivotTo(LerpGoal)
 			Ability:Effect("Teleport", Caster)
-		end)
 
-		Attack:Add(0.8 + Start, function()
-			Ability:PlayAnimation(Caster, 'Goku.Abilities.Special.EX_Kick', {
+			Ability:PlayAnimation(Caster, 'Goku.Abilities.Special.EX_Mode_'..Anim_Id_Random, {
 				Active_Time = 0.75,
 				Fade = 0.1,
 				Weight = 1,
 				Speed = 1,
 			})
+		end)
+
+		Attack:Add(0.85 + Start, function()
+			if Anim_Id_Random > 1 then
+				Ability:Effect("Goku_M1_1", Caster)
+			else
+				Ability:Effect("Goku_M1_4", Caster, 2)
+			end
 		end)
 
 		Attack:Add(0.9 + Start, function()

@@ -8,7 +8,7 @@ local ComponentClass = require(Client.Classes.Interface)
 local UIStates = require(Client.States.Interface)
 local EffectUtil = require(Shared.Utility.Effects)
 
-local IngameMenu = ComponentClass.new("IngameMenu", "MenuGui", {KeyToBind = Enum.KeyCode.M})
+local IngameMenu = ComponentClass.new("IngameMenu", "MenuGui", {KeyToBind = "OpenMenu"})
 local States = {
     CachedTabs = {},
     CurrentPage = "",

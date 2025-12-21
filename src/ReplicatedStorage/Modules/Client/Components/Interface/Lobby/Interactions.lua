@@ -49,7 +49,7 @@ function Interactions:Init()
     local Join = Interactions:GetButton("Join")
 
     Create.Button.MouseButton1Click:Connect(function()
-        local PartyUI = UIGroups:GetElementClass("Lobby", "Party")
+        local PartyUI = UIGroups:GetElementClass("Lobby", "NewPartyComponent")
 
         Interactions:SetButton("Create", false)
         Interactions:SetButton("Join", false)

@@ -22,6 +22,16 @@ return {
 		['Companions'] = 75933963205055,
 	},
 
+	Keybinds = {
+		[Enum.KeyCode.ButtonB] = 119504278354393,
+		[Enum.KeyCode.ButtonY] = 112125644503859,
+		[Enum.KeyCode.ButtonX] = 86251548517872,
+		[Enum.KeyCode.ButtonA] = 121581338630377,
+		[Enum.UserInputType.MouseButton1] = 131889465930150,
+		[Enum.UserInputType.MouseButton2] = 126051687805709,
+
+	},
+
 	Rarities = {
 		['Common'] = {
 			Id = PREFIX .. 126340402420755,
@@ -76,6 +86,7 @@ return {
 
 		['Basic_Attack'] = 84976350806139,
 		['Swap_Forth'] = 76619175136377,
+		['Special'] = 122820271635943,
 		['Dodge'] = 90333531186937,
 	},
 
@@ -129,9 +140,9 @@ return {
 			},
 
 			Energy = {
-				Main = RGB(255, 41, 180),
-				Meter = RGB(144, 47, 255),
-				Gradient = Sequence{Key(0, White), Key(1, RGB(60, 34, 255))},
+				Main = White,
+				Meter = RGB(52, 157, 255),
+				Gradient = Sequence{Key(0, RGB(0, 242, 255)), Key(1, RGB(255, 0, 230))},
 			}
 		},
 	}

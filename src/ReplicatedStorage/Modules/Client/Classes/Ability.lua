@@ -87,11 +87,11 @@ function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Type
 		Replicator:Replicate(GameEnum.Replication.MatchAirborne, time or 1)
 
 		if (Difference == 0) then
-			return GameEnum.AirborneMatchState.Same;
+			return GameEnum.AirborneMatchState.Same, 0;
 		end
 
 
-		return GameEnum.AirborneMatchState.Raised;
+		return GameEnum.AirborneMatchState.Raised, Difference;
 	elseif (TargetsHeight <= 0 and Agent:GetAppearance():GetAddedHeight() > 0) then
 		Agent:GetAppearance():Land()
 

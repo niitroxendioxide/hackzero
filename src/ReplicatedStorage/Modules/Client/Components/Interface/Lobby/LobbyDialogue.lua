@@ -39,8 +39,6 @@ function Component:Link(Player: Player): Instance?
         return
     end
 
-    print('Found dialogues?')
-
     return HUD:WaitForChild("Dialogues", 10)
 end
 

@@ -28,6 +28,7 @@ function Controller:Init()
 
     Network:On("Party", function(Type: number, ServerResponse: CompressedParty | string | {any}, StageData: {}): ()
         local PartyComponent = InterfaceController:GetComponent("Party")
+        local NewComponent = InterfaceController:GetComponent("NewPartyComponent")
 
         if Type == GameEnum.PartyManaging.Create then
             local PlayerTeamData = Controller:GetTeamBuffer(ServerResponse :: CompressedParty, Player.UserId)
@@ -35,48 +36,50 @@ function Controller:Init()
                 return
             end
 
-            PartyComponent:Set(true)
-            PartyComponent:AddPlayerToList((ServerResponse :: CompressedParty)[1], Controller:BufferToTeamString(PlayerTeamData), true)
-            PartyComponent:SetPartyOwner(Player.UserId)
-            PartyComponent:UpdateStages(StageData)
+            NewComponent:Set(true)
+            NewComponent:SetPartyOwner(Player.UserId)
+            NewComponent:AddPlayerToList((ServerResponse :: CompressedParty)[1])
+            NewComponent:UpdateStages(StageData)
         elseif Type == GameEnum.PartyManaging.Join then
-            PartyComponent:Set(true)
+            NewComponent:Set(true)
             local List, Owner = Controller:GetPlayerListForParty(ServerResponse :: CompressedParty)
 
-            PartyComponent:SetPartyOwner(Owner)
+            NewComponent:SetPartyOwner(Owner)
             for Name, Data in List do
-                PartyComponent:AddPlayerToList(Name, Data, Name == Owner)
+                NewComponent:AddPlayerToList(Name, Data, Name == Owner)
             end
         elseif Type == GameEnum.PartyManaging.PlayerJoined then
             local Data = ServerResponse :: CompressedParty
-            PartyComponent:AddPlayerToList(Data[1], Controller:BufferToTeamString(Data[2]), false)
+            NewComponent:AddPlayerToList(Data[1], Controller:BufferToTeamString(Data[2]), false)
         elseif Type == GameEnum.PartyManaging.PlayerLeft then
             local Data = ServerResponse :: CompressedParty
-            PartyComponent:RemovePlayerFromlist(Data[1])
+            NewComponent:RemovePlayerFromlist(Data[1])
         elseif Type == GameEnum.PartyManaging.Leave then
-            PartyComponent:Set(false)
-            PartyComponent:Clear()
+            NewComponent:Set(false)
+            NewComponent:Clear()
         elseif Type == GameEnum.PartyManaging.Queue then
-            local Data = (ServerResponse :: {string})
-            PartyComponent:ShowQueueing(Data[1])
+            --local Data = (ServerResponse :: {string})
+            NewComponent:SetQueueing(true)
         elseif Type == GameEnum.PartyManaging.Failed then
             local ErrorMessage = ServerResponse :: string
 
             warn("Server received error:", ErrorMessage)
-            PartyComponent:SetButtonState("Play", true)
+            NewComponent:SetQueueing(false)
         elseif Type == GameEnum.PartyManaging.SetReady then
             local ReadyCount = (ServerResponse :: {})[1]
             local PlayerIdReady = (ServerResponse :: {})[2]
 
-            PartyComponent:SetPlayerReady(ReadyCount, PlayerIdReady)
+            NewComponent:SetPlayerReady(ReadyCount, PlayerIdReady)
+        elseif Type == GameEnum.PartyManaging.RemoveReady then
+            NewComponent:RemoveReady()
         elseif Type == GameEnum.PartyManaging.ChangeTeam then
             local PlayerTeamData = ServerResponse :: CompressedParty
 
-            PartyComponent:UpdateTeam(PlayerTeamData[1], Controller:BufferToTeamString(PlayerTeamData[2] :: buffer))
+            --PartyComponent:UpdateTeam(PlayerTeamData[1], Controller:BufferToTeamString(PlayerTeamData[2] :: buffer))
         elseif Type == GameEnum.PartyManaging.ChangeStage then
             local PartyStageData = ServerResponse :: {string}
 
-            PartyComponent:UpdateStageInfo(PartyStageData[1])
+            NewComponent:UpdateStageInfo(PartyStageData[1])
         end
     end)
 end

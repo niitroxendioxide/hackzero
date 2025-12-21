@@ -437,7 +437,7 @@ local function SelectArtifact(NewObject: Frame & {Selected: Frame & {UIStroke: U
             local Delta = task.wait()
             Angle += Delta * 400
 
-            local Thickness = 0.45 - math.cos(math.rad(Angle)) * 0.15
+            local Thickness = 0.045 - math.cos(math.rad(Angle)) * 0.015
             NewObject.Selected.UIStroke.Thickness = Thickness
             NewObject.UsedSelected.UIStroke.Thickness = Thickness
         end
@@ -530,6 +530,9 @@ function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
     NewObject.Button.MouseButton1Click:Connect(function()
         SelectArtifact(NewObject, Artifact)
     end)
+
+    local HasModel = CreateArtifactModel(Artifact.Name, Artifact.Slot, NewObject.Viewport)
+    NewObject.ItemIcon.Visible = not HasModel
 
     NewObject.Parent = Holder
 end
@@ -626,7 +629,7 @@ function Component:ShowArtifactInfo(ArtifactId: string?)
 
         local NewAsset = Assets.Interface.Agents.Items.ArtifactSubStat:Clone()
         NewAsset.SubName.Text = string.gsub(StatName, '_', " ")
-        NewAsset.Value.Text = Tick * TotalUpgrades
+        NewAsset.Value.Text = string.format("%.f2", Tick * TotalUpgrades)
         NewAsset.Amount.Visible = Extras > 0
         NewAsset.Amount.Text = '+'..Extras
         NewAsset.Parent = DataFrame.SubStatList
@@ -890,13 +893,53 @@ function Component:SelectArtifactSlot(SlotId: number?)
     end)
 end
 
+function CreateArtifactModel(Artifact_Name: string, SlotId: number, Parent: ViewportFrame): boolean
+    
+    local ArtifactsFolder = Assets:FindFirstChild('Items'):FindFirstChild('Artifacts')
+    local Target = ArtifactsFolder:FindFirstChild(Artifact_Name)
+
+    if not Target then return false end
+
+    local ClonedModel;
+    if Target:IsA('Folder') then
+        if Target:FindFirstChild(tostring(SlotId)) then
+            ClonedModel = Target[tostring(SlotId)]:Clone()
+        else
+            local Children = Target:GetChildren()
+            ClonedModel = Children[math.random(1, #Children)]
+        end
+
+    elseif Target:IsA('Model') then
+        ClonedModel = Target:Clone()
+    end
+
+    Parent.WorldModel:ClearAllChildren()
+
+    ClonedModel:PivotTo(CFrame.new())
+    ClonedModel.Parent = Parent.WorldModel
+
+    if Parent:FindFirstChild('Camera') then
+        Parent.Camera:Destroy()
+    end
+
+    --
+    local CamOffset = Target:GetAttribute('CameraOffset') or Vector3.new(0, 0, -5)
+    local NewCamera = Instance.new("Camera")
+    NewCamera.FieldOfView = 10
+    NewCamera.CFrame = CFrame.new(CamOffset) * CFrame.Angles(0, math.pi, 0)
+    NewCamera.Parent = Parent
+
+    Parent.CurrentCamera = NewCamera
+
+    return true
+end
+
 function Component:UpdateSlotInfo(Agent: string, SlotId: number, ArtifactId: string?): ()
     local MainFrame = Component:GetFrame()
     local ItemsFrame =  MainFrame.Items
     local Artifacts = ItemsFrame.Build
 
     if (States.__Current_Agent == nil) or (States.__Current_Agent.Name ~= Agent) then
-        print(States.__Current_Agent, Agent)
         return
     end
 
@@ -907,6 +950,7 @@ function Component:UpdateSlotInfo(Agent: string, SlotId: number, ArtifactId: str
             Object.Visible = false
         end
 
+        SlotFrame.Item.Viewport.WorldModel:ClearAllChildren();
         SlotFrame.SlotNum.Visible = true
     else
         local Artifact = LocalData:GetArtifactById(ArtifactId)
@@ -918,6 +962,9 @@ function Component:UpdateSlotInfo(Agent: string, SlotId: number, ArtifactId: str
         local TierLetters = {"S", "A", "B", "C"}
         SlotFrame.Item.Tier.Text = TierLetters[Artifact.Tier :: number]
         SlotFrame.Item.Level.Text = `Lvl. {Artifact.Level}`
+
+        local HasModel = CreateArtifactModel(Artifact.Name, SlotId, SlotFrame.Item.Viewport)
+        SlotFrame.Item.ItemIcon.Visible = not HasModel
 
         SlotFrame.SlotNum.Visible = false
     end

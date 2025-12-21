@@ -93,7 +93,6 @@ function Component:OpenOn(Tab: string)
 
     local Layout = MainFrame.Shop.Pages.UIPageLayout :: UIPageLayout
     local Page = MainFrame.Shop.Pages:FindFirstChild(Tab .. 'Shop')
-    print(Page, Tab)
 
     Layout:JumpTo(Page)
 

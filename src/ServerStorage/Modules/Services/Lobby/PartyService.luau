@@ -14,6 +14,7 @@ local GameEnum = require(Shared.GameEnum)
 local PartyPlayerClass = require(Classes.Party.PartyPlayer)
 local PartyClass = require(Classes.Party.Party)
 local Notifications = require(Modules.Packages.Notifications)
+local StagesDatabase = require(Shared.Database.Stages)
 
 local DataService = require(DataModules.DataService)
 local TeleportService = require(DataModules.TeleportService)
@@ -115,20 +116,20 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         local Party = Service:GetParty(Code)
         local PlayerClass = Service:GetClass(Player)
 
-        if not Service:CanReadyUp(PlayerClass, Party) then
-            print("Cannot ready up!")
+        if not Service:CanReadyUp(PlayerClass, Party) or not Service:ValidateStage(Party) then
+            Network:Fire("Party", PlayerClass.PlayerObject, GameEnum.PartyManaging.RemoveReady)
 
             return
         end
 
         Party:SetReady(PlayerClass)
 
-        if not Party:IsReady() then
-            for _, NetPlayer in Party:GetRawPlayers() do
-                Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.SetReady, {#Party.__Ready, Player.UserId})
-            end
+        for _, NetPlayer in Party:GetRawPlayers() do
+            Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.SetReady, {#Party.__Ready, Player.UserId})
+        end
 
-            return
+        if not Party:IsReady() then
+            return;
         end
 
         for _, NetPlayer in Party:GetRawPlayers() do
@@ -181,6 +182,10 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
             return
         end
 
+        if InvitedPlayer == Player then
+            return;
+        end
+
         Service:InvitePlayer(InvitedPlayer, Code)
     elseif Type == GameEnum.PartyManaging.AcceptInvite then
         local Data = {...}
@@ -197,6 +202,19 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         NotifyJoinForParty(Code, Player)
 
         Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress())
+
+
+        --- Moving
+        local PartyZone = workspace.World.Zones:FindFirstChild('Play')
+        if PartyZone then
+            local RandomPlaceInZone = PartyZone.CFrame * CFrame.new(
+                Random.new():NextNumber(-PartyZone.Size.X/2, PartyZone.Size.X/2),
+                0,
+                Random.new():NextNumber(-PartyZone.Size.Z/2, PartyZone.Size.Z/2)
+            )
+
+            Player.Character:PivotTo(RandomPlaceInZone)
+        end
     elseif Type == GameEnum.PartyManaging.RejectInvite then
         local Data = {...}
 
@@ -324,6 +342,16 @@ function Service:DeleteParty(Code: string): ()
     Service.__Parties[Code] = nil
 end
 
+function Service:ValidateStage(Party: Types.PartyClass)
+    local Split = string.split(Party:GetStage(), '/')
+    local Data = StagesDatabase:GetAct(Split[2], Split[3])
+    if not Data then
+        return false
+    end
+    
+    return true
+end
+
 function Service:Start(Player: Player): boolean
     local PlayerClass = Service:GetClass(Player)
     local Party = Service:GetParty(Service:GetCode(Player))
@@ -333,6 +361,11 @@ function Service:Start(Player: Player): boolean
     end
 
     Party:SetState(GameEnum.PartyStates.Teleporting)
+
+    --
+    if not Service:ValidateStage(Party) then
+        return
+    end
 
     return TeleportService:TeleportGroup(Party:GetStagePlace(), Party, {})
 end

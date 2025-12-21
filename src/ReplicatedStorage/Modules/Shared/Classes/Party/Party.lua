@@ -18,7 +18,7 @@ function Party.new(Code: number, Owner: Types.PartyPlayer): Types.PartyClass
 
     self.__Players = {}
     self.__Owner = Owner:GetId()
-    self.__Stage = "Mission/Earth/Intro"
+    self.__Stage = "Mission/Unknown/None"
     self.__FriendsOnly = false
     self.__State = 1
     self.__Max_Players = 4

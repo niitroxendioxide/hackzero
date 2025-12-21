@@ -72,8 +72,8 @@ return {
 
             Guide = {
                 Begin = {
-                    Objective = "Test out new skills",
-                    Goal = {ReachPlace = "End"},
+                    Objective = "Train with your agents.",
+                    Goal = {KillEnemies = 1},
                     Enemies = {
                         -- Name, Amount, Level
                         [1] = {"Saiyan", 1, 60,} --"Dazed", 1, 60}
@@ -93,7 +93,32 @@ return {
                     Global = true,
 
                     Finished = function(State: Types.EventHandlerState): string
-                        return "Begin"
+                        return "NextStage"
+                    end
+                },
+
+                End = {
+                    Cutscene = "_",
+                    Objective = "Cutscene test!",
+                    Global = true,
+                    Goal = {},
+                    Enemies = {},
+
+                    Finished = function()
+                        return "End"
+                    end
+                },
+
+                NextStage = {
+                    Objective = "Fight against the training dummies",
+                    Global = true,
+                    Goal = {},
+                    Enemies = {
+                        [1] = {"Saiyan", 1, 60},
+                    },
+
+                    Finished = function()
+                        return "NextStage"
                     end
                 },
 
@@ -107,7 +132,7 @@ return {
                     },
 
                     Finished = function()
-                        return "Begin"
+                        return "End"
                     end
                 }
             },

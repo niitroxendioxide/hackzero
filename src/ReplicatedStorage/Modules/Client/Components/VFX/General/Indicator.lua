@@ -15,7 +15,7 @@ local Sequence = ColorSequence.new
 local White = Color3.new(1, 1, 1)
 
 local Gradients = {
-	['Fire'] = {Color3.fromRGB(255, 149, 0), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.new(1))}},
+	['Fire'] = {Color3.fromRGB(255, 149, 0), Sequence{Key(0, Color3.fromRGB(255, 186, 48)), Key(1, Color3.new(1))}},
 
 	['Ice'] = {Color3.fromRGB(164, 231, 255), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(28, 96, 255))}},
 
@@ -23,7 +23,7 @@ local Gradients = {
 
 	['Wind'] = {Color3.fromRGB(211, 255, 214), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(94, 255, 69))}},
 
-	['Energy'] = {White, Sequence{Key(0, Color3.fromRGB(7, 52, 255)), Key(1, Color3.new(1))}},
+	['Energy'] = {White, Sequence{Key(0, Color3.fromRGB(255, 70, 252)), Key(1, Color3.new(0, 1, 1))}},
 
 	['Physical'] = {Color3.fromRGB(255, 227, 128), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(255, 77, 17))}},
 
@@ -45,6 +45,9 @@ local Counter = {}
 ---
 return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyData)
 	if typeof(At) == 'nil' then return end
+	if Settings:Get("DisableDamageIndicators", "Graphics") then
+		return;
+	end
 
 	local Parent = Effects:GetParent('Indicator')
 	local Indicator = typeof(At) == 'table' and Parent:FindFirstChild(At:GetId()..'indicatorobj') or nil
@@ -151,18 +154,21 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 		Object.Size = UDim2.fromScale(0, .39)
 		Object.Parent = Indicator.Holder.Main
 
-		--Object.UIStroke.Thickness = ScreenUtil:GetStrokeSize(Object.UIStroke.Thickness)
+		Object.UIStroke.Thickness = 0
+		Effects:Tween(Object.UIStroke, {.35, 'Quad'}, {Thickness = 0.12})
 		if Data.Critical or Burst then
 			Object.UIStroke.Color = White
-			Effects:Tween(Object.UIStroke, {.3}, {Color = Color3.new(0)})
+			Effects:Tween(Object.UIStroke, {.3}, {Color = Color3.fromRGB(115, 115, 115)})
+		else
+			Object.UIStroke.Color = Color3.new()
 		end
 
 		local Scale = Instance.new('UIScale')
 		Scale.Parent = Object
 
-		Effects:Tween(Scale, {.25, 'Back', 'Out'}, {Scale = 1.85 + (Burst and 0.5 or 0)})
+		Effects:Tween(Scale, {.2, 'Cubic', 'Out'}, {Scale = 1.85 + (Burst and 0.5 or 0)})
 		task.delay(.2, function()
-			Effects:Tween(Scale, {.15, 'Quad', 'InOut'}, {Scale = 1 + (Burst and 0.5 or 0)})
+			Effects:Tween(Scale, {.15, 'Cubic', 'InOut'}, {Scale = 1 + (Burst and 0.5 or 0)})
 		end)
 
 		Effects:Tween(Object, {.25, 'Back'}, {Size = UDim2.fromScale(X_Size, .39)})

@@ -28,6 +28,9 @@ end
 
 function Fetcher:ExtendFrom(Name: string, Level: number): AgentTypes.AgentArtifactClass
     local Class = Fetcher:Get(Name)
+    if not Class then
+        return Fetcher:Get("TEMPLATE");
+    end
 
     return Class:Extend(Level)
 end

@@ -70,6 +70,9 @@ function Component:CreateEvent(Event: string)
 
         if not Object:FindFirstChild('Label') then return end
         Object.Label.Text = result
+
+        local ExtraChars = math.clamp(#result - 20, 0, 17)
+        Object.Background.Size = UDim2.fromScale(0.634 + (ExtraChars) * 0.02, 0.995)
     end
 
     updateText()

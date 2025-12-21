@@ -204,6 +204,7 @@ return {
 		SetReady = 14,
 		CancelReady = 15,
 		Queue = 16,
+		RemoveReady = 17,
 	},
 
 	FetchRequests = {

@@ -11,7 +11,7 @@ return table.freeze({
 
     FILL_ULT_BAR = true,
     DIFFICULTY = 'EASY',
-    USE_BORROW = true, -- whether to replace agents with your own ones
+    USE_BORROW = false, -- whether to replace agents with your own ones
     BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {

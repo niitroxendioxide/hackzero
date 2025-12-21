@@ -136,7 +136,6 @@ function DamageLibrary:DealEnemyToAgent(Caster: AgentTypes.Enemy, Target: AgentT
 	local CasterStatus = Caster.__Status
 
 	if Target:HasTag("Airborne") and not(Data.HitsAirborne) then
-		print('airborne!')
 		return;
 	end
 

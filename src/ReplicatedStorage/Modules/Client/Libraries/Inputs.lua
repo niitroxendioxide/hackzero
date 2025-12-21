@@ -3,6 +3,7 @@ local ContextActionService = game:GetService('ContextActionService')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local UserInputService = game:GetService('UserInputService')
 local Players = game:GetService('Players')
+local RunService = game:GetService("RunService")
 
 --
 local Shared = ReplicatedStorage.Modules.Shared
@@ -20,16 +21,40 @@ local KEY_ACTIONS = {'moveForward', 'moveBackward', 'moveRight', 'moveLeft', 'ju
 --
 local Inputs = {
 	__Bound = {},
+	__Focused_Type = nil,
+	__BoundToInputChanged = {}
 }
 
 function Inputs:Init()
 	LocalPlayer.CharacterAdded:Connect(Inputs.OverrideDefaults)
 	UserInputService.InputBegan:Connect(Inputs.OnEvent)
 	UserInputService.InputEnded:Connect(Inputs.OnEvent)
+	UserInputService.LastInputTypeChanged:Connect(function(TypeChanged: Enum.UserInputType)  
+		if TypeChanged == Enum.UserInputType.Gamepad1 then
+			Inputs.__Focused_Type = Enum.UserInputType.Gamepad1
+		else
+			Inputs.__Focused_Type = Enum.UserInputType.Keyboard
+		end
+
+		for _, Function in Inputs.__BoundToInputChanged do
+			task.spawn(Function, Inputs.__Focused_Type)
+		end
+
+		Inputs.OverrideDefaults()
+	end)
 
 	if LocalPlayer.Character then
 		Inputs.OverrideDefaults()
 	end
+
+	if Places:CanFight() then
+		local Required = require(Players.LocalPlayer.PlayerScripts:FindFirstChild("PlayerModule"))
+		Required:GetControls():Disable()
+	end
+end
+
+function Inputs:OnInputTypeChanged(Func: (Type: Enum.UserInputType) -> ())
+	table.insert(Inputs.__BoundToInputChanged, Func)
 end
 
 function Inputs:WaitFor(Key: Enum.KeyCode | Enum.UserInputType, MaxTime: number?): boolean
@@ -71,6 +96,7 @@ function Inputs.OnEvent(InputObject: InputObject, GameProcessedEvent: boolean)
 
 	for _, BoundObject: Types.BoundKeybind in Inputs.__Bound do
 		local EnumObject = Inputs:GetEnumFromKey(BoundObject.Key)
+
 		local IsKey = false
 
 		if typeof(EnumObject) == 'table' then
@@ -106,6 +132,8 @@ function Inputs.OverrideDefaults()
 	for _, Action in KEY_ACTIONS do
 		ContextActionService:UnbindAction(Action..'Action')
 	end
+
+	ContextActionService:UnbindAction('moveThumbstick')
 end
 
 function Inputs:Bind(Key: string | Enum.KeyCode | Enum.UserInputType, Data: Types.KeybindData): (number?, Types.BoundKeybind)
@@ -139,6 +167,11 @@ function Inputs:GetEnumFromKey(Name: string | Enum.KeyCode)
 		return Name
 	end
 
+	local Device = Inputs:GetDevice()
+	if Device == GameEnum.Device.Console then
+		return Settings.Keybinds.Controller[Name]
+	end
+
 	return Settings.Keybinds.Computer[Name]
 end
 
@@ -147,9 +180,9 @@ function Inputs:IsMBDown(mouseButton: Enum.UserInputType)
 end
 
 function Inputs:GetDevice(): number
-	if UserInputService.TouchEnabled then
+	if UserInputService.TouchEnabled  then
 		return GameEnum.Device.Mobile
-	elseif UserInputService.GamepadEnabled and not UserInputService.KeyboardEnabled then
+	elseif UserInputService.GamepadEnabled and (Inputs.__Focused_Type == Enum.UserInputType.Gamepad1) then-- and (not UserInputService.KeyboardEnabled or RunService:IsStudio()) then
 		return GameEnum.Device.Console
 	end
 

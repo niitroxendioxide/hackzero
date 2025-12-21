@@ -10,7 +10,7 @@ local World = require(ReplicatedStorage.Modules.Shared.World)
 local Mock = require(Shared.Utility.Mock)
 local Settings = require(Client.Packages.Settings)
 
-local Non_Effects = {'Indicator', 'EnemyStats', 'Barrier'}
+local Non_Effects = {'Indicator', 'EnemyStats', 'Barrier', 'Warning'}
 local Effects = {
 	__Cached = {}
 }

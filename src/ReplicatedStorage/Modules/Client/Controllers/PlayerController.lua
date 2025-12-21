@@ -207,6 +207,32 @@ function Controller:SetupKeybinds()
 		})
 	end
 
+	UserInputService.InputChanged:Connect(function(InputObject: InputObject, GP: boolean)  
+		if GP then
+			return;
+		end
+
+		-- Necessary for console control
+		if Inputs:GetDevice() == GameEnum.Device.Console 
+			and InputObject.UserInputType == Enum.UserInputType.Gamepad1 
+			and InputObject.KeyCode == Enum.KeyCode.Thumbstick1 
+		then
+			local MovementVector = InputObject.Position.Unit
+			if MovementVector ~= MovementVector then
+				MovementVector = Vector3.zero
+			end
+
+			if MovementVector.Magnitude > 0 then
+				Replicator:Replicate(GameEnum.Replication.Move)
+			else
+				Replicator:Replicate(GameEnum.Replication.Stop)
+			end
+
+			Controller.__CurrentMovementVector = Vector3.new(MovementVector.X, 0, -MovementVector.Y)
+
+		end
+	end)
+
 	Inputs:Bind('Jog', {
 		Release = false,
 		Callback = function(_: 'Begin' | 'End')

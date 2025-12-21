@@ -10,6 +10,7 @@ local Classes = Modules.Classes
 local Services = Modules.Services
 local Database = Shared.Database
 
+local Places = require(ReplicatedStorage.Modules.Shared.Places)
 local LootService = require(script.Parent.LootService)
 local NPCService = require(script.Parent.NPCService)
 local Stages = require(ReplicatedStorage.Modules.Shared.Types.Stages)
@@ -42,6 +43,10 @@ local Service = {
 
 function Service:Init()
     Network.new("Match", "Event")
+
+    if not Places:CanFight() then
+        return;
+    end
 
     local MatchData = TeleportService:GetStageData()
     local TotalPlayers = MatchData.TotalPlayers

@@ -81,6 +81,8 @@ function HandlePlayerChat(Player: Player)
 			AbilityService:PromptAssist(current_agent, 1)
 		elseif split[1] == '/ult' then
 			current_agent:GiveUltimate(100000)
+		elseif split[1] == '/energy' then
+			current_agent:GiveEnergy(100)
 		end
 	end)
 end

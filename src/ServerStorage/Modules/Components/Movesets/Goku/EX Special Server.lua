@@ -32,6 +32,16 @@ local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Buffer:
 	local Center = Caster:GetPivot().Position
 	local Hit_Data = Ability:FromData('Hit_Mode', nil, SkillLevel)
 
+
+	--
+	Attack:After(function()
+		for _, Effect in Ability:FromData("SSJ2Buff") do
+			Caster:AddEffect(Effect)
+		end
+	end)
+
+	--
+	local ModeDebuff = Ability:FromData('ModeEnemyDebuff')
 	for i, EnemyId in EnemyIds do
 		local EnemyObject = Enemies:GetEnemy(EnemyId)
 		if (EnemyObject:GetPivot().Position - Caster:GetPivot().Position).Magnitude > 25 then
@@ -43,6 +53,7 @@ local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Buffer:
 			Slam.Stun += (i - 1) * 0.3
 
 			Ability:Hit(Caster, EnemyObject, Slam)
+			EnemyObject:AddEffect(ModeDebuff)
 		end)
 
 		Attack:Add(0.9 + (i-1) * 0.25, function()
@@ -63,7 +74,12 @@ function Ability:Play(Caster: Types.Caster, _, _, Context: { Buffer: {any | {num
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
 	local AttackTime = Ability:FromData('Attack_State_Time', 1);
 	if InMode then
-		AttackTime = 0.6 + math.max(#Context.Buffer[1] - 1, 0) * 0.25
+		if typeof(Context.Buffer[1]) == 'number' then
+			AttackTime = 0.75
+			Context.Buffer[1] = {}
+		else
+			AttackTime = 0.6 + math.max(#Context.Buffer[1] - 1, 0) * 0.25
+		end
 	end
 
 	local Attack = Ability:Begin(Caster, {

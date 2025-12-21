@@ -21,6 +21,7 @@ return {
             VisualEffects = true,
             AuraEffects = true,
             ScreenTextEffects = true,
+            DisableDamageIndicators = false,
         },
         Sound = {
             Master_Volume = 50,

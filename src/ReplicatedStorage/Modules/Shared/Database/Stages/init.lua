@@ -39,6 +39,9 @@ end
 
 function Stages:GetAct(StageName: string, Act: string): Types.Stage_Act
     local Stage = Stages:GetStage(StageName)
+    if not Stage then
+        return nil
+    end
 
     return Stage.Acts[Act]
 end

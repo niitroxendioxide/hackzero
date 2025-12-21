@@ -188,6 +188,25 @@ return {
 				Knockback_Strength = 3,
 				Knockback_Time = 0.2,
 
+
+				--
+				SSJ2Buff = {{
+					Type = 'Attack',
+					Value = "30%",
+					Time = 3,
+				},{
+					Type = 'Speed',
+					Value = .25,
+					Time = 3,
+				}},
+
+				ModeEnemyDebuff = {
+					Type = 'Defense',
+					Value = '15%',
+					Time = 3,
+				},
+
+				--
 				Default = {
 					Damage = 248;
 					Daze = 19;

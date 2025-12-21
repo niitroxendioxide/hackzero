@@ -1,3 +1,3 @@
 return {
-    MultipleIndicators = true,    
+    MultipleIndicators = true,  
 }

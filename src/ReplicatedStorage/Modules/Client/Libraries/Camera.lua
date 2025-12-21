@@ -3,6 +3,8 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local UserInputService = game:GetService('UserInputService')
 
 local Shared = ReplicatedStorage.Modules.Shared
+local Inputs = require(ReplicatedStorage.Modules.Client.Libraries.Inputs)
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local World = require(Shared.World)
 local Effects = require(Shared.Utility.Effects)
 
@@ -18,6 +20,7 @@ local Settings = {
 
 	Sensitivity = 0.35,
 	FieldOfView = 60,
+	ConsoleSensitivity = 3,
 }
 
 local Camera = {
@@ -31,6 +34,7 @@ local Camera = {
 	__Target_Part = "Head",
 	__Focused = true,
 	__Using_fov = false,
+	__Moving_Delta = Vector2.new(),
 }
 
 function Camera:RotateTo(GivenCFrame: CFrame)
@@ -64,10 +68,17 @@ function Camera:Init()
 			return
 		end
 
-		local MouseDelta = UserInputService:GetMouseDelta()
 
-		Camera.__Rotation += MouseDelta*Rad(Settings.Sensitivity)
-		Camera.__Rotation = Vector2.new(Camera.__Rotation.X, Clamp(Camera.__Rotation.Y, Rad(Settings.Min_Angle), Rad(Settings.Max_Angle)))
+		--
+		if Input.UserInputType == Enum.UserInputType.MouseMovement then
+			local MouseDelta = UserInputService:GetMouseDelta()
+
+			Camera.__Rotation += MouseDelta*Rad(Settings.Sensitivity)
+			Camera.__Rotation = Vector2.new(Camera.__Rotation.X, Clamp(Camera.__Rotation.Y, Rad(Settings.Min_Angle), Rad(Settings.Max_Angle)))
+		elseif Input.UserInputType == Enum.UserInputType.Gamepad1 and Input.KeyCode == Enum.KeyCode.Thumbstick2 then
+			local Delta = Vector2.new(Input.Position.X, Input.Position.Y)
+			Camera.__Moving_Delta = Delta
+		end
 	end)
 end
 
@@ -117,6 +128,14 @@ function Camera:Update(delta: number)
 	local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
 	local Goal = Vector3.new(Root.X, Torso:Lerp(Root, 0.5).Y, Root.Z)
 
+	if Camera.__Moving_Delta.Magnitude > 0 then
+		local IsConsole = Inputs:GetDevice() == GameEnum.Device.Console
+
+		Camera.__Rotation += Camera.__Moving_Delta*Rad(Settings.Sensitivity)*(IsConsole and Settings.ConsoleSensitivity or 1)
+		Camera.__Rotation = Vector2.new(Camera.__Rotation.X, Clamp(Camera.__Rotation.Y, Rad(Settings.Min_Angle), Rad(Settings.Max_Angle)))
+	end
+
+	--
 	CameraPosition = Goal + Settings.Offset
 
 	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * 24)
