@@ -40,5 +40,27 @@ return {
 		['Basic Attack'] = {
 			Cooldown = .35
 		},
+	},
+
+	Ascension_Data = {
+		[1] = {
+			Description = 'Template',
+		},
+
+		[2] = {
+			Description = 'Template',
+		},
+
+		[3] = {
+			Description = 'Template',
+		},
+
+		[4] = {
+			Description = 'Template',
+		},
+
+		[5] = {
+			Description = 'Template',
+		},
 	}
 }

@@ -76,7 +76,7 @@ return {
                     Goal = {KillEnemies = 1},
                     Enemies = {
                         -- Name, Amount, Level
-                        [1] = {"Saiyan", 1, 60,} --"Dazed", 1, 60}
+                        [1] = {"Strongest", 1, 60,} --"Dazed", 1, 60}
                     },
                     Dialogue = {
                         {
@@ -112,9 +112,9 @@ return {
                 NextStage = {
                     Objective = "Fight against the training dummies",
                     Global = true,
-                    Goal = {},
+                    Goal = {KillEnemies = 1},
                     Enemies = {
-                        [1] = {"Saiyan", 1, 60},
+                        [1] = {"Strongest", 1, 60},
                     },
 
                     Finished = function()

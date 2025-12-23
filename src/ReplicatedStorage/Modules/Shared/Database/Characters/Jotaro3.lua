@@ -2,12 +2,17 @@ return {
 	Display_Name = 'Jotaro Kujo',
 	Nickname = 'Jojo',
 	Element = 'Energy',
-	Role = 'Attack',
+	Role = 'Stun',
 	Tier = "Legendary",
-	Faction = "Karakura Town",
+	Faction = "Stardust Crusaders",
 
 	Appearance = {
 		Height = 3.15
+	},
+
+	ImportantStats = {
+		'Attack',
+		'Daze',
 	},
 
 	--
@@ -160,15 +165,15 @@ return {
 				DontConsumeEnergy = true,
 				Release = true,
 
-				Damage_Mult = 66,
-				Daze_Mult = 7,
+				Damage_Mult = 106,
+				Daze_Mult = 45,
 				Affliction_Buildup = 40,
 			},
 
 			Upgrades = {
-				Damage_Mult = 1,
-				Daze_Mult = 1.5,
-				Affliction_Buildup = 0.75,
+				Damage_Mult = 4,
+				Daze_Mult = 4,
+				Affliction_Buildup = 1.25,
 			},
 		},
 

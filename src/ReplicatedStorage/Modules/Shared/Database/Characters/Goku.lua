@@ -1,13 +1,18 @@
 return {
 	Display_Name = 'Kakarot',
 	Nickname = 'Son Goku',
-	Element = 'Physical',
+	Element = 'Energy',
 	Role = 'Affliction',
 	Tier = "Legendary",
 	Faction = "Z Warriors",
 
 	Appearance = {
 		Height = 3.15
+	},
+
+	ImportantStats = {
+		'Attack',
+		'Affliction_Aptitude',
 	},
 
 	--
@@ -41,7 +46,7 @@ return {
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = 0.1,
-				Speed = 1,
+				Speed = 1.25,
 
 				Attack_State_Time = {
 					.25 ,
@@ -73,9 +78,17 @@ return {
 				Walk_Time = 0.2,
 				Forward_Impulse = 10,
 
-				Knockback_Direction = Vector3.new(0, 0, 1),
-				Knockback_Strength = 10,
-				Knockback_Time = 0.2,
+				Hit_Data = {
+					HitType = 'Blunt',
+					Affliction = 'Energy',
+					HitsAirborne = true,
+					Stun = 0.325,
+					Knockback = {
+						vector.create(0, 0, 1),
+						10,
+						0.2,
+					}
+				},
 
 				Damage_Mult = {
 					[1] = 36,
@@ -301,8 +314,8 @@ return {
 				Hit_Data = {
 					Damage = 34,
 					Daze = 3,
-					Affliction = 'Physical',
-					Affliction_Buildup = 0.25,
+					Affliction = 'Energy',
+					Affliction_Buildup = 45,
 					Stun = 0.3,
 					HitType = 'Blunt',
 					
@@ -326,7 +339,7 @@ return {
 		['Dodge Counter'] = {
 			Base = {
 				Speed = 1,
-				Animation_Speed = 1,
+				Animation_Speed = 0.6,
 				Attack_State_Time = 0.9,
 				Cooldown = 1,
 

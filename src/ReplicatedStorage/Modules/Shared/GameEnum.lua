@@ -238,6 +238,7 @@ return {
 		RequestMatchRepeat = 7,
 		MarkClientLoaded = 8,
 		PlayerDied = 9,
+		SingularPlayerLeave = 10,
 	},
 
 	SummonDropTypes = {
@@ -313,6 +314,7 @@ return {
 		["Crit_Damage"] = 8,
 		["Penetration"] = 9,
 		["Affliction_Aptitude"] = 10,
+		["Daze"] = 11,
 	},
 
 	GearHookType = {
@@ -338,7 +340,8 @@ return {
 		["Crit_Rate"] = 4,
 		["Crit_Damage"] = 5,
 		["Pen_Ratio"] = 6,
-		["Affliction_Aptitude"] = 3,
+		["Affliction_Aptitude"] = 7,
+		["Daze%"] = 9,
 	},
 
 	MainStatsAllowed = {

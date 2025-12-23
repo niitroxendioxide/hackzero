@@ -20,6 +20,8 @@ local Characters = {
 	__Target_Threads = {},
 }
 
+local Switch_Threads = {}
+
 function Characters:GetCharacterTarget(Player: Player)
 	return Characters.__Targets[Player]
 end
@@ -108,7 +110,29 @@ function Characters:HandleSwitchFor(RepId: number, Previous: Types.AgentClass, A
 		return false
 	end
 
-	Previous:SetVisible(false)
+	if Switch_Threads[NewCharacter] then
+		task.cancel(Switch_Threads[NewCharacter])
+		Switch_Threads[NewCharacter] = nil;
+	end
+
+	if Previous:GetState() ~= 'Idle' then
+		if Switch_Threads[Previous] then
+			task.cancel(Switch_Threads[Previous])
+			Switch_Threads[Previous] = nil
+		end
+
+		Switch_Threads[Previous] = task.spawn(function()
+			while Previous:GetState() ~= 'Idle' do
+				task.wait()
+			end
+
+			Previous:SetVisible(false)
+		end)
+
+	else
+		Previous:SetVisible(false)
+	end
+	
 
 	local Animator = NewCharacter:GetAnimator()
 	NewCharacter:PivotTo(At, Snap)

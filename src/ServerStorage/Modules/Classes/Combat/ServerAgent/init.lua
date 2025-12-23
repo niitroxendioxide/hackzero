@@ -126,9 +126,6 @@ function ServerAgentClass.GetStat(self: Types.ServerAgentClass, Name: Types.Stat
 
 	
 	local Total = Base + ItemAdded + GearAdded + Effects
-	if Name == 'Attack' then
-		print(Total)
-	end
 	
 	return Total
 end

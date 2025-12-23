@@ -22,6 +22,8 @@ function Ability:Play(Caster, _, _, Context): ()
 	local Size = Vector3.one*5
 	local Offset = Vector3.zAxis * -3
 
+	local Hit_Data = Ability:FromData("Hit_Data")
+
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time', M1_Count) / Ability:FromData('Speed'))
@@ -78,16 +80,11 @@ function Ability:Play(Caster, _, _, Context): ()
 
 		{Ability:FromData("Hit_Times", M1_Count), function()
 			Ability:CreateHitbox(Caster, Offset, Size, function(Target)
-				Ability:Hit(Caster, Target, {
-					Damage = Ability:FromData('Damage_Mult', M1_Count, SkillLevel),
-					Affliction = 'Physical',
-					Stun = .325,
-					HitsAirborne = true,
-					HitType = 'Blunt',
-					Daze = Ability:FromData('Daze_Mult', M1_Count, SkillLevel),
-					Knockback = Ability:FromData('Knockback'),
-					Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count, SkillLevel)
-				})
+				Hit_Data.Damage = Ability:FromData("Damage_Mult", M1_Count, SkillLevel)
+				Hit_Data.Daze = Ability:FromData("Daze_Mult", M1_Count, SkillLevel)
+				Hit_Data.Affliction_Buildup = Ability:FromData("Affliction_Buildup", M1_Count, SkillLevel)
+
+				Ability:Hit(Caster, Target, Hit_Data)
 			end, M1_Count == 6 and 0.45 or nil)
 		end,},
 
@@ -95,16 +92,11 @@ function Ability:Play(Caster, _, _, Context): ()
 			if M1_Count ~= 4 then return end
 
 			Ability:CreateHitbox(Caster, Offset, Size, function(Target)
-				Ability:Hit(Caster, Target, {
-					Damage = Ability:FromData('Damage_Mult', 4.5, SkillLevel),
-					Affliction = 'Physical',
-					Stun = .325,
-					HitsAirborne = true,
-					HitType = 'Blunt',
-					Daze = Ability:FromData('Daze_Mult', 4.5, SkillLevel),
-					Knockback = Ability:FromData('Knockback'),
-					Affliction_Buildup = Ability:FromData('Affliction_Buildup', 4.5, SkillLevel)
-				})
+				Hit_Data.Damage = Ability:FromData("Damage_Mult", 4.5, SkillLevel)
+				Hit_Data.Daze = Ability:FromData("Daze_Mult", 4.5, SkillLevel)
+				Hit_Data.Affliction_Buildup = Ability:FromData("Affliction_Buildup", 4.5, SkillLevel)
+
+				Ability:Hit(Caster, Target, Hit_Data)
 			end)
 		end,},
 
@@ -112,16 +104,11 @@ function Ability:Play(Caster, _, _, Context): ()
 			if M1_Count ~= 2 then return end
 
 			Ability:CreateHitbox(Caster, Offset, Size, function(Target)
-				Ability:Hit(Caster, Target, {
-					Damage = Ability:FromData('Damage_Mult', 2.5, SkillLevel),
-					Affliction = 'Physical',
-					Stun = .325,
-					HitsAirborne = true,
-					HitType = 'Blunt',
-					Daze = Ability:FromData('Daze_Mult', 2.5, SkillLevel),
-					Knockback = Ability:FromData('Knockback'),
-					Affliction_Buildup = Ability:FromData('Affliction_Buildup', 2.5, SkillLevel)
-				})
+				Hit_Data.Damage = Ability:FromData("Damage_Mult", 2.5, SkillLevel)
+				Hit_Data.Daze = Ability:FromData("Daze_Mult", 2.5, SkillLevel)
+				Hit_Data.Affliction_Buildup = Ability:FromData("Affliction_Buildup", 2.5, SkillLevel)
+
+				Ability:Hit(Caster, Target, Hit_Data)
 			end)
 		end,},
 	})

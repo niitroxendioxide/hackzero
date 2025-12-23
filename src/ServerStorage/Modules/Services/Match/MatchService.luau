@@ -280,6 +280,11 @@ function Service.__HandleEvent(Player: Player, Type: number)
         if not Result then
             warn(Message)
         end
+    elseif Type == GameEnum.MatchEvents.SingularPlayerLeave then
+        local Result, Message = TeleportService:ReturnToLobby({Player})
+        if not Result then
+            warn(Message)
+        end
     elseif Type == GameEnum.MatchEvents.RequestMatchRepeat then
         local Result, Message = TeleportService:RepeatStage()
         if not Result then

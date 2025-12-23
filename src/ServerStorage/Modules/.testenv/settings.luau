@@ -16,7 +16,7 @@ return table.freeze({
 
     TEST_AGENTS = {
         'Goku',
-        --'Jotaro3',
+        'Jotaro3',
         'Tanjiro',
     },
 })

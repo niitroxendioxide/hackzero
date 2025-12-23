@@ -129,6 +129,7 @@ return {
 		["Crit_Damage"] = {5, 3, 1},
 		["Penetration"] = {9, 6, 3},
 		["Affliction_Aptitude"] = {9, 6, 3},
+		["Daze"] = {6, 4, 2},
 	},
 
 	Dodge_Active_Time = 0.5,

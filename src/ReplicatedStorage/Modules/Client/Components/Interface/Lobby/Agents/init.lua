@@ -37,6 +37,7 @@ if RoomLocations then
 end
 
 --
+local ModelAnims = require(script.Animations)
 local Component = ComponentClass.new(script.Name, 'Lobby') :: Types.UIComponent & {FilterArtifacts: (self: Types.UIComponent, FilterFunction) -> ()}
 local Scope = Component:GetScope()
 
@@ -362,6 +363,10 @@ function Component:SelectAgent(AgentData: Types.ClientAgentData)
     States.__Current_Agent = AgentData
 
     SwitchModel(AgentData.Name)
+
+    if #CurrentTab > 1 then
+        ModelAnims:PlayAnim(States.__Current_Model, CurrentTab, AgentData.Name)
+    end
 
     if CurrentTab == "Items" then
         Component:ShowArtifacts(AgentData)
@@ -1032,6 +1037,16 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
 
     local AddPercent = {"Critical_Damage", "Critical_Rate", "Pen_Ratio"}
     local Ignored = {"Penetration", "Jog_Speed", "Walk_Speed", "Sprint_Speed"}
+    local RenamedStat = {
+        ['Health'] = "HP",
+        ['Defense'] = "DEF",
+        ['Attack'] = "ATK",
+        ["Critical_Rate"] = "CRIT Rate",
+        ["Critical_Damage"] = "CRIT DMG",
+        ["Pen_Ratio"] = "PEN%"
+    }
+    local Weights = {['Health'] = 0, ['Attack'] = 1, ['Defense'] = 2, ['Daze'] = 3, ['Critical_Rate'] = 4, ['Critical_Damage'] = 5}
+
     for Stat, Value in AgentStats do
         if table.find(Ignored, Stat) then continue end
 
@@ -1041,10 +1056,26 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
         end
 
         local NewFrame = Assets.Interface.Agents.Stats.Stat:Clone()
-        NewFrame.StatName.Text = (string.gsub(Stat, "_", " "))
+        NewFrame.StatName.Text = RenamedStat[Stat] or (string.gsub(Stat, "_", " "))
+        NewFrame.LayoutOrder = Weights[Stat] or 15
         NewFrame.StatValue.Text = math.floor(ShownValue * 10) / 10 .. (table.find(AddPercent, Stat) and '%' or '')
         if Stat == 'Energy_Regeneration' then
             NewFrame.StatValue.Text = NewFrame.StatValue.Text.."/s"
+        end
+
+        if AgentInfo.ImportantStats and table.find(AgentInfo.ImportantStats, Stat) then
+            NewFrame.StatName.TextColor3 = Color3.fromRGB(255, 136, 0)
+            NewFrame.StatName.UIStroke.Color = Color3.fromRGB(135, 90, 0)
+
+            NewFrame.StatValue.TextColor3 = Color3.fromRGB(255, 173, 57)
+            NewFrame.StatValue.UIStroke.Color = Color3.fromRGB(135, 90, 0)
+            NewFrame.StatValue.UIStroke.UIGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 157, 0)),
+                ColorSequenceKeypoint.new(1, Color3.new(1,1,1)),
+            }
+
+            NewFrame.UIStroke.Color = Color3.fromRGB(70, 44, 0)
+            NewFrame.BackgroundColor3 = Color3.fromRGB(56, 48, 37)
         end
 
         NewFrame.Parent = Frame.Stats.ValuesArea.Holder
@@ -1069,8 +1100,13 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
 
     AgentDataFrame.Playstyle.Role.RoleName.Text = AgentInfo.Role
     AgentDataFrame.Playstyle.Element.ElementName.Text = AgentInfo.Element
+    AgentDataFrame.AscensionCount.Text = AgentData.Ascensions
+    
+    local Percent = AgentData.Experience / Statics.Experience_For_Level(AgentData.Level + 1)
+    EffectUtil:Tween(AgentDataFrame.Level.FillHolder.Fill, { .25, 'Quad' }, { Size = UDim2.fromScale(math.clamp(Percent * 0.9, 0, 0.9), 1) })
+    EffectUtil:Tween(AgentDataFrame.Level.FillHolder.Strokes, { .25, 'Quad' }, { Size = UDim2.fromScale(math.clamp(Percent * 0.9, 0, 0.9), 1) })
 
-    AgentDataFrame.Level.AgentLevel.Text = `Level: {AgentData.Level}/60`
+    AgentDataFrame.Level.AgentLevel.Text = `Lvl. {AgentData.Level}`
 end
 
 function Component:ShowSkills()

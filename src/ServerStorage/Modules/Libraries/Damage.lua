@@ -98,6 +98,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	AgentGear:RunHook(GameEnum.GearHookType.AfterAffliction, {Caster = Agent, Target = Enemy, HitData = Data})
 
 	local AfflictionTriggered = false;
+
 	if Enemy:GetAffliction(Data.Affliction) >= 100 then
 		AgentGear:RunHook(GameEnum.GearHookType.OnAfflictionBurst, {Caster = Agent, Target = Enemy, HitData = Data})
 		-- TODO: Fix the res mult to change based on enemy stuff idk
@@ -205,7 +206,7 @@ function DamageLibrary:CalculateAfflictionBurst(
 	local Taken_Damage = Stacked_Damage * (Base_Divider / 100)
 	local Dazed_State_Multiplier = EnemyStatus:IsKnocked() and EnemyStatus:GetDazeMultiplier() or 1
 	local Daze_Multiplier = 1
-	local Affliction_Type_Mult = VALUES[Type]
+	local Affliction_Type_Mult = 7.25--VALUES[Type]
 
 	local Total_Damage = (Attack * Affliction_Type_Mult) * Level_Multiplier * Element_Multiplier * Aptitude_Multiplier * Defense * Resistance_Multiplier * Daze_Multiplier * Taken_Damage * Dazed_State_Multiplier * Damage_Taken_Mult
 

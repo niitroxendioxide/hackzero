@@ -35,6 +35,9 @@ return function(
         task.cancel(Cache[Caster].Thread)
         Cache[Caster].Thread = task.delay(3, function()
             Effects:Toggle(Cache[Caster].Object, false)
+            Effects:CleanUp(Cache[Caster].Object, 1)
+
+            Caster.__Character.__Appearance:UnbindObject(Cache[Caster].Object)
 
             Cache[Caster] = nil
         end)

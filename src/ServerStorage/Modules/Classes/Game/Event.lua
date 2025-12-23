@@ -53,7 +53,7 @@ function EventClass.new(Stage: string, Act: string, Event: string)
     return self
 end
 
-function EventClass.Start(self: Types.EventClass, Trigger: BasePart?)
+function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): boolean
     if self.__Finish_Status then
         return
     end
@@ -84,9 +84,9 @@ function EventClass.Start(self: Types.EventClass, Trigger: BasePart?)
     end
 
     if TotalGoals <= 0 then
-        self:Destroy()
+        self:Destroy(true)
 
-        return
+        return false
     end
 
     self.__Current_Goals = EventData.Goal
@@ -268,7 +268,7 @@ function EventClass.IsFinished(self: Types.EventClass)
     return self.__Finish_Status
 end
 
-function EventClass.Destroy(self: Types.EventClass)
+function EventClass.Destroy(self: Types.EventClass, Not_Finished: boolean)
     if self.__Current_Wave_Connection then
         self.__Current_Wave_Connection:Disconnect()
         self.__Current_Wave_Connection = nil
@@ -289,6 +289,10 @@ function EventClass.Destroy(self: Types.EventClass)
     local CorrectedState = self:GetCorrectedState()
     local Next_Stage = EventData.Finished()
     self:SetBarrierCollision(false)
+
+    if Not_Finished then
+        return;
+    end
 
     self.__Finish_Status = true
     self.Finished:Fire(Next_Stage, CorrectedState)

@@ -80,7 +80,7 @@ function EnemyStatus:Daze(Amount: number): boolean
 		return false
 	end
 
-	self.__Daze = math.clamp(self.__Daze + Amount, 0, self.__Max_Daze)
+	self.__Daze = math.clamp(self.__Daze + Amount, 0, self.__Max_Daze :: number)
 
 	if self.__Daze >= self.__Max_Daze then
 		return true

@@ -92,9 +92,6 @@ function SubComponent:UpdateAscensionInfo(MainFrame: AscensionsFrame, AgentName:
 
     local GuiSize = (MainFrame):FindFirstAncestorOfClass("ScreenGui")
     local FirstPage = MainFrame.AscPages['1']
-    if not FirstPage then
-        return;
-    end
 
     MainFrame.AscPages.UIPageLayout:JumpTo(FirstPage)
 

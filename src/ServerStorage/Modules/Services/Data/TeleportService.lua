@@ -115,7 +115,13 @@ function TeleportPlayerGroupAttempt(PlaceId: number, Code: number, Players: {Pla
 
     repeat
         local Success, Error = pcall(function()
-            TeleportService:TeleportToPrivateServer(PlaceId, Code, Players, nil, Data)
+
+            if Code == nil then
+                TeleportService:TeleportAsync(PlaceId, Players)
+            else
+                TeleportService:TeleportToPrivateServer(PlaceId, Code, Players, nil, Data)
+            end
+            
         end)
 
         if not Success then
@@ -210,10 +216,10 @@ function Service:ReturnToLobby(Group: {Player}): (boolean, string?)
 
     -- Requests
     local Id = Places:GetId('Lobby')
-    local Reserved = ReserveServerForPlace(Id)
-    local Success = TeleportPlayerGroupAttempt(Id, Reserved, Group, {})
+    --local Reserved = ReserveServerForPlace(Id)
+    local Success = TeleportPlayerGroupAttempt(Id, nil, Group, {})
 
-    print(Reserved, Success, Id, 'Lobby')
+    --print(Reserved, Success, Id, 'Lobby')
 
     Service.__Reserving[game.JobId] = nil
 

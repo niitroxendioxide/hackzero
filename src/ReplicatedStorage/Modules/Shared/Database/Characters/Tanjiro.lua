@@ -10,6 +10,12 @@ return {
 		Height = 3.15
 	},
 
+	ImportantStats = {
+		'Attack',
+		'Critical_Rate',
+		'Critical_Damage',
+	},
+
 	--
 	Stats = {
 		Health = 648,
