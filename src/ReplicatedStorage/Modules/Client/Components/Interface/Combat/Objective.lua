@@ -57,7 +57,7 @@ function Component:CreateEvent(Event: string)
     local Values = EventStates:New(Event, EventData.Goal)
     local Object = Assets.Combat.Objective.GoalObject:Clone()
     Object.Label.Text = EventData.Objective
-    Object.Parent = Frame.Box.Goals
+    Object.Parent = Frame.Mission.Goals
 
     Object:SetAttribute("Event", Event)
 
@@ -88,7 +88,7 @@ end
 function Component:DeleteEvent(Event: string)
     local Frame = self:GetFrame()
 
-    for _, Objectives in Frame.Box.Goals:GetChildren() do
+    for _, Objectives in Frame.Mission.Goals:GetChildren() do
         if Objectives:GetAttribute("Event") == Event then
             Objectives:Destroy()
         end

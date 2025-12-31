@@ -308,6 +308,7 @@ export type ServerAgentClass = {
 
 	UpdateMeter: (self: ServerAgentClass, Name: string, Amount: number) -> (),
 	GetMeter: (self: ServerAgentClass, Name: string) -> (number, number),
+	GetAllMeters: (self: ServerAgentClass) -> ({Id: number?, [string]: any}),
 
 	GetCurrentSkill: (self: ServerAgentClass) -> (string?),
 

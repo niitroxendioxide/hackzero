@@ -218,6 +218,10 @@ function ServerAgentClass.UpdateMeter(self: Types.ServerAgentClass, Meter: strin
 	Replicator:UpdateMeter(self, MeterObject.Id, Percent)
 end
 
+function ServerAgentClass.GetAllMeters(self: Types.ServerAgentClass)
+	return self.__Status:GetAllMeters()
+end
+
 function ServerAgentClass.SetMeterUpdateType(self: Types.ServerAgentClass, Meter: string, Type: number, State: boolean, h): ()
 	self.__Status:SetMeterUpdateType(Meter, Type, State, h)
 end

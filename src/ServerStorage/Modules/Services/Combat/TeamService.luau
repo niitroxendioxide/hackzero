@@ -82,6 +82,14 @@ function Service:Create(Player: Player)
 
     --
     Player:AddTag("Loaded")
+
+
+    --
+    for _, Agent in Agents do
+        for _, Meter in Agent:GetAllMeters() do
+            Replicator:UpdateMeter(Agent, Meter.Id, Meter.Value)
+        end
+    end
 end
 
 function Service:Sync(Player: Player)

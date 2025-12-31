@@ -44,9 +44,9 @@ return {
 
 	Moveset_Data = {
 		['Passive'] = {
-			Description = 'Every hit from your basic attacks contributes to filling up your stand meter',
 			Meters = {
 				Stand = {
+					Description = 'Every hit from your basic attacks contributes to filling up your stand meter',
 					Id = 1,
 					Max = 100,
 					EmptySpeed = 2.5,

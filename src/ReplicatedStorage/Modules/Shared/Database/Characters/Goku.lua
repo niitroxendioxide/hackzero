@@ -43,6 +43,18 @@ return {
 	},
 
 	Moveset_Data = {
+		['Passive'] = {
+			Description = '',
+			Meters = {
+				SaiyanSurge = {
+					Ascension = 2,
+					Description = 'When completing a full basic attack string obtain one charge of Saiyan Surge, when hitting an enemy with an EX-Special, get two charges, up to 3. Hold basic attack with two charges to use Super God Fist',
+					Id = 1,
+					Max = 4,
+				},
+			},
+		},
+
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = 0.1,
