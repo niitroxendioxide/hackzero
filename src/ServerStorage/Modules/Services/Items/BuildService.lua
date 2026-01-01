@@ -165,9 +165,11 @@ function Service:AscendAgent(Player: Player, AgentName: string, Times: number)
     if not HasOfItem then
         return
     end
-
+    
     Agent:SetAscensions(Agent.Ascensions + Times)
     DataService:TakeItem(Player, ItemName, Times)
+
+    --
 
     DataService:SyncPlayerItems(Player)
     AscendAgent(Player, Agent)

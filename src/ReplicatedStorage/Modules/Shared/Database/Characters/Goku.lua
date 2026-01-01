@@ -387,27 +387,32 @@ return {
 
 	Ascension_Data = {
 		[1] = {
-			Description = 'Goku ascension 1',
+			Description = 'TODO',
 		},
 
 		[2] = {
-			Description = 'Goku ascension 2',
+			Description = [[Unlocks 'Saiyan Surge', for every completed 'Basic Attack' String or succesful hit of 'EX Special: Upwards Kick', obtain a charge of Saiyan Surge, up to a maximum of 4.
+			Hold 'Basic Attack' with 2 charges of 'Saiyan Surge' to use 'Super God Fist', it's damage scales with the enemies HP, up to a 200% extra damage the lower the enemies HP is.
+			]],
 		},
 
 		[3] = {
-			Description = 'Goku ascension 3',
+			Description = 'All skills +5 Level limit',
 		},
 
 		[4] = {
-			Description = 'Goku ascension 4',
+			Description = 'TODO',
 		},
 
 		[5] = {
-			Description = 'Goku ascension 5',
+			Description = 'All skills +5 Level limit',
 		},
 
 		[6] = {
-			Description = 'Goku ascension 6',
+			Description = [[Your ultimate, 'Saiyan Rage' is replaced with 'Ultimate: Super Saiyan 3'. Instead of bringing a power up alone, super saiyan 3 stuns all enemies nearby after transforming.
+			Super Saiyan 3 increases the strength obtained from transforming, as well as a slightly faster attack speed. Goku may also dodge incoming attacks by himself, as well as having automatic energy regeneration.
+			Your 'EX Special: Super Saiyan 2', gets replaced with ...
+			]],
 		},
 	}
 }

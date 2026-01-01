@@ -53,7 +53,14 @@ function PlayerAgentDataClass.SetArtifacts(self: Types.PlayerAgentDataClass, Art
 end
 
 function PlayerAgentDataClass.SetSkill(self: Types.PlayerAgentDataClass, SkillName: string, SkillLevel: number)
-    assert(SkillLevel <= 20 and SkillLevel >= 0, 'Skill level out of bounds');
+    local Limit = 20;
+    if self.Ascensions >= 5 then
+        Limit += 10
+    elseif self.Ascensions >= 3 then
+        Limit += 5;
+    end
+
+    assert(SkillLevel <= Limit and SkillLevel >= 0, 'Skill level out of bounds');
 
     self.Skills[SkillName] = SkillLevel
 end

@@ -11,6 +11,7 @@ local World = workspace:FindFirstChild("World")
 
 
 local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
+local Icons = require(ReplicatedStorage.Modules.Shared.Database.Icons)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Types = require(Shared.Types)
@@ -1098,8 +1099,12 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
 
     AgentDataFrame.AgentNickname.Text = NewText--AgentInfo.Nickname
 
+    local RoleIcon = Icons.Roles[AgentInfo.Role]
+    local ElementIcon = Icons.Elements[AgentInfo.Element]
+
     AgentDataFrame.Playstyle.Role.RoleName.Text = AgentInfo.Role
-    AgentDataFrame.Playstyle.Element.ElementName.Text = AgentInfo.Element
+    AgentDataFrame.Playstyle.Role.Icon.Image = RoleIcon or Icons.Roles.Affliction
+    AgentDataFrame.Playstyle.Element.Icon.Image = ElementIcon or Icons.Elements.Water
     AgentDataFrame.AscensionCount.Text = AgentData.Ascensions
     
     local Percent = AgentData.Experience / Statics.Experience_For_Level(AgentData.Level + 1)

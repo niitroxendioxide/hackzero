@@ -136,6 +136,15 @@ return {
                     end
                 }
             },
-        }
+        },
+    },
+
+    Survival = {
+        Easy = {
+            Maximum_Waves = 5,
+
+        },
+        Infinite = {},
+        
     }
 } :: Types.Stage

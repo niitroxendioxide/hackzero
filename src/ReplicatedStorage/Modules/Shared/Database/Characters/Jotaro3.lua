@@ -1,7 +1,7 @@
 return {
 	Display_Name = 'Jotaro Kujo',
 	Nickname = 'Jojo',
-	Element = 'Energy',
+	Element = 'Physical',
 	Role = 'Stun',
 	Tier = "Legendary",
 	Faction = "Stardust Crusaders",

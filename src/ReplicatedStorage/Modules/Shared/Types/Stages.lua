@@ -49,7 +49,7 @@ export type Stage_Key_Event = {
 	EventPlace: string?,
 
 	Enemies: {
-		[number]: {string | number},
+		[number]: EnemySpawnData,--{string | number},
 	},
 	TimeLimit: number?,
 }
@@ -78,7 +78,32 @@ export type Marker = {
 	Dialogue: {DialogueObject}?,
 }
 
-export type Rating = "X" | "B" | "A" | "S" | "SSS"
+
+export type Rating = "X" | "B" | "A" | "S" | "S+"
+export type EnemySpawnData = {
+	Name: string,
+	Amount: number,
+	Level: number,
+
+	Buffs: {},
+}
+
+
+export type Stage_Survival = {
+	Maximum: number,
+	Time_Limit: number,
+
+	Rewards: {
+		Handler: (Objectives: {[string]: boolean}) -> (Rating),
+		Items: {LootItem},
+	},
+
+	Enemies: {
+		[number]: EnemySpawnData
+	},
+}
+
+
 export type Stage_Act = {
 	--[string]: any,
 	AutoGenerate: boolean?,
@@ -113,6 +138,10 @@ export type Stage = {
 
 	Acts: {
 		[string]: Stage_Act,
+	},
+
+	Survival: {
+		[string]: Stage_Survival,
 	},
 }
 

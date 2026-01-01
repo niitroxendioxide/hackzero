@@ -22,6 +22,8 @@ local DEFAULT_DESCRIPTIONS = {
     Basic_Attack = 'Agent\'s default attack.',
     Ultimate = 'Agent\'s ultimate attack',
     Special = 'Agent\'s special attack',
+    Dodge_Counter = 'Agent\'s dodge counter',
+    Quick_Assist = 'Agent\'s quick assist',
 }
 
 local NOT_ENOUGH_COLOR = Color3.fromRGB(255, 133, 133)
@@ -52,7 +54,7 @@ local function UpdateSkillUpgradeRequirements(StatsTab, Agent, Skill)
     local Element = AgentCompleteData.Element
     local BaseItem = Element..'Chip'
 
-    local SkillLevel = AgentSkills[Skill]
+    local SkillLevel = (AgentSkills[Skill] or 0)
 
     if SkillLevel < Statics.Max_Skill_Level then
         local TotalItems = LocalData:GetItems()
@@ -144,11 +146,11 @@ function SkillComponent:UpdateSkills(MainFrame: MainFrame, Agent: string)
         end
 
         local SkillLvl = AgentInfo.Skills[SkillName]
-        SkillObject.Level.Level.Text = `{SkillLvl} / 20`
+        SkillObject.Level.Level.Text = `{(SkillLvl or 0)} / 20`
         SkillObject.Icon.Image = Icons.PREFIX .. (Icon or 0)
         SkillObject.Name = SkillName
 
-        Effects:Tween(SkillObject.Level.Bar.Fill, {.25, 'Cubic'}, {Size = UDim2.fromScale(SkillLvl/20, 1)})
+        Effects:Tween(SkillObject.Level.Bar.Fill, {.25, 'Cubic'}, {Size = UDim2.fromScale((SkillLvl or 0)/20, 1)})
 
         --
         if not Existed then

@@ -1,7 +1,7 @@
 return {
 	Display_Name = 'Tanjiro Kamado',
 	Nickname = 'Tanjiro',
-	Element = 'Water',
+	Element = 'Fire',
 	Role = 'Affliction',
 	Tier = "Legendary",
 	Faction = "Demon Slayer Corps",
