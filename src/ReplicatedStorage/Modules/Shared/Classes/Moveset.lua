@@ -87,7 +87,6 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 		local Verified = self:Verify(Agent, Type)
 
 		if not Verified then
-			--print('Skill couldn\'t be verified')
 			return false
 		end
 
@@ -97,7 +96,9 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 			error("Skill data is invalid. Make sure to have both Base{} and Upgrade{}")
 		end
 
-		Cooldown:Add(CooldownKey, Info.Base.Cooldown)
+		if not(Info.Base.Release) or Info.Base.ForceCooldownOnBegin then
+			Cooldown:Add(CooldownKey, Info.Base.Cooldown)
+		end
 
 		--local LastUse = self.__Last_Use[Agent][Type] or os.clock()	
 
@@ -142,13 +143,20 @@ function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass, Conte
 		Info = self:GetInfoForSkill('EX Special')
 	end
 
+	local CooldownKey = self.Name..Type..Caster.Name..Caster:GetId()
+
 	if typeof(self.__Assigned[Type]) == 'table' then
 		if not(Info.Base.Release) and not(Info.Base.ReleaseVerify) then
 			return false;
 		end
 
-		if Info.Base.ReleaseVerify and not self:Verify(Caster, Type) then
-			return
+		if Info.Base.ReleaseVerify and not self:Verify(Caster, Type, true) then
+			print('Not verified')
+			return false;
+		end
+
+		if not(Info.Base.ForceCooldownOnBegin) then
+			Cooldown:Add(CooldownKey, Info.Base.Cooldown)
 		end
 
 		--print(`{Type} last used with agent: {Agent.Name} on:`.. os.clock() - LastUse)
@@ -180,10 +188,10 @@ function MovesetClass:HasSkill(Type: string)
 	return true
 end
 
-function MovesetClass:Verify(Agent: AgentTypes.AgentClass, Type: string)
+function MovesetClass:Verify(Agent: AgentTypes.AgentClass, Type: string, Release: boolean)
 	local Info = self:GetInfoForSkill(Type)
 	local CooldownKey = self.Name..Type..Agent.Name..Agent:GetId()
-	if not string.match(Type, "Swap") and (Agent:GetState() ~= 'Idle' and not(Info.AllowedStates and Info.AllowedStates[Agent:GetState()])) then
+	if not string.match(Type, "Swap") and (Agent:GetState() ~= 'Idle' and not(Info.AllowedStates and Info.AllowedStates[Agent:GetState()])) and not Release then
 		return false
 	end
 

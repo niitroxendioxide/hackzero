@@ -7,6 +7,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local InterfaceAssets = ReplicatedStorage.Assets.Interface
 
+local IconDatabase = require(ReplicatedStorage.Modules.Shared.Database.Icons)
 local Places = require(ReplicatedStorage.Modules.Shared.Places)
 local EffectUtil = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local AgentTypes = require(Shared.Types.Agents)
@@ -122,11 +123,17 @@ function Component:Init()
 		end
 	end
 
-	local function AddEffectIcon(AgentName: string, Effect: {Id: number, Time: number?, Created: number})
+	local function AddEffectIcon(AgentName: string, Effect: {Id: number, Time: number?, Created: number, Tag: string})
+		---
+		local IconId = IconDatabase.StatusEffects.Tags[Effect.Tag] or IconDatabase.StatusEffects.Values[Effect.Type]
+		if IconId == nil then
+			IconId = IconDatabase.StatusEffects.DEFAULT
+		end
 
 		--
 		local Object = InterfaceAssets.Combat.Effects.EffectObj:Clone()
 		Object.Name = AgentName..Effect.Id
+		Object.Icon.Image = IconDatabase.PREFIX .. IconId
 		Object.Timer.Visible = Effect.Time ~= nil
 		Object.Parent = EffectsFrame
 
@@ -171,6 +178,10 @@ function Component:Init()
 		--
 		CleanUpEffectIcons()
 		for _, Effect in CurrentActiveCharacter.__Status.__Effects do
+			if Effect.Hide then
+				continue;
+			end
+
 			AddEffectIcon(CurrentActiveCharacter.Name, Effect)
 		end
 
@@ -216,6 +227,10 @@ function Component:Init()
 
 		--print(AgentId, ActiveAgentId)
 		if AgentId == ActiveAgentId and Agent then
+			if EffectObj.Hide then
+				return;
+			end
+	
 			AddEffectIcon(Agent.Name, EffectObj)
 		end
 	end)

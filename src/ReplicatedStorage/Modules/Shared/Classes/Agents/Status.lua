@@ -93,6 +93,16 @@ function StatusClass.UpdateMeter(self: Types.AgentStatusClass, Name: string, Amo
 	return
 end
 
+function StatusClass.HasMeter(self: Types.AgentStatusClass, Name: string): boolean
+	for _, Meter in self.__Meters do
+		if Meter.Name == Name then
+			return true
+		end
+	end
+
+	return false
+end
+
 function StatusClass.SetMeter(self: Types.AgentStatusClass, Name: string, Amount: number)
 	for Key, Meter in self.__Meters do
 		if Meter.Name ~= Name then
@@ -227,6 +237,7 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 		Time = Effect.Time,
 		Tag = Effect.Tag,
 		Value = Effect.Value,
+		Hide = Effect.Hide,
 		Created = os.clock(),
 
 		Remove = function()

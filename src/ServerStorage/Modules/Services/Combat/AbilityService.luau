@@ -194,18 +194,21 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 	local ActiveAgent, _ = AgentLibrary:GetCurrentActive(ReplicationId)
 	local Other = {...}
 
+	--print('Server got: ', GameEnum.KeyLookup(GameEnum.AbilityStates, StateId))
+
+	---
 	local Moveset = Service:GetMoveset(ActiveAgent.Name)
 	local Skill = GameEnum.KeyLookup(GameEnum.Skills, SkillId)
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	local XZ = Vector3.new(1, 0, 1)
 
-	--
+	---
 	local LookAt = ActiveAgent:GetPivot().LookVector
 	if Enemy then
 		LookAt = CFrame.lookAt(ActiveAgent:GetPivot().Position * XZ, Enemy:GetPivot().Position * XZ).LookVector
 	end
 
-	-- Skill behavior
+	--- Skill behavior
 	local SpacelessSkill = string.gsub(Skill, '_', ' ')
 
 	local Info = Moveset:GetInfoForSkill(SpacelessSkill)
@@ -254,7 +257,12 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 			})
 			return Status
 		elseif StateId == GameEnum.AbilityStates.End then
-			Moveset:Release(Skill, ActiveAgent)
+			Moveset:Release(Skill, ActiveAgent, {
+				Target = Enemy,
+				M1_Count = Other and Other[1] or nil,
+				Buffer = Other or {},
+				IsCancel = IsCancel,
+			})
 		elseif StateId == GameEnum.AbilityStates.Cancel then
 			Moveset:CancelSkill(Skill, ActiveAgent, {ClientInstruction = true})
 		end

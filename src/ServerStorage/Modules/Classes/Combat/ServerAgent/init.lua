@@ -212,6 +212,10 @@ function ServerAgentClass.Init(self: Types.ServerAgentClass, Player: Player)
 end
 
 function ServerAgentClass.UpdateMeter(self: Types.ServerAgentClass, Meter: string, Amount: number)
+	if not self.__Status:HasMeter(Meter) then
+		return;
+	end
+
 	local MeterObject = self.__Status:UpdateMeter(Meter, Amount)
 	local Percent = MeterObject.Value / MeterObject.Max
 

@@ -1,5 +1,5 @@
 return {
-	Display_Name = 'Kakarot',
+	Display_Name = 'Sonku (Z)',
 	Nickname = 'Son Goku',
 	Element = 'Energy',
 	Role = 'Affliction',
@@ -59,7 +59,7 @@ return {
 			Base = {
 				Release = true,
 				ReleaseVerify = true,
-				Cooldown = 0.1,
+				Cooldown = 0,
 				Speed = 1.25,
 
 				Attack_State_Time = {
@@ -220,8 +220,10 @@ return {
 				SSJ2Buff = {{
 					Type = 'Attack',
 					Value = "30%",
+					Tag = 'SS2',
 					Time = 3,
 				},{
+					Hide = true,
 					Type = 'Speed',
 					Value = .25,
 					Time = 3,
@@ -310,6 +312,7 @@ return {
 					Tag = 'GOKU_MODE_BUFF',
 					Time = 15,
 				},{
+					Hide = true,
 					Type = 'Speed',
 					Value = .3,
 					Time = 15,

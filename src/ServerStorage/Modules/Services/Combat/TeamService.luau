@@ -81,6 +81,10 @@ function Service:Create(Player: Player)
             local Meters = AgentInfo.Passive.Meters
 
             for MeterName, Data in Meters do
+                if Data.Ascension ~= nil and AgentInstance.__Ascension < Data.Ascension then
+                    continue
+                end
+
                 AgentInstance:CreateMeter(MeterName, Data)
             end
         end

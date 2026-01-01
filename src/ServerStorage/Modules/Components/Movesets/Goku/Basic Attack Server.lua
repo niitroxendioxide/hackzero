@@ -13,7 +13,12 @@ local Ability = AbilityClass.new()
 function Ability:Play(Caster, _, State, Context): ()
 	--local Is_Airborne = Context.Buffer[2];
 	local M1_Count = (Context.M1_Count :: number)
-	if (not M1_Count) or State ~= 'End' then
+	local Meter = Caster:GetMeter("SaiyanSurge")
+	if (not M1_Count) then
+		return
+	end
+
+	if (State == 'Begin' and Meter > 0) or (State == 'End' and Meter <= 2) then
 		return
 	end
 

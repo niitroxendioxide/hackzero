@@ -188,7 +188,9 @@ export type AgentStatusClass = {
 
 	CreateMeter: (self: AgentStatusClass, Name: string, Data: {Max: number?, EmptySpeed: number?, FillSpeed: number?, Id: number}) -> (),
 	UpdateMeter: (self: AgentStatusClass, Name: string, Amount: number) -> (),
+	SetMeter: (self: AgentStatusClass, Name: string, Amount: number) -> (),
 	GetAllMeters: (self: AgentStatusClass) -> ({AgentMeter}),
+	HasMeter: (self: AgentStatusClass) -> (boolean),
 	RemoveMeter: (self: AgentStatusClass, Name: string) -> (),
 	SetMeterUpdateType: (self: AgentStatusClass, Meter: string, Type: number, State: boolean, Handler: (() -> ())?) -> (),
 
@@ -223,7 +225,7 @@ export type AgentStatusClass = {
 
 
 -- [[Server data]]
-export type EffectParameters = {Type: (Stat & AgentMovesetAbility)?, Value: (number | string)?, Time: number?, Tag: string, Unique: boolean?, Callback: ((Id: number) -> ())?}
+export type EffectParameters = {Type: (Stat & AgentMovesetAbility)?, Value: (number | string)?, Time: number?, Tag: string, Unique: boolean?, Callback: ((Id: number) -> ())?, Hide: boolean,}
 export type EffectObject = {Remove: () -> (), Id: number, Value: number, Type: Stat & AgentMovesetAbility, Tag: string?, Time: number?, Created: number}
 export type ServerCharacterClass = {
 	__MovementVelocity: Vector3,
