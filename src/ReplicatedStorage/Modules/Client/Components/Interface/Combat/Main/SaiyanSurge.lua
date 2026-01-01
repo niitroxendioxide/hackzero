@@ -22,6 +22,10 @@ function Component:Update(Frame: FrameObj, Percent: number)
     end
 
     for _, Object in Meter.Orbs:GetChildren() do
+        if not Object:IsA('Frame') then
+            continue
+        end
+
         if Object.LayoutOrder <= AmountOfSpheres then
             Object.BackgroundColor3 = Color3.fromRGB(255, 179, 1);
             Object.MiddleStroke.Color = Color3.fromRGB(112, 95, 0);

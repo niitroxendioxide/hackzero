@@ -57,6 +57,8 @@ return {
 
 		['Basic Attack'] = {
 			Base = {
+				Release = true,
+				ReleaseVerify = true,
 				Cooldown = 0.1,
 				Speed = 1.25,
 

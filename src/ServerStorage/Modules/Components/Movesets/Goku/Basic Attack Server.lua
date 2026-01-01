@@ -10,10 +10,10 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster, _, _, Context): ()
+function Ability:Play(Caster, _, State, Context): ()
 	--local Is_Airborne = Context.Buffer[2];
 	local M1_Count = (Context.M1_Count :: number)
-	if (not M1_Count) then
+	if (not M1_Count) or State ~= 'End' then
 		return
 	end
 
@@ -84,7 +84,10 @@ function Ability:Play(Caster, _, _, Context): ()
 				Hit_Data.Daze = Ability:FromData("Daze_Mult", M1_Count, SkillLevel)
 				Hit_Data.Affliction_Buildup = Ability:FromData("Affliction_Buildup", M1_Count, SkillLevel)
 
-				Ability:Hit(Caster, Target, Hit_Data)
+				local Result = Ability:Hit(Caster, Target, Hit_Data)
+				if M1_Count == 6 and typeof(Result) == 'table' then
+					Caster:UpdateMeter('SaiyanSurge', 1);
+				end
 			end, M1_Count == 6 and 0.45 or nil)
 		end,},
 

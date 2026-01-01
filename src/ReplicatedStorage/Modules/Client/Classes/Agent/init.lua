@@ -230,6 +230,36 @@ function AgentClass:Init(PlayerId: number)
 	return self.__Character:Init()
 end
 
+function AgentClass.CreateMeter(self: AgentTypes.AgentClass, Name: string, Data: {[string]: any})
+	self.__Status:CreateMeter(Name, Data)
+end
+
+function AgentClass.UpdateMeter(self: AgentTypes.AgentClass, Meter: string, Amount: number)
+	self.__Status:UpdateMeter(Meter, Amount)
+end
+
+function AgentClass.SetMeter(self: AgentTypes.AgentClass, Meter: string, Amount: number)
+	self.__Status:SetMeter(Meter, Amount)
+end
+
+function AgentClass.GetAllMeters(self: AgentTypes.AgentClass)
+	return self.__Status:GetAllMeters()
+end
+
+function AgentClass.SetMeterUpdateType(self: AgentTypes.AgentClass, Meter: string, Type: number, State: boolean, h): ()
+	self.__Status:SetMeterUpdateType(Meter, Type, State, h)
+end
+
+function AgentClass.GetMeter(self: AgentTypes.AgentClass, Name: string): (number, number)
+	for _, Meter in self.__Status:GetAllMeters() do
+		if Meter.Name == Name then
+			return Meter.Value, Meter.Value / Meter.Max
+		end
+	end
+
+	return 0, 0
+end
+
 function AgentClass:GetRotation(): any
 	return self.__Character.__Controller.__Rotation
 end

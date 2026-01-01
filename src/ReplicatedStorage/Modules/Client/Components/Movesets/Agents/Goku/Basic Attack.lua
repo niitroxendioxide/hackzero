@@ -10,6 +10,7 @@ local Enemies = require(Shared.Libraries.Enemies)
 local Types = require(Shared.Types.Agents)
 
 --
+local RanNumbers = {}
 local Ability = AbilityClass.new(true)
 
 Ability:SetTargetFinder(function(Caster)
@@ -31,19 +32,24 @@ Ability:SetTargetFinder(function(Caster)
 	return id, nearest;
 end)
 
-Ability:ConnectHook(GameEnum.AbilityHooks.BeforeConnection, function(Agent)
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeReleaseConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 6})
 end)
 
-function Ability:Play(Agent, _, _, Context)
+function Ability:Play(Agent, _, State, Context)
 	local M1_Count = Ability:Get(Agent, 'Count')
+	local Meter = Agent:GetMeter("SaiyanSurge")
 
 	if Ability:Get(Agent, 'M1_Track') then
 		Ability:Get(Agent, 'M1_Track'):Stop(0.2)
 	end
-
-	--
+	
 	Ability:Save(Agent, "last_hit_enemy", Context.Target);
+
+	-- FIX LATER
+	if (State == 'Begin' and Meter > 0) or (State == 'End' and Meter <= 0) then
+		return
+	end
 
 	local Effect_Data = Ability:FromData('Effect_Data')
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
@@ -55,6 +61,7 @@ function Ability:Play(Agent, _, _, Context)
 			end
 
 			Agent:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
+			print('State change!', Agent:GetState())
 			
 			local Track = Ability:PlayAnimation(Agent, 'Goku.Abilities.M1.'..Ability:Get(Agent, 'Count'), {
 				Fade = .1,

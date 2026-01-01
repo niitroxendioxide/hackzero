@@ -10,7 +10,7 @@ local AbilityClass = require(Client.Classes.Ability)
 --
 local Ability = AbilityClass.new()
 
-Ability:ConnectHook(GameEnum.AbilityHooks.BeforeConnection, function(Agent)
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 4})
 end)
 

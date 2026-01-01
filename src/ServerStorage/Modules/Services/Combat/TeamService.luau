@@ -33,7 +33,6 @@ function Service:Create(Player: Player)
             AgentDataClass = AgentData
         end
 
-        local AgentInfo = AgentDatabase:GetMovesetData(AgentData.Name)
         local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level, AgentDataClass.Skills, AgentDataClass.Ascensions)
 
         if AgentDataClass.Drive then
@@ -42,14 +41,6 @@ function Service:Create(Player: Player)
             end, true)
 
             AgentInstance:BindDrive(DriveFromQuery:ToData())
-        end
-
-        if AgentInfo and AgentInfo.Passive and AgentInfo.Passive.Meters then
-            local Meters = AgentInfo.Passive.Meters
-
-            for MeterName, Data in Meters do
-                AgentInstance.__Status:CreateMeter(MeterName, Data)
-            end
         end
 
         local ArtifactIds = Table:WriteValues(AgentDataClass.Artifacts)
@@ -84,10 +75,14 @@ function Service:Create(Player: Player)
     Player:AddTag("Loaded")
 
 
-    --
-    for _, Agent in Agents do
-        for _, Meter in Agent:GetAllMeters() do
-            Replicator:UpdateMeter(Agent, Meter.Id, Meter.Value)
+    for _, AgentInstance in Agents do
+        local AgentInfo = AgentDatabase:GetMovesetData(AgentInstance.Name)
+        if AgentInfo and AgentInfo.Passive and AgentInfo.Passive.Meters then
+            local Meters = AgentInfo.Passive.Meters
+
+            for MeterName, Data in Meters do
+                AgentInstance:CreateMeter(MeterName, Data)
+            end
         end
     end
 end

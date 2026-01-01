@@ -14,7 +14,7 @@ local AbilityClass = require(Client.Classes.Ability)
 local EnemyList = {}
 local Ability = AbilityClass.new(true)
 
-Ability:ConnectHook(GameEnum.AbilityHooks.BeforeConnection, function(Caster: Types.Caster)  
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster: Types.Caster)  
 	EnemyList = {}
 
 	local AllEnemies = Enemies:GetAll()

@@ -130,9 +130,10 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 end
 
 
-function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass)
+function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass, Context: {IsCancel: boolean})
 	Type = Type:gsub('_', ' ')
-
+	Context = Context or {}
+		
 	local Info = self:GetInfoForSkill(Type)
 
 	if Type == 'Special' and Caster:GetCurrentSkill() == 'EX Special' then
@@ -142,18 +143,22 @@ function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass)
 	end
 
 	if typeof(self.__Assigned[Type]) == 'table' then
-		if not(Info.Base.Release) then
+		if not(Info.Base.Release) and not(Info.Base.ReleaseVerify) then
 			return false;
+		end
+
+		if Info.Base.ReleaseVerify and not self:Verify(Caster, Type) then
+			return
 		end
 
 		--print(`{Type} last used with agent: {Agent.Name} on:`.. os.clock() - LastUse)
 		if RunService:IsClient() then
-			print('Connecting type skill:', Type, ' as State: End')
-			self.__Assigned[Type]:Connect(Caster, 2)
+			local Enemy = self.__Assigned[Type]:Connect(Caster, 2, Context.IsCancel);
+			Context.Target = Enemy;
 		end
 
 		self.__Assigned[Type].__Held[Caster] = false
-		self.__Assigned[Type]:Play(Caster, Type, 'End')
+		self.__Assigned[Type]:Play(Caster, Type, 'End', Context)
 		self.__Last_Use[Caster][Type] = os.clock()
 
 

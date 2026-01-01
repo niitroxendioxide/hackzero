@@ -408,27 +408,63 @@ function Controller:FillMeter(Buffer: buffer)
 	local ReplicationId = Players.LocalPlayer:GetAttribute('ReplicationId') :: number
 	local MainUIHUD = InterfaceController:GetComponent("Main")
 
-	local AgentId = buffer.readu8(Buffer, 1)
-	local Meter = buffer.readu8(Buffer, 2)
-	local Percent = buffer.readu8(Buffer, 3) / 255
+	local PlayerId = buffer.readu8(Buffer, 1)
+	local AgentId = buffer.readu8(Buffer, 2)
+	local Meter = buffer.readu8(Buffer, 3)
+	local Percent = buffer.readu8(Buffer, 4) / 255
+	local Value = buffer.readu16(Buffer, 5) / 500
 
-	local AgentObject = Characters:GetAgent(ReplicationId, AgentId)
-	local Data = AgentsDatabase:GetMovesetData(AgentObject.Name)
+	local AgentObject = Characters:GetAgent(PlayerId, AgentId)
+	AgentObject:SetMeter(Meter, Value)
 
-	if not Data or not Data.Passive then
-		return
-	end
+	if PlayerId == ReplicationId then
+		local Data = AgentsDatabase:GetMovesetData(AgentObject.Name)
 
-	local MeterName: string = nil
-	for MeterNameLoop, MeterData in Data.Passive.Meters do
-		if MeterData.Id == Meter then
-			MeterName = MeterNameLoop
+		if not Data or not Data.Passive then
+			return
 		end
-	end
-	if not MeterName then return end
 
-	MainUIHUD:UpdateAgentMeter(AgentId, MeterName, Percent)
+		local MeterName: string = nil
+		for MeterNameLoop, MeterData in Data.Passive.Meters do
+			if MeterData.Id == Meter then
+				MeterName = MeterNameLoop
+			end
+		end
+		if not MeterName then return end
+
+		MainUIHUD:UpdateAgentMeter(AgentId, MeterName, Percent, Value)
+	end
 end
+
+function Controller:CreateMeter(Buffer: buffer, Name: string, MeterCreationData: {[string]: any})
+	local ReplicationId = Players.LocalPlayer:GetAttribute('ReplicationId') :: number
+	local PlayerId = buffer.readu8(Buffer, 1)
+	local AgentId = buffer.readu8(Buffer, 2)
+
+	local AgentObject = Characters:GetAgent(PlayerId, AgentId)
+	AgentObject:CreateMeter(Name, MeterCreationData)
+
+	if PlayerId == ReplicationId then
+		local MainUIHUD = InterfaceController:GetComponent("Main")
+		local Data = AgentsDatabase:GetMovesetData(AgentObject.Name)
+
+		if not Data or not Data.Passive then
+			return
+		end
+
+		local MeterName: string = nil
+		for MeterNameLoop, MeterData in Data.Passive.Meters do
+			if MeterData.Id == MeterCreationData.Id then
+				MeterName = MeterNameLoop
+			end
+		end
+
+		if not MeterName then return end
+
+		MainUIHUD:UpdateAgentMeter(AgentId, MeterName, 0, 0)
+	end
+end
+
 
 function Controller:SetEnemySpeed(Buffer: buffer)
 	local EnemyId = buffer.readu8(Buffer, 1)

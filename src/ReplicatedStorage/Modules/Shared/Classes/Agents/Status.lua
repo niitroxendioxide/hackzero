@@ -93,6 +93,21 @@ function StatusClass.UpdateMeter(self: Types.AgentStatusClass, Name: string, Amo
 	return
 end
 
+function StatusClass.SetMeter(self: Types.AgentStatusClass, Name: string, Amount: number)
+	for Key, Meter in self.__Meters do
+		if Meter.Name ~= Name then
+			continue
+		end
+
+		Meter.LastUpdate = os.clock()
+		Meter.Value = math.clamp(Amount, 0, Meter.Max)
+
+		return Meter
+	end
+
+	return
+end
+
 function StatusClass.RemoveMeter(self: Types.AgentStatusClass, Name: string): ()
 	for Key, Meter in self.__Meters do
 		if Meter.Name == Name then

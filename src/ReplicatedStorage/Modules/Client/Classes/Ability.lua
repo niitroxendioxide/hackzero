@@ -152,7 +152,11 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 
 	if Id == Agent.PlayerId then
 		self.__Context_Buffer = {}
-		self:__run_hooks(GameEnum.AbilityHooks.BeforeConnection, Agent)
+		if StateId == 1 then
+			self:__run_hooks(GameEnum.AbilityHooks.BeforeBeginConnection, Agent)
+		else
+			self:__run_hooks(GameEnum.AbilityHooks.BeforeReleaseConnection, Agent)
+		end
 
 		local IsBasicAttack = self.__Name == 'Basic_Attack'
 		local LookAtEnemy = self:FromData('NoAutoTrack') ~= true

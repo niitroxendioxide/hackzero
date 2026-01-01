@@ -20,7 +20,8 @@ return {
 		KillAgent = 20,
 		HitAgent = 21,
 		FillMeter = 22,
-		ProcessDodge = 23,
+		CreateMeter = 23,
+		ProcessDodge = 24,
 
 		-- Enemy
 		AddEnemy = 26,
@@ -132,7 +133,8 @@ return {
 	},
 
 	AbilityHooks = {
-		BeforeConnection = 1,
+		BeforeBeginConnection = 1,
+		BeforeReleaseConnection = 2,
 	},
 
 	Afflictions = {

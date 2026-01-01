@@ -145,18 +145,33 @@ function Replicator:KeySwitch(Player: Player, Key: string, Value: boolean, Targe
 	end
 end
 
-function Replicator:UpdateMeter(Agent: AgentTypes.ServerAgentClass, MeterId: number, Amount: number)
+function Replicator:UpdateMeter(Agent: AgentTypes.ServerAgentClass, MeterId: number, Amount: number, Percent: number)
 	local Player = Agent.__Player_Assigned
 	local PlayerRepId = Player:GetAttribute("ReplicationId") :: number
 	local Id = Agents:GetIdForPlayer(PlayerRepId, Agent) :: number
 
 	local Object = buffer.create(4)
 	buffer.writeu8(Object, 0, GameEnum.Replication.FillMeter)
-	buffer.writeu8(Object, 1, Id)
-	buffer.writeu8(Object, 2, MeterId)
-	buffer.writeu8(Object, 3, math.ceil(Amount * 255))
+	buffer.writeu8(Object, 1, PlayerRepId)
+	buffer.writeu8(Object, 2, Id)
+	buffer.writeu8(Object, 3, MeterId)
+	buffer.writeu8(Object, 4, math.ceil(Percent * 255))
+	buffer.writeu16(Object, 5, Amount * 500)
 
-	Network:Fire('Replicate', Player, Object)
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:CreateMeter(Agent: AgentTypes.ServerAgentClass, Name: string, Data: {[any]: any})
+	local Player = Agent.__Player_Assigned
+	local PlayerRepId = Player:GetAttribute("ReplicationId") :: number
+	local Id = Agents:GetIdForPlayer(PlayerRepId, Agent) :: number
+
+	local Object = buffer.create(3)
+	buffer.writeu8(Object, 0, GameEnum.Replication.CreateMeter)
+	buffer.writeu8(Object, 1, PlayerRepId)
+	buffer.writeu8(Object, 2, Id)
+
+	Network:FireForAll('Replicate', Object, Name, Data)
 end
 
 function Replicator:SyncVelocities(Player: Player, Target: Player, ...)

@@ -215,7 +215,7 @@ function ServerAgentClass.UpdateMeter(self: Types.ServerAgentClass, Meter: strin
 	local MeterObject = self.__Status:UpdateMeter(Meter, Amount)
 	local Percent = MeterObject.Value / MeterObject.Max
 
-	Replicator:UpdateMeter(self, MeterObject.Id, Percent)
+	Replicator:UpdateMeter(self, MeterObject.Id, MeterObject.Value, Percent)
 end
 
 function ServerAgentClass.GetAllMeters(self: Types.ServerAgentClass)
@@ -224,6 +224,12 @@ end
 
 function ServerAgentClass.SetMeterUpdateType(self: Types.ServerAgentClass, Meter: string, Type: number, State: boolean, h): ()
 	self.__Status:SetMeterUpdateType(Meter, Type, State, h)
+end
+
+function ServerAgentClass.CreateMeter(self: Types.ServerAgentClass, Name: string, Data: {[string]: any})
+	self.__Status:CreateMeter(Name, Data)
+	
+	Replicator:CreateMeter(self, Name, Data)
 end
 
 function ServerAgentClass.GetMeter(self: Types.ServerAgentClass, Name: string): (number, number)
