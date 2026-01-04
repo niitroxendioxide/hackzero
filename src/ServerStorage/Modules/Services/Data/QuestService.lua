@@ -27,12 +27,20 @@ function Service:Init()
 
 		if CurrentDay ~= StartDay then
 			Day_Unix = DateTime.now().UnixTimestampMillis
-
-			for _, Player in Players:GetPlayers() do
-				Quests:RefreshDailies(Player)
-			end
+			
+			Service:RefreshAllDailies()
 		end
 	end)
+end
+
+function Service:RefreshDailies(Player: Player)
+	Quests:RefreshDailies(Player)
+end
+
+function Service:RefreshAllDailies()
+	for _, Player in Players:GetPlayers() do
+		Quests:RefreshDailies(Player)
+	end
 end
 
 function Service:GetPlayerQuestsWithGoals(Player: Player, GoalKeys: Quests.GoalsListType): {[string]: {Quests.QuestObject}}

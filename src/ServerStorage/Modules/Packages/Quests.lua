@@ -47,7 +47,7 @@ local function CopyWithDefaultValues(Table: {})
 end
 
 --
-local DailyNames = {"DailyEnemies"}
+local DailyNames = {"DailyEnemies", "DailyStructures", "DailyInteractions"}
 local Quests = {}
 
 function Quests:AddQuest(Player: Player, Type: QuestType, Data: {[string]: any})

@@ -28,7 +28,7 @@ local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 local PlayerCompanionDataClass = require(Classes.Data.PlayerCompanionData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("ItemReworks", ProfileTemplate)
+local DataStore = ProfileStore.New("Quests", ProfileTemplate)
 
 --
 local ReplicatedKeys = {"Gems", "Money"}
@@ -288,6 +288,17 @@ function Service:AddPlayer(Player: Player)
     else
         Player:Kick(`Profile load fail - Please rejoin`)
     end
+end
+
+function Service:InitPlayer(Player: Player)
+
+
+    --
+    Service:SetupAgents(Player)
+    Service:SetupArtifacts(Player)
+    Service:SetupDrives(Player)
+    Service:SetupItems(Player)
+    Service:SetupCompanions(Player)
 end
 
 function Service:RemovePlayer(Player: Player): ()

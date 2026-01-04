@@ -8,6 +8,11 @@ return {
     Description = "Kill {Kill.Any} enemies",
 
     Rewards = {
-        Gems = 45,
+        Currency = {    
+            Gems = 10,
+            Gold = 1500,
+        },
+
+        Items = {},
     },
 }
