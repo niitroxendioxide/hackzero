@@ -170,6 +170,11 @@ return {
 		Cancel = 3,
 	},
 
+	Quests = {
+		Claim = 1,
+		Reroll = 2,
+	},
+
 	AirborneMatchState = {
 		None = 0,
 		Raised = 1,

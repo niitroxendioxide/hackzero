@@ -12,11 +12,13 @@ local QuestsDatabase = require(Database.Quests)
 --
 export type GoalsListType = {[string]: true}
 export type QuestType = "Daily" | "Main" | "Interactions" | "World"
+export type RewardList = {[string]: number}
 export type QuestObject = {
     Created: number,
     Id: string,
     Name: string,
     Type: QuestType,
+    Claimed: boolean,
 
     Description: string,
     Goals: {
@@ -28,7 +30,9 @@ export type QuestObject = {
     },
 
     Rewards: {
-        [string]: {[string]: number} | number,
+        Currency: RewardList,
+        Items: RewardList,
+        Player_Experience: number?,   
     }
 }
 
@@ -71,6 +75,7 @@ function Quests:AddQuest(Player: Player, Type: QuestType, Data: {[string]: any})
         Description = Data.Description,
         Name = Data.Name or Type..'Quest',
         Type = Type,
+        Claimed = false,
     }
 
     table.insert(Directory, QuestObject)
@@ -91,6 +96,24 @@ function Quests:GetFirstQuestWithName(Player: Player, Type: QuestType, Name: str
     end
 
     return;
+end
+
+function Quests:GetQuestById(Player: Player, QuestType: string?, QuestId: string): QuestObject?
+    local PlayerData = DataService:GetDataFor(Player)
+    local Directory = PlayerData.Quests[QuestType or 'Daily']
+
+    if not Directory then
+        return
+    end
+
+    for _, Quest in Directory do
+        if Quest.Id == QuestId then
+            return Quest
+        end
+    end
+
+    return;
+
 end
 
 function Quests:GetAllQuestsOfType(Player: Player, Type: QuestType): {QuestObject}

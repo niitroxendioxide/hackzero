@@ -52,7 +52,17 @@ return {
     },
 
     Quests = {
-        Daily = {},
+        Daily = {
+            --[[ 
+                Index is by number, ex.  
+                [1] = {
+                    Id: string,
+                    Name: string,
+                    Progress: {},
+                    Rewards: {},
+                },
+            --]]
+        },
         Main = {},
         Interactions = {},
     },
