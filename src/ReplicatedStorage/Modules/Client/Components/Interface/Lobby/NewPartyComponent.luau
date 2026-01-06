@@ -8,19 +8,14 @@ local Shared = ReplicatedStorage.Modules.Shared
 local AgentModels = ReplicatedStorage.Assets.Characters.Agents
 local Assets = ReplicatedStorage.Assets.Interface
 
-local Inputs = require(ReplicatedStorage.Modules.Client.Libraries.Inputs)
-local Types = require(Shared.Types)
 local Network = require(Shared.Network)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
-local UIGroups = require(Client.Libraries.UIGroups)
 local GameEnum = require(Shared.GameEnum)
-local NavStates = require(ReplicatedStorage.Modules.Client.States.Navigation)
-local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
 local StagesDatabase = require(Shared.Database.Stages)
 
 local BaseClass = require(Client.Classes.Interface)
-local Component = BaseClass.new("NewPartyComponent", "Lobby", {KeyToBind = Enum.KeyCode.L})
+local Component = BaseClass.new("NewPartyComponent", "Lobby")
 
 --- Constants
 local DockPositions = {
