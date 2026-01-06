@@ -292,20 +292,36 @@ function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: n
     return PlayerData.Team
 end
 
-function Service:GetStageData(): {Stage: string, Act: string, TotalPlayers: number}
+export type MatchData = {
+    Mission: {
+        Type: string,
+        Stage: string,
+        Act: string?,
+
+        Data: {
+            [string]: any,
+        }
+    }, 
+    TotalPlayers: number
+}
+
+function Service:GetStageData(): MatchData
     if #Players:GetPlayers() < 1 and not RunService:IsRunMode() then
         Players.PlayerAdded:Wait()
     end
 
     local RandomPlayer = RunService:IsRunMode() and Mock or  Players:GetPlayers()[1] :: Player
     local JoinData = RunService:IsRunMode() and {} or  RandomPlayer:GetJoinData()
-    local StageData = {}
+    local StageData = {} :: MatchData
 
     if not JoinData.TeleportData then
         StageData = {
-            Stage = settings.STAGE.Stage,
-            Act = settings.STAGE.Act,
             TotalPlayers = 1,
+            Mission = {
+                Type = settings.MISSION.TYPE,
+                Stage = settings.MISSION.STAGE.Stage,
+                Act = settings.MISSION.STAGE.Act,
+            },
         }
     else
         local TeleportData = JoinData.TeleportData
@@ -319,6 +335,22 @@ function Service:GetStageData(): {Stage: string, Act: string, TotalPlayers: numb
         StageData.Stage = SplitStageName[2]
         StageData.Act = SplitStageName[3]
         StageData.TotalPlayers = TotalPlayers
+    end
+
+    if StageData.Mission.Type == 'ChaosControl' then
+        local Data = StageData.Mission.Data;
+        local MarkersList = {};
+
+        for Name, ObjData in Data do
+            MarkersList[Name] = {
+                Type = 'Trigger',
+                Data = ObjData,
+            }
+        end
+
+        StageData.Mission.Data = {
+            Markers = MarkersList,
+        }
     end
 
     return StageData

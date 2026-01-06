@@ -66,6 +66,12 @@ return {
 		SetMovingStatusCompanion = 88,
 	},
 
+	ChaosControlTab = {
+		DailyImprovement = 1,
+		ApocalypseTower = 2,
+		AgentExperience = 3,
+	},
+
 	Device = {
 		Mobile = 1,
 		Desktop = 2,

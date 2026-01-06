@@ -49,10 +49,17 @@ function Service:Init()
     end
 
     local MatchData = TeleportService:GetStageData()
+    local MissionData = MatchData.Mission
     local TotalPlayers = MatchData.TotalPlayers
     local LoadedPlayers = 0
 
-    local Success_Loading = Service:CreateMap(MatchData.Stage, MatchData.Act)
+    local Success_Loading;
+    if MissionData.Type == 'Mission' then
+        Success_Loading = Service:CreateMap(MatchData.Stage, MatchData.Act)
+    elseif MissionData.Type == 'ChaosControl' then
+        Success_Loading = Service:CreateMap(MatchData.Mission.Stage)
+    end
+
     if not Success_Loading then
         TeleportService:ReturnToLobby(Players:GetPlayers())
 
@@ -174,9 +181,15 @@ function Service:CreateMap(Stage: string, Act: string): boolean
 end
 
 function Service:Begin(Stage: string, Act: string)
-    local Data = StageDatabase:GetAct(Stage, Act)
+    local MissionData = TeleportService:GetStageData().Mission
+    local Data;
+    if MissionData.Type == 'Mission' then
+        Data = StageDatabase:GetAct(Stage, Act)
+    elseif MissionData.Type == 'ChaosControl' then
+        Data = MissionData.Data
+    end
 
-    if not Data then
+    if not Data and MissionData.Type == 'Mission' then
         warn('Could not fetch stage data.')
 
         TeleportService:ReturnToLobby(Players:GetPlayers())
@@ -263,10 +276,10 @@ function Service:Lose()
     Service.__Active_Match:Finish(false)
 end
 
-function Service:GenerateMap(Stage: string, Act: string): boolean
+function Service:GenerateMap(Stage: string, Act: string?): boolean
     local StageInformation = StageDatabase:GetStage(Stage)
-    local ActInfo = StageDatabase:GetAct(Stage, Act)
-    if ActInfo.AutoGenerate then
+    local ActInfo = Act and StageDatabase:GetAct(Stage, Act)
+    if Act and ActInfo.AutoGenerate then
         return Map:Generate(StageInformation.Map, ActInfo.AutoGenerationData)
     end
 

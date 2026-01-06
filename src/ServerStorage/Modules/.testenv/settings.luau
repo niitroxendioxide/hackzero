@@ -4,9 +4,21 @@ return table.freeze({
         MARKERS = false,
     },
 
-    STAGE = {
-        Stage = 'Training',
-        Act = 'Intro',
+    MISSION = {
+        --- Types: ChaosControl, Mission
+        TYPE = 'ChaosControl',
+        STAGE = {
+            --- Training, DailyImprovement, DungeonEx
+            Stage = 'DailyImprovement',
+            Act = 'Intro',
+            Data = {
+                MainFight = {
+                    Enemies = {
+                        [1] = {'Strongest', 1, 60},
+                    },
+                },
+            },
+        },
     },
 
     FILL_ULT_BAR = true,

@@ -4,14 +4,78 @@ local Players = game:GetService('Players')
 local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
 --local Shared = ReplicatedStorage.Modules.Shared
+local Assets = ReplicatedStorage.Assets.Interface
 
 local Camera = require(ReplicatedStorage.Modules.Client.Libraries.Camera)
+local UIGroups = require(ReplicatedStorage.Modules.Client.Libraries.UIGroups)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local BaseClass = require(Client.Classes.Interface)
 local Component = BaseClass.new("ChaosControl", "Lobby", {KeyToBind = Enum.KeyCode.L})
 
 ---
 local CleanupObjects = {}
+local Amounts = {
+    ['DailyImprovement'] = 2,
+    ['ApocalypseTower'] = 7,
+    ['AgentExperience'] = 1,
+}
+local States = {
+    Nodes = {},
+}
+
+---
+function ClearNodes()
+    for _, NodeObject in Component:GetFrame().Stages:GetChildren() do
+        NodeObject:Destroy()
+    end
+end
+
+function CreateNodes(StageType: string, NodeCount: number)
+    local MainFrame = Component:GetFrame()
+    local NodeList = Assets.Lobby.Nodes
+    local NodeName = StageType .. 'Node'
+
+    local Positions = {}
+    if NodeCount == 1 then
+        Positions = {UDim2.fromScale(0.5, 0.66)}
+    elseif NodeCount == 2 then
+        Positions = {UDim2.fromScale(0.33, 0.66), UDim2.fromScale(0.66, 0.66)}
+    else
+        for Index = 1, NodeCount do
+            local X_Position = -1/(NodeCount*2) + (1/NodeCount)*Index 
+            local Y_Position = Index % 2 == 0 and 0.4 or 0.77
+            
+            table.insert(Positions, UDim2.fromScale(X_Position, Y_Position))
+        end
+    end
+
+    --
+    local Asset = NodeList:FindFirstChild(NodeName)
+    if not Asset then
+        return;
+    end
+
+    ClearNodes();
+    
+    for NodeId = 1, NodeCount do
+        local NodeClone = Asset:Clone();
+        local NodePosition = Positions[NodeId]
+
+        NodeClone.UIScale.Scale = 0;
+        NodeClone.Position = NodePosition;
+        NodeClone.Number.Text = string.format("%02i", NodeId);
+        NodeClone.Parent = MainFrame.Stages;
+
+        task.delay(NodeId * 1/10, function()
+            if not NodeClone then
+                return;
+            end
+
+            Effects:Tween(NodeClone.UIScale, { 0.2, 'Back' }, {Scale = 1})
+        end)
+    end
+end
+
 
 
 ---
@@ -26,18 +90,46 @@ end
 
 function Component:Init()
 
-    --
+    ---
     local Main = Component:GetFrame()
 
+    local ReturnObj = Main.Return;
+
+    ReturnObj.Btn.MouseEnter:Connect(function()
+        Effects:Tween(ReturnObj.UIScale, { 0.2, 'Back' }, { Scale = 1.1 })
+        Effects:Tween(ReturnObj.UIStroke, { 0.3, 'Quart' }, { Color = Color3.fromRGB(90, 19, 19) })
+        Effects:Tween(ReturnObj.OuterStroke, { 0.25, 'Sine' }, { Color = Color3.fromRGB(143, 0, 0) })
+    end)
+
+    ReturnObj.Btn.MouseLeave:Connect(function()
+        Effects:Tween(ReturnObj.UIScale, { 0.2, 'Quart' }, { Scale = 1 })
+        Effects:Tween(ReturnObj.UIStroke, { 0.3, 'Quart' }, { Color = Color3.fromRGB(62, 24, 24) })
+        Effects:Tween(ReturnObj.OuterStroke, { 0.4, 'Quart' }, { Color = Color3.fromRGB() })
+    end)
+
+    ReturnObj.Btn.MouseButton1Click:Connect(function()
+        self:Set(false)
+    end)
+
+    ---
     Component:BindToStateChange(function(State: boolean)  
         Main.Visible = true
 
+        for _, TweenOrThread in CleanupObjects do
+            if typeof(TweenOrThread) == 'thread' then
+                task.cancel(TweenOrThread)
+            else
+                TweenOrThread:Cancel()
+            end
+        end
+
+        CleanupObjects = {}
 
         if State then
             Camera:MarkUsage("ChaosControl")
 
-            Effects:Tween(workspace.CurrentCamera, { 0.45, 'Quint' }, { CFrame = workspace.World.LobbyCutscenes.ChaosControl.Main.CFrame })
-            Effects:Tween(workspace.CurrentCamera, { 0.6, 'Back' }, { FieldOfView = 60 })
+            table.insert(CleanupObjects, Effects:Tween(workspace.CurrentCamera, { 0.45, 'Quint' }, { CFrame = workspace.World.LobbyCutscenes.ChaosControl.Main.CFrame }))
+            table.insert(CleanupObjects, Effects:Tween(workspace.CurrentCamera, { 0.6, 'Back' }, { FieldOfView = 60 }))
             
             Main.Return.Rotation = -90
 
@@ -69,6 +161,11 @@ function Component:Init()
             end))
         else
             Camera:FreeUsage()
+
+            ClearNodes()
+
+            local LobbyMain = UIGroups:GetElementClass('Lobby', 'MainMenu')
+            LobbyMain:Set(true, true)
             
             Effects:Tween(Main.Return, {0.25, 'Quad'}, {Position = UDim2.fromScale(-0.1, 0.948)})
             Effects:Tween(Main.Return, {0.2, 'Back'}, {Rotation = -90})
@@ -78,6 +175,18 @@ function Component:Init()
         end
     end)
 
+    ---
+    local List = Main.Missions.List;
+
+    for _, Object in List:GetChildren() do
+        if not Object:IsA('Frame') then
+            continue;
+        end
+
+        Object.Button.MouseButton1Click:Connect(function()
+            CreateNodes(Object.Name, Amounts[Object.Name])
+        end)
+    end
 end
 
 return Component
