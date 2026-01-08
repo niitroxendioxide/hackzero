@@ -12,7 +12,7 @@ local Characters = require(Shared.Database.Characters)
 local Party = {}
 Party.__index = Party
 
-function Party.new(Code: number, Owner: Types.PartyPlayer): Types.PartyClass
+function Party.new(Code: number, Owner: Types.PartyPlayer, MissionData: {}?): Types.PartyClass
     local self = setmetatable({} :: Types.PartyClass, Party)
     self.Code = Code
 
@@ -26,6 +26,7 @@ function Party.new(Code: number, Owner: Types.PartyPlayer): Types.PartyClass
     self.__Ready = {}
     self.__State_Name = "Idle"
     self.__Teams = {}
+    self.__Data = MissionData or {}
 
     return self
 end
@@ -70,6 +71,14 @@ end
 
 function Party.SwitchStage(self: Types.PartyClass, Type: string, Stage: string, Act: string)
     self.__Stage = Type..'/'..Stage..'/'..Act
+end
+
+function Party.SetData(self: Types.PartyClass, Data: {}?)
+    self.__Data = Data
+end
+
+function Party.GetData(self: Types.PartyClass)
+    return self.__Data
 end
 
 function Party.RemovePlayer(self: Types.PartyClass, PlayerToRemove: Types.PartyPlayer)

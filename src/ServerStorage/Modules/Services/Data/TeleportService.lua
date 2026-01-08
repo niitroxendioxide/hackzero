@@ -175,8 +175,14 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
     Service.__Reserving[Party.Code] = true
 
     -- Logic checks
+    local PartyStage = string.split(Party:GetStage(), '/')
     local TeleportData = {
-        Stage = Party:GetStage(),
+        Mission = {
+            Type = PartyStage[1],
+            Stage = PartyStage[2],
+            Act = PartyStage[3],
+        },
+
         Players = {},
     }
 
@@ -325,15 +331,13 @@ function Service:GetStageData(): MatchData
         }
     else
         local TeleportData = JoinData.TeleportData
-        local SplitStageName = string.split(TeleportData.Stage, "/")
         local TotalPlayers = 0
 
         for _, Player in TeleportData.Players do
             TotalPlayers += 1
         end
 
-        StageData.Stage = SplitStageName[2]
-        StageData.Act = SplitStageName[3]
+        StageData.Mission = TeleportData.Mission
         StageData.TotalPlayers = TotalPlayers
     end
 

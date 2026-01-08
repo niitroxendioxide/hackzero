@@ -1,5 +1,6 @@
 return {
 	Display_Name = 'Boss Enemy',
+	Is_Boss = true,
 
 	Appearance = {
 		Height = 4

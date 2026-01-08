@@ -124,6 +124,11 @@ function Fetcher:FetchQuests(Type: string?): {DataTypes.QuestData}
     return New
 end
 
+function Fetcher:FetchChaosControl(Type: number)
+    local Data 
+
+end
+
 function Fetcher:SendRequest(Type: number, Event: string?)
     local Request = {Type, {}, false};
 

@@ -67,7 +67,7 @@ function CreateNodes(StageType: string, NodeCount: number)
         NodeClone.Parent = MainFrame.Stages;
 
         task.delay(NodeId * 1/10, function()
-            if not NodeClone then
+            if not(NodeClone) or not(NodeClone:FindFirstChild('UIScale')) then
                 return;
             end
 

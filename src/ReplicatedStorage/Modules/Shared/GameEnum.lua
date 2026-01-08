@@ -66,6 +66,11 @@ return {
 		SetMovingStatusCompanion = 88,
 	},
 
+	ChaosControlAction = {
+		Fetch = 1,
+		Begin = 2,
+	},
+
 	ChaosControlTab = {
 		DailyImprovement = 1,
 		ApocalypseTower = 2,
@@ -226,7 +231,7 @@ return {
 		Quests = 305,
 		Stages = 405,
 		Companions = 406,
-	},
+		ChaosControl = 407,	},
 
 	NotificationTypes = {
 		PartyInvite = 1,

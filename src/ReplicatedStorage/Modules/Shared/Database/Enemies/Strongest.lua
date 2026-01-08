@@ -1,5 +1,6 @@
 return {
 	Display_Name = 'Strongest Dummy',
+	Is_Boss = true,
 
 	Appearance = {
 		Height = 3.15

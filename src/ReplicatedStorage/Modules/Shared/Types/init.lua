@@ -619,6 +619,17 @@ export type PartyClass = {
 	__Ready: {PartyPlayer},
 	__Player_Count: number,
 	__Teams: {},
+	__Data: {
+		EnemyBuffs: {
+			{string | number}
+		},
+		AgentBuffs: {
+			{string | number}
+		},
+		Enemies: {
+			[number]: {},
+		}
+	},
 
 	--
 	AddPlayer: (self: PartyClass, Player: PartyPlayer) -> (),
