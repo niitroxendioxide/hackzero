@@ -13,6 +13,7 @@ local PartyService = require(Services.Lobby.PartyService)
 
 ----- Setting Up
 local Service = {
+    __Daily_Node_Count = 0;
     __Cache = {},
     __Enemies = {
         Bosses = {},
@@ -63,17 +64,29 @@ function HandleEvent(Player: Player, Action: number, Type: number, ...)
 
             if FloorData[Stage] then
                 --- here you fetch
-                Network:Fire('DataFetchRequest', Player, FloorData[Stage])
+                Network:Fire('ChaosControl', Player, Action, Type, FloorData[Stage])
             end
         end
 
     elseif Action == GameEnum.ChaosControlAction.Begin then
 
+    elseif Action == GameEnum.ChaosControlAction.Amount then
+        if Type == GameEnum.ChaosControlTab.DailyImprovement then
+            Network:Fire('ChaosControl', Player, Action, Type, Service.__Daily_Node_Count)
+        end
     end
 end
 
 ----- Private
-function Service:Init() Network:On("ChaosControl", HandleEvent)
+function Service:Init() 
+    Network.new('ChaosControl', 'Event');
+    Network:On("ChaosControl", HandleEvent)
+
+    local CurrentUnixDate = DateTime.now():ToUniversalTime() :: UnixDate
+    local CurrentDaySeed = CurrentUnixDate.Day * 1000 + CurrentUnixDate.Day
+    local DailyImprovementNodes = Random.new(CurrentDaySeed):NextInteger(2, 3)
+    
+    Service.__Daily_Node_Count = DailyImprovementNodes
     Service:GetDailyImprovementNode(1)
 end
 

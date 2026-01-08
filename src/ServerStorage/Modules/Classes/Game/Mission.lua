@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 local Services = Modules.Services
 
+local MapCache = require(ServerStorage.Modules.Libraries.MapCache)
 local Mock = require(Shared.Utility.Mock)
 local Types = require(Shared.Types.Stages)
 local Stages = require(Database.Stages)
@@ -38,18 +39,31 @@ end
 local MissionClass = {}
 MissionClass.__index = MissionClass
 
-function MissionClass.new(Stage: string, Act: string): Types.MissionClass
+--[[
+    Create a new mission, there are a few variant parameters
+
+    @param Type "Mission" or "ChaosControl"
+    @param Stage The stage to take as reference.
+    @param 'Act', can also be 'Data', for custom missions.
+
+--]]
+MissionClass.new = function(Type: string, Stage: string, Act: string | {}): Types.MissionClass
     local self = setmetatable({}, MissionClass)
     self.Finished = Signal.new()
 
     self.__Is_Finished = false
     self.__Active = false
-    self.__Act = Act;
+    self.__Act = Act :: string;
     self.__Stage = Stage;
     self.__Current_Events = {};
     self.__Current_Active_Triggers = {};
     self.__Current_State = {};
     self.__Hooks = StageHandlers:Get(Stage, Act) or Mock
+
+    if Type == 'ChaosControl' then
+        self.__Is_Chaos_Control = true
+        self.__Custom_Data = Act
+    end
 
     return self
 end
@@ -73,7 +87,20 @@ function MissionClass.IsFinished(self: Types.MissionClass): boolean
 end
 
 function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Players: {Types.StagePlayer}, Replay_Event, Trigger: BasePart?)
-    local EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
+    ---
+    
+    ---
+    local EventData;
+    local IsCustom = false;
+    if Trigger and Trigger:HasTag("CustomObject") then
+        IsCustom = true;
+        EventData = MapCache:GetTriggerData(Event)
+    elseif not Trigger and self.__Is_Chaos_Control then
+        EventData = self.__Custom_Data[Event];
+    else
+        EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
+    end
+
     if EventData == nil then
         return
     end
@@ -93,7 +120,12 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
     end
 
     -- Start event
-    local EventObject = EventClass.new(self.__Stage, self.__Act, Event :: string)
+    local EventObject;
+    if IsCustom then
+        EventObject = EventClass.new(EventData, nil, Event)
+    else
+        EventObject = EventClass.new(self.__Stage, self.__Act, Event :: string)
+    end
 
     if EventData.Global then
         local Rng = Random.new()

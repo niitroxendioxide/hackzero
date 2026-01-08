@@ -99,7 +99,9 @@ export type Stage_Survival = {
 	},
 
 	Enemies: {
-		[number]: EnemySpawnData
+		[number]: {
+			[number]: EnemySpawnData,
+		}
 	},
 }
 
@@ -148,6 +150,10 @@ export type Stage = {
 export type MissionClass = {
 	Finished: Signal<{[string]: any}>,
 
+	__Is_Chaos_Control: boolean,
+	__Custom_Data: {
+		[string]: any,
+	},
 	__Active: boolean,
 	__Act: string,
 	__Stage: string,
@@ -156,6 +162,7 @@ export type MissionClass = {
 	__Current_Events: {[string]: EventClass},
 	__Current_State: {[string]: any},
 	__Hooks: {[string]: (...any) -> ()},
+
 
 	--
 	Begin: (self: MissionClass) -> (),
@@ -200,6 +207,8 @@ export type EventClass = {
 	__Current_Wave_Connection: RBXScriptConnection?,
 	__Current_Goals: Goal,
 	__Current_State: {[Stage_Objective]: (number | boolean)?, Dead: boolean},
+	__Is_Custom_Event: boolean,
+	__Custom_Event_Data: {[string]: any},
 
 	AddPlayer: (self: EventClass, Player: StagePlayer) -> (),
 

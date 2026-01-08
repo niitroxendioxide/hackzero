@@ -34,7 +34,7 @@ end
 local EventClass = {}
 EventClass.__index = EventClass
 
-function EventClass.new(Stage: string, Act: string, Event: string)
+EventClass.new = function(Stage: string, Act: string, Event: string)
     local self = setmetatable({}, EventClass)
     self.Finished = Signal.new()
 
@@ -50,17 +50,28 @@ function EventClass.new(Stage: string, Act: string, Event: string)
     self.__Current_Barriers = {};
     self.__Current_Barrier_State = false;
 
+    if typeof(Stage) == 'table' then
+        self.__Is_Custom_Event = true;
+        self.__Custom_Event_Data = Stage;
+    end
+
     return self
 end
 
 function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): boolean
     if self.__Finish_Status then
-        return
+        return false;
     end
 
-    local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
+    local EventData;
+    if self.__Is_Custom_Event then
+        EventData = self.__Custom_Event_Data
+    else
+        EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
+    end
+
     if EventData == nil then
-        return
+        return false;
     end
 
     self.__Current_Wave_Thread = task.delay(EventData.TimeLimit or 7e25, function()
@@ -102,8 +113,12 @@ function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): boolean
             self:CreateEventAreaModel(Trigger)
         end
 
-        self:SummonEnemyWave(1)
+        self:SummonEnemyWave(1, if self.__Is_Custom_Event then EventData else nil, Trigger)
+
+        return true;
     end
+
+    return true
 end
 
 function EventClass.SetBarrierCollision(self: Types.EventClass, State: boolean)
@@ -176,8 +191,8 @@ function EventClass.CreateEventAreaModel(self: Types.EventClass, Trigger: BasePa
     self:SetBarrierCollision(true)
 end
 
-function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number)
-    local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
+function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, FromData: {}?, Trigger: BasePart?)
+    local EventData = FromData or Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
     local EnemyWaves = EventData.Enemies
     local NextWaveTime = 0.5
 
@@ -189,10 +204,11 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number)
 
     local Total = 0
     local CurrentWave = EnemyWaves[WaveNumber]
-    for i = 1, #CurrentWave, 3 do
-        local EnemyType = CurrentWave[i]
-        local EnemyCount = CurrentWave[i + 1]
-        local EnemyLevel = CurrentWave[i + 2]
+
+    for i = 1, #CurrentWave do
+        local EnemyType = CurrentWave[i].Name
+        local EnemyCount = CurrentWave[i].Amount
+        local EnemyLevel = CurrentWave[i].Level
 
         Total += EnemyCount
 
@@ -201,7 +217,7 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number)
         end
     end
 
-    if #CurrentWave % 2 ~= 0 then
+    if typeof(CurrentWave[#CurrentWave]) == 'number' then
         NextWaveTime = CurrentWave[#CurrentWave]
     end
 
@@ -223,7 +239,7 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number)
                 return
             end
 
-            task.delay(NextWaveTime, self.SummonEnemyWave, self, WaveNumber + 1)
+            task.delay(NextWaveTime, self.SummonEnemyWave, self, WaveNumber + 1, FromData)
         end
     end)
 end

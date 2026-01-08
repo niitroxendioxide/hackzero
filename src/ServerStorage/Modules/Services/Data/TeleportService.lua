@@ -327,6 +327,7 @@ function Service:GetStageData(): MatchData
                 Type = settings.MISSION.TYPE,
                 Stage = settings.MISSION.STAGE.Stage,
                 Act = settings.MISSION.STAGE.Act,
+                Data = settings.MISSION.DATA,
             },
         }
     else
@@ -345,12 +346,30 @@ function Service:GetStageData(): MatchData
         local Data = StageData.Mission.Data;
         local MarkersList = {};
 
-        for Name, ObjData in Data do
-            MarkersList[Name] = {
-                Type = 'Trigger',
-                Data = ObjData,
-            }
+        local ChaosControlType = Data.ChaosControlType;
+        if not Data.Enemies then
+            return;
         end
+
+        local TotalEnemies = 0;
+        for Wave, WaveData in Data.Enemies do
+            for _, EnemySpawnData in WaveData do
+               TotalEnemies += EnemySpawnData.Amount; 
+            end
+        end
+
+        MarkersList = {
+            MainFight = {
+                Type = 'Trigger',
+                Data = {
+                    Goal = {
+                        KillEnemies = TotalEnemies,
+                    },
+                    Enemies = Data.Enemies,
+                    Buffs = Data.EnemyBuffs,
+                },
+            }
+        }
 
         StageData.Mission.Data = {
             Markers = MarkersList,

@@ -69,6 +69,7 @@ return {
 	ChaosControlAction = {
 		Fetch = 1,
 		Begin = 2,
+		Amount = 3,
 	},
 
 	ChaosControlTab = {

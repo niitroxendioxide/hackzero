@@ -7,19 +7,25 @@ local Client = ReplicatedStorage.Modules.Client
 local Assets = ReplicatedStorage.Assets.Interface
 
 local Camera = require(ReplicatedStorage.Modules.Client.Libraries.Camera)
+local Fetcher = require(ReplicatedStorage.Modules.Client.Libraries.Fetcher)
 local UIGroups = require(ReplicatedStorage.Modules.Client.Libraries.UIGroups)
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local BaseClass = require(Client.Classes.Interface)
 local Component = BaseClass.new("ChaosControl", "Lobby", {KeyToBind = Enum.KeyCode.L})
 
 ---
 local CleanupObjects = {}
+
 local Amounts = {
     ['DailyImprovement'] = 2,
     ['ApocalypseTower'] = 7,
     ['AgentExperience'] = 1,
 }
+
 local States = {
+    CurrentTab = '',
+    Pulled = false,
     Nodes = {},
 }
 
@@ -30,7 +36,29 @@ function ClearNodes()
     end
 end
 
+function ShowInformation(Info: {}?)
+    local MainFrame = Component:GetFrame();
+    local InfoTab = MainFrame.Information :: Frame;
+    local StagesTab = MainFrame.Stages :: Frame;
+    
+    if Info == nil then
+        Effects:Tween(StagesTab, { 0.2, 'Cubic' }, { Position = UDim2.fromScale(0.5, StagesTab.Position.Y.Scale) })
+        Effects:Tween(InfoTab, { 0.25, 'Sine' }, { Position = UDim2.fromScale(1.5, InfoTab.Position.Y.Scale) })
+        
+        return;
+    end
+
+    Effects:Tween(StagesTab, { 0.25, 'Sine' }, { Position = UDim2.fromScale(-1.5, StagesTab.Position.Y.Scale) })
+    Effects:Tween(InfoTab, { 0.2, 'Cubic' }, { Position = UDim2.fromScale(.5, InfoTab.Position.Y.Scale) })
+end
+
 function CreateNodes(StageType: string, NodeCount: number)
+    if States.CurrentTab == StageType then
+        return;
+    end
+
+    States.CurrentTab = StageType
+
     local MainFrame = Component:GetFrame()
     local NodeList = Assets.Lobby.Nodes
     local NodeName = StageType .. 'Node'
@@ -65,6 +93,20 @@ function CreateNodes(StageType: string, NodeCount: number)
         NodeClone.Position = NodePosition;
         NodeClone.Number.Text = string.format("%02i", NodeId);
         NodeClone.Parent = MainFrame.Stages;
+        NodeClone.Button.MouseButton1Click:Connect(function()
+            ShowInformation({})
+
+            if not States.Nodes[StageType] then
+                States.Nodes[StageType] = {}
+            end
+
+            --- Use this data
+            local DataToShow = States.Nodes[StageType][NodeId];
+            if not DataToShow then
+                DataToShow = Fetcher:FetchChaosControl(GameEnum.ChaosControlAction.Fetch, GameEnum.ChaosControlTab[StageType], NodeId)
+                States.Nodes[StageType][NodeId] = DataToShow
+            end
+        end)
 
         task.delay(NodeId * 1/10, function()
             if not(NodeClone) or not(NodeClone:FindFirstChild('UIScale')) then
@@ -126,6 +168,8 @@ function Component:Init()
         CleanupObjects = {}
 
         if State then
+            ShowInformation(nil);
+
             Camera:MarkUsage("ChaosControl")
 
             table.insert(CleanupObjects, Effects:Tween(workspace.CurrentCamera, { 0.45, 'Quint' }, { CFrame = workspace.World.LobbyCutscenes.ChaosControl.Main.CFrame }))
@@ -159,10 +203,18 @@ function Component:Init()
                     task.wait((k - 1) * 1 / 7)
                 end
             end))
+
+
+            ---
+            if not States.Pulled then
+                Amounts.DailyImprovement = Fetcher:FetchChaosControl(GameEnum.ChaosControlAction.Amount, GameEnum.ChaosControlTab.DailyImprovement)[1]
+            end
         else
             Camera:FreeUsage()
 
             ClearNodes()
+            ShowInformation(nil)
+            States.CurrentTab = ""
 
             local LobbyMain = UIGroups:GetElementClass('Lobby', 'MainMenu')
             LobbyMain:Set(true, true)
@@ -185,6 +237,7 @@ function Component:Init()
 
         Object.Button.MouseButton1Click:Connect(function()
             CreateNodes(Object.Name, Amounts[Object.Name])
+            ShowInformation(nil);
         end)
     end
 end

@@ -8,6 +8,7 @@ local Assets = ReplicatedStorage.Assets
 
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Types = require(Shared.Types.Stages)
+local Cache = require(script.Parent.MapCache)
 local Generator = require(script.Generator)
 local World = workspace:WaitForChild('World')
 
@@ -117,7 +118,7 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
         Part:ClearAllChildren()
     end
 
-    local Triggers = Map:FindFirstChild( 'Triggers') or Instance.new('Folder')
+    local Triggers = Map:FindFirstChild('Triggers') or Instance.new('Folder')
     Triggers.Name = 'Triggers'
     Triggers.Parent = Map
 
@@ -125,7 +126,11 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
         local ObjName = MarkerObj.Name or MarkerId
 
         if MarkerObj.Type == 'Trigger' then
-            MapLoader:SetupTrigger(Map, MarkerId, ObjName, Triggers)
+            if MarkerObj.Data then
+                MapLoader:SetupTrigger(Map, MarkerId, MarkerObj.Data, Triggers)
+            else
+                MapLoader:SetupTrigger(Map, MarkerId, ObjName, Triggers)
+            end
         elseif MarkerObj.Type == 'Destructible' then
             local PartList = {}
 
@@ -178,20 +183,26 @@ function MapLoader:AssignCurrentMission(Mission)
     MapLoader.__Mission_Object = Mission
 end
 
-function MapLoader:SetupTrigger(Map: Folder & {Markers: Folder}, MarkerId: string, ObjName: string, Triggers: Folder)
+function MapLoader:SetupTrigger(Map: Folder & {Markers: Folder}, MarkerId: string, ObjNameOrData: string, Triggers: Folder)
     local Part = Map.Markers:FindFirstChild(MarkerId)
     if not Part then
         print(Part, 'not found!', MarkerId)
+
         return 
     end
 
     Part.CanQuery = false
     Part.CanCollide = false
 
-    Part.Name = ObjName
+    if typeof(ObjNameOrData) == 'table' then
+        Part:AddTag('CustomObject')
+        Cache:SaveTriggerData(MarkerId, ObjNameOrData)
+    elseif typeof(ObjNameOrData) == 'string' then
+        Part.Name = ObjNameOrData
+    end
 
     Part.Parent = Triggers
-
+    
     return Part
 end
 

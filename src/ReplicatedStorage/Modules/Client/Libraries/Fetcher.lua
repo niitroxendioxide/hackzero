@@ -3,8 +3,6 @@ local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local DataConverter = require(script.Parent.DataConverter)
-local CompanionTraits = require(ReplicatedStorage.Modules.Shared.Database.CompanionTraits)
-local Companions = require(ReplicatedStorage.Modules.Shared.Database.Companions)
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
 local Network = require(Shared.Network)
 local AgentDatabase = require(Shared.Database.Characters)
@@ -15,6 +13,7 @@ local DataTypes = require(Shared.Types.Data)
 
 local Fetcher = {
     __Requests_Queued = {},
+    __Chaos_Request = {},
 }
 
 function Fetcher:Init()
@@ -25,6 +24,18 @@ function Fetcher:Init()
                 Request[3] = true
             end
         end
+    end)
+
+    Network:On('ChaosControl', function(Action: number, Type: number, ...)
+
+        for _, Request in Fetcher.__Chaos_Request do
+
+            if Request[1] == Action and Request[2] == Type then
+                Request[3] = true
+                Request[4] = {...}
+            end
+        end
+        
     end)
 end
 
@@ -124,17 +135,25 @@ function Fetcher:FetchQuests(Type: string?): {DataTypes.QuestData}
     return New
 end
 
-function Fetcher:FetchChaosControl(Type: number)
-    local Data 
+function Fetcher:FetchChaosControl(Action: number, Type: number, ...)
+    local Request = {Action, Type, false};
+    Network:Fire('ChaosControl', Action, Type, ...)
 
+    table.insert(Fetcher.__Chaos_Request, Request)
+
+    repeat
+        task.wait()
+    until Request[3] == true
+
+    return Request[4]
 end
 
-function Fetcher:SendRequest(Type: number, Event: string?)
+function Fetcher:SendRequest(Type: number, Event: string?, ...)
     local Request = {Type, {}, false};
 
     table.insert(Fetcher.__Requests_Queued, Request);
 
-    Network:Fire(Event or "DataFetchRequest", Type);
+    Network:Fire(Event or "DataFetchRequest", Type, ...);
     repeat
         task.wait()
     until Request[3] == true;

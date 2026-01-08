@@ -212,7 +212,7 @@ function Service:Begin(Stage: string, Act: string)
     end
 
     local Marker_Data = Map:SetupMarkers(Data.Markers)
-    local MissionClass = MissionClass.new(Stage, Act)
+    local MissionClass = MissionClass.new(MissionData.Type, Stage, MissionData.Type == 'ChaosControl' and MissionData.Act or Act)
     Map:AssignCurrentMission(MissionClass)
 
     NPCService.__Stage = Stage
