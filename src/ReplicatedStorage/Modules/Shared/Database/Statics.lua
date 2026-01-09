@@ -142,6 +142,17 @@ return {
 
 	Switch_Character_Dash_Strength = 45,
 
+
+	Get_Agent_Experience_For_Level = function(Level: number)
+		local Amount = (Level - 1);
+		local AmountIncrease = Level // 7;
+		local Ascension = 1 + (Level // 10) * 0.33;
+
+		local ExperienceRequired = 100 + (Amount * (24 + AmountIncrease*5)) * Ascension;
+
+		return ExperienceRequired;
+	end,
+
 	Get_Health_By_Level = function(Level: number, Health: number, HealthIncrease: number)
 		local Ascensions = Level // 10
 		local Added = 0

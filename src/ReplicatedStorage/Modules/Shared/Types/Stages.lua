@@ -60,6 +60,15 @@ export type DialogueObject = {
 	NextDialogue: number?,
 }
 
+export type LootExtraData = {
+	Slot: number?,
+	Tier: ('Epic' | 'Legendary' | 'Mythical')?,
+	Extra: number,
+
+	Name: string?,
+}
+
+
 --[[
 	Item obtainable in game, this item stays in your inventory, meaning you can take it
 	from the match to use out, be it upgrades, artifacts, gold, etc.
@@ -115,10 +124,10 @@ export type Stage_Act = {
 
 	},
 
-	Rewards: {
+	Completion: {
 		Handler: (Objectives: {[string]: boolean}) -> (Rating),
 
-		Items: {
+		Rewards: {
 			LootItem
 		},
 	},
@@ -229,13 +238,6 @@ export type EventClass = {
 	UpdateProgress: (self: EventClass, Type: Stage_Objective, Value: any) -> (),
 
 	GetCorrectedState: (self: EventClass) -> (),
-}
-
-export type LootExtraData = {
-	Slot: number?,
-
-	Artifact_Name: string?,
-	Drive_Name: string?,
 }
 
 export type LootType = "Item" | "Artifact" | "Drive" | "Gold" | "Gems"

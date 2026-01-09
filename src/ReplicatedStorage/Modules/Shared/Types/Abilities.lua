@@ -109,7 +109,7 @@ export type AbilityClass = {
 		Play a different sequence of effects both on the caster and the target for hitting an enemy.
 		@param Caster represents whoever is casting the skill at the time
 		@param Target represents whoever is hit by the caster
-		@param Data Can include 'EffectData' for modifying the effect, or a Custom HitStopDuration
+		@param Data Can include 'EffectData' for modifying the effect, or a Custom HitStopDuration `{ NoHitStop: boolean, StopEffect: boolean, EffectData: {any} }`
 	]]
 	Hit: (self: AbilityClass, Caster: Caster, Target: Target, Data: {HitstopDuration: number, EffectData: {any}}) -> (),
 }

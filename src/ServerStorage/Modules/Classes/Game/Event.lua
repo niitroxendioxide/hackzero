@@ -202,6 +202,8 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
         return
     end
 
+    Network:FireForAll("Match", GameEnum.MatchEvents.UpdateWave, WaveNumber)
+
     local Total = 0
     local CurrentWave = EnemyWaves[WaveNumber]
 
@@ -300,10 +302,11 @@ function EventClass.Destroy(self: Types.EventClass, Not_Finished: boolean)
     end
 
     --
-    local EventData = Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
+    local EventData = if self.__Is_Custom_Event then self.__Custom_Event_Data 
+        else Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
 
     local CorrectedState = self:GetCorrectedState()
-    local Next_Stage = EventData.Finished()
+    local Next_Stage = if self.__Is_Custom_Event then self.__Custom_Event_Data.Finished else EventData.Finished()
     self:SetBarrierCollision(false)
 
     if Not_Finished then

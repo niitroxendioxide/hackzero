@@ -43,7 +43,6 @@ function AssistUtil:CalculateSwitchCFrame(CurrentAgent: Types.AgentClass & Types
 
 	if CurrentArea then
 		local IsInBox = Math:IsPointInBox(Location, CurrentArea, 1.25)
-		print(IsInBox)
 
 		if IsInBox then
 			return Location

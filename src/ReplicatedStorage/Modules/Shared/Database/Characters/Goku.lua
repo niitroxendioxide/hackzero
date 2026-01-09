@@ -326,10 +326,10 @@ return {
 			Base = {
 				Speed = 1,
 				Animation_Speed = 1,
-				Attack_State_Time = 1.45,
+				Attack_State_Time = 2.5,
 				Hit_Frequency = 4/60,
 				Hit_Data = {
-					Damage = 34,
+					Damage = 67,
 					Daze = 3,
 					Affliction = 'Energy',
 					Affliction_Buildup = 45,
@@ -346,7 +346,7 @@ return {
 
 			Upgrades = {
 				Hit_Data = {
-					Damage = 0.5,
+					Damage = 1,
 					Daze = 2.25,
 				}
 			},

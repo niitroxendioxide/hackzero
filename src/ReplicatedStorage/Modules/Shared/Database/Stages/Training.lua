@@ -12,14 +12,21 @@ return {
             Description = "Training area, agents can traing their abilities or test out their new abilities. Feel free to bring anyone in for either testing out their skills or messing around with the controls.",
             Requisites = {},
 
-            Rewards = {
-                Items = {
-                    {Type = "Gold", Amount = 1500},
+            Completion = {
+                Rewards = {
+                    ['S'] = {
+                        {Type = "Gold", Amount = 5000},
+                        {Type = "Gems", Amount = 20},
+                    },
+
+                    ['A'] = {
+                        {Type = "Gold", Amount = 2500}
+                    },
                 },
 
                 Handler = function(Objectives): Types.Rating
                     if Objectives.Main == true then
-                        return "SSS"
+                        return "S"
                     end
 
                     return "X"

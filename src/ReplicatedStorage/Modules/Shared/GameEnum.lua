@@ -258,6 +258,7 @@ return {
 		MarkClientLoaded = 8,
 		PlayerDied = 9,
 		SingularPlayerLeave = 10,
+		UpdateWave = 11,
 	},
 
 	SummonDropTypes = {

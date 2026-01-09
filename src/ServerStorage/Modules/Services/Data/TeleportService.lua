@@ -367,13 +367,12 @@ function Service:GetStageData(): MatchData
                     },
                     Enemies = Data.Enemies,
                     Buffs = Data.EnemyBuffs,
+                    Finished = 'End',
                 },
             }
         }
 
-        StageData.Mission.Data = {
-            Markers = MarkersList,
-        }
+        StageData.Mission.Data.Markers = MarkersList;
     end
 
     return StageData

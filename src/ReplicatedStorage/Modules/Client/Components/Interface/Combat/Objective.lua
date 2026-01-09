@@ -17,6 +17,7 @@ local State = {
 
     Stage = "",
     Act = "",
+    Mode = 'Mission',
 }
 local Component = ComponentClass.new(script.Name, 'HUD', {})
 
@@ -38,6 +39,10 @@ function Component:CreateEvent(Event: string)
         return
     end
 
+    if State.Mode ~= 'Mission' then
+        return;
+    end
+
     local EventData = Stages:GetEvent(State.Stage, State.Act, Event)
     if not EventData then
         return
@@ -54,6 +59,9 @@ function Component:CreateEvent(Event: string)
     State.Observers[Event] = {}
 
     local Frame = self:GetFrame()
+    Frame.Mission.Visible = true
+    Frame.Waves.Visible = false
+
     local Values = EventStates:New(Event, EventData.Goal)
     local Object = Assets.Combat.Objective.GoalObject:Clone()
     Object.Label.Text = EventData.Objective
@@ -98,6 +106,23 @@ end
 function Component:SetStage(StageName: string, ActName: string)
     State.Stage = StageName
     State.Act = ActName
+end
+
+function Component:SetWave(WaveId: number, Total: number)
+    if State.Mode == 'Mission' then
+        return;
+    end
+
+    local Frame = Component:GetFrame()
+    Frame.Mission.Visible = false
+    Frame.Waves.Visible = true
+
+    local Waves = Frame.Waves;
+    Waves.Counter.Text = `Current Wave: {WaveId} / {Total}`
+end
+
+function Component:SetMode(ModeName: string)
+    State.Mode = ModeName
 end
 
 return Component :: Types.UIComponent

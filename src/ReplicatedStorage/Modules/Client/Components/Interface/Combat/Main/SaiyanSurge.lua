@@ -15,8 +15,6 @@ function Component:Create(FrameObject: FrameObj)
 end
 
 function Component:Update(Frame: FrameObj, Percent: number, Value: number)
-    print(Percent, Value)
-
     local Meter = Frame.Meters:FindFirstChild('SaiyanSurge');
     local AmountOfSpheres = math.round(Percent * 4);
     if not Meter then

@@ -7,10 +7,10 @@ return {
 
 	--
 	Stats = {
-		Health = 500,
-		Attack = 120,
-		Defense = 72,
-		Daze = 662,
+		Health = 1123,
+		Attack = 55,
+		Defense = 36,
+		Daze = 600,
 		Daze_Length = 2,
 
 		Weakness = {'Energy'},
@@ -21,15 +21,14 @@ return {
 		Daze_Resistance = 71,
 		Resistance = 35,
 
-		Movement_Speed = 10,
+		Movement_Speed = 8,
 	},
 
 	Level_Stats = {
-		Attack = 5,
-		Health = 1720,
-		Defense = 16,
-		Daze = 7.5,
-		Daze_Resistance = 0.15,
+		Attack = 8,
+		Health = 863,
+		Defense = 7.76,
+		Daze = 5.8,
 	},
 
 	Moveset_Data = {

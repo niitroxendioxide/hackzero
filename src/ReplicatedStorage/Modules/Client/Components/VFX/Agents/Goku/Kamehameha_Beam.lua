@@ -9,6 +9,8 @@ local Types = require(Shared.Types.Abilities)
 local EffectUtil = require(Shared.Utility.Effects)
 
 function Shoot(Caster)
+    local KameLength = 1.5;
+    local SizeSpeed = 0.75;
     local Highlight = Instance.new("Highlight")
     Highlight.FillColor = Color3.new()
     Highlight.OutlineTransparency = 1
@@ -27,6 +29,10 @@ function Shoot(Caster)
     Beam:PivotTo(At)
 
     for _, Ball in Beam.Ball:GetChildren() do
+        if not Ball:IsA('BasePart') then
+            continue
+        end
+
         local ballSize = Ball.Size
         Ball.Size = vector.zero
 
@@ -42,7 +48,7 @@ function Shoot(Caster)
         Cylinder.CFrame *= CFrame.new(0, 0, Cylinder.Size.Z/2)
         Cylinder.Size *= vector.create(1, 1, 0);
 
-        EffectUtil:Tween(Cylinder, {.75, 'Quad'}, {
+        EffectUtil:Tween(Cylinder, {SizeSpeed, 'Quad'}, {
             CFrame = At * CFrame.new(0, 0, -Length/2),
             Size = vector.create(CylSize.X, CylSize.Y, Length),
         })
@@ -55,7 +61,7 @@ function Shoot(Caster)
         
         Attachment.Position = Position * vector.create(1, 1, 0)
         
-        EffectUtil:Tween(Attachment, {.75, 'Quad'}, {
+        EffectUtil:Tween(Attachment, {SizeSpeed, 'Quad'}, {
             Position = vector.create(Position.X, Position.Y, -Length)
         })
     end
@@ -65,14 +71,14 @@ function Shoot(Caster)
         Beam.GroundFX.Size *= vector.create(1, 1, 0)
         Beam.GroundFX.CFrame = CFrame.lookAlong(Cast.Position, At.LookVector)
 
-        EffectUtil:Tween(Beam.GroundFX, {.75, 'Quint'}, {
+        EffectUtil:Tween(Beam.GroundFX, {SizeSpeed, 'Quint'}, {
             Size = vector.create(Beam.GroundFX.Size.X, Beam.GroundFX.Size.Y, Length)
         })
 
     end
 
     --
-    task.delay(.75, function()
+    task.delay(KameLength, function()
 
         EffectUtil:Toggle(Aura, false)
         EffectUtil:Tween(Aura.Attachment.PointLight, {.25}, {Brightness = 0})
@@ -90,8 +96,25 @@ function Shoot(Caster)
         end
 
         for _, Ball in Beam.Ball:GetChildren() do
+            if not Ball:IsA('BasePart') then
+                continue
+            end
+
             EffectUtil:Tween(Ball, {.3, 'Sine'}, {
                 Size = vector.zero,
+            })
+        end
+
+        for _, Beam in Beam.Ball.Beams:GetChildren() do
+            EffectUtil:Tween(Beam, {.4, 'Sine'}, {Width0 = 0, Width1 = 0})
+        end
+
+        for _, Attachment in Beam.Ball.Out:GetChildren() do
+            if not Attachment:IsA("Attachment") then continue end
+            local Position = Attachment.Position
+            
+            EffectUtil:Tween(Attachment, {.35, 'Sine'}, {
+                Position = vector.create(0, 0, Position.Z)
             })
         end
 
@@ -142,7 +165,7 @@ return function(Caster: Types.Caster, State: boolean): ()
         Aura:PivotTo(Caster:GetPivot())
 
         local Active_Time = 0;
-        while Active_Time < 0.35 do
+        while Active_Time < 0.9 do
             Active_Time += EffectUtil:Wait()
 
             ChargeBall:PivotTo(GetBallCF(Caster))

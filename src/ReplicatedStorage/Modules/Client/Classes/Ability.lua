@@ -395,7 +395,7 @@ end
 	Play a different sequence of effects both on the caster and the target for hitting an enemy.
 	@param Caster represents whoever is casting the skill at the time
 	@param Target represents whoever is hit by the caster
-	@param Data Can include 'EffectData' for modifying the effect, or a Custom HitStopDuration
+	@param Data Can include 'EffectData' for modifying the effect, or a Custom HitStopDuration `{ NoHitStop: boolean, StopEffect: boolean, EffectData: {any} }`
 ]]
 function AbilityClass.Hit(self: Types.AbilityClass, Caster: any, Target: any, Data: {[string]: any})
 	Data = Data or {};
@@ -414,7 +414,7 @@ function AbilityClass.Hit(self: Types.AbilityClass, Caster: any, Target: any, Da
 		self:Effect("Hit", Target, Data.EffectData)
     end
 
-	if Animations and #Animations > 0 then
+	if (Animations and #Animations > 0) and not Data.NoHitStop then
 		for _, Anim in Animations do
 			HitStop:Apply(Caster, Sequence, Anim, HitstopDuration)
 		end

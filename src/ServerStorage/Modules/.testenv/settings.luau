@@ -14,25 +14,33 @@ return table.freeze({
         },
         DATA = {
             AgentBuffs = {},
+            Completion = {
+                Rewards = {
+                    ['S'] = {
+                        {Type = 'Gold', Amount = 1000},
+                        {Type = 'Gems', Amount = 60},
+                    },
+                },
+            },
             Enemies = {
                 [1] = {{
                     Name = 'Saiyan',
                     Level = 25,
-                    Amount = 3,
+                    Amount = 1,
                 }, {
                     Name = 'Saiyan',
                     Level = 35,
-                    Amount = 2,
+                    Amount = 1,
                 }},
 
                 [2] = {{
                     Name = 'Saiyan',
                     Level = 35,
-                    Amount = 3,
+                    Amount = 1,
                 }, {
                     Name = 'Saiyan',
                     Level = 40,
-                    Amount = 2,
+                    Amount = 1,
                 }}
             },
         }
@@ -45,7 +53,7 @@ return table.freeze({
 
     TEST_AGENTS = {
         'Goku',
-        'Jotaro3',
+        'Naruto',
         'Tanjiro',
     },
 })

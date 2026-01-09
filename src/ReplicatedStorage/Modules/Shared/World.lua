@@ -4,13 +4,17 @@ local FrictionValues = {} :: {number}
 local World = {
 	CharacterAcceleration = 10,
 	StepHeight = 1.895,
-	
+	CurrentSpeed = 1,
 }
 
 local WorldFolder = workspace:WaitForChild('World')
 
 function World:GetSpeed(): number
-	return 1
+	return World.CurrentSpeed;
+end
+
+function World:SetSpeed(Value: number)
+	World.CurrentSpeed = Value;
 end
 
 function World:GetAirFriction(): number

@@ -203,7 +203,7 @@ function ServerAgentClass.Init(self: Types.ServerAgentClass, Player: Player)
 				end
 
 				local Percent = MeterData.Value / MeterData.Max
-				Replicator:UpdateMeter(self, MeterData.Id, Percent)
+				Replicator:UpdateMeter(self, MeterData.Id, MeterData.Value, Percent)
 			end
 		end
 	end)

@@ -157,6 +157,10 @@ local function SetUltBarFill(Coefficient: number)
     local FillStroke = UltBar.Inner.UIStroke
     local Offset = Vector2.new(0, 0.5 - Coefficient)
 
+    if Thread then
+        task.cancel(Thread)
+    end
+
     EffectUtil:Tween(FillStroke.UIGradient, {.2, 'Sine'}, {Offset = Offset})
     EffectUtil:Tween(UltBar.Meter.Fill, {.2, 'Sine'}, {Size = UDim2.fromScale(1.25, 0.1 + Coefficient)})
     EffectUtil:Tween(UltBar.Meter.Fill, {.2}, {BackgroundColor3 = Color})
@@ -167,10 +171,6 @@ local function SetUltBarFill(Coefficient: number)
         ColorSequenceKeypoint.new(0.5, Color),
         ColorSequenceKeypoint.new(1,Color),
     }
-
-    if Thread then
-        task.cancel(Thread)
-    end
 
     if LastCoefficient ~= Coefficient and Coefficient == 1 then
         local H = Color:ToHSV()

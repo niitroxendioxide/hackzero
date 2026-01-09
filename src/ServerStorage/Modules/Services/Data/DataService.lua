@@ -317,6 +317,17 @@ function Service:RemovePlayer(Player: Player): ()
     end
 end
 
+function Service:GiveExperience(Player: Player, Amount: number)
+    local Data = Service:GetDataFor(Player);
+
+end
+
+function Service:GetLevel(Player: Player): number
+    local Data = Service:GetDataFor(Player)
+
+    return Data.Level;
+end
+
 function Service:GetDataFor(Player: Player): Types.PlayerProfileData
     local Data = Service.__Profiles[Player]
     if Data == nil then

@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
+local Characters = require(ReplicatedStorage.Modules.Shared.Database.Characters)
 local Types = require(Shared.Types)
 
 --
@@ -16,6 +17,7 @@ local CharacterClass = {} :: {[string]: (self: Types.CharacterClass, any) -> (),
 CharacterClass.__index = CharacterClass
 
 function CharacterClass.new(Character: string)
+	local CharacterData = Characters:GetCharacterData(Character, true)
 	local self = setmetatable({}, {__index = function(self, key)
 		if key == 'Collider' then
 			return (rawget(self, '__Controller') :: any):GetCollider()
@@ -29,7 +31,7 @@ function CharacterClass.new(Character: string)
 	self.__Tags = {}
 	self.__Appearance = Appearance.new(Character)
 	self.__States = States.new(Character)
-	self.__Controller = Physics.new(self.__States, nil, Character == 'Goku' and true)
+	self.__Controller = Physics.new(self.__States, CharacterData.Appearance.Height, Character == 'Goku' and true)
 	self.__Animator = Animator.new(self, Character)
 
 	self.Name = Character

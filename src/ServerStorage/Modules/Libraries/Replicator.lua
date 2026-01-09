@@ -150,8 +150,6 @@ function Replicator:UpdateMeter(Agent: AgentTypes.ServerAgentClass, MeterId: num
 	local PlayerRepId = Player:GetAttribute("ReplicationId") :: number
 	local Id = Agents:GetIdForPlayer(PlayerRepId, Agent) :: number
 
-	print(Percent)
-
 	local Object = buffer.create(7)
 	buffer.writeu8(Object, 0, GameEnum.Replication.FillMeter)
 	buffer.writeu8(Object, 1, PlayerRepId)

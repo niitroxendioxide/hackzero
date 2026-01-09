@@ -115,6 +115,7 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
         if RunService:IsStudio() and settings.REPLICATE_CONSTANTS.MARKERS then
             break
         end
+
         Part:ClearAllChildren()
     end
 

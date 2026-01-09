@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Player = Players.LocalPlayer
 
 local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
+local World = require(ReplicatedStorage.Modules.Shared.World)
 local LocalData = require(Client.Libraries.LocalData)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
@@ -21,6 +22,7 @@ local Camera = require(Client.Libraries.Camera)
 
 local Controller = {
     __Began = false :: boolean,
+    __Total_Waves = 0 :: number,
 }
 
 function Controller:HasBegun(): boolean
@@ -42,6 +44,8 @@ function Controller:Init()
         elseif Type == GameEnum.MatchEvents.MatchBegin then
             Controller.__Began = true
             Controller:BeginMatch(...)
+        elseif Type == GameEnum.MatchEvents.UpdateWave then
+            Controller:UpdateCurrentWave(...)
         end
     end)
 
@@ -83,6 +87,14 @@ function Controller:BeginMatch(Payload: {})
     Cutscenes:Start("Entrance")
     Cutscenes:WaitCurrent()
 
+    --
+    local Objective = InterfaceController:GetComponent("Objective")
+    if Payload.TotalWaves then
+        Objective:SetMode('Waves')
+        Controller.__Total_Waves = Payload.TotalWaves
+        Controller:UpdateCurrentWave(1)
+    end
+
     Camera:RotateTo(CombatController:GetCurrentCharacter():GetPivot() * CFrame.new(0, 1, 2))
 
     CombatController:SetCombatState(true)
@@ -94,14 +106,21 @@ function Controller:MatchEnded(ServerData: {})
     local Component = InterfaceController:GetComponent("EndScreen")
     local Objective = InterfaceController:GetComponent("Objective")
 
+    World:SetSpeed(0.01)
+
     Component:ShowData(ServerData)
     Component:Set(true)
     Objective:Set(false)
 end
 
+function Controller:UpdateCurrentWave(WaveId: number)
+    local Objective = InterfaceController:GetComponent("Objective")
+
+    Objective:SetWave(WaveId, Controller.__Total_Waves)
+end
+
 function Controller:UpdateProgress(Ev: string, Key: string, Value: any)
     EventStates:Set(Ev, Key, Value)
-
 end
 
 function Controller:BeginEvent(Event: string)
