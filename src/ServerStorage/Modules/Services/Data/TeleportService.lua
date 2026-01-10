@@ -102,7 +102,7 @@ Teleport a group of people
 
 @return `boolean` Whether or not the teleport was succesful
 ]]
-function TeleportPlayerGroupAttempt(PlaceId: number, Code: number, Players: {Player}, Data: {})
+function TeleportPlayerGroupAttempt(PlaceId: number, Code: number?, Players: {Player}, Data: {})
     local CurrentAttempts = MAX_TELEPORT_ATTEMPTS
 
     for _, Player in Players do
@@ -181,8 +181,8 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
             Type = PartyStage[1],
             Stage = PartyStage[2],
             Act = PartyStage[3],
+            Data = Party:GetData(),
         },
-
         Players = {},
     }
 
@@ -347,32 +347,30 @@ function Service:GetStageData(): MatchData
 
         TableUtil:printTable(StageData)
         --local ChaosControlType = Data.ChaosControlType;
-        if not Data.Enemies then
-            return;
-        end
-
-        local TotalEnemies = 0;
-        for Wave, WaveData in Data.Enemies do
-            for _, EnemySpawnData in WaveData do
-               TotalEnemies += EnemySpawnData.Amount; 
+        if Data.Enemies then
+            local TotalEnemies = 0;
+            for Wave, WaveData in Data.Enemies do
+                for _, EnemySpawnData in WaveData do
+                TotalEnemies += EnemySpawnData.Amount; 
+                end
             end
-        end
 
-        MarkersList = {
-            MainFight = {
-                Type = 'Trigger',
-                Data = {
-                    Goal = {
-                        KillEnemies = TotalEnemies,
+            MarkersList = {
+                MainFight = {
+                    Type = 'Trigger',
+                    Data = {
+                        Goal = {
+                            KillEnemies = TotalEnemies,
+                        },
+                        Enemies = Data.Enemies,
+                        Buffs = Data.EnemyBuffs,
+                        Finished = 'End',
                     },
-                    Enemies = Data.Enemies,
-                    Buffs = Data.EnemyBuffs,
-                    Finished = 'End',
-                },
+                }
             }
-        }
 
-        StageData.Mission.Data.Markers = MarkersList;
+            StageData.Mission.Data.Markers = MarkersList; 
+        end
     end
 
     if not RunService:IsStudio() then

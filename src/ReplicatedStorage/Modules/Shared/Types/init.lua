@@ -645,6 +645,9 @@ export type PartyClass = {
 	GetMaxPlayers: (self: PartyClass) -> (number),
 	SwitchStage: (self: PartyClass, Type: string, Stage: string, Act: string) -> (),
 
+	SetData: (self: PartyClass, Data: {[string]: any}) -> (),
+	GetData: (self: PartyClass) -> ({[string]: any}),
+
 	GetPlayerTeam: (self: PartyClass, Player: PartyPlayer) -> (PartyPlayerTeam),
 	SetPlayerTeam: (self: PartyClass, Player: PartyPlayer, Team: PartyPlayerTeam?) -> (),
 	GetSimplifiedTeam: (self: PartyClass, Player: PartyPlayer) -> (),
@@ -746,7 +749,15 @@ export type PlayerProfileData = {
 		Tokens: {CharacterToken | SkinToken},
 	},
     Warnings: {},
-	ChaosControl: {},
+	ChaosControl: {
+		DailyImprovement: {},
+		AgentExperience: {
+			CurrentFloor: number,
+			CanChange: boolean,
+			Team: {},
+		},
+		ApocalypseTower: {},
+	},
 }
 
 export type Signal<T...> = RBXScriptSignal & {Fire: (self: RBXScriptSignal, T...) -> (), Connect: (fn: (T...) -> ()) -> ()}

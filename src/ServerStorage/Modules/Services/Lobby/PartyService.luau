@@ -374,7 +374,7 @@ function Service:Start(Player: Player): boolean
 
     --
     if not Service:ValidateStage(Party) then
-        return
+        return false;
     end
 
     return TeleportService:TeleportGroup(Party:GetStagePlace(), Party, {})

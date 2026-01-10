@@ -15,6 +15,7 @@ local PartyService = require(Services.Lobby.PartyService)
 local EnemiesDatabase = require(Shared.Database.Enemies)
 
 ----- Setting Up
+local AgentExperienceSeedOffset = 0;
 local Service = {
     __Daily_Node_Count = 0;
     __Cache = {},
@@ -271,7 +272,7 @@ function Service:SelectDailyImprovementReward(Player: Player, Node: number, Rewa
     local CurrentNodeSeed = Service:GetDailyImprovementNode(Player, Node);
     local ChaosControlData = PlayerData.ChaosControl;
 
-    if ChaosControlData.DailyImprovement and ChaosControlData.DailyImprovement[Node] then
+    if ChaosControlData.DailyImprovement[Node] then
         local NodeData = ChaosControlData.DailyImprovement[Node]
         if NodeData.IsCompleted and NodeData.NodeId == CurrentNodeSeed then
             return;
@@ -283,6 +284,74 @@ function Service:SelectDailyImprovementReward(Player: Player, Node: number, Rewa
     end
 
     Service.__Nodes[Player][Node] = Reward;
+end
+
+function Service:GetAgentExperienceStage(Player: Player)
+    local PlayerData = DataService:GetDataFor(Player)
+    if not PlayerData.ChaosControl then
+        return;
+    end
+    
+    local CurrentFloorSeed = PlayerData.ChaosControl.AgentExperience.CurrentFloor + AgentExperienceSeedOffset;
+    local Generator = Random.new(CurrentFloorSeed);
+
+    local Upgrade = 1 + (CurrentFloorSeed // 100)
+    local Difficulty = (CurrentFloorSeed - 100*Upgrade) // 15
+    local FloorCombatData = {
+        AgentBuffs = {},
+        EnemyBuffs = {},
+        Enemies = {},
+        Completion = {
+            Rewards = {
+                ["S"] = {
+                    {Type = "Money", Amount = 3000},
+                    {Type = "Gems", Amount = 30},
+                },
+            }
+        }
+    };
+
+    for WaveId = 1, Generator:NextInteger(2, 3) + Difficulty/3 do
+        FloorCombatData.Enemies[WaveId] = {}
+
+        local EnemyCount = Generator:NextInteger(math.max(2, Upgrade), 5 + Upgrade) * math.max(Difficulty/3, 1)
+        local EnemyBuffCount = Generator:NextInteger(Upgrade // 3, Upgrade // 2 + 1)
+        local AgentBuffCount = Generator:NextInteger(Upgrade // 2, 1 + Upgrade // 2)
+
+        for _ = 1, EnemyBuffCount do
+            table.insert(FloorCombatData.EnemyBuffs, Enemy_Buffs[Generator:NextInteger(1, #Enemy_Buffs)])
+        end;
+
+        for _ = 1, AgentBuffCount do
+            table.insert(FloorCombatData.AgentBuffs, Agent_Buffs[Generator:NextInteger(1, #Agent_Buffs)])
+        end;
+
+        local EnemyTypes = Generator:NextInteger(1, math.clamp(EnemyCount, 1, math.min(4, #Service.__Enemies.Default)))
+        local ChosenTypes = table.clone(Service.__Enemies.Default)
+
+        local Remaining = EnemyCount
+        for TypeId = 1, EnemyTypes do
+            local ChosenId = Generator:NextInteger(1, #ChosenTypes)
+            local ChosenName = ChosenTypes[ChosenId]
+            local Amount = EnemyCount // EnemyTypes
+            local EnemyLevel = math.min((WaveId + Difficulty) * 4 + Upgrade * 15, 70)
+            if TypeId == EnemyTypes and (Remaining - Amount) == 1 then
+                Amount = Remaining
+            end
+
+            Remaining -= Amount
+
+            table.insert(FloorCombatData.Enemies[WaveId], {
+                Name = ChosenName,
+                Amount = Amount,
+                Level = EnemyLevel,
+            })
+
+            table.remove(ChosenTypes, ChosenId)
+        end
+    end
+
+    return FloorCombatData
 end
 
 function Service:GetApocalypseTowerFloor(Player: Player, Floor: number): { [number]: { AgentBuffs: {}, EnemyBuffs: {}, Enemies: {} } }

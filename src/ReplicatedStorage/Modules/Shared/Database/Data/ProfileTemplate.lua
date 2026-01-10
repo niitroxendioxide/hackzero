@@ -80,5 +80,9 @@ return {
         Tokens = {},
     },
     Warnings = {},
-    ChaosControl = {},
+    ChaosControl = {
+        DailyImprovement = {},
+        ApocalypseTower = {},
+        AgentExperience = {},
+    },
 }
