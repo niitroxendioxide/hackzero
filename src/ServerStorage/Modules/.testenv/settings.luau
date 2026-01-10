@@ -13,6 +13,10 @@ return table.freeze({
             Act = 'Intro',
         },
         DATA = {
+            ChaosControlData = {
+                Type = 'DailyImprovement',
+                Node = 1,
+            },
             AgentBuffs = {},
             Completion = {
                 Rewards = {
@@ -24,23 +28,23 @@ return table.freeze({
             },
             Enemies = {
                 [1] = {{
-                    Name = 'Saiyan',
+                    Name = 'Sorcerer',
                     Level = 25,
-                    Amount = 1,
+                    Amount = 3,
                 }, {
                     Name = 'Saiyan',
                     Level = 35,
-                    Amount = 1,
+                    Amount = 2,
                 }},
 
                 [2] = {{
-                    Name = 'Saiyan',
+                    Name = 'Sorcerer',
                     Level = 35,
-                    Amount = 1,
+                    Amount = 3,
                 }, {
                     Name = 'Saiyan',
                     Level = 40,
-                    Amount = 1,
+                    Amount = 2,
                 }}
             },
         }

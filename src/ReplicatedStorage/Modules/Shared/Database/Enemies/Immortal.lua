@@ -1,5 +1,6 @@
 return {
 	Display_Name = 'Training Dummy',
+	RemoveFromChaosControl = true,
 
 	Appearance = {
 		Height = 3.15

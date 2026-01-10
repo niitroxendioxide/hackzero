@@ -60,7 +60,7 @@ function Party.CancelReady(self: Types.PartyClass, Player: Types.PartyPlayer): b
         return false
     end
 
-    local Index = table.find(self.__Ready, Player)
+    local Index = table.find(self.__Ready   , Player)
 
     if Index then
         table.remove(self.__Ready, Index)

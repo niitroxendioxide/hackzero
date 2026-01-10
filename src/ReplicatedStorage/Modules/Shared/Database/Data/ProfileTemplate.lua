@@ -80,4 +80,5 @@ return {
         Tokens = {},
     },
     Warnings = {},
+    ChaosControl = {},
 }

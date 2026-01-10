@@ -119,7 +119,7 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
         Part:ClearAllChildren()
     end
 
-    local Triggers = Map:FindFirstChild('Triggers') or Instance.new('Folder')
+    local Triggers = Map:FindFirstChild('   Triggers') or Instance.new('Folder')
     Triggers.Name = 'Triggers'
     Triggers.Parent = Map
 

@@ -1,6 +1,7 @@
 return {
 	Display_Name = 'Strongest Dummy',
 	Is_Boss = true,
+	RemoveFromChaosControl = true,
 
 	Appearance = {
 		Height = 3.15

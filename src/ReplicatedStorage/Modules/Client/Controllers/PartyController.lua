@@ -27,7 +27,7 @@ function Controller:Init()
     end
 
     Network:On("Party", function(Type: number, ServerResponse: CompressedParty | string | {any}, StageData: {}): ()
-        local PartyComponent = InterfaceController:GetComponent("Party")
+        --local PartyComponent = InterfaceController:GetComponent("Party")
         local NewComponent = InterfaceController:GetComponent("NewPartyComponent")
 
         if Type == GameEnum.PartyManaging.Create then
@@ -39,7 +39,13 @@ function Controller:Init()
             NewComponent:Set(true)
             NewComponent:SetPartyOwner(Player.UserId)
             NewComponent:AddPlayerToList((ServerResponse :: CompressedParty)[1])
-            NewComponent:UpdateStages(StageData)
+            
+            if StageData.Data and StageData.Data.ChaosControlData then
+                NewComponent:SetMode('ChaosControl', StageData)
+            else
+                NewComponent:SetMode('Mission')
+                NewComponent:UpdateStages(StageData)
+            end
         elseif Type == GameEnum.PartyManaging.Join then
             NewComponent:Set(true)
             local List, Owner = Controller:GetPlayerListForParty(ServerResponse :: CompressedParty)

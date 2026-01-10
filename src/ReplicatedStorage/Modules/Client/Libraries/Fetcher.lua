@@ -29,7 +29,6 @@ function Fetcher:Init()
     Network:On('ChaosControl', function(Action: number, Type: number, ...)
 
         for _, Request in Fetcher.__Chaos_Request do
-
             if Request[1] == Action and Request[2] == Type then
                 Request[3] = true
                 Request[4] = {...}

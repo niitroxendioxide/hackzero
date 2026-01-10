@@ -11,6 +11,7 @@ local Assets = ReplicatedStorage.Assets.Interface
 local Network = require(Shared.Network)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
+local String = require(ReplicatedStorage.Modules.Shared.Utility.String)
 local GameEnum = require(Shared.GameEnum)
 local StagesDatabase = require(Shared.Database.Stages)
 
@@ -543,6 +544,24 @@ function LoadActs(Stage: string, Stages: {})
     end
 end
 
+function SetMode(State: string, ServerData: {})
+    local MainFrame = Component:GetFrame()
+    local MissionFrame = MainFrame.Mission
+
+    if State == 'ChaosControl' then
+        local ChaosData = ServerData.Data.ChaosControlData
+        MissionFrame.MapPlate.Visible = false
+        MissionFrame.ChaosPlate.Visible = true
+
+        MissionFrame.ChaosPlate.Type.Text = String:SplitTitleCaps(ChaosData.Type)
+        MissionFrame.ChaosPlate.Node.Text = `Node 0{ChaosData.Node}`
+    elseif State == 'Mission' then
+        MissionFrame.MapPlate.Visible = true
+        MissionFrame.ChaosPlate.Visible = false
+    end
+
+end
+
 --- Publics
 function Component:Link()
     local PlayerGui = Player.PlayerGui
@@ -551,6 +570,10 @@ function Component:Link()
 	local Main = HUD:FindFirstChild("NewParty", true)
 
     return Main
+end
+
+function Component:SetMode(State: string, Data: {})
+    SetMode(State or 'Mission', Data)
 end
 
 function Component:Init()

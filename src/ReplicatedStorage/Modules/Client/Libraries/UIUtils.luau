@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Assets = ReplicatedStorage.Assets
+local Models = Assets.Characters
 
 local UIUtils = {}
 
@@ -58,5 +59,28 @@ function UIUtils:CreateArtifactModel(Artifact_Name: string, SlotId: number, Pare
     return true
 end
 
+function UIUtils:CreateEnemyModel(EnemyName: string, Viewport: ViewportFrame)
+    local Enemies = Models.Enemies
+    local EnemyBaseModel = Enemies:FindFirstChild(EnemyName)
+
+    if not EnemyBaseModel then
+        EnemyBaseModel = Models.Agents.Template
+    elseif EnemyBaseModel:IsA('Folder') then
+        EnemyBaseModel = EnemyBaseModel:GetChildren()[math.random(1, #EnemyBaseModel:GetChildren())]
+    end
+
+    local Cloned = EnemyBaseModel:Clone();
+    Cloned:PivotTo(CFrame.new())
+    Cloned.Parent = Viewport:FindFirstChildOfClass("WorldModel");
+
+    local NewCamera = Instance.new("Camera")
+    NewCamera.CFrame = CFrame.new(0, 1.8, -220) * CFrame.Angles(0, math.pi, 0)
+    NewCamera.FieldOfView = 1
+    NewCamera.Parent = Viewport
+
+    Viewport.CurrentCamera = NewCamera;
+
+    return true;
+end
 
 return UIUtils

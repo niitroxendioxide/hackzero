@@ -1,7 +1,7 @@
 local Types = require("../../Types")
 --
 return {
-    Name = "TurtleWay",
+    Name = "Turtle Way",
     Role_Needed = "Affliction",
     Tier = "Legendary",
 

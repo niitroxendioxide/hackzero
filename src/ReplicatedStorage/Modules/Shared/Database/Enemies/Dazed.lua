@@ -1,5 +1,6 @@
 return {
 	Display_Name = 'Dazed Enemy',
+	RemoveFromChaosControl = true,
 
 	Appearance = {
 		Height = 3.15

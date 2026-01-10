@@ -29,10 +29,10 @@ function Rewards:Give(Player: Player, List: {Types.LootItem})
     for _, Object in List do
         local ObjectName = Object.Extra.Name
 
-        if Object.Type == 'Gold' then
-            local Gold = DataService:Get(Player, 'Gold')
+        if Object.Type == 'Gold' or Object.Type == 'Money' then
+            local Money = DataService:Get(Player, 'Money')
 
-            DataService:Set(Player, 'Gold', Gold + Object.Amount)
+            DataService:Set(Player, 'Money', Money + Object.Amount)
             ---
         elseif Object.Type == 'Gems' then
             local Gems = DataService:Get(Player, 'Gems')

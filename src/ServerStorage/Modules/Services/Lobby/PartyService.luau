@@ -116,7 +116,9 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         local Party = Service:GetParty(Code)
         local PlayerClass = Service:GetClass(Player)
 
-        if not Service:CanReadyUp(PlayerClass, Party) or not Service:ValidateStage(Party) then
+        local IsValidated = Service:ValidateStage(Party)
+        local ReadiedUp = Service:CanReadyUp(PlayerClass, Party)
+        if not ReadiedUp or not IsValidated then
             Network:Fire("Party", PlayerClass.PlayerObject, GameEnum.PartyManaging.RemoveReady)
 
             return
@@ -270,7 +272,6 @@ end
 function Service:CanReadyUp(Player: Player, Party: Types.PartyClass)
     local Class = Service:GetClass(Player)
     local Team = Party:GetPlayerTeam(Class)
-    print(Class:GetId(), Class.PlayerObject)
 
     if not Team or #Team < 1 then
         return false
@@ -344,6 +345,15 @@ end
 
 function Service:ValidateStage(Party: Types.PartyClass)
     local Split = string.split(Party:GetStage(), '/')
+    if Split[1] == 'ChaosControl' then
+        local StageExists = StagesDatabase:GetStage(Split[2])
+        if StageExists then
+            return true
+        end
+
+        return false
+    end
+
     local Data = StagesDatabase:GetAct(Split[2], Split[3])
     if not Data then
         return false

@@ -70,6 +70,8 @@ return {
 		Fetch = 1,
 		Begin = 2,
 		Amount = 3,
+		Cancel = 4,
+		Select = 5,
 	},
 
 	ChaosControlTab = {

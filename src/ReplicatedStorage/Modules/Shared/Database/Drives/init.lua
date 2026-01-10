@@ -26,6 +26,15 @@ function Drives:Init()
 	end)
 end
 
+function Drives:GetAll()
+	return Drives.__Ids
+end
+
+
+function Drives:Get(Name: string)
+	return Drives:GetDriveData(Name)
+end
+
 function Drives:GetDriveData(Name: string): Types.Drive_Data
 	local SavedData = Drives.__Stored[Name]
 

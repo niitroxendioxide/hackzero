@@ -26,6 +26,14 @@ function Artifacts:Init()
 	end)
 end
 
+function Artifacts:GetAll()
+	return Artifacts.__Ids
+end
+
+function Artifacts:Get(Name: string)
+	return Artifacts:GetArtifactData(Name)
+end
+
 function Artifacts:GetArtifactData(Name: string): Types.Artifact_Data
 	local SavedData = Artifacts.__Stored[Name]
 

@@ -746,6 +746,7 @@ export type PlayerProfileData = {
 		Tokens: {CharacterToken | SkinToken},
 	},
     Warnings: {},
+	ChaosControl: {},
 }
 
 export type Signal<T...> = RBXScriptSignal & {Fire: (self: RBXScriptSignal, T...) -> (), Connect: (fn: (T...) -> ()) -> ()}
