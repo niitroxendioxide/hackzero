@@ -294,7 +294,6 @@ function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: n
     local PlayersTeleportData = JoinData.TeleportData.Players
     local PlayerData = PlayersTeleportData[tostring(Player.UserId)]
 
-    TableUtil:printTable(PlayerData.Team)
     return PlayerData.Team
 end
 
@@ -346,7 +345,8 @@ function Service:GetStageData(): MatchData
         local Data = StageData.Mission.Data;
         local MarkersList = {};
 
-        local ChaosControlType = Data.ChaosControlType;
+        TableUtil:printTable(StageData)
+        --local ChaosControlType = Data.ChaosControlType;
         if not Data.Enemies then
             return;
         end
@@ -373,6 +373,10 @@ function Service:GetStageData(): MatchData
         }
 
         StageData.Mission.Data.Markers = MarkersList;
+    end
+
+    if not RunService:IsStudio() then
+        TableUtil:printTable(StageData)
     end
 
     return StageData

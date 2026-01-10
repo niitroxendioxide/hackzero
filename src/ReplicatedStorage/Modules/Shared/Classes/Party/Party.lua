@@ -124,6 +124,9 @@ end
 
 function Party.GetStagePlace(self: Types.PartyClass): (string)
     local Split = string.split(self.__Stage, "/")
+    if Split[1] == 'ChaosControl' then
+        Split[1] = 'Mission'
+    end
 
     return Split[1]
 end

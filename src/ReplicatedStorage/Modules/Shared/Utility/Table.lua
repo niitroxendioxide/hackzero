@@ -1,8 +1,12 @@
 
 local TableUtil = {}
 
-function TableUtil:printTable(t, tabcount: number?)
+function TableUtil:printTable(t: {}, tabcount: number?)
     tabcount = (tabcount or 0) :: number
+
+    if t == nil then
+        return;
+    end
 
     local tabCharacter = "  "
     local preText = string.rep(tabCharacter, tabcount :: number)

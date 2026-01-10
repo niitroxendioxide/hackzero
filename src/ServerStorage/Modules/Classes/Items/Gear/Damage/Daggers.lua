@@ -5,8 +5,7 @@ local Classes = ServerStorage.Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 
 local GameEnum = require(Shared.GameEnum)
-local GearClass = require(Classes.Items.Gear)
-
+local GearClass = require(Classes.Items.GearBase)
 
 local Object = GearClass.new('Daggers')
 

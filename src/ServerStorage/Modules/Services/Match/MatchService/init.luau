@@ -46,6 +46,8 @@ function Service:Init()
     Network.new("Match", "Event")
 
     if not Places:CanFight() then
+        print('Cannot fight.')
+
         return;
     end
 
@@ -60,6 +62,8 @@ function Service:Init()
     elseif MissionData.Type == 'ChaosControl' then
         Success_Loading = Service:CreateMap(MatchData.Mission.Stage)
     end
+
+    print('MAP LOADING SUCCESS: ', Success_Loading)
 
     if not Success_Loading then
         TeleportService:ReturnToLobby(Players:GetPlayers())

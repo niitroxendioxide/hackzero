@@ -1,5 +1,5 @@
 local Framework = {
-	Debug = game:GetService('RunService'):IsStudio(),
+	Debug = true,--. game:GetService('RunService'):IsStudio(),
 }
 
 function Framework:Init(...)
