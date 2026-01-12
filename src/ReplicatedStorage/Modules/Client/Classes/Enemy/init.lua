@@ -151,7 +151,11 @@ function EnemyClass:IsWalking()
 	return self.__Movement:MovementInLastStep()
 end
 
-function EnemyClass:Move(Direction: Vector3)
+function EnemyClass:Move(Direction: Vector3, ForTime: number?, Speed: number?)
+	if ForTime then
+		self.__Movement:SetWalkSpeed(Speed, ForTime)
+	end
+
 	return self.__Movement:Move(Direction)
 end
 

@@ -73,31 +73,6 @@ local CompletionTemplate = {
 }
 
 ----- Public
-function SumUpTotalRewards(Player: Player, RewardList: { [string]: { {Type: string, Amount: number} } })
-    local List = {}
-
-    for Tier, Category in RewardList do
-        for _, Object in Category do
-            if Object.Type == 'Gems' or Object.Type == 'Money' then
-                local Found = false;
-                for _, Item in List do
-                    if Item.Type == Object.Type then
-                        Found = true;
-                        Item.Amount += Object.Amount;
-                    end
-                end
-
-                if not Found then
-                    table.insert(List, {Type = Object.Type, Amount = Object.Amount})
-                end
-            else
-                table.insert(List, Object)
-            end
-        end
-    end
-
-    return List
-end
 
 
 function HandleEvent(Player: Player, Action: number, Type: number, ...)
@@ -111,7 +86,7 @@ function HandleEvent(Player: Player, Action: number, Type: number, ...)
             local FloorData = Service:GetApocalypseTowerFloor(Player, Floor)
             local Clone = Table.CopyDeep(FloorData[Stage])
 
-            Clone.Rewards = SumUpTotalRewards(Player, Clone.Completion.Rewards)
+            Clone.Rewards = PartyService:SumUpTotalRewards(Player, Clone.Completion.Rewards)
             Clone.Completion = nil;
 
             if FloorData[Stage] then
@@ -120,7 +95,7 @@ function HandleEvent(Player: Player, Action: number, Type: number, ...)
             end
         elseif Type == GameEnum.ChaosControlTab.DailyImprovement then
             local _Seed, NodeData = Service:GetDailyImprovementNode(Player, Args[1] :: number)
-            local Rewards = SumUpTotalRewards(Player, NodeData.Completion.Rewards)
+            local Rewards = PartyService:SumUpTotalRewards(Player, NodeData.Completion.Rewards)
 
             if NodeData then
                 Network:Fire('ChaosControl', Player, Action, Type, {
@@ -147,21 +122,17 @@ function CreatePartyForPlayer(Player: Player, Type: number, Args: { number })
     local NodeId = Args[1] :: number
     local _Stage = Args[2] :: number
 
-    print(Player, Type, Args)
-
     local PartyData = {
         Stage = {
             Stage = '',
             Act = 'Intro',
         },
-        Data = {
-            ChaosControlData = {
-                Node = NodeId,
-                Type = 'ApocalypseTower',
-            },
+        ChaosControlData = {
+            Node = NodeId,
+            Type = 'ApocalypseTower',
+        },
 
-            Completion = Table.CopyDeep(CompletionTemplate),
-        }
+        Completion = Table.CopyDeep(CompletionTemplate),
     }
 
     if Type == GameEnum.ChaosControlTab.DailyImprovement then
@@ -172,12 +143,16 @@ function CreatePartyForPlayer(Player: Player, Type: number, Args: { number })
 
         local _, NodeData = Service:GetDailyImprovementNode(Player, NodeId)
         for Key, Data in NodeData do
-            PartyData.Data[Key] = Data
+            PartyData[Key] = Data
         end
 
         PartyData.Stage.Stage = 'DailyImprovement'
-        PartyData.Data.ChaosControlData.Type = 'DailyImprovement'
+        PartyData.ChaosControlData.Type = 'DailyImprovement'
     end
+
+    
+    local TotalRewards = PartyService:SumUpTotalRewards(Player, PartyData.Completion.Rewards)
+    PartyData.Rewards = TotalRewards
 
     local Party = PartyService:CreateParty(Player)
     Party:SwitchStage('ChaosControl', PartyData.Stage.Stage, PartyData.Stage.Act)
@@ -234,6 +209,10 @@ function Service:GetDailyImprovementNode(Player: Player, Node: number): (number,
         Amount = 60,
     })
 
+    if Service.__Nodes[Player] and Service.__Nodes[Player][Node] then
+        table.insert(NodeData.Completion.Rewards['S'], Service.__Nodes[Player][Node])
+    end
+
     for _ = 1, EnemyBuffCount do
         table.insert(NodeData.AgentBuffs, Enemy_Buffs[NodeGenerator:NextInteger(1, #Enemy_Buffs)])
     end
@@ -282,6 +261,8 @@ function Service:SelectDailyImprovementReward(Player: Player, Node: number, Rewa
     if not Service.__Nodes[Player] then
         Service.__Nodes[Player] = {}
     end
+
+    Reward.Amount = Reward.Amount or 1;
 
     Service.__Nodes[Player][Node] = Reward;
 end

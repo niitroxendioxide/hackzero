@@ -163,6 +163,9 @@ end
 
 function EndScreen:Set(State: boolean)
     local MainFrame = self:GetFrame()
+    if true then
+        return;
+    end
 
     State = State or not self.__State
     self.__State = State

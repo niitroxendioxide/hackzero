@@ -63,8 +63,6 @@ function Service:Init()
         Success_Loading = Service:CreateMap(MatchData.Mission.Stage)
     end
 
-    print('MAP LOADING SUCCESS: ', Success_Loading)
-
     if not Success_Loading then
         TeleportService:ReturnToLobby(Players:GetPlayers())
 
@@ -120,7 +118,8 @@ function Service:End(Won: boolean)
     end
 
     ---
-    World:SetSpeed(0.01)
+    World:SetEndScreenMode(true)
+    World:TweenSpeed(0.01, 2)
     Service.__Active_Match = nil
 
     --- Calculate and Spread completion info
@@ -135,8 +134,13 @@ function Service:End(Won: boolean)
         end
     end
 
-
+    local MissionInformation  = TeleportService:GetStageData().Mission
     local MatchCompletionData = {
+        Stage = {
+            Type = MissionInformation.Type,
+            Stage = MissionInformation.Stage,
+            Act = MissionInformation.Act,
+        },
         WinStatus = Won and GameEnum.MatchResults.Victory or GameEnum.MatchResults.Loss,
         TotalDamage = AbilityService.__Total_Damage,
         Rank = Rank;

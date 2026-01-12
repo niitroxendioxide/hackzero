@@ -5,6 +5,7 @@ local Players = game:GetService('Players')
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local World = require(ReplicatedStorage.Modules.Shared.World)
 local AnimLibrary = require(Client.Libraries.Animation)
 
 local Effects = require(Client.Libraries.Effects)
@@ -130,6 +131,13 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 
 	local Base_Speed = (self:FromData('Speed') or 1)
 	AbilitySequence:SetSpeed( Base_Speed * Agent_Speed_Mod)
+	AbilitySequence:OnWorldSpeedChange(function(WorldSpeed: number)
+		for _, Animation in (self:Get(Agent, "CurrentSkillSavedObjects") or {}) do
+			local BaseSpeed = Animation:GetAttribute('BaseSpeed');
+			
+			Animation:AdjustSpeed(BaseSpeed * WorldSpeed)
+		end
+	end)
 	AbilitySequence:After(function()
 		self:Save(Agent, "CurrentSkillSavedObjects", nil)
 		self.__Signal:Fire()
@@ -252,7 +260,7 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	Data = Data or {}
 
 	local Agent_Speed_Mod = Agent:GetStat("Speed")
-	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed') or 1) * Agent_Speed_Mod
+	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed') or 1) * Agent_Speed_Mod * World:GetSpeed()
 
 	local AnimCache = self:Get(Agent, "CurrentSkillSavedObjects")
 	if AnimCache == nil then
@@ -267,6 +275,7 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	local AnimTrack = AnimLibrary:Play(Model, TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
 	AnimLibrary:StopTracksWithTag(Model, "Attacking")
 
+	AnimTrack:SetAttribute('BaseSpeed', Data.Speed);
 	AnimTrack:AddTag('Attacking')
 	AnimTrack.Priority = Enum.AnimationPriority.Action2 or Data.Priority
 

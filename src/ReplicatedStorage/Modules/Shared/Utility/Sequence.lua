@@ -1,5 +1,7 @@
 --
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService('RunService')
+local World = require(ReplicatedStorage.Modules.Shared.World)
 
 export type SequenceFrame = {number | (self: Sequence) -> ()}
 export type SequenceFrames = {SequenceFrame}
@@ -35,6 +37,7 @@ function Sequence.new(Frames: SequenceFrames, Name: string?)
 	self.__onFinish = {}
 	self.__playedFrames = {}
 	self.__framePlayCount = {}
+	self.__onWorldSpeedChange = {}
 
 	return self
 end
@@ -63,6 +66,12 @@ end
 function Sequence:Update(delta: number)
 	if not self.__active then
 		return false
+	end
+
+	if World.IsTweening then
+		for _, Function in self.__onWorldSpeedChange do
+			task.spawn(Function, World:GetSpeed())
+		end
 	end
 
 	self.__currentTime += delta * self:GetSpeed()
@@ -127,8 +136,12 @@ function Sequence:After(fn: (self: Sequence) -> ()): Sequence
 	return self
 end
 
+function Sequence:OnWorldSpeedChange(fn: (World: number) -> ())
+	table.insert(self.__onWorldSpeedChange, fn)
+end
+
 function Sequence:GetSpeed()
-	return self.__speed
+	return self.__speed * World:GetSpeed()
 end
 
 

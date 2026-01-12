@@ -56,44 +56,6 @@ function ClearNodes()
     end
 end
 
-function CreateRewardItem(ItemName: string, ItemType: string, Amount: number, Selected: boolean)
-    local RewardsList = States.InformationFrame.RewardsPlate.List
-    local NewItem = Assets.Lobby.Nodes.RewardItem:Clone()
-    NewItem.Data.Amount.Text = 'x' .. Amount;
-    NewItem.Name = ItemName;
-
-    if Selected then
-        NewItem.Name = 'SelectedItem';
-
-        if RewardsList:FindFirstChild('SelectReward') then
-            local ChangeButton = RewardsList:FindFirstChild('SelectReward');
-            ChangeButton.Label.Text = 'Change'
-        end
-    end
-
-    if Selected and RewardsList:FindFirstChild('SelectedItem') then
-        RewardsList:FindFirstChild('SelectedItem'):Destroy()
-    end
-
-
-    if ItemType == 'Artifact' then
-        local HasModel = UIUtils:CreateArtifactModel(ItemName, math.random(1, 6), NewItem.Viewport)
-        if HasModel then
-            NewItem.ItemIcon.Visible = false
-        end
-    elseif ItemType == 'Drive' then
-        NewItem.ItemIcon.Visible = true
-    elseif ItemType == 'Money' then
-        NewItem.ItemIcon.Visible = true
-        NewItem.ItemIcon.Image = Icons.PREFIX .. Icons.Currency.Money
-    elseif ItemType == 'Gems' then
-        NewItem.ItemIcon.Visible = true
-        NewItem.ItemIcon.Image = Icons.PREFIX .. Icons.Currency.Gems
-    end
-
-    NewItem.Parent = RewardsList;
-end
-
 function AddEnemy(EnemyName: string, Level: number)
     local EnemyData = Enemies:GetEnemyData(EnemyName)
     local DisplayName = EnemyData.Display_Name
@@ -164,7 +126,7 @@ function ShowInformation(Info: {ServerData: {any}, Type: string}?)
     end
 
     for _, Item in StageInformation.Rewards do
-        CreateRewardItem(Item.Name or Item.Type, Item.Type, Item.Amount, false)
+        UIUtils:CreateRewardItem(Item.Name or Item.Type, Item.Type, Item.Amount, false, States.InformationFrame.RewardsPlate.List)
     end
 
     local Tagged = {}
@@ -319,7 +281,7 @@ function ToggleItemList(State: boolean)
                     return;
                 end
 
-                CreateRewardItem(Name, Category, 1, true)
+                UIUtils:CreateRewardItem(Name, Category, 1, true, States.InformationFrame.RewardsPlate.List)
 
                 Network:Fire("ChaosControl", GameEnum.ChaosControlAction.Select, GameEnum.ChaosControlTab.DailyImprovement, States.SelectedNode, {
                     Type = Category,
@@ -384,8 +346,6 @@ function Component:Init()
         if States.ItemListActive then
             return
         end
-
-        print('Katana invocada')
 
         Network:Fire("ChaosControl", GameEnum.ChaosControlAction.Begin, GameEnum.ChaosControlTab[States.CurrentTab], States.SelectedNode)
     end)

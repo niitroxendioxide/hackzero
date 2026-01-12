@@ -23,29 +23,24 @@ return table.freeze({
                     ['S'] = {
                         {Type = 'Gold', Amount = 1000},
                         {Type = 'Gems', Amount = 60},
+                        {Type = 'Artifact', Amount = 1, Extra = {
+                            Name = 'CorpCapsule',
+                        }}
                     },
                 },
             },
             Enemies = {
                 [1] = {{
                     Name = 'Sorcerer',
-                    Level = 25,
-                    Amount = 3,
-                }, {
-                    Name = 'Saiyan',
-                    Level = 35,
+                    Level = 1,
                     Amount = 2,
-                }},
+                },},
 
                 [2] = {{
                     Name = 'Sorcerer',
-                    Level = 35,
-                    Amount = 3,
-                }, {
-                    Name = 'Saiyan',
-                    Level = 40,
+                    Level = 2,
                     Amount = 2,
-                }}
+                },}
             },
         }
     },

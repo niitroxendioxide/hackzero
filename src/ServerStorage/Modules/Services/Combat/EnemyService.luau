@@ -49,7 +49,7 @@ function Service:LoadEnemies(Player: Player)
 
 		Enemy:FindRandomAggro()
 		Replicator:PivotEnemy(Id, Enemy.__Movement.__Position, Player)
-		Replicator:MoveEnemy(Id, Enemy.__Movement.__Direction, Player)
+		Replicator:MoveEnemy(Id, Enemy.__Movement.__Direction, nil, nil, Player)
 	end
 end
 

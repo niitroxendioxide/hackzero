@@ -40,12 +40,15 @@ function Controller:Init()
             NewComponent:SetPartyOwner(Player.UserId)
             NewComponent:AddPlayerToList((ServerResponse :: CompressedParty)[1])
             
-            if StageData.Data and StageData.Data.ChaosControlData then
+            if StageData.ChaosControlData then
                 NewComponent:SetMode('ChaosControl', StageData)
             else
                 NewComponent:SetMode('Mission')
                 NewComponent:UpdateStages(StageData)
             end
+
+            StageData.Rewards = StageData.Rewards or {}
+            NewComponent:ShowRewards(StageData.Rewards)
         elseif Type == GameEnum.PartyManaging.Join then
             NewComponent:Set(true)
             local List, Owner = Controller:GetPlayerListForParty(ServerResponse :: CompressedParty)

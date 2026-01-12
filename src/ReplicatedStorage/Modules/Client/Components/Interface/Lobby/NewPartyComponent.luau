@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local AgentModels = ReplicatedStorage.Assets.Characters.Agents
 local Assets = ReplicatedStorage.Assets.Interface
 
+local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
 local Network = require(Shared.Network)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
@@ -549,17 +550,33 @@ function SetMode(State: string, ServerData: {})
     local MissionFrame = MainFrame.Mission
 
     if State == 'ChaosControl' then
-        local ChaosData = ServerData.Data.ChaosControlData
+        local ChaosData = ServerData.ChaosControlData
         MissionFrame.MapPlate.Visible = false
         MissionFrame.ChaosPlate.Visible = true
 
         MissionFrame.ChaosPlate.Type.Text = String:SplitTitleCaps(ChaosData.Type)
         MissionFrame.ChaosPlate.Node.Text = `Node 0{ChaosData.Node}`
+
+        if ChaosData.Type == 'DailyImprovement' then
+            local Stage = StagesDatabase:GetStage(ChaosData.MapStage or "DailyImprovement");
+            if not Stage then
+                return;
+            end
+            
+            MissionFrame.ChaosPlate.Banner.Image = 'rbxassetid://' .. Stage.Icon;
+        end
     elseif State == 'Mission' then
         MissionFrame.MapPlate.Visible = true
         MissionFrame.ChaosPlate.Visible = false
     end
+end
 
+function ShowRewards(List)
+    local MainFrame = Component:GetFrame()
+
+    for _, Item in List do
+        UIUtils:CreateRewardItem(Item.Name or Item.Type, Item.Type, Item.Amount, false, MainFrame.Mission.RewardsPlate.List)
+    end
 end
 
 --- Publics
@@ -670,6 +687,10 @@ end
 
 function Component:UpdateStageInfo(CodeStage: string)
     return ShowStageInfo(CodeStage)
+end
+
+function Component:ShowRewards(List: {})
+    ShowRewards(List)
 end
 
 function Component:RemovePlayerFromlist(ID: number)

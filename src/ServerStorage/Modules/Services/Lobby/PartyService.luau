@@ -52,6 +52,33 @@ function Service:ClearPlayer(Player: Player)
     end
 end
 
+function Service:SumUpTotalRewards(Player: Player, RewardList: { [string]: { {Type: string, Amount: number} } })
+    local List = {}
+
+    for Tier, Category in RewardList do
+        for _, Object in Category do
+            if Object.Type == 'Gems' or Object.Type == 'Money' then
+                local Found = false;
+                for _, Item in List do
+                    if Item.Type == Object.Type then
+                        Found = true;
+                        Item.Amount += Object.Amount;
+                    end
+                end
+
+                if not Found then
+                    table.insert(List, {Type = Object.Type, Amount = Object.Amount})
+                end
+            else
+                table.insert(List, Object)
+            end
+        end
+    end
+
+    return List
+end
+
+
 function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
     --print("Server received party request:", GameEnum.KeyLookup(GameEnum.PartyManaging, Type))
 

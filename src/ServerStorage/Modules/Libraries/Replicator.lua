@@ -259,14 +259,16 @@ function Replicator:PivotEnemy(Id: number, At: Vector3 | CFrame, TargetPlayer: P
 end
 
 
-function Replicator:MoveEnemy(Id: number, Direction: Vector3 | vector, TargetPlayer: Player?)
+function Replicator:MoveEnemy(Id: number, Direction: Vector3 | vector, ForTime: number?, Speed: number?, TargetPlayer: Player?)
 	--local Angle = math.deg(math.atan2(Direction.X, Direction.Z))
 
-	local Object = buffer.create(4)
+	local Object = buffer.create(7)
 	buffer.writeu8(Object, 0, GameEnum.Replication.MoveEnemy)
 	buffer.writeu8(Object, 1, Id)
 	buffer.writei8(Object, 2, (Direction :: Vector3).X * 100)
 	buffer.writei8(Object, 3, (Direction :: Vector3).Z * 100)
+	buffer.writeu8(Object, 4, (Speed or 0))
+	buffer.writeu16(Object, 5, (ForTime or 0) * 1000)
 
 	if TargetPlayer then
 		Network:Fire('ReliableReplication', TargetPlayer, Object)

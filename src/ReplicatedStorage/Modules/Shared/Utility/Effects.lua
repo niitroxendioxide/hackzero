@@ -18,6 +18,7 @@ local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
 local CameraShaker = require(Client.Utility.Libraries.CameraShaker)
 
 local Effects_Folder = workspace:WaitForChild('World'):WaitForChild('Effects')
+local Assets = ReplicatedStorage.Assets.Effects
 
 
 export type TweenGoals = {
@@ -219,22 +220,122 @@ function EffectUtil:TweenModel(Model: Model, ScaleGoal: number, Time: number, St
 
 end
 
+function EmitObj(Objects: ParticleEmitter)
+	local GraphicSettings = math.max(UserSettings().GameSettings.SavedQualityLevel.Value / 10, 0.3)
+	local CorrectedAmount = math.ceil(Objects:GetAttribute('EmitCount') * GraphicSettings)
+
+	Objects:Emit(CorrectedAmount)
+end
+
 function EffectUtil:Emit(Asset: Instance, Light: boolean?): ()
 	local WorldSpeed = World:GetSpeed() :: number
+	if Asset:IsA('ParticleEmitter') then
+		local Delay = Asset:GetAttribute('EmitDelay') or 0
+		task.delay( Delay / WorldSpeed, EmitObj, Asset)
 
-	local GraphicSettings = 10 --UserSettings().GameSettings.SavedQualityLevel.Value
+		return;
+	end
+
 	for _, Objects in Asset:GetDescendants() do
 		if Objects:IsA('ParticleEmitter') then
 
 			local Delay = Objects:GetAttribute('EmitDelay') or 0
-			task.delay( Delay / WorldSpeed, function()
-				local CorrectedAmount = math.ceil(Objects:GetAttribute('EmitCount') * (GraphicSettings / 10))
-
-				Objects:Emit(CorrectedAmount)
-			end)
+			task.delay( Delay / WorldSpeed, EmitObj, Objects)
 		elseif Objects:IsA('PointLight') and Light then
 			EffectUtil:Tween(Objects, {.5 / WorldSpeed}, {Brightness = 0})
 		end
+	end
+end
+
+function EffectUtil.TableShortcut(tab: {})
+	return tab
+end
+
+function EffectUtil:CreateRocks(RaycastResult: RaycastResult, Size: Vector3 | vector, Count: number | {number}, Range: number, Rotation: {number}, Parent: Instance?)
+	local RocksToCreate = typeof(Count) == 'table' and Random_Number:NextInteger(Count[1], Count[2]) or Count
+	local Center = RaycastResult.Position
+	local Base = RaycastResult.Instance
+	local Normal = RaycastResult.Normal
+
+	local RangeError = (360 / RocksToCreate)
+	local RockItems = Assets.General.Rocks:GetChildren()
+
+	for i = 1, RocksToCreate do
+		local Angle = math.rad((360 / RocksToCreate) * i  + Random_Number:NextNumber(-RangeError/1.5, RangeError/1.5));
+		local Distance = typeof(Range) == 'table' and Random_Number:NextNumber(Range[1], Range[2]) or Range;
+		local BasePosition = Center + Vector3.new(math.cos(Angle) * Distance, 0, math.sin(Angle) * Distance)
+		local XRot = math.rad(Random_Number:NextNumber(Rotation[1], Rotation[2]))
+		
+		local RockCreated = RockItems[math.random(1, #RockItems)]:Clone() --Instance.new("Part")
+		local RockSize = Size * vector.create(Random_Number:NextNumber(0.8, 1.2), Random_Number:NextNumber(0.8, 1.2), Random_Number:NextNumber(0.8, 1.2))
+		RockCreated.Size = RockSize * 0.75;
+
+
+		local RockBaseCFrame = CFrame.lookAt(BasePosition, Center) * CFrame.new(0, RockCreated.Size.Y/2, Distance)
+		local RockGoalCFrame = (CFrame.lookAt(BasePosition, Center) * CFrame.new(0, RockCreated.Size.Y/2, 0)) * CFrame.Angles(XRot * 0.5, 0, 0)
+		RockCreated.CFrame =  RockBaseCFrame;
+		RockCreated.CanCollide = false;
+		RockCreated.Anchored = true;
+		RockCreated.Material = Base.Material;
+		RockCreated.Color = Base.Color;
+		RockCreated.Parent = Parent or workspace.World.Effects
+
+		EffectUtil:Tween(RockCreated, { Random_Number:NextNumber(0.15, 0.25), 'Back' }, { Size = RockSize })
+		EffectUtil:Tween(RockCreated, { 0.2, 'Quint' }, {CFrame = RockGoalCFrame * CFrame.Angles(0, Random_Number:NextNumber(-math.pi * 0.25, math.pi * 0.25), 0)})
+
+		task.delay(2.5, function()
+			EffectUtil:Tween(RockCreated, { 0.7, 'Cubic', 'InOut' }, {Position = RockCreated.Position - Normal * 2.5})
+			EffectUtil:Tween(RockCreated, { 0.5, 'Cubic', 'InOut' }, {Size = Vector3.zero})
+
+			EffectUtil:CleanUp(RockCreated, 1.5)
+		end)
+	end
+end
+
+function EffectUtil:RecolorSmoke(RaycastResult: RaycastResult, Particles: {Instance | ParticleEmitter})
+	for _, Particle in Particles do
+		if Particle:HasTag('Smoke') then
+			Particle.Color = ColorSequence.new(RaycastResult.Instance.Color)
+		end
+	end
+end
+
+function EffectUtil:ShootRocks(RaycastResult: RaycastResult, Amount: number | {number}, Speed: number | {number}, Parent: Instance?)
+	local RocksToCreate = typeof(Amount) == 'table' and Random_Number:NextInteger(Amount[1], Amount[2]) or Amount
+	local Center = RaycastResult.Position
+	local Base = RaycastResult.Instance
+	local Normal = RaycastResult.Normal
+
+	local RangeError = (360 / RocksToCreate)
+
+	for i = 1, RocksToCreate do
+		local SpeedRange = typeof(Speed) == 'table' and Random_Number:NextNumber(Speed[1], Speed[2]) or Speed
+		local Angle = math.rad((360 / RocksToCreate) * i  + Random_Number:NextNumber(-RangeError/1.5, RangeError/1.5));
+		
+		local RockCreated = Instance.new("Part")
+		local RockSize = vector.one * Random_Number:NextNumber(0.8, 1.2)
+		RockCreated.Size = RockSize * 0.75;
+		RockCreated.CFrame = CFrame.lookAlong(Center, Normal);
+		RockCreated.CanCollide = true;
+		RockCreated.Material = Base.Material;
+		RockCreated.Color = Base.Color;
+		RockCreated.Parent = Parent or workspace.World.Effects;
+
+		local Bv = Instance.new("BodyVelocity")
+		Bv.Velocity = (CFrame.new(Center) * CFrame.Angles(math.rad(45), Angle, 0)).LookVector * SpeedRange
+		Bv.MaxForce = vector.one * math.huge;
+		Bv.Parent = RockCreated
+
+		local Bang = Instance.new("BodyAngularVelocity")
+		Bang.AngularVelocity = Random_Number:NextUnitVector() * (SpeedRange * Random_Number:NextNumber(0.8, 1.2))
+		Bang.MaxTorque = vector.one * math.huge;
+		Bang.Parent = RockCreated
+
+		EffectUtil:CleanUp(Bv, 0.15);
+		EffectUtil:CleanUp(Bang, 0.15);
+		task.delay(1.25, function()
+			EffectUtil:Tween(RockCreated, { 0.5, 'Quad' }, {Size = vector.zero})
+		end)
 	end
 end
 

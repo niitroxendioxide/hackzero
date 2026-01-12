@@ -103,14 +103,14 @@ function Controller:BeginMatch(Payload: {})
 end
 
 function Controller:MatchEnded(ServerData: {})
-    local Component = InterfaceController:GetComponent("EndScreen")
+    local Component = InterfaceController:GetComponent("NewEndScreen")
     local Objective = InterfaceController:GetComponent("Objective")
 
-    World:SetSpeed(0.01)
+    World:SetEndScreenMode(true)
+    World:TweenSpeed(0.01, 2)
 
-    Component:ShowData(ServerData)
-    Component:Set(true)
     Objective:Set(false)
+    Component:ShowMatchResult(ServerData)
 end
 
 function Controller:UpdateCurrentWave(WaveId: number)

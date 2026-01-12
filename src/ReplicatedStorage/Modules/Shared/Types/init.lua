@@ -358,9 +358,15 @@ export type ServerEnemyClass = {
 	__Next: number,
 	__LastMovement: number,
 	__Current_Target: any,
+	__Movement_Lock: {
+		Time: number,
+		Start: number,
+		Speed: number,
+	},
 
 	SetWorldSpeed: (self: ServerEnemyClass, Speed: number, Time: number) -> (),
 
+	IsAbilityMoving: (self: ServerEnemyClass) -> (boolean),
 	GetId: (self: ServerEnemyClass) -> (number),
 	Init: (self: ServerEnemyClass, Key: number) -> (),
 	Move: (self: ServerEnemyClass, Direction: Vector3 | vector) -> (),

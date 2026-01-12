@@ -1,3 +1,4 @@
+local TweenService = game:GetService("TweenService")
 local Plastic = PhysicalProperties.new(Enum.Material.SmoothPlastic)
 local AREA_OF_CONTACT = 1.8
 local FrictionValues = {} :: {number}
@@ -5,6 +6,9 @@ local World = {
 	CharacterAcceleration = 10,
 	StepHeight = 1.895,
 	CurrentSpeed = 1,
+	EndScreenMode = false,
+	TweenThread = nil,
+	IsTweening = false,
 }
 
 local WorldFolder = workspace:WaitForChild('World')
@@ -15,6 +19,40 @@ end
 
 function World:SetSpeed(Value: number)
 	World.CurrentSpeed = Value;
+end
+
+function World:SetEndScreenMode(State: boolean)
+	World.EndScreenMode = State
+end
+
+function World:IsEndScreenMode(): boolean
+	return World.EndScreenMode
+end
+
+function World:TweenSpeed(ToValue: number, Time: number)
+	if World.TweenThread then
+		task.cancel(World.TweenThread)
+	end
+	
+	local InitialSpeed = World.CurrentSpeed;
+
+	World.TweenThread = task.spawn(function()
+		World.IsTweening = true
+		local InitTimeFrame = os.clock();
+		local Value = 0;
+
+		while os.clock() - InitTimeFrame <= Time do
+			local Delta = task.wait();
+			Value += Delta / Time
+
+			local TweenValue = TweenService:GetValue(Value, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
+			local Lerp = math.lerp(InitialSpeed, ToValue, TweenValue);
+
+			World.CurrentSpeed = Lerp;
+		end
+		World.IsTweening = false
+	end)
+
 end
 
 function World:GetAirFriction(): number

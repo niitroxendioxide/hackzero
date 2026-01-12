@@ -22,14 +22,29 @@ function EnemyMovement.new(At: Vector3, Speed: number?, Height: number?)
 	self.__Target = nil
 	self.__Height = Height or 3.15
 	self.__Speed = Speed or 6
+	self.__Original_Speed = self.__Speed
 	self.__World_Speed = 1
 	self.__Moved_in_last_step = false
 	self.__Velocities = {}
 	self.__Speed_Change_Thread = nil
+	self.__Walk_Speed_Thread = nil
 
 	self:CreateCollider()
 
 	return self
+end
+
+function EnemyMovement:SetWalkSpeed(Speed: number, ForTime: number)
+	if self.__Walk_Speed_Thread then
+		task.cancel(self.__Walk_Speed_Thread)
+	end
+
+	self.__Speed = Speed
+
+	self.__Walk_Speed_Thread = task.delay(ForTime, function()
+		self.__Speed = self.__Original_Speed
+		self.__Walk_Speed_Thread = nil;
+	end)
 end
 
 function EnemyMovement:SetWorldSpeed(Speed: number, Time: number?)

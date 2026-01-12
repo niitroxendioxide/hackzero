@@ -48,12 +48,23 @@ function Controller:MoveEnemy(Buffer: buffer)
 	local EnemyId = buffer.readu8(Buffer, 1)
 	local X = buffer.readi8(Buffer, 2) / 100
 	local Z = buffer.readi8(Buffer, 3) / 100
+	local Speed = buffer.readu8(Buffer, 4)
+	local Time = buffer.readu16(Buffer, 5) / 1000
 	local Rebuilt = Vector3.new(X, 0, Z)
 
+	if Time == 0 then
+		Time = nil
+	end
+
+	if Speed == 0 then
+		Speed = nil
+	end
+
 	local Enemy = Enemies:GetEnemy(EnemyId)
+	
 	if not Enemy then return end
 
-	Enemy:Move(Rebuilt)
+	Enemy:Move(Rebuilt, Time , Speed)
 end
 
 function Controller:RotateEnemy(Buffer: buffer)

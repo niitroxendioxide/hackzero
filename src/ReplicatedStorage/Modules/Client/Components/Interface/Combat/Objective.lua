@@ -18,6 +18,8 @@ local State = {
     Stage = "",
     Act = "",
     Mode = 'Mission',
+    ClockBeginTime = os.clock(),
+    ClockMaxTime = 9999,
 }
 local Component = ComponentClass.new(script.Name, 'HUD', {})
 
@@ -32,6 +34,24 @@ end
 
 function Component:Init()
     --
+    local ObjectiveFrame = Component:GetFrame()
+
+    task.spawn(function()
+
+        while task.wait() do
+            if State.Mode == 'Mission' then
+                continue
+            end
+
+            local TimeSince = math.floor(os.clock() - State.ClockBeginTime)
+            local CountDownTime = State.ClockMaxTime - TimeSince;
+            local Minutes = math.floor(CountDownTime / 60)
+            local Seconds = CountDownTime % 60
+
+            ObjectiveFrame.Waves.Time.Text = string.format("%02d:%02d", Minutes, Seconds)
+        end
+
+    end)
 end
 
 function Component:CreateEvent(Event: string)
@@ -121,8 +141,15 @@ function Component:SetWave(WaveId: number, Total: number)
     Waves.Counter.Text = `Current Wave: {WaveId} / {Total}`
 end
 
-function Component:SetMode(ModeName: string)
+function Component:SetMode(ModeName: string, Data: {}?)
     State.Mode = ModeName
+
+    Data = Data or {}
+
+    if ModeName == 'Waves' then
+        State.ClockBeginTime = os.clock()
+        State.ClockMaxTime = Data.Time or 6_000 --seconds
+    end
 end
 
 return Component :: Types.UIComponent

@@ -27,7 +27,8 @@ local Rewards = {}
 function Rewards:Give(Player: Player, List: {Types.LootItem})
 
     for _, Object in List do
-        local ObjectName = Object.Extra.Name
+        print(Object)
+        local ObjectName = Object.Extra and Object.Extra.Name
 
         if Object.Type == 'Gold' or Object.Type == 'Money' then
             local Money = DataService:Get(Player, 'Money')
@@ -62,8 +63,8 @@ function Rewards:CleanupRewards(Player: Types.StagePlayer, Items: {})
         if Item.Type == "Gold" or Item.Type == "Gems" then
             local Found = false
             for _, ExistingItem in Items do
-                if ExistingItem[1] == Item.Type then
-                    ExistingItem[2] += Item.Amount
+                if ExistingItem.Type == Item.Type then
+                    ExistingItem.Type += Item.Amount
                     Found = true
                 end
             end
@@ -72,9 +73,9 @@ function Rewards:CleanupRewards(Player: Types.StagePlayer, Items: {})
         end
 
         table.insert(Items, {
-            Item.Type,
-            Item.Amount,
-            Item.Extra,
+            Type = Item.Type,
+            Amount = Item.Amount,
+            Extra = Item.Extra,
         })
     end
 end

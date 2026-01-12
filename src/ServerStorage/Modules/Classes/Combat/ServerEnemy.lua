@@ -187,7 +187,7 @@ function ServerEnemy:Init(Key: number)
 			self:FindRandomAggro()
 		end
 
-		if os.clock() - self.__Snapfix > 3.5 then
+		if os.clock() - self.__Snapfix > 1 / 8 or self:IsAbilityMoving() then
 			self.__Snapfix = os.clock()
 			Replicator:PivotEnemy(self.__EnemyId, self:GetPivot())
 		end
@@ -200,6 +200,8 @@ function ServerEnemy:Init(Key: number)
 		if (self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5) or self:GetState() ~= 'Idle' then
 			self:Move(Vector3.zero)
 		end
+
+
 
 		if (os.clock() - self.__LastMovement > self.__Next) and self:GetState() == 'Idle' then
 			local Frontback = -1 --Rng:NextInteger(-1, 1)
@@ -277,8 +279,20 @@ function ServerEnemy:GetTarget()
 	return self.__Current_Target
 end
 
-function ServerEnemy.Move(self: Types.ServerEnemyClass, Direction: Vector3 | vector)
+function ServerEnemy.IsAbilityMoving(self: Types.ServerEnemyClass): boolean
+	if self.__Movement_Lock and (os.clock() - self.__Movement_Lock.Start) < (self.__Movement_Lock.Time) then
+		return true;
+	end
+
+	return false;
+end
+
+function ServerEnemy.Move(self: Types.ServerEnemyClass, Direction: Vector3 | vector, LockFor: number?, Speed: number?)
 	if self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5 and (Direction :: Vector3).Z < 0 then
+		return
+	end
+
+	if self:IsAbilityMoving() then
 		return
 	end
 
@@ -287,12 +301,22 @@ function ServerEnemy.Move(self: Types.ServerEnemyClass, Direction: Vector3 | vec
 	end
 
 	--
+	if LockFor then
+		self.__Movement_Lock = {
+			Time = LockFor,
+			Start = os.clock(),
+			Speed = Speed,
+		}
+		
+		self.__Movement:SetWalkSpeed(Speed, LockFor)
+	end
+
 	self.__Movement:Move(Direction)
 	self.__LastMovement = os.clock()
 
 	self.__Next = Rng:NextNumber(0.5, 3.5)
 
-	Replicator:MoveEnemy(self.__EnemyId, Direction)
+	Replicator:MoveEnemy(self.__EnemyId, Direction, LockFor, Speed)
 end
 
 function ServerEnemy:TrackCurrentTarget()

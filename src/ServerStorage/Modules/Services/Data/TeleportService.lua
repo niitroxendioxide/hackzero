@@ -175,13 +175,14 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
     Service.__Reserving[Party.Code] = true
 
     -- Logic checks
+    local PartyData = Party:GetData()
     local PartyStage = string.split(Party:GetStage(), '/')
     local TeleportData = {
         Mission = {
             Type = PartyStage[1],
             Stage = PartyStage[2],
             Act = PartyStage[3],
-            Data = Party:GetData(),
+            Data = PartyData,
         },
         Players = {},
     }
@@ -344,8 +345,7 @@ function Service:GetStageData(): MatchData
     if StageData.Mission.Type == 'ChaosControl' then
         local Data = StageData.Mission.Data;
         local MarkersList = {};
-
-        TableUtil:printTable(StageData)
+        
         --local ChaosControlType = Data.ChaosControlType;
         if Data.Enemies then
             local TotalEnemies = 0;

@@ -21,7 +21,7 @@ return {
 		Daze_Resistance = 71,
 		Resistance = 35,
 
-		Movement_Speed = 14,
+		Movement_Speed = 8,
 	},
 
 	Level_Stats = {
@@ -43,7 +43,7 @@ return {
 				Agent_Stun_Time = 0.3,
 				Damage_Mult = 45,
 
-				Range = 60,
+				Range = 50,
 				Attack_Warning = 0.1,
 			},
 

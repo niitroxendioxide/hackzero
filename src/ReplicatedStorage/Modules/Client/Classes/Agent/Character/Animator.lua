@@ -6,10 +6,13 @@ local RunService = game:GetService('RunService')
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local World = require(ReplicatedStorage.Modules.Shared.World)
 local Types = require(Shared.Types)
 local AnimLibrary = require(Client.Libraries.Animation)
 
 local NON_ZERO = 0.001
+local JOG_SPEED = 0.95;
+local WALK_SPEED = 0.7;
 
 --
 local Priorities = {Idle = Enum.AnimationPriority.Core, Dash = Enum.AnimationPriority.Action}
@@ -47,8 +50,8 @@ function AnimatorClass:Init()
 
 	self:Play('Idle')
 	self:Play('Sprint', {Weight = NON_ZERO, Speed = .825})
-	self:Play('Jog', {Weight = NON_ZERO, Speed = 0.95})
-	self:Play('Walk', {Weight = NON_ZERO, Speed = 0.7})
+	self:Play('Jog', {Weight = NON_ZERO, Speed = JOG_SPEED})
+	self:Play('Walk', {Weight = NON_ZERO, Speed = WALK_SPEED})
 
 	self.__Thread = RunService.PostSimulation:Connect(function(delta: number)
 		self:Update(delta)
@@ -96,6 +99,7 @@ function AnimatorClass:Update(delta: number)
 	local Character = self.__Character
 	local Moving = Character:IsMoving()
 	local CurrentState = Character:GetState()
+	local WorldSpeed = World:GetSpeed()
 	local InIdle = CurrentState == 'Idle'
 	local Sprint = self:GetTrack('Sprint')
 	local Jog = self:GetTrack('Jog')
@@ -162,7 +166,9 @@ function AnimatorClass:Update(delta: number)
 		Dash:AdjustWeight(ExpectedWeight and NON_ZERO or LoweredWeight)
 	end
 
-	Sprint:AdjustSpeed(math.clamp(Character:GetMovementSpeed() / 26, 0, 2.5))
+	Sprint:AdjustSpeed(math.clamp(Character:GetMovementSpeed() / 26, 0, 2.5) * WorldSpeed)
+	Jog:AdjustSpeed(JOG_SPEED * WorldSpeed)
+	Walk:AdjustSpeed(WALK_SPEED * WorldSpeed)
 
 	-- Set value
 	self.__IsMoving = Moving
