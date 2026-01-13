@@ -125,6 +125,7 @@ export type Stage_Act = {
 	},
 
 	Completion: {
+		Experience: number,
 		Handler: (Objectives: {[string]: boolean}) -> (Rating),
 
 		Rewards: {

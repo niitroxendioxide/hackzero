@@ -177,6 +177,8 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 			end
 		end
 
+		Agent:AddTag('Movlock', 0.15)
+
 		if Enemy and (self.__Name ~= 'Dodge') then
 			Agent:Look(CFrame.lookAt(Agent:GetPivot().Position * Vector3.new(1, 0, 1), Enemy:GetPivot().Position * Vector3.new(1, 0 ,1)).LookVector, false, true)
 		end

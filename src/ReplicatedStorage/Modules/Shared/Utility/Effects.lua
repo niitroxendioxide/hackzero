@@ -15,6 +15,8 @@ local Random_Number = Random.new()
 local Mock = require(Shared.Utility.Mock)
 local World = require(script.Parent.Parent.World)
 local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local CameraShaker = require(Client.Utility.Libraries.CameraShaker)
 
 local Effects_Folder = workspace:WaitForChild('World'):WaitForChild('Effects')
@@ -392,10 +394,14 @@ function EffectUtil:ShakeCamera(Preset: string)
 	return NewCamShake;
 end
 
-function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: () -> (boolean))
+function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: () -> (boolean), PassedParams: OverlapParams)
 	local Loop do
 		local Max_Time = 0;
 		local Params = World:GetEnemyColliderParams(true)
+
+		if PassedParams then
+			Params = PassedParams
+		end
 
 		Loop = RunService.PostSimulation:Connect(function(Delta: number)  
 			local DeltaTime = Delta * World:GetSpeed()
@@ -411,6 +417,15 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 			--
 			local PartBounds = workspace:GetPartBoundsInBox(Model:GetPivot(), Size, Params)
 			if #PartBounds > 0 then
+				local AllInvulnerable = true;
+				for _, Part in PartBounds do
+					if not Part:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER) and not Part:HasTag('Invulnerability') then
+						AllInvulnerable = false;
+					end
+				end
+
+				if AllInvulnerable then return end
+
 				local Stop = Hit()
 
 				if Stop then

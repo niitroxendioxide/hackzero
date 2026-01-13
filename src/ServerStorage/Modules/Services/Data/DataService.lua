@@ -9,6 +9,7 @@ local Classes = Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local QuestUtil = require(ServerStorage.Modules.Libraries.QuestUtil)
 local Network = require(Shared.Network)
 local DataTypes = require(Shared.Types.Data)
@@ -319,7 +320,25 @@ end
 
 function Service:GiveExperience(Player: Player, Amount: number)
     local Data = Service:GetDataFor(Player);
+    local PlayerLevel = Service:GetLevel(Player)
 
+    if not Amount or Amount < 0 then
+        return;
+    end
+
+    local GoalExperience = Statics.Get_Agent_Experience_For_Level(PlayerLevel)
+
+    while true do
+        Data.Experience += Amount;
+
+        if Data.Experience > GoalExperience then
+            Data.Experience -= GoalExperience;
+            Data.Level = math.clamp(Data.Level + 1, 1, Statics.Max_Player_Level)
+            GoalExperience = Statics.Get_Agent_Experience_For_Level(Data.Level)
+        else
+            break;
+        end
+    end
 end
 
 function Service:GetLevel(Player: Player): number

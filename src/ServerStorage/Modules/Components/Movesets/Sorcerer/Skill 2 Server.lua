@@ -8,29 +8,27 @@ local Classes = ServerStorage.Modules.Classes
 local Types = require(Shared.Types)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 
----- This should be the lightning technique
+---- This should be the fireball technique
 local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.ServerEnemyClass)
-	--
+	--	
 	local Attack_Time = Ability:FromData('Attack_State_Time')
+	local HitBlastData = Ability:FromData("Hit")
 
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState('Attacking', Attack_Time)
 		end,},
 
-		{0.3, 0.65, function()
-			Caster:Move(vector.create(0, 0, -1), 0.783 - 0.367, 45)
-		end},
+		{.45, function()
+			local Object; do
+				Object = Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * CFrame.new(0, 0, -2.5), vector.create(8, 8), 135, 1, function(Target)  
+					Object:Destroy()
 
-		{.8, function()
-			Ability:CreateHitbox(Caster, Vector3.zAxis* -1, vector.one * 20, function(Target: Types.GenericClass)
-				Ability:Hit(Caster, Target, {
-					Damage = Ability:FromData('Damage_Mult'),
-					Stun = 0.5,
-				})
-			end)
+					Ability:Hit(Caster, Target, HitBlastData)
+				end)
+			end
 		end,},
 	})
 end

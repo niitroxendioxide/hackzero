@@ -24,8 +24,11 @@ function AppearanceClass.new(ModelName: string, Directory: string?, BeginTranspa
 
 	local World = workspace:FindFirstChild('World')
 	local AssetsModel = FolderToLookIn:FindFirstChild(ModelName, true)
+	if AssetsModel == nil then
+		AssetsModel = Assets.Agents:FindFirstChild('Template')
+	end
 
-	if AssetsModel:IsA('Folder') then
+	if AssetsModel and AssetsModel:IsA('Folder') then
 		local RandomObj = AssetsModel:GetChildren()
 
 		AssetsModel = RandomObj[math.random(1, #RandomObj)]

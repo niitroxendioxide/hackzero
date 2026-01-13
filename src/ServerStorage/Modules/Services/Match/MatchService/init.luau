@@ -21,6 +21,7 @@ local Targets = require(ServerStorage.Modules.Libraries.Targets)
 local AgentService = require(ServerStorage.Modules.Services.Combat.AgentService)
 local CompanionService = require(ServerStorage.Modules.Services.Combat.CompanionService)
 local DataService = require(ServerStorage.Modules.Services.Data.DataService)
+local ChaosControlService = require(ServerStorage.Modules.Services.Lobby.ChaosControlService)
 local Rewards = require(ServerStorage.Modules.Services.Match.MatchService.Rewards)
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local GameEnum = require(Shared.GameEnum)
@@ -140,12 +141,17 @@ function Service:End(Won: boolean)
             Type = MissionInformation.Type,
             Stage = MissionInformation.Stage,
             Act = MissionInformation.Act,
+            Seed = MissionInformation.Seed or 0,
         },
         WinStatus = Won and GameEnum.MatchResults.Victory or GameEnum.MatchResults.Loss,
         TotalDamage = AbilityService.__Total_Damage,
         Rank = Rank;
         Experience = StageActData.Completion.Experience,
     };
+
+    for _, Player in Players:GetPlayers() do
+        ChaosControlService:MarkCompletion(Player, MatchCompletionData)
+    end
 
     Rewards:SpreadRewards(PlayersLibrary:GetAll(), CompletionRewards, MatchCompletionData)
 end

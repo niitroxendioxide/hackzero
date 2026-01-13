@@ -368,7 +368,7 @@ function AgentClass:GetUltBar()
 	return self.__Status:GetUltimate()
 end
 
-function AgentClass:SwitchState(State: string, Time: number, Unaffected: boolean?): ()
+function AgentClass:SwitchState(State: string, Time: number, Iframes: boolean?, Unaffected: boolean?): ()
 	if State == 'Attacking' then
 		local ThreadChanged = string.split(debug.info(2, "s"), '.')
 		local Ability = ThreadChanged[#ThreadChanged]
@@ -391,6 +391,10 @@ function AgentClass:SwitchState(State: string, Time: number, Unaffected: boolean
 	self.__Character.__States:Switch(State, TakenTime)
 	if self.__c_recovery_thread then
 		task.cancel(self.__c_recovery_thread)
+	end
+
+	if Iframes then
+		self:AddTag('Invulnerability', TakenTime)
 	end
 
 	self.__c_recovery_thread = task.delay(TakenTime, function()
@@ -432,8 +436,12 @@ function AgentClass:AddTag(Tag: string, Time: number)
 		task.cancel(self.__Tags[Tag])
 	end
 
+	local Hitbox = self:GetHitbox()
+	Hitbox:AddTag(Tag)
+
 	self.__Tags[Tag] = task.delay(Time or 5e12, function()
 		self.__Tags[Tag] = nil
+		Hitbox:RemoveTag(Tag)
 	end)
 end
 
@@ -441,6 +449,9 @@ function AgentClass:RemoveTag(Tag: string)
 	if self.__Tags[Tag] then
 		task.cancel(self.__Tags[Tag])
 	end
+
+	local Hitbox = self:GetHitbox()
+	Hitbox:RemoveTag(Tag)
 
 	self.__Tags[Tag] = nil
 end

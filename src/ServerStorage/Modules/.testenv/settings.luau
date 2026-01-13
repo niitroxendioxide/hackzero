@@ -30,29 +30,47 @@ return table.freeze({
                 },
             },
             Enemies = {
-                [1] = {{
-                    Name = 'Sorcerer',
-                    Level = 1,
-                    Amount = 2,
-                },},
-
-                [2] = {{
-                    Name = 'Sorcerer',
-                    Level = 2,
-                    Amount = 2,
-                },}
+                [1] = {
+                    {Amount = 6, Level = 7, Name = 'Sorcerer'}
+                },
+                [2] = {
+                    {Amount = 7, Level = 7, Name = 'Sorcerer'}
+                },
+                [3] = {
+                    {Amount = 8, Level = 7, Name = 'Sorcerer'}
+                },
+                [4] = {
+                    {Amount = 9, Level = 7, Name = 'Sorcerer'}
+                },
+                [5] = {
+                    {Amount = 10, Level = 7, Name = 'Sorcerer'}
+                },
+                [6] = {
+                    {Amount = 11, Level = 7, Name = 'Sorcerer'}
+                },
+                [7] = {
+                    {Amount = 12, Level = 7, Name = 'Sorcerer'}
+                },
+                [8] = {
+                    {Amount = 13, Level = 7, Name = 'Sorcerer'}
+                },
+                [9] = {
+                    {Amount = 14, Level = 7, Name = 'Sorcerer'}
+                },
             },
         }
     },
 
     FILL_ULT_BAR = true,
-    DIFFICULTY = 'EASY',
+
+
+    --- PASSIVE, EASY, MEDIUM, HARD, EXTREME
+    DIFFICULTY = 'MEDIUM', 
     USE_BORROW = true, -- whether to replace agents with your own ones
     BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {
         'Goku',
-        'Naruto',
-        'Tanjiro',
+        'Chihiro',
     },
 })

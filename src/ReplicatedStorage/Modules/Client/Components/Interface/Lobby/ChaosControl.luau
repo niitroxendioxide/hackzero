@@ -1,3 +1,4 @@
+local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService('Players')
 
@@ -39,7 +40,8 @@ local NodeName = {
 
 local States = {
     CurrentTab = '',
-    Pulled = false,
+    --Pulled = false,
+    RetreivedServerData = {},
 
     InformationFrame = nil,
     Nodes = {},
@@ -86,16 +88,16 @@ function ShowInformation(Info: {ServerData: {any}, Type: string}?)
     local StagesTab = MainFrame.Stages :: Frame;
     
     if Info == nil then
-        Effects:Tween(StagesTab, { 0.2, 'Cubic' }, { Position = UDim2.fromScale(0.5, StagesTab.Position.Y.Scale) })
-        Effects:Tween(InfoTab, { 0.25, 'Sine' }, { Position = UDim2.fromScale(1.5, InfoTab.Position.Y.Scale) })
+        Effects:Tween(StagesTab, { 0.35, 'Cubic', 'Out' }, { Position = UDim2.fromScale(0.5, StagesTab.Position.Y.Scale) })
+        Effects:Tween(InfoTab, { 0.4, 'Sine', 'Out' }, { Position = UDim2.fromScale(1.5, InfoTab.Position.Y.Scale) })
         
         return;
     end
 
     ClearEnemies();
 
-    Effects:Tween(StagesTab, { 0.25, 'Sine' }, { Position = UDim2.fromScale(-1.5, StagesTab.Position.Y.Scale) })
-    Effects:Tween(InfoTab, { 0.2, 'Cubic' }, { Position = UDim2.fromScale(.5, InfoTab.Position.Y.Scale) });
+    Effects:Tween(StagesTab, { 0.45, 'Sine', 'InOut' }, { Position = UDim2.fromScale(-1.5, StagesTab.Position.Y.Scale) })
+    Effects:Tween(InfoTab, { 0.45, 'Cubic', 'InOut' }, { Position = UDim2.fromScale(.5, InfoTab.Position.Y.Scale) });
 
     ---
     InfoTab.Nameplate.Title.Text = `{String:SplitTitleCaps(States.CurrentTab)}: {NodeName[States.CurrentTab]} 0{States.SelectedNode}`
@@ -147,6 +149,47 @@ function ShowInformation(Info: {ServerData: {any}, Type: string}?)
     end
 end
 
+
+---
+local NodeRankingColors = {
+    ['S'] = {
+        Background = Color3.fromRGB(255, 190, 116),
+        Outline = Color3.fromRGB(200, 126, 7),
+        TextStroke = Color3.fromRGB(239, 171, 0),
+        Gradient = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromHex('ffee35')),
+            ColorSequenceKeypoint.new(1, Color3.fromHex('FFFFFF'))
+        }
+    },
+    ['A'] = {
+        Background = Color3.fromRGB(122, 110, 255),
+        Outline = Color3.fromRGB(75, 50, 200),
+        TextStroke = Color3.fromRGB(94, 22, 239),
+        Gradient = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromHex('b44cff')),
+            ColorSequenceKeypoint.new(1, Color3.fromHex('FFFFFF'))
+        }
+    },
+    ['B'] = {
+        Background = Color3.fromRGB(94, 185, 255),
+        Outline = Color3.fromRGB(26, 125, 255),
+        TextStroke = Color3.fromRGB(28, 221, 239),
+        Gradient = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromHex('347bff')),
+            ColorSequenceKeypoint.new(1, Color3.fromHex('FFFFFF'))
+        }
+    },
+    ['X'] = {
+        Background = Color3.fromRGB(91, 91, 91),
+        Outline = Color3.fromRGB(63, 63, 63),
+        TextStroke = Color3.fromRGB(39, 39, 39),
+        Gradient = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromHex('747474')),
+            ColorSequenceKeypoint.new(1, Color3.fromHex('FFFFFF'))
+        }
+    },
+}
+
 function CreateNodes(StageType: string, NodeCount: number)
     if States.CurrentTab == StageType then
         return;
@@ -182,13 +225,60 @@ function CreateNodes(StageType: string, NodeCount: number)
     
     for NodeId = 1, NodeCount do
         local NodeClone = Asset:Clone();
-        local NodePosition = Positions[NodeId]
+        local NodePosition = Positions[NodeId];
+
+        local NodeData = States.RetreivedServerData[StageType] and States.RetreivedServerData[StageType].Nodes and States.RetreivedServerData[StageType].Nodes[NodeId] or {} 
+        local IsCompleted = not (not NodeData.IsCompleted)
+        if StageType == 'DailyImprovement' then
+            NodeClone.Ranking.Tick.Visible = IsCompleted
+            NodeClone.Ranking.Done.Visible = IsCompleted
+            NodeClone.Ranking.Cross.Visible = not IsCompleted
+        elseif StageType == 'ApocalypseTower' then
+            local NodeTime = NodeData.Time or 0;
+            local StringTime = string.format("%02d:%02d", NodeTime // 60, NodeTime % 60)
+            local Ranking = NodeData.Rank or 'X';
+            local Colors = NodeRankingColors[Ranking];
+
+            NodeClone.Ranking.Tier.Text = Ranking;
+            NodeClone.Ranking.Tier.UIStroke.Color = Colors.TextStroke;
+            NodeClone.Ranking.Tier.UIStroke.UIGradient.Color = Colors.Gradient;
+            NodeClone.Ranking.UIGradient.Color = Colors.Gradient;
+            NodeClone.Ranking.BackgroundColor3 = Colors.Background;
+            NodeClone.Ranking.UIStroke.Color = Colors.Outline;
+            NodeClone.Time.Text = NodeTime > 0 and StringTime or 'Available';
+        end
 
         NodeClone.UIScale.Scale = 0;
         NodeClone.Position = NodePosition;
         NodeClone.Number.Text = string.format("%02i", NodeId);
         NodeClone.Parent = MainFrame.Stages;
+        local Pressed = false;
+
+        NodeClone.Button.MouseEnter:Connect(function()
+            Effects:Tween(NodeClone.UIStroke, { 0.2, 'Quad' }, { Color = Color3.fromRGB(45, 45, 45) })
+            Effects:Tween(NodeClone.OuterStroke, { 0.2, 'Quad' }, { Color = Color3.fromRGB(25, 25, 25) })
+
+            if Pressed then
+                return;
+            end
+
+            Effects:Tween(NodeClone.UIScale, { 0.3, 'Quad' }, { Scale = 1.075 })
+        end)
+        NodeClone.Button.MouseLeave:Connect(function()
+            Effects:Tween(NodeClone.UIStroke, { 0.2, 'Quad' }, { Color = Color3.fromRGB(17, 17, 17) })
+            Effects:Tween(NodeClone.OuterStroke, { 0.2, 'Quad' }, { Color = Color3.new() })
+
+            if Pressed then
+                return;
+            end
+            
+            Effects:Tween(NodeClone.UIScale, { 0.3, 'Quad' }, { Scale = 1 })
+        end)
+
         NodeClone.Button.MouseButton1Click:Connect(function()
+            NodeClone.UIScale.Scale = 0.85
+            Pressed = true;
+            Effects:Tween(NodeClone.UIScale, { 0.25, 'Back' }, { Scale = 1 })
             if not States.Nodes[StageType] then
                 States.Nodes[StageType] = {}
             end
@@ -388,6 +478,15 @@ function Component:Init()
             Effects:Tween(Main.Return, {0.7, 'Back'}, {Rotation = 0})
             Effects:Tween(Main.Missions, {0.3, 'Quad'}, {Position = UDim2.fromScale(0.5, 0.886)})
 
+            local Correction: ColorCorrectionEffect = Lighting:FindFirstChild("ChaosCorrection") or Instance.new("ColorCorrectionEffect")
+            Correction.Name = "ChaosCorrection"
+            Correction.Parent = Lighting
+
+            Effects:Tween(Correction, {.45, 'Sine'}, {
+                Saturation = -0.85,
+                Contrast = -0.5,
+                Brightness = -0.2
+            })
 
 
             table.insert(CleanupObjects, task.delay(0.15, function()
@@ -406,9 +505,22 @@ function Component:Init()
 
             ---
             if not States.Pulled then
-                Amounts.DailyImprovement = Fetcher:FetchChaosControl(GameEnum.ChaosControlAction.Amount, GameEnum.ChaosControlTab.DailyImprovement)[1]
+                local RetrievedData = Fetcher:FetchChaosControl(GameEnum.ChaosControlAction.Amount, GameEnum.ChaosControlTab.DailyImprovement)[1]
+                
+                States.RetreivedServerData = RetrievedData;
+                Amounts.DailyImprovement = RetrievedData.DailyImprovement.Count;
+                
+                Component:ShowChaosData(RetrievedData)
+                
+                States.Pulled = true
             end
         else
+            local Correction: ColorCorrectionEffect = Lighting:FindFirstChild("ChaosCorrection")
+
+            if Correction then
+                Effects:Tween(Correction, {.4, 'Sine'}, {Saturation = 0, Contrast = 0, Brightness = 0})
+            end
+
             Camera:FreeUsage()
 
             ClearNodes()
@@ -440,6 +552,31 @@ function Component:Init()
             ShowInformation(nil);
         end)
     end
+end
+
+function Component:ShowChaosData(Data: {})
+    local MainFrame = Component:GetFrame();
+    local MissionList = MainFrame.Missions.List;
+
+    local DailyImprovementData = Data.DailyImprovement;
+    local AgentExperienceDamageBoost = ((Data.AgentExperience.Level or 0 + 1) // 100) * 10;
+
+    
+    local DailyImprovementFrame = MissionList:FindFirstChild('DailyImprovement')
+    DailyImprovementFrame.Remaining.Text = DailyImprovementData.Count == DailyImprovementData.Completed and 'All Rewards Obtained' or 'Rewards Remaining...'
+    DailyImprovementFrame.Progress.Bar.Size = UDim2.fromScale(DailyImprovementData.Count / DailyImprovementData.Completed, 1) 
+    DailyImprovementFrame.Progress.Label.Text = `Rewards: {DailyImprovementData.Count}/{DailyImprovementData.Completed}` 
+
+
+    ---
+    local AgentExperienceFrame = MissionList:FindFirstChild('AgentExperience')
+    AgentExperienceFrame.Data.Level.Text = `Lv. {Data.AgentExperience.Level}`
+    AgentExperienceFrame.Data.Boost.Text = `Current DMG Boost: <b>{AgentExperienceDamageBoost}</b>%`
+
+
+    ---
+    local ApocalypseTowerFrame = MissionList:FindFirstChild('ApocalypseTower')
+    ApocalypseTowerFrame.Level.Text = `Floor {Data.ApocalypseTower.Floor}`
 end
 
 return Component

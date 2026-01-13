@@ -34,21 +34,45 @@ return {
 	Moveset_Data = {
 		['Skill 1'] = {
 			Base = {
-				Cooldown = 5,
+				Cooldown = 3,
 
 				Speed = 1,
 				Animation_Speed = 1,
 				Attack_State_Time = 0.66,
 
 				Agent_Stun_Time = 0.3,
-				Damage_Mult = 45,
+				Damage_Mult = 120,
 
-				Range = 50,
-				Attack_Warning = 0.1,
+				Range = 30,
+				Attack_Warning = 0.4,
 			},
 
 			Upgrades = {
-				Damage_Mult = 0.3,
+				Damage_Mult = 2,
+			}
+		},
+
+		['Skill 2'] = {
+			Base = {
+				Cooldown = 2.5,
+
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.6,
+
+				Hit = {
+					Stun = 0.3,
+					Damage = 60,
+				},
+
+				Range = 80,
+				Attack_Warning = 0.3,
+			},
+
+			Upgrades = {
+				Hit = {
+					Damage = 3
+				},
 			}
 		},
 	},

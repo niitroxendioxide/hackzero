@@ -1,5 +1,6 @@
 --Properties do not update in realtime here
 --i.e. You can't change explosion properties at any time beyond the initial function execution
+local BoltAssets = game:GetService("ReplicatedStorage").Assets.Effects.Bolt
 local LightningBolt = require(script.Parent)
 local LightningSparks = require(script.Parent.LightningSparks)
 
@@ -47,9 +48,9 @@ function LightningExplosion.new(Position, Size, NumBolts, Color, BoltColor, UpVe
 	attach.Parent = part
 	attach.CFrame = CFrame.new()
 	
-	local partEmit1 = script.ExplosionBrightspot:Clone()
-	local partEmit2 = script.GlareEmitter:Clone()
-	local partEmit3 = script.PlasmaEmitter:Clone()
+	local partEmit1 = BoltAssets.ExplosionBrightspot:Clone()
+	local partEmit2 = BoltAssets.GlareEmitter:Clone()
+	local partEmit3 = BoltAssets.PlasmaEmitter:Clone()
 	
 	local size = math.clamp(self.Size, 0, 1)
 	

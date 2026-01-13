@@ -1,3 +1,4 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Plastic = PhysicalProperties.new(Enum.Material.SmoothPlastic)
 local AREA_OF_CONTACT = 1.8
@@ -131,6 +132,20 @@ function World:GetEnemyColliderParams(Overlap: boolean?): OverlapParams | Raycas
 
 	return ParamsNew
 end
+
+function World:GetAgentColliderParams(Overlap: boolean?, AllCharacters: {}): OverlapParams | RaycastParams
+	local Camera = workspace:FindFirstChild('Camera') :: Camera
+	local ParamsNew = Overlap and OverlapParams.new() or RaycastParams.new()
+	ParamsNew.FilterDescendantsInstances = {}
+	ParamsNew.FilterType = Enum.RaycastFilterType.Include
+
+	for _, AgentCharacter in AllCharacters do
+		table.insert(ParamsNew.FilterDescendantsInstances, AgentCharacter:GetHitbox())
+	end
+
+	return ParamsNew
+end
+
 
 local function GetFrictionBetweenMaterial(Material)
 	return (Plastic.Friction * Plastic.FrictionWeight + Material.Friction * Material.FrictionWeight) / (Plastic.FrictionWeight + Material.FrictionWeight)

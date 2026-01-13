@@ -18,7 +18,7 @@ function Ability:Play(Caster: Types.AgentClass, _,_, Context): ()
     local HitTags = {}
     Ability:Begin(Caster, {
         {0, function()
-            Caster:SwitchState('Attacking', AttackTime)
+            Caster:SwitchState('Attacking', AttackTime, true)
             Ability:PlayAnimation(Caster, 'Goku.Abilities.Assist.Default', {})
             
             Ability:Effect('Kamehameha_Beam', Caster, false)

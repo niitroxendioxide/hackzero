@@ -12,6 +12,14 @@ return {
 		['Gems'] = 94639843447517,
 	},
 
+	
+	RankingColorInfo = {
+		["X"] = {Color3.fromRGB(30, 188, 255), Color3.fromRGB(21, 115, 255)},
+		["B"] = {Color3.fromRGB(30, 188, 255), Color3.fromRGB(21, 115, 255)},
+		["A"] = {Color3.fromRGB(156, 117, 255), Color3.fromRGB(35, 46, 255)},
+		["S"] = {Color3.fromRGB(255, 209, 43), Color3.fromRGB(255, 74, 74)},
+	},
+
 	StatusEffects = {
 		DEFAULT = 72824425525185,
 		

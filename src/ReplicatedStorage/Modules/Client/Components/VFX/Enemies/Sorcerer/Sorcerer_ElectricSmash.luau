@@ -69,6 +69,18 @@ return function(Caster: Types.Caster, State: string): ()
             table.insert(Cache[Caster].Parts, ChargeObject)
         end
 
+        
+        local AuraVfx = Effects:Create(SorcererEffects.ElectricAuraVfx, 5);
+        AuraVfx.CFrame = CasterModel:GetPivot()
+        Effects:Weld(AuraVfx, CasterModel.Torso)
+        table.insert(Cache[Caster].Parts, AuraVfx)
+
+
+        local InitialExplosion = Effects:Create(SorcererEffects.ExplosionStartup, 5);
+        InitialExplosion.CFrame = CasterModel:GetPivot()
+
+        Effects:Emit(InitialExplosion, true)
+
         local UntilNextBolt = os.clock()
         while Cache[Caster].Active == true do
             if os.clock() - UntilNextBolt < 1/24 then

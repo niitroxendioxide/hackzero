@@ -239,7 +239,9 @@ function SkillComponent:UpdateSkillLevels(MainFrame: MainFrame, Agent: string)
         local SkillObject = MainFrame.List:FindFirstChild(SkillName)
         if not SkillObject then continue end
 
-        local SkillLvl = AgentInfo.Skills[SkillName]
+        local SkillLvl = (AgentInfo.Skills[SkillName] or 0)
+        --print(SkillLvl, SkillName, AgentInfo.Skills)
+
         SkillObject.Level.Level.Text = `{SkillLvl} / 20`
         Effects:Tween(SkillObject.Level.Bar.Fill, {.25, 'Cubic'}, {Size = UDim2.fromScale(SkillLvl/20, 1)})
 

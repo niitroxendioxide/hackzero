@@ -32,9 +32,11 @@ function AnimatorClass:Init()
 	end
 
 	self:Play('Idle')
-	self:Play('Walk', {Weight = 0.001, Speed = 0.7})
-	self:Play('WalkLeft', {Weight = 0.001, Speed = 0.6})
-	self:Play('WalkRight', {Weight = 0.001, Speed = 0.6})
+	self:Play('Walk', {Weight = 0.001, Speed = 0.8})
+	self:Play('WalkLeft', {Weight = 0.001, Speed = 0.8})
+	self:Play('WalkFLeft', {Weight = 0.001, Speed = 0.8})
+	self:Play('WalkFRight', {Weight = 0.001, Speed = 0.8})
+	self:Play('WalkRight', {Weight = 0.001, Speed = 0.8})
 
 	self.__Thread = RunService.PostSimulation:Connect(function(delta: number)
 		self:Update(delta)
@@ -81,13 +83,32 @@ function AnimatorClass:Update(_: number)
 	local Walk = self:GetTrack('Walk')
 	local Right = self:GetTrack('WalkRight')
 	local Left = self:GetTrack('WalkLeft')
+	local ForwardRight = self:GetTrack('WalkFRight')
+	local ForwardLeft = self:GetTrack('WalkFLeft')
 
 	local Direction =  self.__Character:GetDirection()
-	local Forward = math.abs(Direction:Dot(Vector3.new(0, 0, 1))) >= .8
+	local CorrectedDirection = vector.create(Direction.X, 0, math.abs(Direction.Z))
+	local Tracks = {Walk, Right, Left, ForwardLeft, ForwardRight}
+	local ChosenTrack = Walk
 
-	Right:AdjustWeight(Moving and math.clamp(Direction.X, 0.001, 1) or 0.001)
-	Left:AdjustWeight(Moving and math.clamp(-Direction.X, 0.001, 1) or 0.001)
-	Walk:AdjustWeight(Moving and Forward and 1 or 0.001)
+	if CorrectedDirection.X > 0 then
+		if CorrectedDirection.Z > 0 then
+			ChosenTrack = ForwardRight
+		else
+			ChosenTrack = Right
+		end
+	elseif CorrectedDirection.X < 0 then
+		if CorrectedDirection.Z > 0 then
+			ChosenTrack = ForwardLeft
+		else
+			ChosenTrack = Left
+		end
+	end
+
+	for _, DippityTrack in Tracks do
+		local Weight = DippityTrack == ChosenTrack and 1 or 0.001
+		DippityTrack:AdjustWeight(Weight)
+	end
 
 	Walk:AdjustSpeed(-math.sign(Direction.Z) * 0.7)
 end

@@ -55,14 +55,15 @@ local Health_Level_Divisors = {
 	[2] = 0.5,
 	[3] = 1,
 	[4] = 1.25,
-	[5] = 2,
-	[6] = 0,
+	[5] = 1.8,
+	[6] = 0.1,
+	[7] = 0.1,
 }
 
 return {
 	GameVersion = '0.01',
 
-	Max_Player_Level = 60,
+	Max_Player_Level = 100,
 	Max_Character_Level = 60,
 	Max_Companion_Level = 70,
 	Max_Team_Size = 5,

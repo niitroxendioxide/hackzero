@@ -182,6 +182,7 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
             Type = PartyStage[1],
             Stage = PartyStage[2],
             Act = PartyStage[3],
+            Seed = PartyData.Stage.Seed,
             Data = PartyData,
         },
         Players = {},
@@ -303,6 +304,7 @@ export type MatchData = {
         Type: string,
         Stage: string,
         Act: string?,
+        Seed: number,
 
         Data: {
             [string]: any,
@@ -327,6 +329,7 @@ function Service:GetStageData(): MatchData
                 Type = settings.MISSION.TYPE,
                 Stage = settings.MISSION.STAGE.Stage,
                 Act = settings.MISSION.STAGE.Act,
+                Seed = 0,
                 Data = settings.MISSION.DATA,
             },
         }

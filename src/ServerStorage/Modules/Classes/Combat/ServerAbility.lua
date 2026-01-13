@@ -54,16 +54,21 @@ function ServerAbilityClass:Play(Agent: AgentTypes.ServerAgentClass)
 	self:Begin(Agent, {})
 end
 
-function ServerAbilityClass:CreateHitbox(Caster: (AgentTypes.ServerAgentClass & AgentTypes.Enemy) | CFrame, Offset, Size, Event, Time: number?, Repeat: boolean?)
+function ServerAbilityClass:CreateHitbox(Caster: (AgentTypes.ServerAgentClass & AgentTypes.Enemy) | CFrame, Offset, Size, Event, Time: number?, Repeat: boolean?, CasterObjType: any?)
 	local At = typeof(Caster) == 'CFrame' and Caster or Caster:GetPivot()
 	ServerHitboxUtil:ForStructuresInZone(Size,  At * CFrame.new(Offset), function(Structure)
 		Event(Structure)
 	end)
 
 	--
-	if (tostring(Caster) == 'EnemyClass') then
+	local StringCaster = tostring(Caster)
+	if CasterObjType~=nil then
+		StringCaster = tostring(CasterObjType)
+	end
+
+	if (StringCaster == 'EnemyClass') then
 		self:CreateAgentHitbox(At, Offset, Size, Event, Time, Repeat)
-	elseif tostring(Caster) == 'ServerAgentClass' or typeof(Caster) == 'CFrame' then
+	elseif StringCaster == 'ServerAgentClass' or StringCaster == 'CFrame' then
 		self:CreateEnemyHitbox(At, Offset, Size, Event, Time, Repeat)
 	end
 
@@ -99,6 +104,9 @@ function ServerAbilityClass:CreateEnemyHitbox(At: CFrame, Offset: Vector3, Size:
 
 		for _, Part in AreaParts do
 			local Enemy = EnemyHitboxes[Part]
+			if Enemy == nil then
+				continue
+			end
 
 			if Targets[Enemy] == true then
 				continue
@@ -272,7 +280,7 @@ function ServerAbilityClass:CreateMovingHitbox(
 
 		local Difference = Delta * ClassObject.Speed * WorldSpeed
 
-		self:CreateHitbox(ClassObject.CFrame, vector.zero, vector.create(ClassObject.Size.X, ClassObject.Size.Y, Difference), Hit_Function)
+		self:CreateHitbox(ClassObject.CFrame, vector.zero, vector.create(ClassObject.Size.X, ClassObject.Size.Y, Difference), Hit_Function, nil, nil, Caster)
 
 		--
 		ClassObject.CFrame = ClassObject.CFrame * CFrame.new(0, 0, -Difference)

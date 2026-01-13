@@ -143,9 +143,9 @@ function Component:CreateTabButton(Name: string)
             task.cancel(Thread)
         end
 
-        Icon.UIStroke.Thickness = 2
-        Icon.UIStroke.Transparency = 0.15
-        ButtonObj.UIStroke.Color = Color3.new(1, 1, 1)
+        Icon.OuterStroke.Thickness = 0.06
+        Icon.OuterStroke.Color = Color3.new(1, 1, 1)
+        ButtonObj.OuterStroke.Color = Color3.new(1, 1, 1)
 
         Thread = task.spawn(function()
             local Angle = 0
@@ -154,15 +154,15 @@ function Component:CreateTabButton(Name: string)
                 local Delta = task.wait()
 
                 Angle += Delta * 180
-                Icon.UIStroke.Thickness = 2 + math.sin(math.rad(Angle))
-                ButtonObj.UIStroke.Thickness = 1 + math.sin(math.rad(Angle)) * .5
+                Icon.OuterStroke.Thickness = 0.06 + math.cos(math.rad(Angle)) * 0.03
+                ButtonObj.OuterStroke.Thickness = 0.04 + math.sin(math.rad(Angle)) * .01
             end
         end)
 
 
         EffectUtil:Tween(ButtonObj.UIScale, {.2, 'Back'}, {Scale = 1.1})
         Tween = EffectUtil:Tween(Icon.UIScale, {.25, 'Cubic'}, {Scale = 1.25})
-        EffectUtil:Tween(Icon, {.25, 'Cubic'}, {Rotation = -5})
+        EffectUtil:Tween(Icon, {.25, 'Cubic'}, {Rotation = -6})
     end)
 
     Selector.MouseLeave:Connect(function()
@@ -175,10 +175,10 @@ function Component:CreateTabButton(Name: string)
             task.cancel(Thread)
         end
 
-        Icon.UIStroke.Thickness = 1
-        Icon.UIStroke.Transparency = 0.854
-        ButtonObj.UIStroke.Color = Color3.new()
-        ButtonObj.UIStroke.Thickness = 1
+        Icon.OuterStroke.Thickness = 0.04
+        ButtonObj.OuterStroke.Thickness = 0.03
+        Icon.OuterStroke.Color = Color3.new()
+        ButtonObj.OuterStroke.Color = Color3.new()
 
         EffectUtil:Tween(ButtonObj.UIScale, {.2, 'Quad'}, {Scale = 1})
         EffectUtil:Tween(Icon, {.25, 'Cubic'}, {Rotation = 0})

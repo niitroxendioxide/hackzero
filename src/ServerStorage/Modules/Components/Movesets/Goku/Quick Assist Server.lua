@@ -23,7 +23,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context)
 
 	Ability:Begin(Caster, {
 		{0, function()
-			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time'))
+			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time'), true)
 		end,},
 
 		-- kamehameha hitbox

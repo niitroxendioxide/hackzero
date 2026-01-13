@@ -287,5 +287,19 @@ function Characters:GetActiveAgentsHitboxes()
 	return Active, List
 end
 
+function Characters:GetAllHitboxes()
+	local HitboxList = {}
+	for userId, PlayerAgents in Characters.__Player_Data do
+		for _, Agent in PlayerAgents.List do
+			if Characters:GetCurrent(userId) == Agent then
+				table.insert(HitboxList, Agent:GetHitbox())
+				break
+			end
+		end
+	end
+
+	return HitboxList
+end
+
 
 return Characters

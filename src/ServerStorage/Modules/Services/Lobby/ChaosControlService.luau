@@ -1,5 +1,6 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
 local Modules = ServerStorage.Modules
@@ -94,25 +95,56 @@ function HandleEvent(Player: Player, Action: number, Type: number, ...)
                 Network:Fire('ChaosControl', Player, Action, Type, Clone)
             end
         elseif Type == GameEnum.ChaosControlTab.DailyImprovement then
-            local _Seed, NodeData = Service:GetDailyImprovementNode(Player, Args[1] :: number)
+            local _, NodeData = Service:GetDailyImprovementNode(Player, Args[1] :: number)
             local Rewards = PartyService:SumUpTotalRewards(Player, NodeData.Completion.Rewards)
-
+            local Response = {
+                Completed = true,
+            }
+            
             if NodeData then
-                Network:Fire('ChaosControl', Player, Action, Type, {
+                Response = {
                     AgentBuffs = NodeData.AgentBuffs,
                     EnemyBuffs = NodeData.EnemyBuffs,
                     Enemies = NodeData.Enemies,
                     Rewards = Rewards,
-                })
+                }
             end
+
+            Network:Fire('ChaosControl', Player, Action, Type, Response)
         end
 
     elseif Action == GameEnum.ChaosControlAction.Begin then
         CreatePartyForPlayer(Player, Type, Args)
     elseif Action == GameEnum.ChaosControlAction.Amount then
-        if Type == GameEnum.ChaosControlTab.DailyImprovement then
-            Network:Fire('ChaosControl', Player, Action, Type, Service.__Daily_Node_Count)
+        local PlrData = DataService:GetDataFor(Player)
+        local ChaosControlData = PlrData.ChaosControl
+
+        local TotalNodesCompleted = 0;
+        local DailyNodes = {}
+        for Idx = 1, Service.__Daily_Node_Count do
+            local PlayerNodeData = ChaosControlData.DailyImprovement[Idx]
+            local NodeSeed = PlayerNodeData and PlayerNodeData.NodeSeed or 0
+            if Service:IsNodeCompleted(Player, 'DailyImprovement', Idx, NodeSeed) then
+                TotalNodesCompleted += 1;
+            end
+            table.insert(DailyNodes, PlayerNodeData);
         end
+
+        Network:Fire('ChaosControl', Player, Action, Type, {
+            DailyImprovement = {
+                Count = Service.__Daily_Node_Count,
+                Completed = TotalNodesCompleted,
+                Nodes = DailyNodes,
+            },
+
+            ApocalypseTower = {
+                Floor = 1,
+                Nodes = {},
+            },
+            AgentExperience = {
+                Level = 1,
+            }
+        })
     elseif Action == GameEnum.ChaosControlAction.Select then
         Service:SelectDailyImprovementReward(Player, Args[1], Args[2])
     end
@@ -125,7 +157,8 @@ function CreatePartyForPlayer(Player: Player, Type: number, Args: { number })
     local PartyData = {
         Stage = {
             Stage = '',
-            Act = 'Intro',
+            Act = NodeId,
+            Seed = 0,
         },
         ChaosControlData = {
             Node = NodeId,
@@ -141,13 +174,14 @@ function CreatePartyForPlayer(Player: Player, Type: number, Args: { number })
            return; 
         end
 
-        local _, NodeData = Service:GetDailyImprovementNode(Player, NodeId)
+        local CurrentSeed, NodeData = Service:GetDailyImprovementNode(Player, NodeId)
         for Key, Data in NodeData do
             PartyData[Key] = Data
         end
 
         PartyData.Stage.Stage = 'DailyImprovement'
         PartyData.ChaosControlData.Type = 'DailyImprovement'
+        PartyData.Stage.Seed = CurrentSeed
     end
 
     
@@ -198,12 +232,14 @@ function Service:GetDailyImprovementNode(Player: Player, Node: number): (number,
     local AgentBuffCount = NodeGenerator:NextInteger(0, 2)
     local EnemyBuffCount = NodeGenerator:NextInteger(0, 2)
     local NodeData = {
+        Difficulty = PlayerLevel <= 30 and GameEnum.Difficulties.Easy or PlayerLevel <= 65 and GameEnum.Difficulties.Medium or GameEnum.Difficulties.Hard,
         AgentBuffs = {},
         EnemyBuffs = {},
         Enemies = {},
         Completion = Table.CopyDeep(CompletionTemplate),
     }
 
+    NodeData.Completion.Experience = math.clamp(PlayerLevel * 150, 1, 1000)
     table.insert(NodeData.Completion.Rewards['S'], {
         Type = 'Gems',
         Amount = 60,
@@ -247,15 +283,12 @@ function Service:GetDailyImprovementNode(Player: Player, Node: number): (number,
 end
 
 function Service:SelectDailyImprovementReward(Player: Player, Node: number, Reward: { Type: string, Name: string })
-    local PlayerData = DataService:GetDataFor(Player);
     local CurrentNodeSeed = Service:GetDailyImprovementNode(Player, Node);
+    local PlayerData = DataService:GetDataFor(Player);
     local ChaosControlData = PlayerData.ChaosControl;
 
-    if ChaosControlData.DailyImprovement[Node] then
-        local NodeData = ChaosControlData.DailyImprovement[Node]
-        if NodeData.IsCompleted and NodeData.NodeId == CurrentNodeSeed then
-            return;
-        end
+    if Service:IsNodeCompleted(Player, 'DailyImprovement', Node, CurrentNodeSeed) then
+        return
     end
 
     if not Service.__Nodes[Player] then
@@ -265,6 +298,20 @@ function Service:SelectDailyImprovementReward(Player: Player, Node: number, Rewa
     Reward.Amount = Reward.Amount or 1;
 
     Service.__Nodes[Player][Node] = Reward;
+end
+
+function Service:IsNodeCompleted(Player: Player, Type: string, Node: number, NodeSeed: number)
+    local PlayerData = DataService:GetDataFor(Player);
+    local ChaosControlData = PlayerData.ChaosControl;
+
+    if ChaosControlData[Type][Node] then
+        local NodeData = ChaosControlData[Type][Node]
+        if NodeData.IsCompleted and NodeData.NodeId == NodeSeed then
+            return true;
+        end
+    end
+
+    return false
 end
 
 function Service:GetAgentExperienceStage(Player: Player)
@@ -279,10 +326,12 @@ function Service:GetAgentExperienceStage(Player: Player)
     local Upgrade = 1 + (CurrentFloorSeed // 100)
     local Difficulty = (CurrentFloorSeed - 100*Upgrade) // 15
     local FloorCombatData = {
+        Difficulty = Upgrade < 3 and GameEnum.Difficulties.Easy or Upgrade < 7 and GameEnum.Difficulties.Medium or GameEnum.Difficulties.Hard,
         AgentBuffs = {},
         EnemyBuffs = {},
         Enemies = {},
         Completion = {
+            Experience = math.clamp(PlayerData.Level * 150, 1, 1000),
             Rewards = {
                 ["S"] = {
                     {Type = "Money", Amount = 3000},
@@ -348,6 +397,7 @@ function Service:GetApocalypseTowerFloor(Player: Player, Floor: number): { [numb
     local Completion = Table.CopyDeep(CompletionTemplate)
     local FloorData = {}
 
+    Completion.Experience = math.clamp(PlayerLevel * 150, 1, 1000);
     table.insert(Completion.Rewards['S'], {
         Type = 'Gems',
         Amount = 20,
@@ -401,6 +451,50 @@ function Service:GetApocalypseTowerFloor(Player: Player, Floor: number): { [numb
     Service.__Cache[WeekFromOrigin + Floor] = FloorData
 
     return FloorData
+end
+
+type MatchCompletionData = {
+    Stage : {
+        Stage: string,
+        Type: string,
+        Act: string,
+        Seed: number,
+    },
+
+    WinStatus: number,
+    Rank: string, 
+    [string]: any,
+}
+
+function Service:MarkCompletion(Player: Player, MatchData: MatchCompletionData)
+    local StageData = MatchData.Stage;
+    local PlayerData = DataService:GetDataFor(Player);
+
+    if RunService:IsStudio() then
+        return;
+    end
+
+    if StageData.Type == 'ChaosControl' then
+        local NodeSeed = MatchData.Stage.Seed;
+        local ChaosControlData = PlayerData.ChaosControl;
+        local Node = tonumber(StageData.Act, 10);
+
+        if StageData.Stage == 'DailyImprovement' then
+
+            ChaosControlData.DailyImprovement[Node] = {
+                IsCompleted = true,
+                NodeSeed = NodeSeed,
+            }
+        elseif StageData.Stage == 'ApocalypseTower' then
+
+            ChaosControlData.ApocalypseTower[Node] = {
+                IsCompleted = true,
+                NodeSeed = NodeSeed,
+                Rank = MatchData.Rank,
+            }
+        end
+
+    end
 end
 
 
