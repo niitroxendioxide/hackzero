@@ -22,6 +22,8 @@ function PlayerAgentDataClass.new(Name: string, Level: number, Date: number)
         Basic_Attack = 0,
         Special = 0,
         Ultimate = 0,
+        Dodge_Counter = 0,
+        Quick_Assist = 0,
     }
     self.Ascensions = 0
     self.ObtainmentDate = Date

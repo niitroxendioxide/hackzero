@@ -134,8 +134,8 @@ function SkillComponent:UpdateSkills(MainFrame: MainFrame, Agent: string)
     for SkillName in DEFAULT_DESCRIPTIONS do
         local Icon = Icons.Skills[SkillName];
 
-        if SkillName == 'Ultimate' and Icons.Skills.Ultimates[Agent] then
-            Icon = Icons.Skills.Ultimates[Agent].Id
+        if SkillName == 'Ultimate' then
+            Icon = Icons.Skills.Ultimates.Goku.Id
         end
 
         local SkillObject = MainFrame.List:FindFirstChild(SkillName)
@@ -216,7 +216,7 @@ function SkillComponent:ShowInformation(MainFrame: MainFrame, Skill: string?)
     StatsTab.Label.Text = string.gsub(Skill, '_', ' ')
     StatsTab.Desc.Text = Description
     StatsTab.Desc.TextSize = ScreenUtil:GetTextSize(15)
-    StatsTab.Level.Text = `<b>Lvl.</b> {SkillLevel} / 20`
+    StatsTab.Level.Text = `<b>Lvl.</b> {(SkillLevel or 0)} / 20`
 
     -- Upgrading
     UpdateSkillUpgradeRequirements(StatsTab, AgentObject, Skill)

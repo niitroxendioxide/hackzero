@@ -233,6 +233,8 @@ function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?
 
 	if Key == "Speed" and Value == nil then
 		Value = 1
+	elseif Key == "Animation_Speed" and Value == nil then
+		Value = 1
 	end
 
 	return Value

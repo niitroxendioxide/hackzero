@@ -112,6 +112,8 @@ return {
 		['Swap_Forth'] = 76619175136377,
 		['Special'] = 122820271635943,
 		['Dodge'] = 90333531186937,
+		['Quick_Assist'] = 98536901483249,
+		['Dodge_Counter'] = 72165520047011,
 	},
 
 	Roles = {
@@ -124,8 +126,8 @@ return {
 	Elements = {
 		Ice = PREFIX .. 108516110153642,
 		Fire = PREFIX .. 71851600908599,
-		Physical = PREFIX .. 140022069131729,
-		Water = PREFIX .. 127260334479901,
+		Physical = PREFIX .. 135264772222943,
+		Water = PREFIX .. 89916641703745,
 		Electric = PREFIX .. 114411657809403,
 		Energy = PREFIX .. 131830988316888,
 		Earth = PREFIX .. 108297083537522,
