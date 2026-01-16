@@ -47,7 +47,7 @@ return {
 			Description = '',
 			Meters = {
 				SaiyanSurge = {
-					Ascension = 2,
+					Ascension = 0,
 					Description = 'When completing a full basic attack string obtain one charge of Saiyan Surge, when hitting an enemy with an EX-Special, get two charges, up to 3. Hold basic attack with two charges to use Super God Fist',
 					Id = 1,
 					Max = 4,
@@ -91,6 +91,25 @@ return {
 
 				Walk_Time = 0.2,
 				Forward_Impulse = 10,
+
+				SuperGodFist = {
+					Walk_Time = 0.4,
+					Attack_State_Time = 0.75,
+				},
+
+				SuperGodFistHit = {
+					Damage = 140,
+					Daze = 20,
+					Affliction_Buildup = 90,
+					Affliction = 'Energy',
+					HitsAirborne = true,
+					Stun = 0.4,
+					Knockback = {
+						vector.create(0, 0, 1),
+						30,
+						0.2,
+					},
+				},
 
 				Hit_Data = {
 					HitType = 'Blunt',

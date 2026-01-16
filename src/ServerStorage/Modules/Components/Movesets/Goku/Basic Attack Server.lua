@@ -6,9 +6,40 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
 local AbilityClass = require(Classes.Combat.ServerAbility)
+local Types = require(Shared.Types.Abilities)
 
 --
 local Ability = AbilityClass.new()
+
+function UseGodFist(Caster: Types.Caster)
+	local Data = Ability:FromData("SuperGodFist")
+	local HitData = Ability:FromData('SuperGodFistHit')
+
+	local function HitEnemy()
+		
+		Ability:CreateHitbox(Caster, vector.create(0, 0, -7), vector.create(8.5, 6.4, 14.5), function(Enemy)  
+			Ability:Hit(Caster, Enemy, HitData)
+		end)
+
+	end
+
+	Caster:UpdateMeter('SaiyanSurge', -2)
+
+	Ability:Begin(Caster, {	
+		{0, function()
+			Caster:SwitchState('Attacking', Data.Attack_State_Time, true)
+		end},
+
+		{0.35, function()
+			Caster:ImpulseForward(100, 0.75)
+		end},
+
+		{0.45, HitEnemy},
+		{0.55, HitEnemy},
+		{0.65, HitEnemy},
+		
+	})
+end
 
 function Ability:Play(Caster, _, State, Context): ()
 	--local Is_Airborne = Context.Buffer[2];
@@ -18,8 +49,31 @@ function Ability:Play(Caster, _, State, Context): ()
 		return
 	end
 
-	if (State == 'Begin' and Meter > 0) or (State == 'End' and Meter <= 2) then
-		return
+	local ActiveWaitThread = Ability:Get(Caster, 'ActiveWaitThread')
+	if ActiveWaitThread ~= nil then
+		task.cancel(ActiveWaitThread)
+		Ability:Save(Caster, 'ActiveWaitThread', nil)
+	end
+
+	local Held_Time = os.clock() - (Ability:Get(Caster, 'TimeStart') or 0)
+	Ability:Save(Caster, 'TimeStart', os.clock())
+
+	if (State == 'Begin' and Meter >= 2) or (State == 'End') then
+		local Should_Release = State == 'End' and Meter >= 2
+		local Was_Held = (Held_Time > 0.4)
+
+		if Should_Release and Was_Held then
+			UseGodFist(Caster)
+			Ability:Save(Caster, 'TimeStart', os.clock())
+
+			return
+		elseif State == 'Begin' then
+			Ability:Save(Caster, 'ActiveWaitThread', task.delay(0.4, function()
+				UseGodFist(Caster)
+			end))
+		elseif State == 'End' then
+			return;
+		end
 	end
 
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
@@ -90,7 +144,7 @@ function Ability:Play(Caster, _, State, Context): ()
 				Hit_Data.Affliction_Buildup = Ability:FromData("Affliction_Buildup", M1_Count, SkillLevel)
 
 				local Result = Ability:Hit(Caster, Target, Hit_Data)
-				if M1_Count == 6 and typeof(Result) == 'table' then
+				if typeof(Result) == 'table' and (M1_Count == 6 or Result.IsKill) then
 					Caster:UpdateMeter('SaiyanSurge', 1);
 				end
 			end, M1_Count == 6 and 0.45 or nil)

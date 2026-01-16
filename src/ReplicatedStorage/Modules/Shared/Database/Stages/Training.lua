@@ -82,8 +82,9 @@ return {
                     Objective = "Train with your agents.",
                     Goal = {KillEnemies = 1},
                     Enemies = {
-                        -- Name, Amount, Level
-                        [1] = {"Strongest", 1, 60,} --"Dazed", 1, 60}
+                        [1] = {
+                            {Name = "Strongest", Amount = 1, Level = 60,}
+                        } --"Dazed", 1, 60}
                     },
                     Dialogue = {
                         {

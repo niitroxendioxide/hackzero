@@ -64,6 +64,7 @@ function Component:CreateEvent(Event: string)
     end
 
     local EventData = Stages:GetEvent(State.Stage, State.Act, Event)
+
     if not EventData then
         return
     end

@@ -99,6 +99,7 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
         EventData = self.__Custom_Data[Event];
     else
         EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
+        print(EventData)
     end
 
     if EventData == nil then

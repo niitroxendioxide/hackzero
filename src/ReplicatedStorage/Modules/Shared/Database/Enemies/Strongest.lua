@@ -9,7 +9,7 @@ return {
 
 	--
 	Stats = {
-		Health = 25000,
+		Health = 100_000,
 		Attack = 120,
 		Defense = 72,
 		Daze = 662,
@@ -28,7 +28,7 @@ return {
 
 	Level_Stats = {
 		Attack = 8,
-		Health = 30000,
+		Health = 100_000,
 		Defense = 21,
 		Daze = 15,
 		Daze_Resistance = 0.05,

@@ -6,10 +6,10 @@ return table.freeze({
 
     MISSION = {
         --- Types: ChaosControl, Mission
-        TYPE = 'ChaosControl',
+        TYPE = 'Mission',
         STAGE = {
             --- Training, DailyImprovement, DungeonEx
-            Stage = 'DailyImprovement',
+            Stage = 'Training',
             Act = 'Intro',
         },
         DATA = {
@@ -19,6 +19,7 @@ return table.freeze({
             },
             AgentBuffs = {},
             Completion = {
+                Experience = 1000,
                 Rewards = {
                     ['S'] = {
                         {Type = 'Gold', Amount = 1000},
@@ -58,7 +59,7 @@ return table.freeze({
                     {Amount = 14, Level = 7, Name = 'Sorcerer'}
                 },
             },
-        }
+        }--]]
     },
 
     FILL_ULT_BAR = true,

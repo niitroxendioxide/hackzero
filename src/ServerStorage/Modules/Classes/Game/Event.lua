@@ -113,7 +113,7 @@ function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): boolean
             self:CreateEventAreaModel(Trigger)
         end
 
-        self:SummonEnemyWave(1, if self.__Is_Custom_Event then EventData else nil, Trigger)
+        self:SummonEnemyWave(1, EventData, Trigger)
 
         return true;
     end
@@ -195,6 +195,8 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
     local EventData = FromData or Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
     local EnemyWaves = EventData.Enemies
     local NextWaveTime = 0.5
+
+    
 
     if #EnemyWaves <= 0 or WaveNumber > #EnemyWaves then
         self:SetBarrierCollision(false)

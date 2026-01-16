@@ -68,11 +68,12 @@ function Service:Spawn(Type: string, Level: number, Tag: string)
 
 	local Spawn = workspace.World.Map.Triggers:FindFirstChild(Tag)
 	if not Spawn then
+		print('no trigger found going for enemyspawn')
 		local RandomSpawn = Service:GetSpawns()
 
 		Spawn = RandomSpawn[math.random(1, #RandomSpawn)]
 
-		if not Spawn then return end
+		if not Spawn then print('no spawns') return end
 	end
 
 	local At = Service:__GenerateLocation(Spawn)

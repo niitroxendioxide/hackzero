@@ -87,7 +87,6 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 		local Verified = self:Verify(Agent, Type)
 
 		if not Verified then
-			print('not verified')
 			return false
 		end
 

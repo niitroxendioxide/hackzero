@@ -59,9 +59,9 @@ function Service:Init()
 
     local Success_Loading;
     if MissionData.Type == 'Mission' then
-        Success_Loading = Service:CreateMap(MatchData.Stage, MatchData.Act)
+        Success_Loading = Service:CreateMap(MissionData.Stage, MissionData.Act)
     elseif MissionData.Type == 'ChaosControl' then
-        Success_Loading = Service:CreateMap(MatchData.Mission.Stage)
+        Success_Loading = Service:CreateMap(MissionData.Stage)
     end
 
     if not Success_Loading then
@@ -91,10 +91,10 @@ function Service:Init()
     for _, Player in Players:GetPlayers() do
         Service:SetPlayerLifeStatus(Player, true)
 
-        Network:Fire("Match", Player, GameEnum.MatchEvents.SetupStage, MatchData.Stage, MatchData.Act)
+        Network:Fire("Match", Player, GameEnum.MatchEvents.SetupStage, MissionData.Stage, MissionData.Act)
     end
 
-    Service:Begin(MatchData.Stage, MatchData.Act)
+    Service:Begin(MissionData.Stage, MissionData.Act)
 
     --
     Network:On("Match", Service.__HandleEvent)
@@ -191,7 +191,9 @@ function Service:Begin(Stage: string, Act: string)
     Targets:SetDifficulty(Difficulty)
 
     --
-    local ClientPayloadData = {}
+    local ClientPayloadData = {
+        
+    }
     local AllPlayers = Players:GetPlayers()
     if #AllPlayers == 0 then
         warn('No players found. Match is debug')
@@ -213,8 +215,6 @@ function Service:Begin(Stage: string, Act: string)
     Service.__Current_Act = Act
     Service.__Active_Match = MissionClass;
 
-    MissionClass:Begin()
-
     if MissionData.Type == 'ChaosControl' then
         local WaveCount = 0;
         for _, _ in MissionData.Data.Enemies do
@@ -228,6 +228,8 @@ function Service:Begin(Stage: string, Act: string)
 
     Network:FireForAll("Match", GameEnum.MatchEvents.MatchBegin, ClientPayloadData)
 
+
+    MissionClass:Begin()
 
     --
     local RandomPlayer = AllPlayers[math.random(1, #AllPlayers)]

@@ -410,28 +410,24 @@ function Controller:FillMeter(Buffer: buffer)
 
 	local PlayerId = buffer.readu8(Buffer, 1)
 	local AgentId = buffer.readu8(Buffer, 2)
-	local Meter = buffer.readu8(Buffer, 3)
+	local MeterId = buffer.readu8(Buffer, 3)
+	local MeterName = '';
 	local Percent = buffer.readu8(Buffer, 4) / 255
 	local Value = buffer.readu16(Buffer, 5) / 500
 
 	local AgentObject = Characters:GetAgent(PlayerId, AgentId)
-	AgentObject:SetMeter(Meter, Value)
-
-	if PlayerId == ReplicationId then
-		local Data = AgentsDatabase:GetMovesetData(AgentObject.Name)
-
-		if not Data or not Data.Passive then
-			return
-		end
-
-		local MeterName: string = nil
-		for MeterNameLoop, MeterData in Data.Passive.Meters do
-			if MeterData.Id == Meter then
-				MeterName = MeterNameLoop
+	local MovesetData = AgentsDatabase:GetMovesetData(AgentObject.Name)
+	if MovesetData.Passive then
+		for Idx, Meter in MovesetData.Passive.Meters do
+			if Meter.Id == MeterId then
+				MeterName = Idx
 			end
 		end
-		if not MeterName then return end
+	end
 
+	AgentObject:SetMeter(MeterName, Value)
+
+	if PlayerId == ReplicationId then
 		MainUIHUD:UpdateAgentMeter(AgentId, MeterName, Percent, Value)
 	end
 end

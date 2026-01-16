@@ -203,7 +203,9 @@ export type ServerAbilityClass = {
 		@param Enemy The one receiving damage
 		@param Hit All the data conforming to the damage to be dealt, along with stun, affliction, etc. See "HitEnemyData"
 	]]
-	Hit: (self: ServerAbilityClass, Agent: Caster, Enemy: Agents.Enemy, Hit: HitEnemyData) -> (number),
+	Hit: (self: ServerAbilityClass, Agent: Caster, Enemy: Agents.Enemy, Hit: HitEnemyData) -> ({
+		
+	}?),
 
 	--[[
 		Useful for projectile-like moves, creates a hitbox that moves on its own, for a set amount of time, and at a specific speed.

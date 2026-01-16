@@ -36,133 +36,191 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 6})
 end)
 
-function Ability:Play(Agent, _, State, Context)
-	local M1_Count = Ability:Get(Agent, 'Count')
-	local Meter = Agent:GetMeter("SaiyanSurge")
-	
-	Ability:Save(Agent, "last_hit_enemy", Context.Target);
+function UseGodFist(Caster)
+	local Data = Ability:FromData("SuperGodFist")
+	local function HitEnemy()
+		
+		Ability:CreateHitbox(Caster, vector.create(0, 0, -7), vector.create(8.5, 6.4, 14.5), function(Enemy)  
+			Ability:Hit(Caster, Enemy, {})
+		end)
 
-	if (State == 'Begin' and Meter > 0) or (State == 'End' and Meter <= 2) then
-		return
 	end
 
-	if Ability:Get(Agent, 'M1_Track') then
-		Ability:Get(Agent, 'M1_Track'):Stop(0.2)
+	Ability:Begin(Caster, {
+		{0, function()
+			Ability:PlayAnimation(Caster, 'Goku.Abilities.M1.SuperGodFist', {
+				Fade = .1,
+				Active_Time = Data.Attack_State_Time,
+			})
+
+			Caster:SwitchState('Attacking', Data.Attack_State_Time, true)
+			Ability:Effect("Goku_SuperGodFist", Caster, 'Charge')
+		end},
+
+		{0.35, function()
+			Caster:ImpulseForward(60, 0.75)
+		end},
+
+		{0.45, function()
+			Ability:Effect("Goku_SuperGodFist", Caster, 'Attack')
+		end},
+
+		{0.45, HitEnemy},
+		{0.55, HitEnemy},
+		{0.65, HitEnemy},
+	})
+end
+
+function Ability:Play(Caster, _, State, Context)
+	local M1_Count = Ability:Get(Caster, 'Count')
+	local Meter = Caster:GetMeter("SaiyanSurge")
+	
+	Ability:Save(Caster, "last_hit_enemy", Context.Target);
+	
+	local ActiveWaitThread = Ability:Get(Caster, 'ActiveWaitThread')
+	if ActiveWaitThread ~= nil then
+		task.cancel(ActiveWaitThread)
+		Ability:Save(Caster, 'ActiveWaitThread', nil)
+	end
+
+
+	local Held_Time = os.clock() - (Ability:Get(Caster, 'TimeStart') or 0)
+	Ability:Save(Caster, 'TimeStart', os.clock())
+
+	if (State == 'Begin' and Meter >= 2) or (State == 'End') then
+		local Should_Release = State == 'End' and Meter >= 2
+		local Was_Held = (Held_Time > 0.4)
+
+		if Should_Release and Was_Held then
+			UseGodFist(Caster)
+			Ability:Save(Caster, 'TimeStart', os.clock())
+			return
+		elseif State == 'Begin' then
+			Ability:Save(Caster, 'ActiveWaitThread', task.delay(0.4, function()
+				UseGodFist(Caster)
+			end))
+		elseif State == 'End' then
+			return;
+		end
+	end
+
+	if Ability:Get(Caster, 'M1_Track') then
+		Ability:Get(Caster, 'M1_Track'):Stop(0.2)
 	end
 
 	local Effect_Data = Ability:FromData('Effect_Data')
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
-	Ability:Begin(Agent, {
+	Ability:Begin(Caster, {
 		{0, function()
-			local Result = Ability:MatchAirborneHeights(Agent, Context.Target, 1.7);
+			local Result = Ability:MatchAirborneHeights(Caster, Context.Target, 1.7);
 			if Result == GameEnum.AirborneMatchState.Raised then
-				Ability:Effect("Goku_RaiseVfx", Agent)
+				Ability:Effect("Goku_RaiseVfx", Caster)
 			end
 
-			Agent:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
+			Caster:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
 			
-			local Track = Ability:PlayAnimation(Agent, 'Goku.Abilities.M1.'..Ability:Get(Agent, 'Count'), {
+			local Track = Ability:PlayAnimation(Caster, 'Goku.Abilities.M1.'..Ability:Get(Caster, 'Count'), {
 				Fade = .1,
 				Active_Time = Attack_Time + .25,
 			})
 
-			Ability:Save(Agent, 'M1_Track', Track)
+			Ability:Save(Caster, 'M1_Track', Track)
 		end,},
 
 		-- 1ST M1
 		{.1, function()
 			if M1_Count == 1 then
-				Agent:Walk(Ability:FromData('Walk_Time'))
+				Caster:Walk(Ability:FromData('Walk_Time'))
 			end
 		end,},
 
 		-- 2ND M1
 		{0.15, function()
 			if M1_Count == 1 then
-				Ability:Effect("Goku_M1_1", Agent);
+				Ability:Effect("Goku_M1_1", Caster);
 			end
 
 			if M1_Count == 2 then
-				Agent:Walk(Ability:FromData('Walk_Time'))
+				Caster:Walk(Ability:FromData('Walk_Time'))
 			end
 		end},
 
 		{0.43, function()
 			if M1_Count == 2 then
-				Agent:Walk(Ability:FromData('Walk_Time') + .1, 2)
+				Caster:Walk(Ability:FromData('Walk_Time') + .1, 2)
 			end
 		end},
 
 		-- 3RD M1
 		{0.2, function()
 			if M1_Count == 3 then
-				Ability:Effect("Goku_M1_2", Agent, 3);
-				Agent:Walk(Ability:FromData('Walk_Time'))
+				Ability:Effect("Goku_M1_2", Caster, 3);
+				Caster:Walk(Ability:FromData('Walk_Time'))
 			end
 		end},
 
 		{0.233, function()
 			if M1_Count == 4 then
-				Ability:Effect("Goku_M1_4", Agent);
+				Ability:Effect("Goku_M1_4", Caster);
 			end
 		end},
 
 		-- 4TH M1
 		{0.06, function()
 			if M1_Count == 4 then
-				Agent:Walk(Ability:FromData('Walk_Time') + 0.1)
+				Caster:Walk(Ability:FromData('Walk_Time') + 0.1)
 			end
 		end},
 
 		-- 5TH M1
 		{0.27, function()
 			if M1_Count == 5 then
-				Ability:Effect("Goku_M1_5", Agent)
-				Agent:WalkBack(Ability:FromData('Walk_Time') + 0.3, 2)
+				Ability:Effect("Goku_M1_5", Caster)
+				Caster:WalkBack(Ability:FromData('Walk_Time') + 0.3, 2)
 			end
 		end},
 
 		-- 6TH M1
 		{0.18, function()
 			if M1_Count == 2 then
-				Ability:Effect("Goku_M1_2", Agent);
+				Ability:Effect("Goku_M1_2", Caster);
 			end
 
 			if M1_Count == 6 then
-				Ability:Effect("Goku_M1_6", Agent)
-				Agent:Walk(Ability:FromData('Walk_Time') + 0.18, 2.5)
+				Ability:Effect("Goku_M1_6", Caster)
+				Caster:Walk(Ability:FromData('Walk_Time') + 0.18, 2.5)
 			end
 		end},
 
 		{Ability:FromData("Hit_Times", M1_Count), function()
 			if M1_Count == 6 then
-				Ability:Effect("Goku_M1_1", Agent);
+				Ability:Effect("Goku_M1_1", Caster);
 			end
 
-			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
-				Ability:Hit(Agent, Target, {EffectData = Effect_Data})
+			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
+				Ability:Hit(Caster, Target, {EffectData = Effect_Data})
 			end)
 		end,},
 
 		{.567, function()
 			if M1_Count == 2 then
-				Ability:Effect("Goku_M1_1", Agent);
+				Ability:Effect("Goku_M1_1", Caster);
 			end
 			if M1_Count ~= 4 then return end
 
-			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
-				Ability:Hit(Agent, Target, {EffectData = Effect_Data})
+			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
+				Ability:Hit(Caster, Target, {EffectData = Effect_Data})
 			end)
 		end,},
 
 		{.5, function()
 			if M1_Count == 4 then
-				Ability:Effect("Goku_M1_4", Agent, 2);
+				Ability:Effect("Goku_M1_4", Caster, 2);
 			end
 			if M1_Count ~= 2 then return end
 
-			Ability:CreateHitbox(Agent, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
-				Ability:Hit(Agent, Target, {EffectData = Effect_Data})
+			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
+				Ability:Hit(Caster, Target, {EffectData = Effect_Data})
 			end)
 		end,},
 	})
