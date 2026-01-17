@@ -93,9 +93,13 @@ local function CreateAgentIcons(): ()
 
     for _, Agent in AgentsTable do
         local AgentName = Agent.Name
+        local AgentData = CharacterDatabase:GetCharacterData(AgentName, true)
         local AgentObj = Assets.Interface.Agents.AgentObj:Clone()
 
         AgentObj.Btn.MouseButton1Click:Connect(function()
+            AgentObj.Design.UIScale.Scale = 0.85;
+            EffectUtil:Tween(AgentObj.Design.UIScale, { 0.25, 'Back' }, {Scale = 1})
+            
             local ClientData = LocalData:GetAgent(AgentName)
             local Element = UIGroups:GetElementClass("Feeding", "Feeding")
 
@@ -107,14 +111,29 @@ local function CreateAgentIcons(): ()
         end)
 
         AgentObj.Btn.MouseEnter:Connect(function()
-            AgentObj.Design.UIStroke.Transparency = 0
-            AgentObj.Design.UIStroke.Thickness = 2
+            EffectUtil:Tween(AgentObj.Design.InnerStroke, { 0.25, 'Quad' }, {Color = Color3.new(1, 1, 1)})
         end)
 
         AgentObj.Btn.MouseLeave:Connect(function()
-            AgentObj.Design.UIStroke.Transparency = .75
-            AgentObj.Design.UIStroke.Thickness = 1
+            EffectUtil:Tween(AgentObj.Design.InnerStroke, { 0.25, 'Quad' }, {Color = Color3.fromRGB(47, 47, 47)})
         end)
+
+        ---
+        local AgentModel = Assets.Characters.Agents:FindFirstChild(AgentName) or Assets.Characters.Agents.Template
+        local ClonedAgentModel = AgentModel:Clone();
+        ClonedAgentModel:PivotTo(CFrame.new());
+        ClonedAgentModel.Parent = AgentObj.Design.Viewport.WorldModel;
+
+        local NewCamera = Instance.new('Camera')
+        NewCamera.CFrame = CFrame.new(0, 1.75, -180) * CFrame.Angles(0, math.pi, 0)
+        NewCamera.FieldOfView = 1
+        NewCamera.Parent = AgentObj.Design.Viewport
+
+        AgentObj.Design.Viewport.CurrentCamera = NewCamera
+
+        if AgentData.IconGlowColor ~= nil then
+            AgentObj.Design.Glow.BackgroundColor3 = AgentData.IconGlowColor::Color3 
+        end
 
         AgentObj.Design.AgentName.Text = AgentName
         AgentObj.Parent = Frame.Agents.Holder
@@ -211,12 +230,12 @@ function Component:Init()
     end)
 
     ReturnButton.MouseEnter:Connect(function()
-        ReturnHolder.UIStroke.Color = Color3.new(1, 1, 1)
+        ReturnHolder.OuterStroke.Color = Color3.new(1, 1, 1)
         EffectUtil:Tween(ReturnHolder.UIScale, {.25}, {Scale = 1.1})
     end)
 
     ReturnButton.MouseLeave:Connect(function()
-        ReturnHolder.UIStroke.Color = Color3.new()
+        ReturnHolder.OuterStroke.Color = Color3.new()
         EffectUtil:Tween(ReturnHolder.UIScale, {.25}, {Scale = 1})
     end)
 

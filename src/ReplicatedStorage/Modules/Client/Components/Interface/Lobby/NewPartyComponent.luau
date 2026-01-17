@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local AgentModels = ReplicatedStorage.Assets.Characters.Agents
 local Assets = ReplicatedStorage.Assets.Interface
 
+local UIGroups = require(ReplicatedStorage.Modules.Client.Libraries.UIGroups)
 local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
 local Network = require(Shared.Network)
 local Fetcher = require(Client.Libraries.Fetcher)
@@ -225,7 +226,7 @@ function SetDockState(DockName: string, State: boolean)
     end
 end
 
-function SetupCloseButton(DockName: string)
+function SetupCloseButton(DockName: string, button_fn: () -> ())
     local Dock = Component:GetFrame():FindFirstChild(DockName)
     local CloseFrame = Dock:FindFirstChild("CloseButton")
     if not CloseFrame then
@@ -245,7 +246,11 @@ function SetupCloseButton(DockName: string)
     end)
 
     CloseFrame.Button.MouseButton1Click:Connect(function()
-        SetDockState(DockName, false)
+        if button_fn then
+            button_fn()
+        else
+            SetDockState(DockName, false)
+        end
 
         CloseFrame.UIScale.Scale = 0.75
         CloseFrame.InnerStroke.Color = Color3.fromRGB(131, 0, 0)
@@ -602,6 +607,18 @@ function Component:Init()
         SetDockState(Dock, false)
         SetupCloseButton(Dock)
     end
+
+    SetupCloseButton('Mission', function()  
+        Network:Fire('Party', GameEnum.PartyManaging.Leave)
+        self:Set(false)
+
+
+        ---
+        local MainMenuUI = UIGroups:GetElementClass("Lobby", "MainMenu")
+        if MainMenuUI then
+            MainMenuUI:Set(true, true)
+        end
+    end)
 
     MissionDock.TeamPlate.Button.MouseButton1Click:Connect(function()
         SetDockState('Agents', not States.Agents)

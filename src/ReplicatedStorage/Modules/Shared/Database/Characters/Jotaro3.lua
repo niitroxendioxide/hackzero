@@ -6,6 +6,8 @@ return {
 	Tier = "Legendary",
 	Faction = "Stardust Crusaders",
 
+	IconGlowColor = Color3.fromRGB(143, 99, 255),
+
 	Appearance = {
 		Height = 3.15
 	},

@@ -5,6 +5,8 @@ return {
 	Role = 'Support',
 	Tier = "Legendary",
 	Faction = "Leaf Village",
+	
+	IconGlowColor = Color3.fromRGB(255, 146, 83),
 
 	Appearance = {
 		Height = 2.675

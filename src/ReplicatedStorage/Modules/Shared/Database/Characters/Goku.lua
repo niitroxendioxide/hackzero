@@ -6,6 +6,8 @@ return {
 	Tier = "Legendary",
 	Faction = "Z Warriors",
 
+	IconGlowColor = Color3.fromRGB(255, 146, 83),
+
 	Appearance = {
 		Height = 3.15
 	},

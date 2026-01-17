@@ -155,7 +155,7 @@ function Component:CreateTabButton(Name: string)
 
                 Angle += Delta * 180
                 Icon.OuterStroke.Thickness = 0.06 + math.cos(math.rad(Angle)) * 0.03
-                ButtonObj.OuterStroke.Thickness = 0.04 + math.sin(math.rad(Angle)) * .01
+                ButtonObj.OuterStroke.Thickness = 0.05 + math.sin(math.rad(Angle)) * .01
             end
         end)
 

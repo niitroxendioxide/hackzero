@@ -6,6 +6,9 @@ return {
 	Tier = "Legendary",
 	Faction = "Kamunabi",
 
+	
+	IconGlowColor = Color3.fromRGB(255, 222, 199),
+
 	Appearance = {
 		Height = 3
 	},
