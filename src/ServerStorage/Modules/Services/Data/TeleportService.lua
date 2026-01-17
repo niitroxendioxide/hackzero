@@ -182,7 +182,7 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
             Type = PartyStage[1],
             Stage = PartyStage[2],
             Act = PartyStage[3],
-            Seed = PartyData.Stage.Seed,
+            Seed = (PartyData.Stage and PartyData.Stage.Seed) or 0,
             Data = PartyData,
         },
         Players = {},

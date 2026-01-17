@@ -13,7 +13,7 @@ local Effects = require(Client.Libraries.Effects)
 --
 local Controller = {}
 
-function Controller:AddEnemy(Buffer: buffer, At: Vector3)
+function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | number} })
 	local EnemyId = buffer.readu8(Buffer, 1)
 	local EnemyNameId = buffer.readu8(Buffer, 2)
 	local Level = buffer.readu8(Buffer, 3)
@@ -25,8 +25,18 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3)
 		Controller:RemoveEnemy(Buffer)
 	end
 
+
+	---
 	local NewEnemy = EnemyClass.new(At, Name, Level)
 	NewEnemy:Init(EnemyId)
+
+	for _, Buff in Buffs do
+		NewEnemy:AddEffect({
+			Type = Buff[1], 
+			Value = Buff[2],
+			Time = -1,
+		})
+	end
 
 	Effects:Play('EnemyStats', NewEnemy)
 	Enemies:AddEnemy(EnemyId, NewEnemy)

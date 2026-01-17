@@ -54,16 +54,27 @@ local MeshTweens = {
 
         Innermesh.Mesh.Scale *= 0.45
     end,
+
+    Fast = function(Innermesh)
+        Innermesh.CFrame *= CFrame.Angles(Rng:NextNumber(-math.pi, math.pi), 0, 0)
+        Effects:Tween(Innermesh.Mesh, { .3, 'Cubic' }, { Scale = Innermesh.Mesh.Scale * vector.create(Rng:NextNumber(2, 2.35), Rng:NextNumber(1.2, 1.35), Rng:NextNumber(1.2, 1.35)) })
+        Effects:Tween(Innermesh, { .275, 'Quart' }, { CFrame = Innermesh.CFrame * CFrame.new(2, 0, 0) * CFrame.Angles(-math.pi * Rng:NextNumber(0.03, 0.15), 0, 0) })
+        task.delay(0.1, function()
+            Effects:Tween(Innermesh.Decal, { 0.1 }, {Transparency = 1})
+        end)
+
+        Innermesh.Mesh.Scale *= 0.3
+    end,
 }
 
 function CreateTrail(Caster, Angle: number, Time: number)
+    local Current = Angle or 0;
+    local Z = -3;
+    local Radius = 5;
     local TrailObj = Effects:Create(Assets.Goku.GodFist.Trail, 2)
-    TrailObj.CFrame = Caster:GetModel():GetPivot()
+    TrailObj.CFrame = Caster:GetModel():GetPivot() * CFrame.new(math.cos(Current) * Radius, math.sin(Current) * Radius, Z)
 
     local Connection do
-        local Current = Angle or 0;
-        local Z = -3;
-        local Radius = 0;
         local Since = os.clock()
         Connection = RunService.Heartbeat:Connect(function(Delta: number)  
             if (os.clock() - Since) > Time then
@@ -72,7 +83,6 @@ function CreateTrail(Caster, Angle: number, Time: number)
             end
 
             local Period = (os.clock() - Since) / Time
-            local Alpha = TweenService:GetValue(Period, Enum.EasingStyle.Cubic, Enum.EasingDirection.In)
             local AltAlph = TweenService:GetValue(Period, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 
             Current += Delta * math.pi * 2
@@ -101,14 +111,20 @@ return function(
             task.cancel(Threads[Caster])
         end
 
-        local DashEffect = Effects:Create(Assets.Goku.BasicAttack.DashBack, 2)
+        local DashEffect = Effects:Create(Assets.Goku.GodFist.DashTrail, 2)
         DashEffect.Anchored = false
-        DashEffect:PivotTo(Caster:GetModel():GetPivot() * CFrame.Angles(0, math.pi, 0))
+        DashEffect:PivotTo(Caster:GetModel():GetPivot())
         Effects:Weld(DashEffect, Caster:GetModel().PrimaryPart)
-        Effects:RecolorToGroundColor(Caster:GetModel():GetPivot().Position, DashEffect.att:GetChildren())
 
         local BeamsDash = Effects:Create(Assets.Goku.GodFist.Dash, 2)
         BeamsDash:PivotTo(Caster:GetModel():GetPivot() * CFrame.new(0, 0, -3))
+
+        ---
+        local GroundDashEffect = Effects:Create(Assets.Goku.GodFist.GroundDash, 2)
+        GroundDashEffect.Anchored = false
+        GroundDashEffect:PivotTo(Caster:GetModel():GetPivot() * CFrame.new(0, -2.9, 0))
+        Effects:Weld(DashEffect, Caster:GetModel().PrimaryPart)
+        Effects:RecolorToGroundColor(Caster:GetModel():GetPivot().Position, GroundDashEffect:GetChildren())
 
         for _, Obj in BeamsDash:GetDescendants() do
             if Obj:IsA('Beam') then
@@ -127,7 +143,7 @@ return function(
         local Active_Time = 0
 
         while Active_Time < 0.25 do
-            Active_Time += Effects:Wait(1 / 17)
+            Active_Time += Effects:Wait(1 / 14)
 
             local Hit_Effect = Effects:Create(Assets.Goku.GodFist.Mesh, 3)
             Hit_Effect:PivotTo(Caster:GetModel():GetPivot() * CFrame.new(0, 0.33, 0))
@@ -151,6 +167,7 @@ return function(
         local ArmChargeVfx = Effects:Create(Assets.Goku.GodFist.Charge, 2)
         ArmChargeVfx.Anchored = false
         ArmChargeVfx:PivotTo(RightArm.CFrame * CFrame.new(0, -0.85, 0))
+        ArmChargeVfx.Transparency = 0.9
         Effects:Weld(ArmChargeVfx, RightArm)
 
         for _, Aura in Assets.Goku.GodFist.ArmAura:GetChildren() do

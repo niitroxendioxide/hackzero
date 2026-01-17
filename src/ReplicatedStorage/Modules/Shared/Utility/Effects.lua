@@ -164,7 +164,7 @@ function EffectUtil:Wait(time_to_wait: number)
 	return task.wait(time_to_wait) / World:GetSpeed()
 end
 
-function EffectUtil:Create<T>(Asset: T & Instance, Time: number?): (T, thread)
+function EffectUtil:Create<T>(Asset: T & Instance, Time: number?, Parent: Instance?): (T, thread)
 	local Dir = string.split(debug.info(2, 's'), '.')
 	local Name = Dir[#Dir]
 
@@ -175,7 +175,7 @@ function EffectUtil:Create<T>(Asset: T & Instance, Time: number?): (T, thread)
 	end
 
 	local Cloned = (Asset :: Instance):Clone()
-	Cloned.Parent = Effects_Folder:FindFirstChild(Name)
+	Cloned.Parent = Parent or Effects_Folder:FindFirstChild(Name)
 
 	local DeleteThread = EffectUtil:CleanUp(Cloned, Time or 10)
 
@@ -394,8 +394,15 @@ function EffectUtil:ShakeCamera(Preset: string)
 	return NewCamShake;
 end
 
-function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: () -> (boolean), PassedParams: OverlapParams)
+export type ClientProjectile = {
+	SetSpeed: (self: ClientProjectile, Speed: number) -> (),
+}
+
+function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: () -> (boolean), PassedParams: OverlapParams): {}
 	local Loop do
+		local Class = {
+			Speed = Speed,
+		}
 		local Max_Time = 0;
 		local Params = World:GetEnemyColliderParams(true)
 
@@ -412,7 +419,7 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 				return;
 			end
 
-			Model:PivotTo(Model:GetPivot() * CFrame.new(0, 0, -DeltaTime * Speed))
+			Model:PivotTo(Model:GetPivot() * CFrame.new(0, 0, -DeltaTime * Class.Speed))
 
 			--
 			local PartBounds = workspace:GetPartBoundsInBox(Model:GetPivot(), Size, Params)
@@ -435,6 +442,16 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 				end
 			end
 		end)
+
+		Class.SetSpeed = function(_, Amount: number)
+			Class.Speed = Amount
+		end
+
+		Class.Disconnect = function()
+			Loop:Disconnect()
+		end
+
+		return Class
 	end
 end
 

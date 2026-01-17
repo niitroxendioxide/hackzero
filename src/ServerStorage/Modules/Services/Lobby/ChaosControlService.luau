@@ -47,16 +47,16 @@ local Agent_Buffs = {
 }
 
 local Enemy_Buffs = {
-    {'Health%', 250},
-    {'Health%', 400},
-    {'ATK%', 110},
-    {'ATK%', 60},
-    {'DEF%', 25},
-    {'DEF%', 45},
-    {'Daze%', 30},
-    {'Daze%', 50},
-    {'Daze_Resistance', 2},
-    {'Daze_Resistance', 4},
+    {'Health', "250%"},
+    {'Health', "400%"},
+    {'Attack', "110%"},
+    {'Attack', "60%"},
+    {'Defense', "25%"},
+    {'Defense', "45%"},
+    {'Daze', "30%"},
+    {'Daze', "50%"},
+    {'Daze_Resistance', "2%"},
+    {'Daze_Resistance', "4%"},
 }
 
 local CompletionTemplate = {

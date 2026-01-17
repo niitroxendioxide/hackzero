@@ -166,6 +166,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 			self:__run_hooks(GameEnum.AbilityHooks.BeforeReleaseConnection, Agent)
 		end
 
+		local Range = self:FromData("Range") or 15
 		local IsBasicAttack = self.__Name == 'Basic_Attack'
 		local LookAtEnemy = self:FromData('NoAutoTrack') ~= true
 		local EnemyId, Enemy;
@@ -173,7 +174,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 			if self.__Target_Finder then
 				EnemyId, Enemy = self.__Target_Finder(Agent);
 			else
-				EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, 15, true)
+				EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, Range, true)
 			end
 		end
 

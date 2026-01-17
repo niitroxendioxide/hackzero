@@ -81,9 +81,12 @@ return {
                 Begin = {
                     Objective = "Train with your agents.",
                     Goal = {KillEnemies = 1},
+                    EnemyBuffs = {
+                        {'Max_Health', "5000%"},
+                    },
                     Enemies = {
                         [1] = {
-                            {Name = "Strongest", Amount = 1, Level = 60,}
+                            {Name = "Sorcerer", Amount = 1, Level = 60,}
                         } --"Dazed", 1, 60}
                     },
                     Dialogue = {

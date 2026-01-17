@@ -228,7 +228,7 @@ function Replicator:RemoveEffect(Agent: AgentTypes.ServerAgentClass, EffectId: n
 	Network:FireForAll('Replicate', Object)
 end
 
-function Replicator:AddEnemy(Id: number, Enemy: Types.ServerEnemyClass, Target: Player?)
+function Replicator:AddEnemy(Id: number, Enemy: Types.ServerEnemyClass, Buffs: { {string | number} }, Target: Player?)
 	local Object = buffer.create(4)
 	buffer.writeu8(Object, 0, GameEnum.Replication.AddEnemy)
 	buffer.writeu8(Object, 1, Id)
@@ -236,9 +236,9 @@ function Replicator:AddEnemy(Id: number, Enemy: Types.ServerEnemyClass, Target: 
 	buffer.writeu8(Object, 3, Enemy.__Status.__Level)
 
 	if not Target then
-		Network:FireForAll('Replicate', Object, Enemy:GetPivot().Position)
+		Network:FireForAll('Replicate', Object, Enemy:GetPivot().Position, Buffs)
 	else
-		Network:Fire('Replicate', Target, Object, Enemy:GetPivot().Position)
+		Network:Fire('Replicate', Target, Object, Enemy:GetPivot().Position, Buffs)
 	end
 end
 

@@ -104,9 +104,9 @@ end
 
 function EnemyStatus:GetStat(Name: string)
 	if Name == 'Max_Health' then
-		return self.__Max_Health --self:GetStat('Health')
+		return self.__Max_Health + self:GetStatEffects(Name) --self:GetStat('Health')
 	elseif Name == 'Max_Daze' then
-		return self.__Max_Daze
+		return self.__Max_Daze + self:GetStatEffects(Name)
 	end
 
 	if not self.__Stats[Name] then
@@ -221,7 +221,7 @@ function EnemyStatus.AddEffect(self: Types.EnemyStatus, Effect: Types.EnemyEffec
 
 	if typeof(Effect.Value) == 'string' and Effect.Value:find("%%") and Effect.Type then
 		local Number = tonumber(string.sub(Effect.Value, 1, #Effect.Value-1), 10)
-		local Stat = self.__Stats[Effect.Type]
+		local Stat = Effect.Type == 'Max_Health' and self.__Max_Health or self.__Stats[Effect.Type]
 
 		Effect.Value = Stat * (Number / 100)
 	end
@@ -246,11 +246,21 @@ function EnemyStatus.AddEffect(self: Types.EnemyStatus, Effect: Types.EnemyEffec
 		end,
 	}
 
-	if Effect.Time then
+	if Effect.Time and Effect.Time > 0 then
 		task.delay(Effect.Time, EffectObject.Remove)
 	end
 
 	self.__Effects[NewId] = EffectObject
+
+
+	---
+	if Effect.Type == 'Max_Health' then
+		local PreviousMaxHealth = self.__Max_Health
+		self.__Max_Health = self:GetStat("Max_Health")
+		self.__Health = self.__Max_Health
+
+		print('New max health:', self.__Max_Health, ' old one: ', PreviousMaxHealth)
+	end
 
 	return EffectObject
 end

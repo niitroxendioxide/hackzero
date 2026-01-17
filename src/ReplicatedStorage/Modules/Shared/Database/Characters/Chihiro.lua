@@ -107,14 +107,20 @@ return {
 				Animation_Speed = 1,
 				Attack_State_Time = 1,
 				Required_Energy = 1,
+				Range = 100,
 				Hit = {
 					HitType = 'Slash',
-					Damage = 370,
+					Damage = 164,
 					Affliction = 'Water',
-					Affliction_Buildup = 45,
+					Affliction_Buildup = 15,
 					Stun = 0.45,
-					Daze = 80,
+					Daze = 20,
 					HitsAirborne = true,
+					Knockback = {
+						vector.create(0, 0, 1),
+						10,
+						0.2
+					}
 				},
 				HitEnemyEffects = {
 					{

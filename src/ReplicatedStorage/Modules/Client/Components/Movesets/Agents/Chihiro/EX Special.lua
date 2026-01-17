@@ -11,23 +11,21 @@ local AbilityClass = require(Client.Classes.Ability)
 local Ability = AbilityClass.new()
 
 function Ability:Play(Agent)
-    print('so?')
 
 	--
 	local Attack_Time = Ability:FromData('Attack_State_Time')
 	Ability:Begin(Agent, {
 		{0, function(_)
-			local Track = Ability:PlayAnimation(Agent, 'Chihiro.Abilities.Special.Default', {
+			Ability:PlayAnimation(Agent, 'Chihiro.Abilities.Special.Default', {
 				Fade = .1,
 				Active_Time = Attack_Time + .125,
 			})
 
-			Ability:Save(Agent, 'M1_Track', Track)
-            print('some bs!')
+            Ability:EffectSerial("Chihiro_Kuro", Agent, 'Charge')
 		end,},
 
-		{.217, function()
-			Ability:EffectSerial("Slash", Agent, -67, nil, true)
+		{.4, function()
+			Ability:EffectSerial("Chihiro_Kuro", Agent, 'Attack')
 		end},
 	})
 end

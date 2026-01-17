@@ -34,6 +34,11 @@ function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: numbe
 				Affliction = 'Physical',
 				HitType = 'Slash',
 				Stun = 0.25,
+				Knockback = {
+					vector.create(0, 0, 1),
+					15,
+					0.1
+				}
 			})
 		end
 	})
@@ -50,6 +55,11 @@ function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: numbe
 					Affliction = 'Physical',
 					HitType = 'Slash',
 					Stun = 0.25,
+					Knockback = {
+						vector.create(0, 0, 1),
+						15,
+						0.1
+					}
 				})
 			end
 		})

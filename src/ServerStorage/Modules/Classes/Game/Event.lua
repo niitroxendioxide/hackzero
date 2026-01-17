@@ -194,6 +194,7 @@ end
 function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, FromData: {}?, Trigger: BasePart?)
     local EventData = FromData or Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
     local EnemyWaves = EventData.Enemies
+    local EnemyBuffs = EventData.EnemyBuffs or {}
     local NextWaveTime = 0.5
 
     
@@ -217,7 +218,7 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
         Total += EnemyCount
 
         for i = 1, EnemyCount do
-            EnemyService:Spawn(EnemyType, EnemyLevel, self.__Event)
+            EnemyService:Spawn(EnemyType, EnemyLevel, self.__Event, EnemyBuffs)
         end
     end
 

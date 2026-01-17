@@ -159,6 +159,14 @@ function EnemyClass:Move(Direction: Vector3, ForTime: number?, Speed: number?)
 	return self.__Movement:Move(Direction)
 end
 
+function EnemyClass:AddEffect(Data)
+	return self.__Status:AddEffect(Data)
+end
+
+function EnemyClass:RemoveEffect(Effect)
+	return self.__Status:RemoveEffect(Effect)
+end
+
 function EnemyClass:Rotate(Target)
 	return self.__Movement:Rotate(Target)
 end

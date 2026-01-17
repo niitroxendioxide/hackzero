@@ -80,7 +80,7 @@ function ServerAbilityClass:CreateHitbox(Caster: (AgentTypes.ServerAgentClass & 
 			local Part = Instance.new("Part");
 			Part.Size = Size;
 			Part.CFrame = At * CFrame.new(Offset);
-			Part.Transparency = 0.5
+			Part.Transparency = 0.85
 			Part.Anchored = true
 			Part.CanCollide = false
 			Part.Color = Color3.new(1)
@@ -256,6 +256,7 @@ function ServerAbilityClass:CreateMovingHitbox(
 		Connection = nil,
 		Size = Size,
 		Active = true,
+		DebugVariable = false,
 	}
 
 	ClassObject.Destroy = function()
@@ -280,7 +281,10 @@ function ServerAbilityClass:CreateMovingHitbox(
 
 		local Difference = Delta * ClassObject.Speed * WorldSpeed
 
-		self:CreateHitbox(ClassObject.CFrame, vector.zero, vector.create(ClassObject.Size.X, ClassObject.Size.Y, Difference), Hit_Function, nil, nil, Caster)
+		local Res = self:CreateHitbox(ClassObject.CFrame, vector.zero, vector.create(ClassObject.Size.X, ClassObject.Size.Y, Difference), Hit_Function, nil, nil, Caster)
+		if ClassObject.DebugVariable then
+			Res.Debug(Delta * 2)
+		end
 
 		--
 		ClassObject.CFrame = ClassObject.CFrame * CFrame.new(0, 0, -Difference)
@@ -289,6 +293,18 @@ function ServerAbilityClass:CreateMovingHitbox(
 
 	ClassObject.GetPivot = function()
 		return ClassObject.CFrame
+	end
+
+	ClassObject.SetSpeed = function(_, Speed: number)
+		if typeof(Speed) ~= 'number' then
+			Speed = ClassObject.Speed
+		end
+
+		ClassObject.Speed = Speed;
+	end
+
+	ClassObject.Debug = function()
+		ClassObject.Debug = true
 	end
 
 	ClassObject.PivotTo = function(_, At: CFrame)

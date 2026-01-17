@@ -45,6 +45,12 @@ function Service:LoadEnemies(Player: Player)
 	for Id, Enemy in Enemies:GetAll() do
 		--local Target = Enemy:GetTarget()
 
+		local EnemyEffects = Enemy.__Status.__Effects;
+		local Buffs = {}
+		for _, Effect in EnemyEffects do
+			table.insert(Buffs, {Effect.Type, Effect.Value})
+		end
+
 		Replicator:AddEnemy(Id, Enemy, Player)
 
 		Enemy:FindRandomAggro()
@@ -53,7 +59,7 @@ function Service:LoadEnemies(Player: Player)
 	end
 end
 
-function Service:Spawn(Type: string, Level: number, Tag: string)
+function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string | number}})
 	if not(Service:__CanSpawn()) then return end
 
 	if not EnemiesDatabase:GetEnemyData(Type) and Type ~= "any" then
@@ -78,7 +84,7 @@ function Service:Spawn(Type: string, Level: number, Tag: string)
 
 	local At = Service:__GenerateLocation(Spawn)
 	local Enemy = ServerEnemy.new(At.Position, Type, Level)
-	local Key = Service:__Add(Enemy)
+	local Key = Service:__Add(Enemy, Buffs)
 
 	Enemy.Died:Once(function()
 		Service:__Remove(Enemy, Tag)
@@ -107,8 +113,6 @@ function Service:GetSpawns(): {Instance}
 end
 
 function Service:KillAll(Tag: string?)
-	print(Tag)
-
 	if Tag then
 		for _, Enemy in Service.__Tag_Enemies[Tag] do
 			Enemy:Kill()
@@ -127,7 +131,7 @@ function Service:__CanSpawn(): boolean
 	return not Service.__Enemy_Keys:isEmpty()
 end
 
-function Service:__Add(Enemy: Types.ServerEnemyClass): ()
+function Service:__Add(Enemy: Types.ServerEnemyClass, Buffs: { {string | number} }): ()
 	local EnemyKey = Service.__Enemy_Keys:extract()
 	if not EnemyKey then
 		return
@@ -139,7 +143,15 @@ function Service:__Add(Enemy: Types.ServerEnemyClass): ()
 
 	table.insert(Service.__EnemyCache, Enemy)
 
-	Replicator:AddEnemy(EnemyKey, Enemy)
+	for _, Buff in Buffs do
+		Enemy:AddEffect({
+			Tag = 'EnemyBuff',
+			Type = Buff[1],
+			Value = Buff[2],
+		})
+	end
+
+	Replicator:AddEnemy(EnemyKey, Enemy, Buffs)
 
 	return EnemyKey
 end
