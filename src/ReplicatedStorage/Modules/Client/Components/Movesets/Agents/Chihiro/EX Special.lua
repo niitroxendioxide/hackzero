@@ -10,22 +10,38 @@ local AbilityClass = require(Client.Classes.Ability)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Agent)
+function Ability:Play(Caster)
 
 	--
 	local Attack_Time = Ability:FromData('Attack_State_Time')
-	Ability:Begin(Agent, {
+	Ability:Begin(Caster, {
 		{0, function(_)
-			Ability:PlayAnimation(Agent, 'Chihiro.Abilities.Special.Default', {
+			Ability:PlayAnimation(Caster, 'Chihiro.Abilities.Special.Default', {
 				Fade = .1,
 				Active_Time = Attack_Time + .125,
 			})
 
-            Ability:EffectSerial("Chihiro_Kuro", Agent, 'Charge')
+            Ability:EffectSerial("Chihiro_Kuro", Caster, 'Charge')
 		end,},
 
 		{.4, function()
-			Ability:EffectSerial("Chihiro_Kuro", Agent, 'Attack')
+			local Targets = {};
+			local Hits = {};
+
+			Ability:EffectSerial("Chihiro_Kuro", Caster, 'Attack', function(Target)
+				if Targets[Target:GetId()] or (Hits[Target] or 0) >= 4 then
+					return
+				end
+
+				Targets[Target:GetId()] = true
+				task.delay(1/4, function()
+					Targets[Target:GetId()] = false
+				end)
+
+				Hits[Target:GetId()] = (Hits[Target:GetId()] or 0) + 1
+
+				Ability:Hit(Caster, Target, {EffectData = Ability:FromData("HitEffectData")})
+			end)
 		end},
 	})
 end

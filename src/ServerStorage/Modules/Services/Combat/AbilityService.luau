@@ -17,20 +17,25 @@ local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local AgentLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local MatchStats = require(ServerStorage.Modules.Libraries.MatchStats)
 local MovesetLibrary = require(ServerStorage.Modules.Libraries.Movesets)
+local AgentService = require(ServerStorage.Modules.Services.Combat.AgentService)
 local QuestService = require(ServerStorage.Modules.Services.Data.QuestService)
 
 --
 local HELP_ASSIST_PROMPT_TIME = 1.25
-local CHAIN_ATTACKS_ENABLED = false
+local CHAIN_ATTACKS_ENABLED = true
 
 --
 local Service = {
 	__Movesets = {},
 	__Prompts = {},
 	__Prompt_Cooldown = {},
-	__Total_Damage = 0
+	__Chain_Attack_Prompts = {},
+	__Total_Damage = 0,
+	__Chain_Attack_Cooldown = {},
 }
 
+
+--- Private / Local functions
 function UpdateQuestData(Data: {[any]: any}, AgentPlayer: Player)
 	Service.__Total_Damage += Data.Damage
 
@@ -63,33 +68,28 @@ function HandleSkillHit(Data: AbilityTypes.AbilityHitInfo, SkillId: number)
 	local Agent = Data.Caster :: AgentTypes.ServerAgentClass
 	if not Agent or Data.Hit_Type ~= 'Entity' then return end
 	local AgentPlayer = Agent.__Player_Assigned
-
+	
 	if not AgentPlayer then return end
+	local RepId = AgentPlayer:GetAttribute("ReplicationId") :: number
+	local CurrentAgent = AgentLibrary:GetCurrentActive(RepId)
 
 	-- Handle chain attacks!
-	if SkillId == GameEnum.Skills.EX_Special and CHAIN_ATTACKS_ENABLED then
+	if SkillId == GameEnum.Skills.EX_Special and CHAIN_ATTACKS_ENABLED and #AgentLibrary:GetAlive(RepId) > 1 then
 		local is_enemy_stunned = Data.Enemy.__Status:IsKnocked()
 		
 		if is_enemy_stunned then
-			for _, SubAgent in AgentLibrary:GetAlive(AgentPlayer:GetAttribute("ReplicationId") :: number) do
+			for _, SubAgent in AgentLibrary:GetAlive() do
 				SubAgent:GiveUltimate(Statics.Chain_Attack_Ult_Bar_Fill)
 			end
 
-			Service:PromptChainAttack(Agent, Data.Enemy)
+			Service:PromptChainAttack(CurrentAgent, Data.Enemy)
 		end
 	end
 
 	task.spawn(UpdateQuestData, Data, Agent)
 end
 
-function Service:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy)
-	
-	Agent:AddTag('Invulnerability', Statics.Chain_Attack_Invulnerability_Time)
-
-	--
-	Replicator:PromptChainAttack(Agent, Enemy)
-end
-
+--- Publics
 function Service:Init()
 	--MovesetLibrary:Init()
 
@@ -129,6 +129,12 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 		local StateId = buffer.readu8(ClientBuffer, 3)
 		local IsCancel = buffer.readu8(ClientBuffer, 4) == 1
 
+		if SkillId == GameEnum.Skills.Chain_Attack then
+			warn('Cannot run chain attack with UseSkill')
+			
+			return;
+		end
+
 		local Result = Service:PlaySkill(Player, SkillId, EnemyId, StateId, IsCancel, ...)
 
 		if not Result then
@@ -136,10 +142,29 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 			print("Cancel the current move!")
 		end
 	elseif Type == GameEnum.Replication.UseChainAttack then
+		local ChainAttackData = Service.__Chain_Attack_Prompts[Player]
+		if not ChainAttackData then
+			return warn("Cannot run without a prompt");
+		end
+
+		local EnemyId = ChainAttackData.EnemyId;
+
+		--- Force the switch on the server
+		AgentService:CharacterSwitch(Player, ClientBuffer, Enemies:GetEnemy(EnemyId), true);
+
+		Service.__Chain_Attack_Cooldown[Player] = os.clock(); 
+		Service.__Chain_Attack_Prompts[Player] = nil;
+
+		local Result = Service:PlaySkill(Player, GameEnum.Skills.Chain_Attack, EnemyId, 1, false, ...)
+		if not Result then
+			print('Cancel the current move!')
+		end
 
 	elseif Type == GameEnum.Replication.CancelChainAttack then
 		local Agent = AgentLibrary:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
 
+		Service.__Chain_Attack_Cooldown[Player] = os.clock();
+		Service.__Chain_Attack_Prompts[Player] = nil;
 		Agent:RemoveTag("Invulnerability")
 	elseif Type == GameEnum.Replication.MatchAirborne then
 		local Agent = AgentLibrary:GetCurrentActive(Player:GetAttribute("ReplicationId") :: number)
@@ -156,6 +181,29 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 
 	return;
 end
+
+function Service:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy)
+	if Service.__Chain_Attack_Prompts[Agent.__Player_Assigned] then
+		return
+	end
+
+	local TimeSince = Service.__Chain_Attack_Cooldown[Agent.__Player_Assigned] or 0
+	if (os.clock() - TimeSince) < 1.5 then
+		return;
+	end
+	
+	Service.__Chain_Attack_Prompts[Agent.__Player_Assigned] = {
+		CasterAgent = Agent,
+		PromptedAt = os.clock(),
+		EnemyId = Enemy:GetId(),
+	}
+
+	Agent:AddTag('Invulnerability', Statics.Chain_Attack_Invulnerability_Time)
+
+	--
+	Replicator:PromptChainAttack(Agent, Enemy)
+end
+
 
 function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: number)
 	local ReplicationId = CasterAgent.__Player_Assigned:GetAttribute("ReplicationId")

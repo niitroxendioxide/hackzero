@@ -17,10 +17,10 @@ local function LookAt(e: Types.AgentClass, cfOffset: CFrame, from: Types.AgentCl
 	return CFrame.lookAlong(PosCF.Position, LookV) --* CFrame.Angles(0, math.pi, 0)
 end
 
-function AssistUtil:CalculateSwitchCFrame(CurrentAgent: Types.AgentClass & Types.ServerAgentClass, Direction: number, EnemyTarget: Types.AgentClass?)
+function AssistUtil:CalculateSwitchCFrame(CurrentAgent: Types.AgentClass & Types.ServerAgentClass, Direction: number, EnemyTarget: Types.AgentClass?, ForceRotateVector: boolean?)
 	local CurrentPivot = CurrentAgent:GetPivot()
 	local CurrentArea = CurrentAgent:GetLimitArea()
-
+	
 	local Offset = CFrame.new()
 	local WasMoving = CurrentAgent:IsMoving()
 	if not WasMoving then
@@ -34,7 +34,7 @@ function AssistUtil:CalculateSwitchCFrame(CurrentAgent: Types.AgentClass & Types
 		local Dot = EnemyTarget:GetPivot().LookVector:Dot(CFrame.new(EnemyTarget:GetPivot().Position, CurrentAgent:GetPivot().Position).LookVector)
 		local SideOffset = Rng:NextInteger(-4, 4)
 
-		if Dot < 0 then
+		if Dot < 0 or ForceRotateVector then
 			Location = LookAt(EnemyTarget, CFrame.new(SideOffset, 0, -10), CurrentAgent)
 		else
 			Location = LookAt(EnemyTarget, CFrame.new(SideOffset, 0, 10), CurrentAgent)

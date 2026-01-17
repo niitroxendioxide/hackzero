@@ -20,8 +20,6 @@ return function()
     end
 
 	ChainCC = Instance.new('ColorCorrectionEffect')
-	local BloomEffect = Instance.new('BloomEffect')
-	BloomEffect.Parent = Lighting
 	ChainCC.Parent = Lighting
 
 	local Goals = {Saturation = -0.4, Contrast = 0.15, Brightness = -0.05}
@@ -38,12 +36,8 @@ return function()
 	EffectsLib:Play('Glow', Current)
 	
 	Effects:Tween(ChainCC, {.1}, Goals)
-	Effects:Tween(BloomEffect, {0.4}, {Intensity = 1.25, Size = 24, Threshold = 1})
 	
 	task.wait(Duration + 0.1)
-	Effects:Tween(BloomEffect, {0.4}, {Intensity = 1, Size = 24, Threshold = 2})
 	Effects:Tween(ChainCC, {.6}, {Saturation = 0, Contrast = 0, Brightness = 0})
-
-	Effects:CleanUp(BloomEffect, 0.6)
 	Effects:CleanUp(ChainCC, 0.6)
 end

@@ -255,11 +255,8 @@ function EnemyStatus.AddEffect(self: Types.EnemyStatus, Effect: Types.EnemyEffec
 
 	---
 	if Effect.Type == 'Max_Health' then
-		local PreviousMaxHealth = self.__Max_Health
 		self.__Max_Health = self:GetStat("Max_Health")
 		self.__Health = self.__Max_Health
-
-		print('New max health:', self.__Max_Health, ' old one: ', PreviousMaxHealth)
 	end
 
 	return EffectObject

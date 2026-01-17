@@ -371,6 +371,35 @@ return {
 			},
 		},
 
+		['Chain Attack'] = {
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.75,
+				Hit_Data = {
+					Damage = 150,
+					Daze = 32,
+					Affliction = 'Energy',
+					Affliction_Buildup = 61,
+					Stun = 0.3,
+					HitType = 'Blunt',
+					
+					Knockback = {
+						Vector3.new(0, 0, 1),
+						20,
+						0.1,
+					},
+				},
+			},
+
+			Upgrades = {
+				Hit_Data = {
+					Damage = 2,
+					Daze = 0.5,
+				}
+			},
+		},
+
 
 		['Dodge Counter'] = {
 			Base = {

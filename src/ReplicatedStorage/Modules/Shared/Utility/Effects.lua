@@ -17,6 +17,7 @@ local World = require(script.Parent.Parent.World)
 local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local CameraShaker = require(Client.Utility.Libraries.CameraShaker)
 
 local Effects_Folder = workspace:WaitForChild('World'):WaitForChild('Effects')
@@ -424,18 +425,29 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 			--
 			local PartBounds = workspace:GetPartBoundsInBox(Model:GetPivot(), Size, Params)
 			if #PartBounds > 0 then
+				local Targets = {};
+				local ToStop = false;
 				local AllInvulnerable = true;
 				for _, Part in PartBounds do
 					if not Part:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER) and not Part:HasTag('Invulnerability') then
 						AllInvulnerable = false;
 					end
+
+					local Target = Enemies:GetFromCollider(Part)
+					if Target then
+						table.insert(Targets, Target)
+					end
 				end
 
 				if AllInvulnerable then return end
+				for _, Target in Targets do
+					local Result = Hit(Target)
+					if Result then
+						ToStop = true
+					end
+				end
 
-				local Stop = Hit()
-
-				if Stop then
+				if ToStop then
 					Loop:Disconnect()
 
 					return;

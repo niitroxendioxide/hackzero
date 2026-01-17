@@ -42,6 +42,16 @@ function EnemyLibrary:GetEnemy(Id: number): Types.EnemyClass & Types.ServerEnemy
 	return EnemyLibrary.__Enemies[Id]
 end
 
+function EnemyLibrary:GetFromCollider(BasePart: BasePart): Types.EnemyClass?
+	for _, Enemy: Types.EnemyClass in self:GetAll() do
+		if Enemy:GetCollider() == BasePart then
+			return Enemy
+		end
+	end
+
+	return nil;
+end
+
 function EnemyLibrary:GetAll()
 	return EnemyLibrary.__Enemies
 end

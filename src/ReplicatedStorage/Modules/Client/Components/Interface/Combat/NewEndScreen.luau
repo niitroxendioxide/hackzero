@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService('Players')
+local TweenService = game:GetService("TweenService")
 
 local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
@@ -10,7 +11,10 @@ local Assets = ReplicatedStorage.Assets
 
 local Inputs = require(ReplicatedStorage.Modules.Client.Libraries.Inputs)
 local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
+local Icons = require(ReplicatedStorage.Modules.Shared.Database.Icons)
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Types = require(ReplicatedStorage.Modules.Shared.Types)
+local String = require(ReplicatedStorage.Modules.Shared.Utility.String)
 local ComponentClass = require(Client.Classes.Interface)
 local UIGroups = require(Client.Libraries.UIGroups)
 local EffectUtil = require(Shared.Utility.Effects)
@@ -135,6 +139,8 @@ function Component:Init()
         Component:SetHover("Again", false)
     end)
 
+
+    self:Set(false)
 end
 
 
@@ -143,10 +149,14 @@ type MatchResultData = {
     Rank: string, 
     Items: {[string]: number}, 
     Stats: {[string]: number}, 
+    Experience: number,
+    PlayerExperience: number,
+    PlayerLevel: number,
     Stage: {
         Act: string,
         Stage: string,
         Type: string,
+        Difficulty: string,
     }
 }
 
@@ -158,11 +168,14 @@ function Component:ShowMatchResult(ServerData: MatchResultData)
     local Main = Frame.Main
     local WinTab = Frame.WinText;
     local LossTab = Frame.LossText;
+    local CurrentExperience = ServerData.PlayerExperience;
+    local LevelPlayer = ServerData.PlayerLevel;
 
     Main.UIScale.Scale = 0;
     Frame.Visible = true;
 
     --- Win Status
+    local ExperienceProgress = math.clamp(CurrentExperience / Statics.Get_Agent_Experience_For_Level(LevelPlayer + 1), 0, 1)
     local ChosenTab = LossTab;
 
     Main.StatusPlate.LossText.Visible = true
@@ -204,6 +217,15 @@ function Component:ShowMatchResult(ServerData: MatchResultData)
 
     EffectUtil:Tween(Main.UIScale, { 0.3, 'Back' }, { Scale = 1 })
 
+    local RankingColor = Icons.RankingColorInfo[ServerData.Rank] or Icons.RankingColorInfo.X
+
+    Main.StageInformation.MapName.Text = String:SplitTitleCaps(ServerData.Stage.Stage);
+    Main.StageInformation.RankText.Text = ServerData.Rank;
+    Main.StageInformation.Difficulty.Text = ServerData.Stage.Difficulty;
+
+    Main.StageInformation.RankText.TextColor3 = RankingColor[1]
+    Main.StageInformation.RankText.UIStroke.Color = RankingColor[2]
+
     Main.StatusPlate.UIScale.Scale = 0;
     Main.StageInformation.UIScale.Scale = 0;
     Main.Rewards.UIScale.Scale = 0;
@@ -217,6 +239,24 @@ function Component:ShowMatchResult(ServerData: MatchResultData)
 
             task.wait(1 / 6)
         end
+    end)
+
+    Main.StageInformation.PlayerLevelTitle.Text = `Lv. 0`
+    Main.StageInformation.ExpBar.Fill.Size = UDim2.fromScale(0, 1)
+    task.delay(0.5, function()
+        
+        EffectUtil:Tween(Main.StageInformation.ExpBar.Fill, { 0.75, 'Cubic' }, {Size = UDim2.fromScale(ExperienceProgress, 1)})
+
+        local Clock = os.clock()
+        while os.clock() - Clock <= 0.6 do
+            local Alpha = (os.clock() - Clock) / 0.6;
+            local Value = TweenService:GetValue(Alpha, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            
+            Main.StageInformation.PlayerLevelTitle.Text = `Lv. {math.ceil(math.lerp(0, ServerData.PlayerLevel, Value))}`
+            Main.StageInformation.PlayerExpTitle.Text = `+{math.ceil(math.lerp(0, ServerData.Experience, Value))} EXP`
+            task.wait()
+        end
+        
     end)
 
     ---

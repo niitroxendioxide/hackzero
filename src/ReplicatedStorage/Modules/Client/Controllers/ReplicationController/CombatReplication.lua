@@ -6,6 +6,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage.Assets
 
+local CombatController = require(ReplicatedStorage.Modules.Client.Controllers.CombatController)
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local Structures = require(ReplicatedStorage.Modules.Client.Libraries.Structures)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
@@ -476,13 +477,37 @@ function Controller:SetEnemySpeed(Buffer: buffer)
 end
 
 function Controller:ChainAttack(Buffer: buffer)
+	local AgentId = buffer.readu8(Buffer, 1)
+	local EnemyId = buffer.readu8(Buffer, 2)
 	local ChainAttackComponent = InterfaceController:GetComponent("ChainAttack")
-	CutsceneUtils:HideHUD(2)
+	--CutsceneUtils:HideHUD(2)
+
+	CombatController:EnterChainAttackPrompt(EnemyId)
+
+	---
+	local CharactersToPrompt = Characters:GetCharacters()
+	local AgentNames = {};
+
+	for idx, Agent in CharactersToPrompt do
+		if idx == AgentId or not Agent:IsAlive() then
+			continue
+		end
+
+		table.insert(AgentNames, Agent.Name)
+	end
+
+	if #AgentNames < 2 then
+		AgentNames[2] = AgentNames[1]
+	end
 
 	Effects:Play("Chain")
 
-	ChainAttackComponent:Show()
+	ChainAttackComponent:Show(AgentNames)
 
+	---
+	CombatController.ChainAttackActionChosen:Once(function(OptionChosen: number)
+		ChainAttackComponent:Choose(OptionChosen)
+	end)
 end
 
 return Controller

@@ -53,6 +53,7 @@ function MovesetClass.GetAll(self: Types.MovesetClass): {Types.ServerAbilityClas
 end
 
 function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSignal: boolean?, [string]: any}): boolean
+
 	Type = Type:gsub('_', ' ')
 	Context = Context or {}
 
@@ -61,6 +62,10 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 	end
 
 	local Info = self:GetInfoForSkill(Type)
+
+	if (Type ~= 'Quick Assist' and Type ~= 'Chain Attack') and (Agent.HasTag and Agent:HasTag('Switching')) then
+		return
+	end
 
 	-- Run client checks for correcting skill usage
 	if not(Context.IsSignal) and RunService:IsClient() then
@@ -107,7 +112,10 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 		if RunService:IsClient() then
 			if not Type:match('Swap') then
 				local Enemy = self.__Assigned[Type]:Connect(Agent, 1, Context.IsCancel);
-				Context.Target = Enemy;
+				
+				if Context.Target == nil then 
+					Context.Target = Enemy;
+				end
 			end
 
 			-- #TODO: FIX WTV THIS IS

@@ -15,7 +15,8 @@ local Threads = {}
 ---
 return function(
     Caster: Types.Caster,
-    State: string
+    State: string,
+    fn: () -> ()
 ): ()
     local KuroAssets = Assets.Chihiro.Kuro
     local CasterModel = Caster:GetModel()
@@ -54,10 +55,12 @@ return function(
         ProjectileModel:PivotTo(CasterModel:GetPivot())
 
         local Projectile do
-            Projectile = Effects:MoveProjectile(ProjectileModel, vector.create(10, 4), 120, 1, function(): boolean
+            Projectile = Effects:MoveProjectile(ProjectileModel, vector.create(10, 4), 120, 1, function(Target): boolean
                 Projectile:SetSpeed(20);
 
-
+                if fn then
+                    fn(Target)
+                end
             end)
         end
 

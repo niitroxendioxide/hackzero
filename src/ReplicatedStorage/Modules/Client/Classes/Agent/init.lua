@@ -21,8 +21,8 @@ local CharacterDatabase = require(Shared.Database.Characters)
 --
 local AgentClass = {} :: {[string]: (self: AgentTypes.AgentClass, any) -> any, new: (Name: string, Level: number) -> AgentTypes.AgentClass}
 AgentClass.__index = AgentClass
-AgentClass.__tostring = function()
-	return 'AgentClass'
+AgentClass.__tostring = function(self)
+	return `AgentClass<{self.Name}, {self.__Level}>`
 end
 
 function AgentClass.new(Name: string, Level: number, Skills: {}): AgentTypes.AgentClass

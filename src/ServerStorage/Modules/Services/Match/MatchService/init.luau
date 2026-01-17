@@ -142,6 +142,7 @@ function Service:End(Won: boolean)
             Stage = MissionInformation.Stage,
             Act = MissionInformation.Act,
             Seed = MissionInformation.Seed or 0,
+            Difficulty = 'Easy', -- MissionInformation.Difficulty,
         },
         WinStatus = Won and GameEnum.MatchResults.Victory or GameEnum.MatchResults.Loss,
         TotalDamage = AbilityService.__Total_Damage,

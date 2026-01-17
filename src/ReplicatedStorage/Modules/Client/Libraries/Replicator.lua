@@ -17,6 +17,19 @@ local Controller = {
 	__Ping = 0,
 }
 
+function EncodeRotation(Args): buffer
+	local Vec = Args[3].Unit
+	local Angle = math.deg(math.atan2(Vec.X, Vec.Z))
+
+	local Buffer = buffer.create(4)
+	Math:Encodeu2u6(Args[1], Args[2], Buffer, 1)
+	buffer.writei16(Buffer, 2, Angle * 180)
+
+	table.clear(Args)
+
+	return Buffer
+end
+
 function Controller:Replicate(Action: number, ...)
 	local Args = table.pack(...)
 	local EventName = 'Replicate';
@@ -73,14 +86,14 @@ function Controller:Replicate(Action: number, ...)
 
 		Args = {}
 	elseif Action == GameEnum.Replication.CharacterSwitch then
-		local Vec = Args[3].Unit
-		local Angle = math.deg(math.atan2(Vec.X, Vec.Z))
+		Buffer = EncodeRotation(Args)
+	elseif Action == GameEnum.Replication.UseChainAttack then
+		Buffer = EncodeRotation(Args)
 
-		Buffer = buffer.create(4)
-		Math:Encodeu2u6(Args[1], Args[2], Buffer, 1)
-		buffer.writei16(Buffer, 2, Angle * 180)
-
-		Args = {}
+		EventName = 'Ability'
+	elseif Action == GameEnum.Replication.CancelChainAttack then
+		EventName = 'Ability'
+		Buffer = buffer.create(1)
 	elseif Action == GameEnum.Replication.UseSkill then
 		Buffer = buffer.create(5)
 

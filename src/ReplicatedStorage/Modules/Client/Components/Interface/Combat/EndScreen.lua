@@ -15,7 +15,7 @@ local EffectUtil = require(Shared.Utility.Effects)
 local GameEnum = require(Shared.GameEnum)
 local Network = require(Shared.Network)
 
-local EndScreen = ComponentClass.new("EndScreen", "END")
+local EndScreen = ComponentClass.new("oldEndscreen", "END")
 :: Types.UIComponent & Types.UIGetSetButton
 
 -- testing? idk bro

@@ -6,10 +6,10 @@ return table.freeze({
 
     MISSION = {
         --- Types: ChaosControl, Mission
-        TYPE = 'Mission',
+        TYPE = 'ChaosControl',
         STAGE = {
             --- Training, DailyImprovement, DungeonEx
-            Stage = 'Training',
+            Stage = 'DailyImprovement',
             Act = 'Intro',
         },
         DATA = {
@@ -32,31 +32,7 @@ return table.freeze({
             },
             Enemies = {
                 [1] = {
-                    {Amount = 6, Level = 7, Name = 'Sorcerer'}
-                },
-                [2] = {
-                    {Amount = 7, Level = 7, Name = 'Sorcerer'}
-                },
-                [3] = {
-                    {Amount = 8, Level = 7, Name = 'Sorcerer'}
-                },
-                [4] = {
-                    {Amount = 9, Level = 7, Name = 'Sorcerer'}
-                },
-                [5] = {
-                    {Amount = 10, Level = 7, Name = 'Sorcerer'}
-                },
-                [6] = {
-                    {Amount = 11, Level = 7, Name = 'Sorcerer'}
-                },
-                [7] = {
-                    {Amount = 12, Level = 7, Name = 'Sorcerer'}
-                },
-                [8] = {
-                    {Amount = 13, Level = 7, Name = 'Sorcerer'}
-                },
-                [9] = {
-                    {Amount = 14, Level = 7, Name = 'Sorcerer'}
+                    {Amount = 6, Level = 50, Name = 'Sorcerer'}
                 },
             },
         }--]]

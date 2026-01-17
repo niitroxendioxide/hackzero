@@ -48,6 +48,7 @@ return {
 				Cooldown = .45,
 				Speed = 1,
 				Animation_Speed = 1,
+				Range = 35,
 
 				Attack_Data = {
 					-- The "?" symbol means it can be there or not.
@@ -120,6 +121,16 @@ return {
 						vector.create(0, 0, 1),
 						10,
 						0.2
+					}
+				},
+
+				HitEffectData = {
+					HighlightColor = Color3.new(),
+					Emitter = 'KuroHit',
+					Highlight = true,
+					Audio = {
+						Id = { 785201669 }, --{ 9117969687, 175024455 }, -- 8595980577 lighter
+						Volume = 0.35,
 					}
 				},
 				HitEnemyEffects = {

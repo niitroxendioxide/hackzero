@@ -73,8 +73,6 @@ function Ability:Play(Agent)
 				Ability:Hit(Agent, Target, {StopEffect = EffectObj, EffectData = Ability:FromData("Effect_Data")})
 			end
 		})
-
-		print('hello')
 	end
 
 	Sequence:Start()

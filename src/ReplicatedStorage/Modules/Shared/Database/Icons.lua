@@ -14,10 +14,10 @@ return {
 
 	
 	RankingColorInfo = {
-		["X"] = {Color3.fromRGB(30, 188, 255), Color3.fromRGB(21, 115, 255)},
-		["B"] = {Color3.fromRGB(30, 188, 255), Color3.fromRGB(21, 115, 255)},
-		["A"] = {Color3.fromRGB(156, 117, 255), Color3.fromRGB(35, 46, 255)},
-		["S"] = {Color3.fromRGB(255, 209, 43), Color3.fromRGB(255, 74, 74)},
+		["X"] = {Color3.fromRGB(193, 193, 193), Color3.fromRGB(17, 17, 17)},
+		["B"] = {Color3.fromRGB(155, 212, 255), Color3.fromRGB(0, 145, 255)},
+		["A"] = {Color3.fromRGB(196, 162, 255), Color3.fromRGB(115, 0, 255)},
+		["S"] = {Color3.fromRGB(255, 244, 189), Color3.fromRGB(255, 174, 11)},
 	},
 
 	StatusEffects = {
@@ -142,13 +142,13 @@ return {
 			},
 
 			Water = {
-				Main = RGB(66, 164, 255),
-				Meter = RGB(107, 243, 255),
+				Main = White,
+				Meter = RGB(15, 111, 255),
 				Gradient = Sequence{Key(0, White), Key(0.5, White), Key(1, RGB(0, 5, 98))}
 			},
 
 			Physical = {
-				Main = RGB(255, 220, 79),
+				Main = White,
 				Meter = RGB(255, 205, 124),
 				Gradient = Sequence{Key(0, White), Key(0.5, White), Key(1, RGB(98, 52, 0))}
 			},

@@ -121,7 +121,7 @@ function Controller:Init(): ()
 			CameraLibrary:ChangePartTrackingType(1)
 		end
 
-		local CanAction = CurrentCharacter:GetState() ~= 'Attacking' and not CurrentCharacter:HasTag('Movlock')
+		local CanAction = CurrentCharacter:GetState() ~= 'Attacking' and not CurrentCharacter:HasTag('Movlock') and not CurrentCharacter:HasTag('Switching')
 		if CurrentCharacter:IsAlive() then
 			if (Direction.Magnitude > 0 and not CutscenesLibrary:IsInCutscene()) and CanAction then
 				CurrentCharacter:Look(Direction.Unit)

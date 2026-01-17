@@ -1,6 +1,7 @@
 	--
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService('Players')
+local RunService = game:GetService("RunService")
 
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
@@ -158,6 +159,10 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 	local User = Players.LocalPlayer
 	local Id = User:GetAttribute("ReplicationId")
 
+	if self.__Name == 'Chain_Attack' then
+		return
+	end
+
 	if Id == Agent.PlayerId then
 		self.__Context_Buffer = {}
 		if StateId == 1 then
@@ -275,7 +280,7 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 
 	--
 	local Model = Data.Model or Agent:GetModel()
-	local Type = tostring(Agent) == 'AgentClass' and 'Characters.' or 'Enemies.'
+	local Type = tostring(Agent):match('AgentClass') and 'Characters.' or 'Enemies.'
 	local TrackObject = AnimLibrary:GetAnim(Type..Track)
 	local AnimTrack = AnimLibrary:Play(Model, TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
 	AnimLibrary:StopTracksWithTag(Model, "Attacking")
@@ -297,11 +302,30 @@ end
 function AbilityClass:CreateHitbox(Caster: Types.Caster, Offset, Size, Event)
 	if tostring(Caster) == 'EnemyClass' then
 		return self:CreateAgentHitbox(Caster, Offset, Size, Event)
-	elseif tostring(Caster) == 'AgentClass' then
+	elseif tostring(Caster):match('AgentClass') then
 		return self:CreateEnemyHitbox(Caster, Offset, Size, Event)
 	end
 
-	return;
+	local Obj; Obj = {
+		Debug = function(Time: number?)
+			if not RunService:IsStudio() then return end
+
+			local Part = Instance.new("Part");
+			Part.Size = Size;
+			Part.CFrame = Caster:GetPivot() * CFrame.new(Offset);
+			Part.Transparency = 0.85
+			Part.Anchored = true
+			Part.CanCollide = false
+			Part.Color = Color3.new(0, 1)
+			Part.Parent = workspace
+
+			task.delay(Time or 1, Part.Destroy, Part)
+
+			return Obj
+		end,
+	}
+
+	return Obj
 end
 
 function AbilityClass:CreateAgentHitbox(Enemy: Types.Caster, Offset: Vector3, Size: Vector3, Event: (Enemy: Types.Target) -> ())

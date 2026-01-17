@@ -122,6 +122,10 @@ function EnemyClass:GetId(): number
 	return self.__EnemyId
 end
 
+function EnemyClass:GetCollider()
+	return self.__Movement.__Enemy_Collider
+end
+
 --
 function EnemyClass:GetStat(n: Types.Stat): number
 	if n == 'Speed' then

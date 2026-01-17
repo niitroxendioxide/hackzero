@@ -171,9 +171,13 @@ function Service:KeySwitch(Player: Player, bufferObj, Value: boolean)
 	Replicator:KeySwitch(Player, Key, Data.Characters[1]:GetKey(Key))
 end
 
-function Service:CharacterSwitch(Player: Player, Buffer: buffer)
+function Service:CharacterSwitch(Player: Player, Buffer: buffer, ParameterTarget: number, ForceRotateVector: boolean)
 	local AgentIndex, Direction = Math:Decodeu2u6(Buffer, 1)
 	local IsNext = Direction == 1
+
+	if Direction ~= 1 then
+		Direction = -1
+	end
 
 	local Angle = math.rad(buffer.readi16(Buffer, 2) / 180)
 	local X, Z = math.sin(Angle), math.cos(Angle)
@@ -191,9 +195,9 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 
 	--
 	local MarkedAgentStruct = Previous:GetMarkedTarget()
-	local Target = IsNext and MarkedAgentStruct ~= nil and Enemies:GetEnemy(MarkedAgentStruct.TargetId) or nil
+	local Target = if IsNext and MarkedAgentStruct ~= nil then Enemies:GetEnemy(MarkedAgentStruct.TargetId) elseif ParameterTarget ~= nil then ParameterTarget else nil
 
-	local CharacterCFrame = AssistUtil:CalculateSwitchCFrame(Previous, Direction, Target)
+	local CharacterCFrame = AssistUtil:CalculateSwitchCFrame(Previous, Direction, Target, ForceRotateVector)
 
 	Data.Active = AgentIndex
 
@@ -214,7 +218,7 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer)
 		Service:Move(Player)
 	end
 
-	Replicator:CharacterSwitch(Player, AgentIndex, Direction, MarkedAgentStruct and MarkedAgentStruct.TargetId)
+	Replicator:CharacterSwitch(Player, AgentIndex, Direction, Target and Target:GetId())
 	Replicator:Rotate(Player, RebuiltRotationVector)
 
 	--

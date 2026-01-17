@@ -106,7 +106,10 @@ function Rewards:SpreadRewards(Players: { Types.StagePlayer }, MatchRewards: {},
         local PlayerEndResult = {
             Status = MatchData.WinStatus,
             Rank = MatchData.Rank,
-
+            Experience = MatchData.Experience,
+            PlayerExperience = DataService:Get(BasePlayer, "Experience"),
+            PlayerLevel = DataService:Get(BasePlayer, 'Level'),
+            Stage = MatchData.Stage,
             Stats = PlayerStats,
 
             Items = Items,

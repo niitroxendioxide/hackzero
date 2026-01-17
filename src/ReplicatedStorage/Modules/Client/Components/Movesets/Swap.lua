@@ -5,6 +5,7 @@ local Players  = game:GetService('Players')
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Characters = require(ReplicatedStorage.Modules.Shared.Database.Characters)
 local AbilityClass = require(Client.Classes.Ability)
 local Types = require(Shared.Types.Agents)
 local GameEnum = require(Shared.GameEnum)
@@ -33,6 +34,13 @@ function Ability:Play(Agent: Types.AgentClass, Key: string)
 	end
 
 	local NewAgent = CharacterLibrary:GetCurrent(Localplr)
+	if TargetId then
+		local MovesetData = Characters:GetMovesetData(NewAgent.Name)
+		local QuickAssist = MovesetData["Quick Assist"] or {Base = {Attack_State_Time = 1}}
+
+		NewAgent:AddTag('Switching', QuickAssist.Base.Attack_State_Time or 1)
+	end
+
 	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, NewIndex, Direction, NewAgent:GetRotation())
 end
 
