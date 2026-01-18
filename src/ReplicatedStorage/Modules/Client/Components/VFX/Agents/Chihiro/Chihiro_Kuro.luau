@@ -5,6 +5,7 @@ local RunService = game:GetService("RunService")
 local Assets = ReplicatedStorage.Assets.Effects.Agents
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local Types = require(Shared.Types.Abilities)
 local Effects = require(Shared.Utility.Effects)
 
@@ -12,6 +13,8 @@ local Effects = require(Shared.Utility.Effects)
 local EffectOffset = CFrame.new(-0.000183105469, -0.0383501053, 0.37184906, 0, 0, -1, 0.00953629613, 0.999954641, 0, 0.999954641, -0.00953629613, 0)
 local Cache = {}
 local Threads = {}
+local Fishes = {}
+
 ---
 return function(
     Caster: Types.Caster,
@@ -87,6 +90,12 @@ return function(
         end
 
         ---
+        if Fishes[Caster] then
+            Fishes[Caster].Time = 3;
+            Fishes[Caster].Started = os.clock();
+        end
+
+        ---
         local KatanaModel = CasterModel:FindFirstChild("Katana")
         if not KatanaModel then
             return;
@@ -117,5 +126,54 @@ return function(
         end
 
         Threads[Caster] = task.delay(2, Cache[Caster])
+
+        ---
+        if Fishes[Caster] then
+            return;
+        end
+
+        local Appearance = Caster:GetAppearance()
+        local KoiFish = Effects:Create(KuroAssets.Parent.BlackKoi)
+        KoiFish:PivotTo(Caster:GetPivot())
+        KoiFish.PrimaryPart.Transparency = 1
+        Effects:FollowWithAlignments(KoiFish.PrimaryPart, CasterModel.PrimaryPart)
+
+        Effects:Tween(KoiFish.PrimaryPart, { 0.3, 'Quad' }, {Transparency = 0})
+
+        local Path = "Characters.Chihiro.Abilities.Special.Fish."
+        local ComeOut = Animation:Play(KoiFish, Animation:GetAnim(Path..'ComeOut'))
+        
+        task.delay(2.2, function()
+            ComeOut:Stop(.3)
+
+            Animation:Play(KoiFish, Animation:GetAnim(Path..'Idle'))
+        end)
+
+
+        ---
+        Appearance:BindObject(KoiFish.PrimaryPart, function(self: Instance, State: boolean, ExtraState: number)  
+            if State then
+                Effects:Tween(self, { 0.3, 'Quad' }, {Transparency = 0})
+            else
+                Effects:Tween(self, { 0.3, 'Quad' }, {Transparency = 1})
+            end
+        end)
+
+        Fishes[Caster] = {
+            Time = 3,
+            Started = os.clock(),
+        };
+
+        Fishes[Caster].Thread = task.spawn(function()
+            while os.clock() - Fishes[Caster].Started < Fishes[Caster].Time do
+                task.wait()
+            end
+
+            Effects:Tween(KoiFish.PrimaryPart, { 0.3, 'Quad' }, {Transparency = 1})
+            Appearance:UnbindObject(KoiFish.PrimaryPart)
+            Effects:CleanUp(KoiFish, 0.5)
+
+            Fishes[Caster] = nil
+        end)
     end
 end

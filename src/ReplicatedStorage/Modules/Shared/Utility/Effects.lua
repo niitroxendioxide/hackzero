@@ -178,7 +178,7 @@ function EffectUtil:Create<T>(Asset: T & Instance, Time: number?, Parent: Instan
 	local Cloned = (Asset :: Instance):Clone()
 	Cloned.Parent = Parent or Effects_Folder:FindFirstChild(Name)
 
-	local DeleteThread = EffectUtil:CleanUp(Cloned, Time or 10)
+	local DeleteThread = EffectUtil:CleanUp(Cloned, Time or 100000)
 
 	return Cloned :: T, DeleteThread
 end
@@ -350,6 +350,33 @@ function EffectUtil:Weld(Object: BasePart, Welded: BasePart)
 
 	return Weld
 end
+
+function EffectUtil:FollowWithAlignments(Object: BasePart, ParentToWeld: BasePart)
+	local Att0 = Instance.new('Attachment')
+	Att0.Parent = Object
+
+	local Att1 = Instance.new('Attachment')
+	Att1.Parent = ParentToWeld
+
+	---
+	local AlignOrientation = Instance.new('AlignOrientation')
+	AlignOrientation.Responsiveness = 35
+	AlignOrientation.Attachment0 = Att0
+	AlignOrientation.Attachment1 = Att1
+	AlignOrientation.MaxTorque = 50000000
+	AlignOrientation.Parent = Att0
+
+	local AlignPosition = Instance.new('AlignPosition')
+	AlignPosition.Responsiveness = 45
+	AlignPosition.Attachment0 = Att0
+	AlignPosition.Attachment1 = Att1
+	AlignPosition.MaxForce = 5000000
+	AlignPosition.MaxVelocity = 20
+	AlignPosition.Parent = Att0
+
+	return Att0
+end
+
 
 function EffectUtil:GetParent(Name: string?): Instance
 	local WorldFolder = workspace:FindFirstChild("World"):: Folder
