@@ -41,11 +41,13 @@ function PlayerArtifactDataClass.randomize(Name: string, Tier: string, Level: nu
     local SubStatAmount = (5 - GameEnum.Tiers[Tier]) - Generator:NextInteger(0, 1)
     local TotalBoosts = math.ceil((ArtifactLevel / 15) * 2)
 
+    local MainStat = GameEnum:Random('MainStats')
+
     local SubStats = {}
     local StatKeys = {}
     for idx = 1, SubStatAmount do
         local RandomStat = GameEnum:Random('SubStats')
-        if SubStats[RandomStat] then
+        if SubStats[RandomStat] then --(RandomStat == MainStat)
             repeat
                 RandomStat = GameEnum:Random('SubStats')
             until SubStats[RandomStat] == nil
@@ -64,9 +66,6 @@ function PlayerArtifactDataClass.randomize(Name: string, Tier: string, Level: nu
         TotalBoosts -= 1;
         SubStats[RandomStat] += 1
     end
-
-    --
-    local MainStat = GameEnum:Random('MainStats')
 
     --
     return PlayerArtifactDataClass.new({
@@ -90,8 +89,12 @@ end
 
 function PlayerArtifactDataClass.Compress(self: Types.PlayerArtifactDataClass): {string | buffer}
     local BufferObj = buffer.create(15)
+    local ArtifactId = ArtifactDatabase:GetIdFor(self.__Name) :: number
+    if ArtifactId == nil then
+        return false;
+    end
 
-    buffer.writeu8(BufferObj, 0, ArtifactDatabase:GetIdFor(self.__Name) :: number)
+    buffer.writeu8(BufferObj, 0, ArtifactId)
     buffer.writeu8(BufferObj, 1, self.__Level)
     buffer.writeu8(BufferObj, 2, self.__Slot)
     buffer.writeu8(BufferObj, 3, GameEnum.Tiers[self.__Tier])

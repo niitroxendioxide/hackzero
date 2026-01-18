@@ -10,6 +10,8 @@ local Types = require(Shared.Types.Abilities)
 local Effects = require(Shared.Utility.Effects)
 
 --- Saved stuff
+local RightSide = vector.create(4.675, 2.314, -0.351)
+local LeftSide = vector.create(-4.675, 2.314, -0.351)
 local EffectOffset = CFrame.new(-0.000183105469, -0.0383501053, 0.37184906, 0, 0, -1, 0.00953629613, 0.999954641, 0, 0.999954641, -0.00953629613, 0)
 local Cache = {}
 local Threads = {}
@@ -91,7 +93,7 @@ return function(
 
         ---
         if Fishes[Caster] then
-            Fishes[Caster].Time = 3;
+            Fishes[Caster].Time = 7;
             Fishes[Caster].Started = os.clock();
         end
 
@@ -136,36 +138,55 @@ return function(
         local KoiFish = Effects:Create(KuroAssets.Parent.BlackKoi)
         KoiFish:PivotTo(Caster:GetPivot())
         KoiFish.PrimaryPart.Transparency = 1
-        Effects:FollowWithAlignments(KoiFish.PrimaryPart, CasterModel.PrimaryPart)
+        local _, FollowedAttachment = Effects:FollowWithAlignments(KoiFish.PrimaryPart, CasterModel.PrimaryPart, 4500)
 
         Effects:Tween(KoiFish.PrimaryPart, { 0.3, 'Quad' }, {Transparency = 0})
 
         local Path = "Characters.Chihiro.Abilities.Special.Fish."
         local ComeOut = Animation:Play(KoiFish, Animation:GetAnim(Path..'ComeOut'))
         
-        task.delay(2.2, function()
-            ComeOut:Stop(.3)
+        task.delay(2.15, function()
+            ComeOut:Stop(.35)
+
+            FollowedAttachment.Position = LeftSide
 
             Animation:Play(KoiFish, Animation:GetAnim(Path..'Idle'))
         end)
 
 
         ---
-        Appearance:BindObject(KoiFish.PrimaryPart, function(self: Instance, State: boolean, ExtraState: number)  
+        Appearance:BindObject(KoiFish.PrimaryPart, function(self: Instance & {SurfaceAppearance: SurfaceAppearance}, State: boolean, ExtraState: number)  
             if State then
-                Effects:Tween(self, { 0.3, 'Quad' }, {Transparency = 0})
+                Effects:Tween(self, {0.5, 'Quad'}, { Transparency = 0 })
             else
-                Effects:Tween(self, { 0.3, 'Quad' }, {Transparency = 1})
+                Effects:Tween(self, {0.4, 'Quart'}, { Transparency = 1 })
             end
         end)
 
         Fishes[Caster] = {
-            Time = 3,
+            Time = 7,
             Started = os.clock(),
         };
 
+        local SinceItBegan = os.clock()
         Fishes[Caster].Thread = task.spawn(function()
             while os.clock() - Fishes[Caster].Started < Fishes[Caster].Time do
+                local HasAnimFinished = (os.clock() - SinceItBegan) > 2.2
+
+                if HasAnimFinished then
+                    local CasterLeft = CasterModel:GetPivot() * CFrame.new(-3, 0, 0)
+                    local CasterRight = CasterModel:GetPivot() * CFrame.new(3, 0, 0)
+                    local IsRightSide = (CasterRight.Position - KoiFish.PrimaryPart.Position).Magnitude < (CasterLeft.Position - KoiFish.PrimaryPart.Position).Magnitude;
+                    local GoalPos = LeftSide
+
+                    if IsRightSide then
+                        GoalPos = RightSide
+                    end
+
+                    FollowedAttachment.Position = GoalPos
+                end
+                    
+
                 task.wait()
             end
 

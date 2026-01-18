@@ -29,7 +29,7 @@ local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 local PlayerCompanionDataClass = require(Classes.Data.PlayerCompanionData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("Quests", ProfileTemplate)
+local DataStore = ProfileStore.New("ArtifactSubstatRework", ProfileTemplate)
 
 --
 local ReplicatedKeys = {"Gems", "Money"}
@@ -175,6 +175,9 @@ function Service:FetchArtifacts(Player: Player, Filter: ((a: Types.PlayerArtifac
 
     for _, Artifact in Artifacts do
         local CompressedObject = Artifact:Compress()
+        if CompressedObject == false then
+            continue
+        end
 
         table.insert(Data, CompressedObject)
     end

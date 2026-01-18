@@ -48,6 +48,7 @@ return {
 		['Passive'] = {
 			Meters = {
 				Stand = {
+					Ascension = 0,
 					Description = 'Every hit from your basic attacks contributes to filling up your stand meter',
 					Id = 1,
 					Max = 100,

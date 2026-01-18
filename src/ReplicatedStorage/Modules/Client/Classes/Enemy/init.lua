@@ -164,7 +164,13 @@ function EnemyClass:Move(Direction: Vector3, ForTime: number?, Speed: number?)
 end
 
 function EnemyClass:AddEffect(Data)
-	return self.__Status:AddEffect(Data)
+	local Obj = self.__Status:AddEffect(Data)
+
+	if Data.Type == 'Max_Health' then
+		self.__Health:set(self.__Status:GetHealth())
+	end
+
+	return Obj
 end
 
 function EnemyClass:RemoveEffect(Effect)

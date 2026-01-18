@@ -82,7 +82,8 @@ return {
                     Objective = "Train with your agents.",
                     Goal = {KillEnemies = 1},
                     EnemyBuffs = {
-                        {'Max_Health', "5000%"},
+                        {'Max_Health', "25000%"},
+                        {'Defense', "200%"},
                     },
                     Enemies = {
                         [1] = {

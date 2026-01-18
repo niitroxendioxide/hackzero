@@ -6,10 +6,10 @@ return table.freeze({
 
     MISSION = {
         --- Types: ChaosControl, Mission
-        TYPE = 'ChaosControl',
+        TYPE = 'Mission',
         STAGE = {
             --- Training, DailyImprovement, DungeonEx
-            Stage = 'DailyImprovement',
+            Stage = 'Training',
             Act = 'Intro',
         },
         DATA = {

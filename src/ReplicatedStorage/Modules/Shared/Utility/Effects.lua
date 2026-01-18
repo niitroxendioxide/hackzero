@@ -59,6 +59,38 @@ function EffectUtil:Tween(Object: Instance, Info: {number | string | boolean | n
 	return Tween
 end
 
+function EffectUtil:CustomTween(Object: Instance, Info: { number | string | boolean }, Goals: TweenGoals)
+	local function DoTween()
+		local StartTime = os.clock();
+		local StartValues = {};
+
+		for Key in Goals do
+			StartValues[Key] = Object[Key]
+		end
+
+		while os.clock() - StartTime < Info[1] do
+			local ProgressValue = math.min((os.clock() - StartTime) / Info[1], 1)
+			local Alpha = TweenService:GetValue(ProgressValue, Enum.EasingStyle[Info[2] or 'Quad'], Enum.EasingDirection[Info[3] or 'Out'])
+			
+			for Property, GoalValue in Goals do
+				local OriginalValue = StartValues[Property];
+
+				Object[Property] = OriginalValue + (GoalValue - OriginalValue) * Alpha
+			end
+
+			task.wait()
+		end
+	end
+
+	if Info[4] then
+		DoTween()
+
+		return;
+	end
+
+	return task.spawn(DoTween)
+end
+
 function EffectUtil:FromGui<T>(name: string): T & GuiObject
 	local PlayerGui = Players.LocalPlayer.PlayerGui
 
@@ -202,7 +234,8 @@ function EffectUtil:ReverseEmitter(Particle: ParticleEmitter)
 end
 
 function EffectUtil:TweenModel(Model: Model, ScaleGoal: number, Time: number, Style: string?, Direction: string?)
-	
+	ScaleGoal = math.max(ScaleGoal, 0.001)
+
 	task.spawn(function()
 		local StartScale = Model:GetScale()
 		local ActiveTime = 0;
@@ -351,7 +384,7 @@ function EffectUtil:Weld(Object: BasePart, Welded: BasePart)
 	return Weld
 end
 
-function EffectUtil:FollowWithAlignments(Object: BasePart, ParentToWeld: BasePart)
+function EffectUtil:FollowWithAlignments(Object: BasePart, ParentToWeld: BasePart, Force: number)
 	local Att0 = Instance.new('Attachment')
 	Att0.Parent = Object
 
@@ -360,21 +393,22 @@ function EffectUtil:FollowWithAlignments(Object: BasePart, ParentToWeld: BasePar
 
 	---
 	local AlignOrientation = Instance.new('AlignOrientation')
-	AlignOrientation.Responsiveness = 35
+	AlignOrientation.Responsiveness = 25
 	AlignOrientation.Attachment0 = Att0
 	AlignOrientation.Attachment1 = Att1
-	AlignOrientation.MaxTorque = 50000000
+	AlignOrientation.MaxTorque = Force
+	AlignOrientation.MaxAngularVelocity = 45
 	AlignOrientation.Parent = Att0
 
 	local AlignPosition = Instance.new('AlignPosition')
-	AlignPosition.Responsiveness = 45
+	AlignPosition.Responsiveness = 32
 	AlignPosition.Attachment0 = Att0
 	AlignPosition.Attachment1 = Att1
-	AlignPosition.MaxForce = 5000000
-	AlignPosition.MaxVelocity = 20
+	AlignPosition.MaxForce = Force
+	AlignPosition.MaxVelocity = 60
 	AlignPosition.Parent = Att0
 
-	return Att0
+	return Att0, Att1
 end
 
 

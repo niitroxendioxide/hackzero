@@ -11,7 +11,6 @@ local AgentsDatabase = require(Database.Characters)
 
 --
 function Math:ApplyPercents(StatsTable: { [string]: number }, AgentStats: {})
-
     for StatBuffName, StatBuffValue in StatsTable do
         if string.match(StatBuffName, "%%") then
             local StatRaw = string.gsub(StatBuffName, "%%", "")
