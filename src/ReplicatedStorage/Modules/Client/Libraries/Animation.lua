@@ -16,7 +16,7 @@ function AnimationLibrary:GetAnim(Path: string)
 		Object = Object[Split[i]]
 	end
 
-	return Object[Split[#Split]]
+	return Object:FindFirstChild(Split[#Split])
 end
 
 function AnimationLibrary:GetCompanionAnimation(Character: string, TrackName: string)

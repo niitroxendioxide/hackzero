@@ -68,11 +68,10 @@ function Camera:Init()
 			return
 		end
 
-
 		--
-		if Input.UserInputType == Enum.UserInputType.MouseMovement then
+		if (Input.UserInputType == Enum.UserInputType.MouseMovement) then
 			local MouseDelta = UserInputService:GetMouseDelta()
-
+			
 			Camera.__Rotation += MouseDelta*Rad(Settings.Sensitivity)
 			Camera.__Rotation = Vector2.new(Camera.__Rotation.X, Clamp(Camera.__Rotation.Y, Rad(Settings.Min_Angle), Rad(Settings.Max_Angle)))
 		elseif Input.UserInputType == Enum.UserInputType.Gamepad1 and Input.KeyCode == Enum.KeyCode.Thumbstick2 then
@@ -109,18 +108,18 @@ function Camera:UseFov(p_Usage_Time: number)
 end
 
 function Camera:Update(delta: number)
-	if not(Camera.__Subject) or Camera.__UsedBy then
+	local CameraObject = workspace.CurrentCamera
+	CameraObject.CameraType = Enum.CameraType.Scriptable
+
+	if not(Camera.__Subject) or (Camera:GetCurrentUser() ~= nil) then
 		return
 	end
 
 	local Model = Camera.__Subject
 	if not Camera.__Focused then
-		workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
-
 		return
 	end
 
-	local CameraObject = workspace.CurrentCamera
 	local CameraRotation = CFrame.Angles(0, -Camera.__Rotation.X, 0) * CFrame.Angles(-Camera.__Rotation.Y, 0, 0)
 	local CameraPosition;
 
@@ -141,6 +140,7 @@ function Camera:Update(delta: number)
 	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * 24)
 
 	local CameraCFrame = CFrame.lookAlong(Camera.__Position, CameraRotation.LookVector) * CFrame.new(0, 0, Camera.__Zoom)
+	--print(CameraCFrame.LookVector)
 
 	local Cast = workspace:Raycast(Camera.__Position, CameraRotation.LookVector * -Camera.__Zoom, World:GetMapParams(false, {}) :: RaycastParams)
 	if Cast then
@@ -150,7 +150,6 @@ function Camera:Update(delta: number)
 	if not Camera.__Using_fov then
 		CameraObject.FieldOfView = 70
 	end
-	CameraObject.CameraType = Enum.CameraType.Scriptable
 	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * 45)
 end
 

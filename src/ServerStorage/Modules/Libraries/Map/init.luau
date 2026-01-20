@@ -9,7 +9,7 @@ local Assets = ReplicatedStorage.Assets
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Types = require(Shared.Types.Stages)
 local Cache = require(script.Parent.MapCache)
-local Generator = require(script.Generator)
+local Generator = require(script.new_generator)
 local World = workspace:WaitForChild('World')
 
 --
@@ -239,10 +239,8 @@ function MapLoader:Generate(p_MapPath: string, p_GenerationData: Types.MapGenera
 
     local Result = Generator:Create(Source, p_GenerationData)
     Result:Err(function(msg): ()
-        warn(msg)
+        error("Map generation errored: " .. msg)
     end)
-
-    print('Generation result: ' .. Result)
 
     return Result();
 end

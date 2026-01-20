@@ -20,8 +20,8 @@ function EntranceCutscene.Sequence(self: Types.CutsceneClass, Data: {Model})
     CutsceneEffects:HideHUD(2.9)
 
     local Track = EntranceCutscene:AnimateCamera(EnvData.CFrame, 'Entrance.Camera')
-    local AnimObj = AnimLib:GetAnim('Cutscenes.Entrance.Agents.' .. EnvData.AgentName)
-    AnimLib:Play(EnvData.Model, AnimObj)
+    --local AnimObj = AnimLib:GetAnim('Cutscenes.Entrance.Agents.' .. EnvData.AgentName)
+    --AnimLib:Play(EnvData.Model, AnimObj)
 
     EntranceCutscene:Wait(math.max(Track.Length, 2.9))
     EntranceCutscene:End()

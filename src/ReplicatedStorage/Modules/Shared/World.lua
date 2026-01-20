@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
 local Plastic = PhysicalProperties.new(Enum.Material.SmoothPlastic)
 local AREA_OF_CONTACT = 1.8
 local FrictionValues = {} :: {number}
@@ -61,7 +62,7 @@ function World:GetAirFriction(): number
 end
 
 function World:GetMapParams(Overlap: boolean?, Groups: {[{BasePart}]: boolean?}?): OverlapParams | RaycastParams
-	local List = {WorldFolder.Map}
+	local List = {WorldFolder.Map, Workspace:FindFirstChild("Baseplate")}
 	for Obj in (Groups or {}) :: {} do
 		table.insert(List, Obj)
 	end

@@ -8,8 +8,8 @@ return table.freeze({
         --- Types: ChaosControl, Mission
         TYPE = 'Mission',
         STAGE = {
-            --- Training, DailyImprovement, DungeonEx
-            Stage = 'Training',
+            --- Training, DailyImprovement, DungeonEx, HuecoMundo
+            Stage = 'HuecoMundo',
             Act = 'Intro',
         },
         DATA = {
@@ -47,7 +47,7 @@ return table.freeze({
     BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {
-        'Goku',
         'Chihiro',
+        'Goku',
     },
 })

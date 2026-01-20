@@ -31,6 +31,7 @@ function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 	Caster:SwitchState('Dashing', .3)
 	
 	local Sign = Context.IsCancel and -1 or 1;
+	
 	Caster:ImpulseForward(Sign * Statics.Dash_Strength, Statics.Dash_Time)
 end
 

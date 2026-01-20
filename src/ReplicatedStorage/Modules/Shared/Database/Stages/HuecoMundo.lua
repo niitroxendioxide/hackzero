@@ -8,9 +8,9 @@ return {
         Intro = {
             AutoGenerate = true,
             AutoGenerationData = {
-                Seed = 0x1524, 
+                Seed = 0x1C8160, 
                 Source = 'Rooms',
-                Extent = 15,
+                Extent = 100,
             },
             Description = "Find clues about what's shifted in the timeline",
 
@@ -49,7 +49,9 @@ return {
                     },
 
                     Enemies = {
-                        [1] = {'Template', 3, 3},
+                        [1] = {
+                            {Name = 'Template', Level = 3, Amount = 3}
+                        },
                     },
 
                     Finished = function() end
