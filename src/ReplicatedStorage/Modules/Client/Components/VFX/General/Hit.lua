@@ -61,8 +61,8 @@ return function(
 		Highlight.FillTransparency = 0
 		Highlight.Parent = Enemy:GetModel()
 
-		Effects:CleanUp(Highlight, .15)
-		Effects:Tween(Highlight, {.15, 'Quad'}, {FillTransparency = 1})
+		Effects:CleanUp(Highlight, .25)
+		Effects:Tween(Highlight, {.25, 'Quad'}, {FillTransparency = 1})
 	end
 
 	if Data.Audio then

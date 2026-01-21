@@ -230,6 +230,11 @@ function ServerAbilityClass:Begin(Agent: AgentTypes.ServerAgentClass, Frames: Se
 		self.__Signal:Fire()
 	end)
 
+	if tostring(Agent):match('ServerAgentClass') then
+		local SequenceLength = AbilitySequence:GetLength()
+		Agent.__Character.States:SetCurrentSkill(self.__Name, SequenceLength + 0.1)
+	end
+
 	self:Save(Agent, 'CurrentPlayerSequence', AbilitySequence)
 
 	if not DontStart then

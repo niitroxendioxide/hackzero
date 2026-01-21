@@ -1,15 +1,17 @@
 --- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
 
 --- Constants
 local SIZE_CONSTANT = 1 / 1.1
 local RNG = Random.new()
-local VIEW_TIME = 0.1
-local TILE_SIZE = 64
+local VIEW_TIME = 0.01
+local TILE_SIZE = 96
 local BASE_CFRAME = CFrame.new(0, 0, 0)
 local TILE_OFFSET = CFrame.new(0, 0, -(TILE_SIZE / 2)) * CFrame.Angles(0, math.pi, 0)
+local TILE_AREA_SIZE = vector.create(TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
 
 --- Generator Related
@@ -19,11 +21,14 @@ local Result = require(Shared.Utility.Result)
 
 local Generator = {};
 local State = {
+    Rooms = {},
+    RoomCount = 0,
     RoomRootParts = {},
     CurrentRoomId = 0,
     CurrentHallId = 0,
     Infinite = false,
     RoomLimit = 80,
+    TrailingRooms = 25,
     Source = nil,
 };
 
@@ -72,18 +77,22 @@ local function ChooseFromSource(IsStarting: boolean, Hall: boolean, IsFinished: 
     return Rooms[RNG:NextInteger(1, #Rooms)]
 end
 
-
 function CreateRoom(RoomCFrame: CFrame?, UseHall: boolean)
     local IsStarting = State.CurrentRoomId <= 0
     local MapFolder = GetMapFolder()
     local IsFinished = (State.CurrentRoomId + 1) == State.RoomLimit
     local BaseRoom = ChooseFromSource(IsStarting, UseHall, IsFinished);
+    BaseRoom.PrimaryPart.Transparency = 1;
+
+    State.RoomCount += 1;
 
     if State.CurrentRoomId + 1 > State.RoomLimit then
         return;
     end
 
-    task.wait(VIEW_TIME)
+    if RunService:IsStudio() then
+        task.wait(VIEW_TIME)
+    end
 
     if IsStarting then
         local FirstAngle = RNG:NextInteger(0, 3) * (math.pi / 2)
@@ -130,6 +139,12 @@ function CreateRoom(RoomCFrame: CFrame?, UseHall: boolean)
     table.insert(State.RoomRootParts, Clone.PrimaryPart)
 
     State.CurrentRoomId += 1;
+    local SelfRoomId = State.CurrentRoomId // 2;
+
+    State.Rooms[State.CurrentRoomId] = {
+        Model = Clone,
+        Id = SelfRoomId,
+    }
 
     --
     for _, Connection in Clone.Connections:GetChildren() do
@@ -138,6 +153,35 @@ function CreateRoom(RoomCFrame: CFrame?, UseHall: boolean)
 
         CreateRoom(ConnectorCFrame * TILE_OFFSET, not UseHall)
     end
+
+    ---
+    if not UseHall then
+        CreateTriggerPart(Clone, SelfRoomId)
+    end
+end
+
+function CreateTriggerPart(BaseRoom: Model, Id: number)
+    local MarkerFolder = workspace.World.Map:FindFirstChild("Markers")
+    if not MarkerFolder then
+        MarkerFolder = Instance.new("Folder")
+        MarkerFolder.Name = 'Markers'
+        MarkerFolder.Parent = workspace.World.Map
+    end
+
+    local Base = BaseRoom.PrimaryPart;
+    local NewMarker = Instance.new("Part")
+    NewMarker.Size = vector.create(TILE_SIZE / SIZE_CONSTANT, TILE_SIZE, TILE_SIZE) * SIZE_CONSTANT
+    NewMarker.CFrame = Base.CFrame
+    NewMarker.CastShadow = false
+    NewMarker.Anchored = true
+    NewMarker.CanCollide = false
+    NewMarker.CanQuery = false
+    NewMarker.Transparency = 1
+    NewMarker.Color = Color3.new(1)
+    NewMarker.Name = 'Room_' .. tostring(Id)
+    NewMarker.Parent = MarkerFolder
+    NewMarker:SetAttribute("AreaSize", TILE_AREA_SIZE)
+    
 end
 
 --- Public
@@ -163,11 +207,12 @@ function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGener
 
     ---
     local NewSpawnLocation = Instance.new("SpawnLocation")
+    NewSpawnLocation.Transparency = 1
     NewSpawnLocation.Size = vector.create(4, 1, 4)
     NewSpawnLocation.CFrame = BASE_CFRAME * CFrame.new(0, 2, 0)
     NewSpawnLocation.Parent = workspace
 
-    task.spawn(CreateRoom)
+    CreateRoom();
 
     return Result.new(true)
 end

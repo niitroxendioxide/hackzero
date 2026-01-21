@@ -11,6 +11,7 @@ local Assets = ReplicatedStorage:WaitForChild("Assets")
 
 local Agents = require(ServerStorage.Modules.Libraries.Agents)
 local Network = require(ReplicatedStorage.Modules.Shared.Network)
+local World = require(ReplicatedStorage.Modules.Shared.World)
 local Notifications = require(Modules.Packages.Notifications)
 
 -- services
@@ -83,6 +84,17 @@ function HandlePlayerChat(Player: Player)
 			current_agent:GiveUltimate(100000)
 		elseif split[1] == '/energy' then
 			current_agent:GiveEnergy(100)
+		elseif split[1] == '/worldspeed' then
+			local Speed = tonumber(split[2], 10)
+			if Speed == nil then
+				return
+			end
+
+			Speed = math.max(Speed, 0)
+
+			World:SetSpeed(Speed)
+
+			Network:FireForAll('Commands', 'WorldSpeed', Speed)
 		end
 	end)
 end
@@ -109,6 +121,7 @@ end
 local Service = {}
 
 function Service:Init(): ()
+	Network.new('Commands', 'Event')
 	Network.new("SharedData", 'Event')
 	Network.new('PlayerSettings', 'Event')
 

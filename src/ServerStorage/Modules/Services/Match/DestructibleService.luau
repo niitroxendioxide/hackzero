@@ -85,6 +85,7 @@ function Service:Create(Type: string, At: CFrame, StructureData: StructureData?)
     local Rotation = math.atan2(At.LookVector.X, At.LookVector.Y)
 
     local DestructibleInstance = Destructible.new(Type, At.Position, Rotation)
+    local UsedStructureData = StructureData or StructureDatabase:GetData(Type).Default_Structure_Data
 
     local DestructibleId = Service.__Total_Destructibles:extract()
     DestructibleInstance:Spawn(DestructibleId)
@@ -93,8 +94,8 @@ function Service:Create(Type: string, At: CFrame, StructureData: StructureData?)
         Replicate(GameEnum.Replication.DestroyDestructible, DestructibleInstance:Compress(true))
 
         --
-        if not StructureData then return end
-        Service:GiveRewards(StructureData, Caster)
+        if not UsedStructureData then return end
+        Service:GiveRewards(UsedStructureData, Caster)
     end)
 
     local Objbuffer = DestructibleInstance:Compress()
@@ -103,6 +104,7 @@ end
 
 function Service:GiveRewards(Data: StructureData, Caster: Types.ServerEnemyClass & AgentTypes.ServerAgentClass)
     local _Player: Player? = Caster.__Player_Assigned
+ 
 
     if Data.Other then
         if Data.Other.Energy and Caster.GiveEnergy then

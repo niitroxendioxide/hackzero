@@ -183,7 +183,7 @@ function Service:__GenerateLocation(SpawnLocation: BasePart)
 
 	local RNG = Random.new()
 
-	return cFrame * CFrame.new(RNG:NextNumber(-Size.X/2, Size.X/2), -Size.Y/2 + 3.15, RNG:NextNumber(-Size.Z/2, Size.Z/2))
+	return cFrame * CFrame.new(RNG:NextNumber(-Size.X/2, Size.X/2), Size.Y/2, RNG:NextNumber(-Size.Z/2, Size.Z/2))
 end
 
 return Service

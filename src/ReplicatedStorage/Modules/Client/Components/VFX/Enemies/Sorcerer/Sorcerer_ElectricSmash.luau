@@ -33,7 +33,7 @@ return function(Caster: Types.Caster, State: string): ()
         local Raycast = Effects:CastMapRaycast(Caster:GetPivot(), vector.create(0, -50))
         if Raycast then
             local ExplosionObject = Effects:Create(SorcererEffects.SorcererHitVfx, 5);
-            ExplosionObject.CFrame = CFrame.lookAlong(Raycast.Position, Raycast.Normal) * CFrame.Angles(-math.pi, 0, 0)
+            ExplosionObject.CFrame = CFrame.lookAlong(Raycast.Position, Raycast.Normal) * CFrame.new(0, 0, -ExplosionObject.Size.Z) * CFrame.Angles(-math.pi, 0, 0)
 
             Effects:RecolorSmoke(Raycast, ExplosionObject:GetChildren())
             Effects:Emit(ExplosionObject, true)

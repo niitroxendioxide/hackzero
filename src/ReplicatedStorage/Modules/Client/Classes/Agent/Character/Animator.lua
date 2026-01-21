@@ -100,6 +100,7 @@ function AnimatorClass:Update(delta: number)
 	local Moving = Character:IsMoving()
 	local CurrentState = Character:GetState()
 	local WorldSpeed = World:GetSpeed()
+	local SpeedMod = math.min((Character.__States:GetLastChangeTime() / 0.25), 1)
 	local InIdle = CurrentState == 'Idle'
 	local Sprint = self:GetTrack('Sprint')
 	local Jog = self:GetTrack('Jog')
@@ -166,9 +167,9 @@ function AnimatorClass:Update(delta: number)
 		Dash:AdjustWeight(ExpectedWeight and NON_ZERO or LoweredWeight)
 	end
 
-	Sprint:AdjustSpeed(math.clamp(Character:GetMovementSpeed() / 26, 0, 2.5) * WorldSpeed)
-	Jog:AdjustSpeed(JOG_SPEED * WorldSpeed)
-	Walk:AdjustSpeed(WALK_SPEED * WorldSpeed)
+	Sprint:AdjustSpeed(math.clamp(Character:GetMovementSpeed() / 26, 0, 2.5) * WorldSpeed * SpeedMod)
+	Jog:AdjustSpeed(JOG_SPEED * WorldSpeed * SpeedMod)
+	Walk:AdjustSpeed(WALK_SPEED * WorldSpeed * SpeedMod)
 
 	-- Set value
 	self.__IsMoving = Moving

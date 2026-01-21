@@ -36,7 +36,7 @@ function ServerAgentClass.new(Name: string, Level: number, Skills: {}, Ascension
 	-- Privates
 	local Appearance = CharacterDatabase:GetAppearanceData(Name)
 	if Skills and not table.isfrozen(Skills) then
-		table.freeze(Skills)
+		table.freeze(Skills :: {})
 	end
 
 	self.__Tags = {}
@@ -357,23 +357,6 @@ function ServerAgentClass:GetState()
 end
 
 function ServerAgentClass:SwitchState(State: string, Time: number, Iframes: boolean?, Unaffected: boolean)
-	if State == 'Attacking' then
-		local Path = string.split(debug.info(2, "s"), '.')
-		local Skill = Path[#Path]
-
-		self.__Character.States:SetCurrentSkill(Skill)
-
-		if self.__Skill_Thread then
-			task.cancel(self.__Skill_Thread)
-		end
-
-		self.__Skill_Thread = task.delay(Time, function()
-			self.__Character.States:SetCurrentSkill(nil)
-			self.__Skill_Thread = nil
-		end)
-	end
-
-	
 	--local TimeExtra = Ping:Get(self.__Player_Assigned)
 	local TimeMod = not Unaffected and State == 'Attacking' and self:GetStat("Speed") or 1
 	

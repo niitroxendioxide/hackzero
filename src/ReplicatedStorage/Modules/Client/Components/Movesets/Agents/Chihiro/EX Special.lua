@@ -18,13 +18,17 @@ function Ability:Play(Caster)
 		{0, function(_)
 			Ability:PlayAnimation(Caster, 'Chihiro.Abilities.Special.Default', {
 				Fade = .1,
-				Active_Time = Attack_Time + .125,
+				Active_Time = Attack_Time + 0.25,
 			})
 
-            Ability:EffectSerial("Chihiro_Kuro", Caster, 'Charge')
+			Caster:SwitchState('Attacking', Attack_Time)
 		end,},
 
-		{.4, function()
+		{2/60, function()
+			Ability:EffectSerial("Chihiro_Kuro", Caster, 'Charge')
+		end},
+
+		{.41, function()
 			local Targets = {};
 			local Hits = {};
 

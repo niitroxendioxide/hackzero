@@ -369,22 +369,6 @@ function AgentClass:GetUltBar()
 end
 
 function AgentClass:SwitchState(State: string, Time: number, Iframes: boolean?, Unaffected: boolean?): ()
-	if State == 'Attacking' then
-		local ThreadChanged = string.split(debug.info(2, "s"), '.')
-		local Ability = ThreadChanged[#ThreadChanged]
-
-		self.__Character.__States:SetCurrentSkill(Ability)
-
-		if self.__Skill_Thread then
-			task.cancel(self.__Skill_Thread)
-		end
-
-		self.__Skill_Thread = task.delay(Time, function()
-			self.__Character.__States:SetCurrentSkill(nil)
-			self.__Skill_Thread = nil
-		end)
-	end
-
 	local TimeMod = not Unaffected and State == 'Attacking' and self:GetStat("Speed") or 1
 	local TakenTime = Time / TimeMod
 

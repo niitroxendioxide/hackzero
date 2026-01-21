@@ -10,11 +10,12 @@ return {
             AutoGenerationData = {
                 Seed = 0x1C8160, 
                 Source = 'Rooms',
-                Extent = 100,
+                Extent = 15,
             },
             Description = "Find clues about what's shifted in the timeline",
 
             Markers = {
+                ['Room_1'] = {Type = 'Trigger'},
                 ['Room_2'] = {Type = 'Trigger'},
                 ['Room_3'] = {Type = 'Trigger'},
                 ['Room_4'] = {Type = 'Trigger'},
@@ -50,7 +51,38 @@ return {
 
                     Enemies = {
                         [1] = {
-                            {Name = 'Template', Level = 3, Amount = 3}
+                            {Name = 'Sorcerer', Level = 70, Amount = 3}
+                        },
+                    },
+
+                    Finished = function() end
+                },
+
+                Room_3 = {
+                    Objective = "Beat those guys up!",
+                    Goal = {
+                        KillEnemies = 7,
+                    },
+
+                    Enemies = {
+                        [1] = {
+                            {Name = 'Sorcerer', Level = 70, Amount = 1}
+                        },
+
+                        [2] = {
+                            {Name = 'Sorcerer', Level = 70, Amount = 1}
+                        },
+
+                        [3] = {
+                            {Name = 'Sorcerer', Level = 70, Amount = 2}
+                        },
+
+                        [4] = {
+                            {Name = 'Sorcerer', Level = 70, Amount = 2}
+                        },
+
+                        [5] = {
+                            {Name = 'Sorcerer', Level = 70, Amount = 1}
                         },
                     },
 

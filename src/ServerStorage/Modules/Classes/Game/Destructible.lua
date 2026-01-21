@@ -49,6 +49,10 @@ function DestructibleClass.new(Type: string, Position: Vector3, Rotation: number
     return self
 end
 
+function DestructibleClass.GetId(self: Destructible)
+    return 9000 + self.__Id;
+end
+
 function DestructibleClass.Spawn(self: Destructible, Id: number)
     local Data = DestructiblesDatabase:GetData(self.__Type)
 

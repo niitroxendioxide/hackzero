@@ -25,6 +25,8 @@ function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 	local Anim = Context.IsCancel and 'Back' or 'Forth'
 	if not Context.IsCancel then
 		Ability:Effect("Dodge_VFX", Caster)
+	else
+		Ability:Effect("Cancel", Caster)
 	end
 
 	Animator:Play('Dash' .. Anim, {Name = 'Dash'})

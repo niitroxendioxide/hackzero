@@ -110,7 +110,7 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 		self.__Active_Sequences[Agent]:Destroy()
 	end
 
-	--
+	---
 	local AbilitySequence = Sequence.new(Frames, self.__Name)
 	local Attack_Warnings = self:FromData('Attack_Warning')
 	local Agent_Speed_Mod = Agent:GetStat("Speed")
@@ -130,7 +130,7 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 		end
 	end
 
-	local Base_Speed = (self:FromData('Speed') or 1)
+	local Base_Speed = self:FromData('Speed', nil, nil, 1)
 	AbilitySequence:SetSpeed( Base_Speed * Agent_Speed_Mod)
 	AbilitySequence:OnWorldSpeedChange(function(WorldSpeed: number)
 		for _, Animation in (self:Get(Agent, "CurrentSkillSavedObjects") or {}) do
@@ -143,6 +143,11 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 		self:Save(Agent, "CurrentSkillSavedObjects", nil)
 		self.__Signal:Fire()
 	end)
+
+	if tostring(Agent):match("AgentClass") then
+		local SequenceLength = AbilitySequence:GetLength()
+		Agent.__Character.__States:SetCurrentSkill(self.__Name, SequenceLength + 0.1)
+	end
 
 	self:Save(Agent, 'CurrentPlayerSequence', AbilitySequence)
 
@@ -171,7 +176,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 			self:__run_hooks(GameEnum.AbilityHooks.BeforeReleaseConnection, Agent)
 		end
 
-		local Range = self:FromData("Range") or 15
+		local Range = self:FromData("Range", nil, nil, 15)
 		local IsBasicAttack = self.__Name == 'Basic_Attack'
 		local LookAtEnemy = self:FromData('NoAutoTrack') ~= true
 		local EnemyId, Enemy;
@@ -215,7 +220,7 @@ function AbilityClass:PushToContextBuffer(value: any)
 	table.insert(self.__Context_Buffer, value)
 end
 
-function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?): ()
+function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?, FailProof: number?): ()
 	if Key == 'Knockback' then
 		return {self:FromData('Knockback_Direction'), self:FromData('Knockback_Strength'), self:FromData('Knockback_Time')}
 	end
@@ -224,7 +229,7 @@ function AbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: number?
 	local Upgrade = self.__Ability_Data.Upgrades or {}
 
 	local Level = math.max((GivenLevel or 1) - 1, 0)
-	local Value = Base[Key] or 0
+	local Value = Base[Key] or (FailProof or 0)
 	local Upgraded_Value = Upgrade[Key]
 
 	if typeof(Value) == 'table' and Sub_Key ~= nil then
@@ -270,7 +275,7 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	Data = Data or {}
 
 	local Agent_Speed_Mod = Agent:GetStat("Speed")
-	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed') or 1) * Agent_Speed_Mod * World:GetSpeed()
+	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed', nil, nil, 1) or 1) * Agent_Speed_Mod * World:GetSpeed()
 
 	local AnimCache = self:Get(Agent, "CurrentSkillSavedObjects")
 	if AnimCache == nil then
@@ -283,14 +288,14 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	local Type = tostring(Agent):match('AgentClass') and 'Characters.' or 'Enemies.'
 	local TrackObject = AnimLibrary:GetAnim(Type..Track)
 	local AnimTrack = AnimLibrary:Play(Model, TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
-	AnimLibrary:StopTracksWithTag(Model, "Attacking")
+	AnimLibrary:StopTracksWithTag(Model, Data.State or "Attacking")
 
 	AnimTrack:SetAttribute('BaseSpeed', Data.Speed);
-	AnimTrack:AddTag('Attacking')
+	AnimTrack:AddTag(Data.State or 'Attacking')
 	AnimTrack.Priority = Enum.AnimationPriority.Action2 or Data.Priority
 
-	if tostring(Agent) == 'AgentClass' then
-		Agent:AddTrackToState('Attacking', AnimTrack, Data.Active_Time or 0.35)
+	if tostring(Agent):match('AgentClass') then
+		Agent:AddTrackToState(Data.State or'Attacking', AnimTrack, Data.Active_Time or 0.35)
 	end
 
 	table.insert(AnimCache, AnimTrack)

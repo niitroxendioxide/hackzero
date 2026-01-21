@@ -70,7 +70,7 @@ return function(
         end
 
 
-        task.delay(1, function()
+        Effects:CleanUp(function()
             Effects:Toggle(ProjectileModel, false)
             Effects:Tween(ProjectileModel:FindFirstChild('Highlight'), { 0.15 }, {FillTransparency = 1, OutlineTransparency = 1})
 
@@ -79,8 +79,7 @@ return function(
                     Effects:Tween(BasePart, { 0.25 }, {Transparency = 1})
                 end
             end
-        end)
-
+        end, 1)
     elseif State == 'Charge' then
 
         if Threads[Caster] then
@@ -127,7 +126,7 @@ return function(
             Highlight:Destroy()
         end
 
-        Threads[Caster] = task.delay(2, Cache[Caster])
+        Threads[Caster] = Effects:CleanUp(Cache[Caster], 2)
 
         ---
         if Fishes[Caster] then

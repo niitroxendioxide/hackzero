@@ -54,6 +54,19 @@ function Sequence:Start()
 	return self
 end
 
+function Sequence:GetLength(): number
+	local sequence_length = 0;
+	for _, frame in self.__frames do
+		if typeof(frame[2]) == 'function' and sequence_length < frame[1] then
+			sequence_length = frame[1] 
+		elseif typeof(frame[2]) == 'number' and sequence_length < frame[2] then
+			sequence_length = frame[2]
+		end
+	end
+
+	return sequence_length;
+end
+
 function Sequence.Add(self: Sequence, Time: number, ...)
 	if typeof(Time) ~= 'number' then
 		return warn('Invalid time parameter given. Value is not a number', debug.info(2, 's'))

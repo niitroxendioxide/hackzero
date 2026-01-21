@@ -6,6 +6,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local World = require(ReplicatedStorage.Modules.Shared.World)
 local Types = require(Shared.Types)
 local Characters = require(Database.Characters)
 local GameEnum = require(Shared.GameEnum)
@@ -24,6 +25,7 @@ function StatesClass.new(Character: string): Types.StatesClass
 	self.__Current_Skill = ''
 	self.__Current_State_Max_Time = 0.001
 	self.__Last_Dash_State = os.clock()
+	self.__Current_Skill_Thread = nil
 
 	self.__Keys = {
 		Sprint = false,
@@ -37,8 +39,21 @@ function StatesClass:GetCurrentSkill()
 	return self.__Current_Skill
 end
 
-function StatesClass:SetCurrentSkill(Name: string)
+function StatesClass:SetCurrentSkill(Name: string, Time: number)
+	if self.__Current_Skill_Thread then
+		task.cancel(self.__Current_Skill_Thread)
+		self.__Current_Skill_Thread = nil;
+	end
+
+	if Name == nil then
+		return;
+	end
+
 	self.__Current_Skill = Name
+	self.__Current_Skill_Thread = task.delay(Time, function()
+		self.__Current_Skill_Thread = nil
+		self.__Current_Skill = nil
+	end)
 end
 
 function StatesClass:GetLastChangeTime(): number
@@ -73,7 +88,7 @@ function StatesClass:Switch(State: string, Time: number)
 		self.__Last_Change = os.clock()
 	end
 
-	self.__Threads['CurrentState'] = task.delay(Time, function()
+	self.__Threads['CurrentState'] = task.delay(Time / World:GetSpeed(), function()
 		self.__State = 'Idle'
 		if State == 'Attacking' then
 			self.__Last_Change = os.clock()

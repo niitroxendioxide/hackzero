@@ -112,7 +112,7 @@ function EffectUtil:RecolorToGroundColor(At: Vector3, Particles: {})
 end
 
 function EffectUtil:CleanUp(Object: any, Time: number)
-	return task.delay(Time, function()
+	return task.delay(Time / World:GetSpeed(), function()
 		local typeOf = typeof(Object)
 
 		if typeOf == 'Instance' or (typeOf == 'table' and Object.Destroy) then
@@ -384,7 +384,7 @@ function EffectUtil:Weld(Object: BasePart, Welded: BasePart)
 	return Weld
 end
 
-function EffectUtil:FollowWithAlignments(Object: BasePart, ParentToWeld: BasePart, Force: number)
+function EffectUtil:FollowWithAlignments(Object: BasePart, ParentToWeld: BasePart, Force: number, NoRotation: boolean)
 	local Att0 = Instance.new('Attachment')
 	Att0.Parent = Object
 
@@ -392,13 +392,15 @@ function EffectUtil:FollowWithAlignments(Object: BasePart, ParentToWeld: BasePar
 	Att1.Parent = ParentToWeld
 
 	---
-	local AlignOrientation = Instance.new('AlignOrientation')
-	AlignOrientation.Responsiveness = 25
-	AlignOrientation.Attachment0 = Att0
-	AlignOrientation.Attachment1 = Att1
-	AlignOrientation.MaxTorque = Force
-	AlignOrientation.MaxAngularVelocity = 45
-	AlignOrientation.Parent = Att0
+	if not NoRotation then
+		local AlignOrientation = Instance.new('AlignOrientation')
+		AlignOrientation.Responsiveness = 25
+		AlignOrientation.Attachment0 = Att0
+		AlignOrientation.Attachment1 = Att1
+		AlignOrientation.MaxTorque = Force
+		AlignOrientation.MaxAngularVelocity = 45
+		AlignOrientation.Parent = Att0
+	end
 
 	local AlignPosition = Instance.new('AlignPosition')
 	AlignPosition.Responsiveness = 32
@@ -474,7 +476,7 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 
 		Loop = RunService.PostSimulation:Connect(function(Delta: number)  
 			local DeltaTime = Delta * World:GetSpeed()
-			Max_Time += DeltaTime
+			Max_Time += DeltaTime * World:GetSpeed()
 
 			if Max_Time >= Time then
 				Loop:Disconnect()

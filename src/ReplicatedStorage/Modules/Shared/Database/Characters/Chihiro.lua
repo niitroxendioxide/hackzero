@@ -46,19 +46,42 @@ return {
 	},
 
 	Moveset_Data = {
-		['Basic Attack'] = {
+		['Dodge'] = {
 			Base = {
-				Cooldown = .45,
 				Speed = 1,
 				Animation_Speed = 1,
+				
+				Hit = {
+					HitType = 'Slash',
+					Damage = 74,
+					Affliction_Buildup = 10,
+					Affliction = 'Physical',
+					Daze = 32,
+					Stun = 0.25,
+					Knockback = {
+						vector.create(0, 0, -1),
+						20,
+						0.1
+					},
+				},
+			},
+		},
+
+		['Basic Attack'] = {
+			Base = {
+				Cooldown = .1,
+				Speed = 1.3,
+				Animation_Speed = 1.1,
 				Range = 35,
 
 				Attack_Data = {
 					-- The "?" symbol means it can be there or not.
 					-- Movement Moment, Hit time, Endlag, Movement Time?, Movement Strength?, Movement Linear?
 					[1]   = {0.24, .217, .3},
-					[2]   = {0.03, .1, .85, .7, 0.33},
+					[2]   = {0.03, .1, .55, .7, 0.33},
 					[2.1] = {0, .55},
+					[3] = {0.2, .183, 0.75, 0.35, 0.5},
+					[3.1] = {0, .55},
 				},
 
 				Walk_Time = 0.1,
@@ -70,22 +93,31 @@ return {
 					}
 				},
 
-				Damage_Mult = {
+				Damage = {
 					[1] = 71,
 					[2] = 45,
 					[2.1] = 82,
+					[3] = 71,
+					[3.1] = 122,
+					[4] = 81,
 				},
 
-				Daze_Mult = {
+				Daze = {
 					[1] = 17,
 					[2] = 22,
 					[2.1] = 25,
+					[3] = 26,
+					[3.1] = 19,
+					[4] = 19,
 				},
 
 				Affliction_Buildup = {
 					[1] = 35,
 					[2] = 45,
 					[2.1] = 25,
+					[3] = 20,
+					[3.1] = 58,
+					[4] = 21,
 				}
 			}
 		},
@@ -151,7 +183,61 @@ return {
 					Daze = 1,
 				},
 			},
-		}
+		},
+
+		['Dodge Counter'] = {
+			Base = {
+				Hit_Count = 8,
+				Hit_Frequency = 1/8,
+
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 1.5,
+				Hit = {
+					Damage = 55,
+					HitType = 'Slash',
+					Affliction = 'Water',
+					Stun = 0.5,
+					Daze = 10,
+					Affliction_Buildup = 7,
+					HitsAirborne = true,
+				},
+			},
+
+			Upgrade = {
+				Hit = {
+					Damage = 2.5,
+				}
+			},
+		},
+
+		['Quick Assist'] = {
+			Base = {
+				Buffs = {
+					{
+						Type = 'Speed',
+						Value = 0.1,
+						Time = 5,
+					},
+
+					{
+						Type = 'Defense',
+						Value = "25%",
+						Time = 5,
+					}
+				},
+
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.5,
+			},
+
+			Upgrade = {
+				Hit = {
+					Damage = 2.5,
+				}
+			},
+		},
 	},
 
 	Ascension_Data = {

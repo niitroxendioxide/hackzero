@@ -16,11 +16,17 @@ HuecoMundoIntro:AddHook(GameEnum.StageHook.Begin, function()
     print("I hook the beginning of the mission!")
 end)
 
-HuecoMundoIntro:ForTrigger("Room_2", function(Trigger: BasePart)
-    print("I create a crystal!")
 
-    DestructibleService:Create("Crystals", Trigger.CFrame * CFrame.new(-24, -38, 25))
-    DestructibleService:Create("Crystals", Trigger.CFrame * CFrame.new(31, -38, 25))
+--- Runs when the trigger is created
+HuecoMundoIntro:ForTrigger("Room_1", function(Trigger: BasePart)
+    print(Trigger)
+    DestructibleService:Create("Crystals", Trigger.CFrame * CFrame.new(-15, -1, 15))
+    DestructibleService:Create("Crystals", Trigger.CFrame * CFrame.new(24, -1, 8))
+end)
+
+HuecoMundoIntro:ForTrigger("Room_2", function(Trigger: BasePart)
+    DestructibleService:Create("Crystals", Trigger.CFrame * CFrame.new(-24, -1, 24))
+    DestructibleService:Create("Crystals", Trigger.CFrame * CFrame.new(24, -1, 24))
 end)
 
 return HuecoMundoIntro

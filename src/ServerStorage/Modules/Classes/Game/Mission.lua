@@ -99,7 +99,6 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
         EventData = self.__Custom_Data[Event];
     else
         EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
-        print(EventData)
     end
 
     if EventData == nil then
@@ -219,6 +218,10 @@ function MissionClass.AddTrigger(self: Types.MissionClass, Area: BasePart)
                 end
 
                 if not ReachPlace then
+                    if self.__Current_Events[Area.Name] then
+                        return;
+                    end
+
                     self:BeginEvent(Area.Name, {PlayersLibrary:GetFromAgent(Agent) :: Types.StagePlayer}, false, Area)
                 end
             end)

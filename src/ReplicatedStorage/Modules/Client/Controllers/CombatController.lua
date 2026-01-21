@@ -181,7 +181,7 @@ function Controller:HandleInput(Key: string, State: string)
 
 	local Is_Cancel = false
 	local CurrentSkill = CurrentAgent:GetCurrentSkill()
-	if CurrentSkill == "Basic Attack" and Key == "Dodge" then
+	if CurrentSkill == "Basic_Attack" and Key == "Dodge" then
 		Is_Cancel = true
 		CharacterMoveset:CancelSkill("Basic Attack", CurrentAgent)
 	end

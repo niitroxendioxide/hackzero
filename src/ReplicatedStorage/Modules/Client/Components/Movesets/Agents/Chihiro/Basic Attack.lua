@@ -12,7 +12,7 @@ local AbilityClass = require(Client.Classes.Ability)
 local Ability = AbilityClass.new(true)
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
-	Ability:Increase(Agent, 'Count', {Limit = 2})
+	Ability:Increase(Agent, 'Count', {Limit = 3})
 end)
 
 function Ability:Play(Agent)
@@ -30,6 +30,7 @@ function Ability:Play(Agent)
 			local Track = Ability:PlayAnimation(Agent, 'Chihiro.Abilities.M1.'..Ability:Get(Agent, 'Count'), {
 				Fade = .1,
 				Active_Time = Attack_Time + .125,
+				Speed = M1_Count == 3 and 1.2 or 1,
 			})
 
 			Ability:Save(Agent, 'M1_Track', Track)
@@ -42,15 +43,24 @@ function Ability:Play(Agent)
 		end},
 
 		{.217, function()
-			if M1_Count ~= 1 then return end
+			if M1_Count == 1 then
+				EffectObj = Ability:EffectSerial("Slash", Agent, -67, nil, true)
+			elseif M1_Count == 3 then
+				EffectObj = Ability:EffectSerial("Slash", Agent, 31, nil, true, 1.15)
+			end
 
-			EffectObj = Ability:EffectSerial("Slash", Agent, -67, nil, true)
 		end},
 
 		{.41, function()
 			if M1_Count ~= 2 then return end
 
 			EffectObj = Ability:EffectSerial("Slash", Agent, 70, nil, false)
+		end},
+
+		{.5, function()
+			if M1_Count ~= 3 then return end
+
+			EffectObj = Ability:EffectSerial("Slash", Agent, 0, nil, false, 1.1)
 		end},
 	}, true)
 

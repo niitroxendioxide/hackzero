@@ -1,8 +1,9 @@
 ---
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
-
+local LocalPlayer = Players.LocalPlayer
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
@@ -10,20 +11,21 @@ local Effects = require(Shared.Utility.Effects)
 local DistanceFade = require(Client.Libraries.DistanceFade)
 local CharactersLib = require(Client.Libraries.Characters)
 
+local Loops = {}
 local ObjectCache = {}
 local Threads = {}
 
 local BarrierDefaultSettings = {
 	["EdgeDistanceCalculations"] = true,
 	["Texture"] = "rbxassetid://76340810197746",
-	["TextureTransparency"] = .35,
+	["TextureTransparency"] = .3,
 	["BackgroundTransparency"] = 0.975,
-	["TextureColor"] = Color3.fromRGB(255, 48, 25),
-	["BackgroundColor"] = Color3.fromRGB(232, 61, 23),
+	["TextureColor"] = Color3.fromRGB(255, 79, 25),
+	["BackgroundColor"] = Color3.fromRGB(238, 56, 15),
 	["TextureSize"] = Vector2.new(2, 1.9),
 	["TextureOffset"] = Vector2.new(0, .5),
 	["Brightness"] = 1,
-    ["DistanceOuter"] = 6,
+    ["DistanceOuter"] = 10,
 }
 
 ---
@@ -31,8 +33,16 @@ return function(Id: string, ObjectList: {BasePart}, Centre: Vector3, State: bool
 
     if ObjectCache[Id] then
         ObjectCache[Id]:Clear()
+        
+        for _, Connection in (Loops[Id] or {}) do
+            Connection:Disconnect()
+        end
 
         return
+    end
+
+    if not Loops[Id] then
+        Loops[Id] = {}
     end
 
     local DistanceFadeObject = DistanceFade.new()
@@ -60,6 +70,18 @@ return function(Id: string, ObjectList: {BasePart}, Centre: Vector3, State: bool
             NormalId = Enum.NormalId.Front
         end
 
+        ---
+        table.insert(Loops[Id], RunService.Heartbeat:Connect(function(a0: number)
+            if not LocalPlayer.Character then
+                return;
+            end
+            
+            local Pivot = LocalPlayer.Character:GetPivot()
+
+            Clone.Position = Clone.Position:Lerp(vector.create(Clone.Position.X, Pivot.Position.Y, Clone.Position.Z), a0 * 10)
+        end))
+
+        ---
         table.insert(PartList, Clone)
         Clone:SetAttribute("normal", NormalId)
         DistanceFadeObject:AddFace(Clone, NormalId)

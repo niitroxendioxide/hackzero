@@ -10,14 +10,15 @@ local Types = require(Shared.Types.Agents)
 local Effects = require(Shared.Utility.Effects)
 
 ---
-return function(Caster: Types.AgentClass, Angle: number, Offset: CFrame, Reverse: boolean): ()
+return function(Caster: Types.AgentClass, Angle: number, Offset: CFrame, Reverse: boolean, Scale): ()
     Offset = Offset or CFrame.new(0, -0.069, 0)
     Angle = Angle or 0
+    Scale = Scale or 1
 
     local AngleOffset = typeof(Angle) == 'number' and CFrame.Angles(0, 0, math.rad(Angle)) or Angle
     local SlashEffect = Effects:Create(Assets.Agents.Tanjiro[Reverse and 'Reverse' or 'Slash'], 2.5)
     SlashEffect:PivotTo(Caster:GetPivot() * Offset * AngleOffset)
-    SlashEffect:ScaleTo(1.25)
+    SlashEffect:ScaleTo(1.25 * Scale)
 
     if Reverse then
         for _, Emitter: ParticleEmitter in SlashEffect:GetDescendants() do

@@ -30,6 +30,12 @@ function Controller:HasBegun(): boolean
 end
 
 function Controller:Init()
+    Network:On("Commands", function(Type: string, Arg1: number)
+		if Type == 'WorldSpeed' then
+			World:SetSpeed(Arg1)
+		end
+	end)
+
     Network:On("Match", function(Type: number, ...)
         if Type == GameEnum.MatchEvents.BeginEvent then
             Controller:BeginEvent(...)

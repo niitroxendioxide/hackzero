@@ -1,5 +1,10 @@
 --
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService('RunService')
+
+
+local Shared = ReplicatedStorage.Modules.Shared
+local World = require(ReplicatedStorage.Modules.Shared.World)
 
 --
 local ActiveCooldowns = {}
@@ -24,7 +29,7 @@ function Cooldown:Add(Name: string, Time: number)
 	
 	ActiveCooldowns[Name].Thread = RunService.Heartbeat:Connect(function(Delta: number)
 		if not ActiveCooldowns[Name].Paused then
-			ActiveCooldowns[Name].Time += Delta
+			ActiveCooldowns[Name].Time += Delta / World:GetSpeed()
 		end
 		
 		if ActiveCooldowns[Name].Time >= ActiveCooldowns[Name].Goal then

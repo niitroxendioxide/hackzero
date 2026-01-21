@@ -28,8 +28,8 @@ function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: numbe
 		Offset = Vector3.new(0, 0, -7),
 		Hit_Function = function(Target: Types.Target)
 			Ability:Hit(Caster, Target, {
-				Damage = Ability:FromData('Damage_Mult', M1_Count, SkillLevel),
-				Daze = Ability:FromData('Daze_Mult', M1_Count, SkillLevel),
+				Damage = Ability:FromData('Damage', M1_Count, SkillLevel),
+				Daze = Ability:FromData('Daze', M1_Count, SkillLevel),
 				Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count, SkillLevel),
 				Affliction = 'Physical',
 				HitType = 'Slash',
@@ -49,8 +49,8 @@ function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: numbe
 			Offset = Vector3.new(0, 0, -7),
 			Hit_Function = function(Target: Types.Target)
 				Ability:Hit(Caster, Target, {
-					Damage = Ability:FromData('Damage_Mult', M1_Count + 0.1, SkillLevel),
-					Daze = Ability:FromData('Daze_Mult', M1_Count + 0.1, SkillLevel),
+					Damage = Ability:FromData('Damage', M1_Count + 0.1, SkillLevel),
+					Daze = Ability:FromData('Daze', M1_Count + 0.1, SkillLevel),
 					Affliction_Buildup = Ability:FromData('Affliction_Buildup', M1_Count + 0.1, SkillLevel),
 					Affliction = 'Physical',
 					HitType = 'Slash',
