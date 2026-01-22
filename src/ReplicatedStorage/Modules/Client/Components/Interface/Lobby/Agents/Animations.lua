@@ -22,6 +22,10 @@ function InterfaceAnims:PlayAnim(Rig: Model, Tab: string, AgentName: string)
     Animation:StopTracksWithTag(Rig, 'Interface')
     
     local PlayingTrack = Animation:Play(Rig, AnimIdTrack)
+    if not PlayingTrack then
+        return;
+    end
+
     PlayingTrack:AddTag('Interface')
 
     return PlayingTrack

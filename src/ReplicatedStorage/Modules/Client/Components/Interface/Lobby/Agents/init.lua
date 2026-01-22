@@ -203,6 +203,11 @@ function Component:Init()
 
             --
         else
+            local LobbyMain = UIGroups:GetElementClass('Lobby', 'MainMenu')
+            LobbyMain:Set(true)
+
+            task.wait(.25)
+
             for _, DiffTabs in MainFrame:GetChildren() do
                 if DiffTabs.Name ~= 'Agents' and DiffTabs.Name ~= 'TabButtons' then
                     DiffTabs.Visible = false
@@ -214,9 +219,6 @@ function Component:Init()
             MainFrame.Agents.Visible = false
             MainFrame.TabButtons.Visible = false
             ReturnHolder.Visible = false
-
-            local LobbyMain = UIGroups:GetElementClass('Lobby', 'MainMenu')
-            LobbyMain:Set(true)
 
             --
             Camera:FreeUsage()

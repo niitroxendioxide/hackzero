@@ -63,43 +63,61 @@ local function ShowItemInfo(ItemId: string?)
     end
 
     DataFrame.ItemType.Text = ItemType
-    DataFrame.ItemName.Text = string.gsub(OtherData.DisplayName or ItemInfo.Name, 'AgentToken:', '')
+    DataFrame.ItemName.Text = string.gsub(OtherData.Name or ItemInfo.Name, 'AgentToken:', '')
 
     DataFrame.ItemInfo.Visible = ItemType == 'Item'
     DataFrame.ItemInfo.Viewport.WorldModel:ClearAllChildren()
 
     if ItemType == 'Drive' then
         --
-        DataFrame.LvlBar.Visible = true
-        DataFrame.ArtLvl.Visible = false
+        DataFrame.DriveData.Visible = true
+        DataFrame.ArtifactData.Visible = false
+        DataFrame.ItemInfo.Visible = true
+        DataFrame.ItemInfo.ItemCount.Visible = false
 
-        DataFrame.LvlBar.Lvl.Text = `Lvl. {ItemInfo.Level} / 60`;
+        DataFrame.DriveData.Lvl.Text = `Lv. {ItemInfo.Level}`;
+
+        local Exp = DataFrame.DriveData.Exp;
+        Exp.Fill.Size = UDim2.fromScale(0, 1);
+        EffectUtil:Tween(Exp.Fill, { 0.3, 'Quad' }, {Size = UDim2.fromScale(ItemInfo.Level / 60, 1)})
+
+        DataFrame.ItemInfo.ItemDescription.Text = `<b>Passive Effect:</b> {(OtherData.Passive_Description or "")}`
     elseif ItemType == 'Artifact' then
-        DataFrame.LvlBar.Visible = false
-        DataFrame.ArtLvl.Visible = true
+        DataFrame.ItemInfo.Visible = true
+        DataFrame.ItemInfo.Icon.Visible = false
+        DataFrame.DriveData.Visible = false
+        DataFrame.ArtifactData.Visible = true
+        DataFrame.ItemInfo.ItemCount.Visible = false
 
-        DataFrame.ArtLvl.Text = `Level: <b>{ItemInfo.Level}</b>`;
+        DataFrame.ArtifactData.Level.Text = `Lv. {ItemInfo.Level}`;
+        DataFrame.ArtifactData.Slot.Text = `Slot. {ItemInfo.Slot}`;
         UIUtils:CreateArtifactModel(ItemInfo.Name, ItemInfo.Slot, DataFrame.ItemInfo.Viewport, ItemId)
+
+        local Info = OtherData :: Types.Artifact_Data
+        local Description = `<b>2-Piece Effect:</b> {Info.Piece_Descriptions.Two_Piece}\n\n<b>4-Piece Effect:</b> {Info.Piece_Descriptions.Four_Piece}`
+        DataFrame.ItemInfo.ItemDescription.Text = Description
         --
     else
-        DataFrame.LvlBar.Visible = false
-        DataFrame.ArtLvl.Visible = false
+        DataFrame.DriveData.Visible = false
+        DataFrame.ArtifactData.Visible = false
+        DataFrame.ItemInfo.Visible = true
+        DataFrame.ItemInfo.ItemCount.Visible = true
 
         DataFrame.ItemInfo.Icon.Image = 'rbxassetid://' .. (OtherData.Icon or 0)
-        DataFrame.ItemInfo.ItemCount.Text = `Amount Owned: <b>{ItemInfo.Amount or 0}</b>`
+        DataFrame.ItemInfo.ItemCount.Label.Text = `x{ItemInfo.Amount or 0}`
+        local Size = #tostring(ItemInfo.Amount)
+
+        DataFrame.ItemInfo.ItemCount.Size = UDim2.fromScale(0.182 + (0.05 * math.max(Size - 2, 0)), 0.095)
+        DataFrame.ItemInfo.ItemCount.Position = UDim2.fromScale(0.059 + (0.025 * math.max(Size - 2, 0)), 0.035)
         DataFrame.ItemInfo.ItemDescription.Text = OtherData.Description
-        DataFrame.ItemInfo.ItemDescription.TextSize = ScreenUtil:GetTextSize(24)
-        DataFrame.ItemInfo.ItemDescription.TextScaled = not DataFrame.ItemInfo.ItemDescription.TextFits
     end
+    DataFrame.ItemInfo.ItemDescription.TextSize = ScreenUtil:GetTextSize(24)
+    DataFrame.ItemInfo.ItemDescription.TextScaled = not DataFrame.ItemInfo.ItemDescription.TextFits
 
     DataFrame.EquippedData.Visible = ItemInfo.Equipped ~= nil
     if ItemInfo.Equipped then
         DataFrame.EquippedData.Text = string.format('Equipped On: <b>%s</b>', ItemInfo.Equipped)
-        DataFrame.LvlBar.Position = UDim2.fromScale(DataFrame.LvlBar.Position.X.Scale, 0.191)
-        DataFrame.ArtLvl.Position = UDim2.fromScale(DataFrame.ArtLvl.Position.X.Scale, 0.215)
     else
-        DataFrame.LvlBar.Position = UDim2.fromScale(DataFrame.LvlBar.Position.X.Scale, 0.14)
-        DataFrame.ArtLvl.Position = UDim2.fromScale(DataFrame.ArtLvl.Position.X.Scale, 0.152)
     end
 end
 
@@ -130,13 +148,13 @@ local function SetFilter(FilterName: string, State: boolean)
         if Active then
             EffectUtil:Tween(FilterObj.State.Inactive.UIScale, {.2, 'Sine'}, {Scale = 0})
             EffectUtil:Tween(FilterObj.State.ActiveIcon.UIScale, {.25, 'Back'}, {Scale = 1})
-            FilterObj.State.BackgroundColor3 = Color3.fromRGB(36, 67, 29)
-            FilterObj.State.UIStroke.Color = Color3.new(0, 1)
+            FilterObj.State.BackgroundColor3 = Color3.fromRGB(35, 67, 10)
+            FilterObj.State.UIStroke.Color = Color3.fromRGB(89, 255, 0)
         else
             EffectUtil:Tween(FilterObj.State.ActiveIcon.UIScale, {.2, 'Sine'}, {Scale = 0})
             EffectUtil:Tween(FilterObj.State.Inactive.UIScale, {.25, 'Back'}, {Scale = 1})
-            FilterObj.State.BackgroundColor3 = Color3.fromRGB(67, 32, 32)
-            FilterObj.State.UIStroke.Color = Color3.new(1)
+            FilterObj.State.BackgroundColor3 = Color3.fromRGB(67, 18, 18)
+            FilterObj.State.UIStroke.Color = Color3.fromRGB(255, 34, 34)
         end
     end
 
@@ -190,9 +208,14 @@ local function SelectItem(ItemId: string)
     local MainFrame = Component:GetFrame()
     local InventoryFrame = MainFrame.InventoryFrame
     local ItemObject = InventoryFrame.ItemList:FindFirstChild(ItemId)
+    if ItemObject == nil then
+        return;
+    end
+
+    local Design = ItemObject.Design;
 
     if ItemId == States.__Selected_Item then
-        ItemObject.Selected.Visible = false
+        Design.Selected.Visible = false
         States.__Selected_Item = nil
 
         ShowItemInfo(nil)
@@ -202,15 +225,22 @@ local function SelectItem(ItemId: string)
         local OldObj = InventoryFrame.ItemList:FindFirstChild(States.__Selected_Item)
 
         if OldObj then
-            OldObj.Selected.Visible = false
+            OldObj.Design.Selected.Visible = false
         end
     end
 
     States.__Selected_Item = ItemId
-    ItemObject.Selected.Visible = true
+    Design.Selected.Visible = true
 
-    ItemObject.UIScale.Scale = 0.85
-    EffectUtil:Tween(ItemObject.UIScale, {.25, 'Back'}, {Scale = 0.9})
+    Design.UIScale.Scale = 0.85
+    EffectUtil:Tween(Design.UIScale, {.35, 'Back'}, {Scale = 1})
+
+    Design.Selected.BackgroundTransparency = 1
+    Design.Selected.UIStroke.Transparency = 1
+    Design.Selected.UIScale.Scale = 1.5
+    EffectUtil:Tween(Design.Selected, {.3, 'Sine'}, {BackgroundTransparency = 0.85})
+    EffectUtil:Tween(Design.Selected.UIStroke, {.3, 'Sine'}, {Transparency = 0})
+    EffectUtil:Tween(Design.Selected.UIScale, {.55, 'Back'}, {Scale = 1})
 
     --
     ItemSelectedThread = task.spawn(function()
@@ -219,13 +249,18 @@ local function SelectItem(ItemId: string)
             local Delta = task.wait();
 
             Angle += 450 * Delta
-            ItemObject.Selected.UIStroke.Thickness = 2.5 + math.sin(math.rad(Angle)) * 1.5
+            Design.Selected.UIStroke.Thickness = 0.04 + math.sin(math.rad(Angle)) * 0.015
         end
     end)
 
     ShowItemInfo(ItemId)
 end
 
+local OrderTypes = {
+    ['Drive'] = 1,
+    ['Artifact'] = 2,
+    ['Item'] = 3,
+}
 local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', ItemData: Types.PlayerDriveData & Types.PlayerArtifactData & DataTypes.PlayerItemData)
     local MainFrame = Component:GetFrame()
     local InventoryFrame = MainFrame.InventoryFrame
@@ -244,48 +279,82 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
     InventoryObject.Id.Value = ItemId
     InventoryObject.Type.Value = Type
 
+    --
+    local ObjectDesign = InventoryObject.Design
+    local SlotType = (ItemData.Slot or 0);
+    local LevelSort = 200 - (ItemData.Level or 0)
+
     if Type == 'Drive' then
         local DriveData = DrivesDatabase:GetDriveData(ItemData.Name)
 
-        InventoryObject.DriveIcon.Image = Prefix .. DriveData.IconId
-        InventoryObject.DriveIcon.Visible = true
-        InventoryObject.ItemIcon.Visible = false
+        ObjectDesign.DriveIcon.Image = Prefix .. DriveData.IconId
+        ObjectDesign.DriveIcon.Visible = true
+        ObjectDesign.ItemIcon.Visible = false
+        ObjectDesign.Level.Visible = true
+        ObjectDesign.Level.Label.Text = 'Lv. '..ItemData.Level
     else
-        InventoryObject.DriveIcon.Visible = false
+        ObjectDesign.DriveIcon.Visible = false
+
+        if ItemData.Level ~= nil then
+            ObjectDesign.Level.Visible = true 
+            ObjectDesign.Level.Label.Text = 'Lv. '..ItemData.Level
+        else
+            ObjectDesign.Level.Visible = false
+        end
         
-        local HasModel = UIUtils:CreateArtifactModel(ItemData.Name, ItemData.Slot, InventoryObject.Viewport, ItemId)
+        local HasModel = UIUtils:CreateArtifactModel(ItemData.Name, ItemData.Slot, ObjectDesign.Viewport, ItemId)
         if HasModel then
-            InventoryObject.ItemIcon.Visible = false
+            ObjectDesign.ItemIcon.Visible = false
         elseif (ItemInfo and ItemInfo.Icon)then
-            InventoryObject.ItemIcon.Visible = true
-            InventoryObject.ItemIcon.Image = Prefix .. ItemInfo.Icon
+            ObjectDesign.ItemIcon.Visible = true
+            ObjectDesign.ItemIcon.Image = Prefix .. ItemInfo.Icon
         end
     end
 
-    InventoryObject.Equipped.Visible = ItemData.Equipped ~= nil
+    InventoryObject.LayoutOrder = (OrderTypes[Type] or 5) + (not ItemData.Equipped and 1000 or 0) + (Type == 'Artifact' and SlotType or 0) + LevelSort
+    ObjectDesign.Equipped.Visible = ItemData.Equipped ~= nil
     InventoryObject.Button.MouseButton1Click:Connect(function()
         SelectItem(ItemId)
     end)
 
-    InventoryObject.Amount.Visible = ItemData.Amount ~= nil
+    ObjectDesign.Amount.Visible = ItemData.Amount ~= nil
     if ItemData.Amount then
-        InventoryObject.Amount.Text = 'x'..ItemData.Amount
+        ObjectDesign.Amount.Text = 'x'..ItemData.Amount
     end
 
     InventoryObject.Parent = InventoryFrame.ItemList
 end
 
 local function CreateAllItems()
+    local Count = 0;
     for _, Drive in LocalData:GetDrives() do
         CreateItem(Drive.Id, 'Drive', Drive)
+
+        Count += 1;
+        if Count > 50 then
+            Count = 0
+            task.wait(1/10)
+        end
     end
 
     for _, Artifact in LocalData:GetArtifacts() do
         CreateItem(Artifact.Id, 'Artifact', Artifact)
+
+        Count += 1;
+        if Count > 50 then
+            Count = 0
+            task.wait(1/10)
+        end
     end
 
     for _, Item in LocalData:GetItems() do
         CreateItem(Item.Name, 'Item', Item)
+
+        Count += 1;
+        if Count > 50 then
+            Count = 0
+            task.wait(1/10)
+        end
     end
 end
 
@@ -310,7 +379,6 @@ function Component:Init()
     end
 
     ShowItemInfo(nil)
-
     Component:BindToStateChange(function(State: boolean)
         if States.ClosingConnection then
             States.ClosingConnection:Disconnect()
@@ -322,7 +390,7 @@ function Component:Init()
             local ClosingTween = EffectUtil:Tween(MainFrame.Bg, {0.5, 'Cubic'}, {Transparency = 1})
             EffectUtil:Tween(MainFrame.InventoryFrame.UIScale, {0.25, 'Back'}, {Scale = 0})
             EffectUtil:Tween(MainFrame.Return.UIScale, {0.35, 'Back'}, {Scale = 0})
-            EffectUtil:Tween(MainFrame.TextLabel.UIScale, {0.5, 'Back'}, {Scale = 0})
+            EffectUtil:Tween(MainFrame.Title.UIScale, {0.5, 'Back'}, {Scale = 0})
 
             States.ClosingConnection = ClosingTween.Completed:Once(function()
                 MainFrame.Visible = false
@@ -335,7 +403,7 @@ function Component:Init()
         elseif State then
             EffectUtil:Tween(MainFrame.InventoryFrame.UIScale, {0.25, 'Back'}, {Scale = 1})
             EffectUtil:Tween(MainFrame.Return.UIScale, {0.35, 'Back'}, {Scale = 1})
-            EffectUtil:Tween(MainFrame.TextLabel.UIScale, {0.5, 'Back'}, {Scale = 1})
+            EffectUtil:Tween(MainFrame.Title.UIScale, {0.5, 'Back'}, {Scale = 1})
             EffectUtil:Tween(MainFrame.Bg, {0.5, 'Cubic'}, {Transparency = 0.33})
 
             CreateAllItems()
@@ -372,6 +440,29 @@ function Component:Init()
     end)
 
     Component:Set(false)
+
+    ---
+    local UpgradeButtonFrame = MainFrame.InventoryFrame.Data.DriveData.Upgrade
+    local UIScale = UpgradeButtonFrame.UIScale
+
+    UpgradeButtonFrame.Button.MouseButton1Click:Connect(function()
+        UIScale.Scale = 0.8
+        UpgradeButtonFrame.UIStroke.Color = Color3.new(1, 1, 1)
+        UpgradeButtonFrame.UIStroke.Thickness = 0.09
+        EffectUtil:Tween(UIScale, { 0.25, 'Back' }, {Scale = 1})
+        EffectUtil:Tween(UpgradeButtonFrame.UIStroke, { 0.45, 'Sine' }, {Color = Color3.new(0, 0, 0), Thickness = 0.05})
+    end)
+
+    UpgradeButtonFrame.Button.MouseEnter:Connect(function()
+        EffectUtil:Tween(UpgradeButtonFrame.MidStroke, { 0.3, 'Sine' }, {Color = Color3.fromRGB(128, 128, 128)})
+        EffectUtil:Tween(UIScale, { 0.25, 'Quart' }, {Scale = 1.1})
+    end)
+
+    
+    UpgradeButtonFrame.Button.MouseLeave:Connect(function()
+        EffectUtil:Tween(UpgradeButtonFrame.MidStroke, { 0.3, 'Sine' }, {Color = Color3.fromRGB(38, 38, 38)})
+        EffectUtil:Tween(UIScale, { 0.25, 'Quart' }, {Scale = 1})
+    end)
 end
 
 return Component :: Types.UIComponent

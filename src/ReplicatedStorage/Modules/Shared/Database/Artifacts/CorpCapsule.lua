@@ -18,6 +18,7 @@ return {
 	},
 
 	Piece_Descriptions = {
+		Two_Piece = "DEF +120, HP +200",
 		Four_Piece = [[Regen some of your health passively throughout fights. 
         Every time you hit a dodge counter, regen 5% extra energy, and apply a 10% Speed boost to all the team for 5s]],
 	},

@@ -29,7 +29,7 @@ function Ability:Play(Caster)
         local Delay = (i - 1) * Ability:FromData("Hit_Frequency");
 
         Sequence:Add(Delay, function()
-            Ability:CreateHitbox(Caster, vector.create(0, 0, -4), vector.create(8, 8, 8), function(Enemy)  
+            Ability:CreateHitbox(Caster, vector.create(0, 0, -7), vector.create(13, 8, 13), function(Enemy)  
                 Ability:Hit(Caster, Enemy, {EffectData = {
                     Highlight = true,
                 }})

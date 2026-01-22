@@ -18,8 +18,8 @@ return {
 	},
 
 	Piece_Descriptions = {
-		Four_Piece = [[After hitting a critical hit, recharge 5% of energy and replenish some of your hp. 
-        Hitting three critical hits in less than 5s will result in a damage boost of 10% to any blunt damage.]],
+		Two_Piece = "Crit DMG +16%, Affliction Aptitude +20",
+		Four_Piece = [[After hitting a critical hit, recharge 5% of energy and replenish some of your hp. Hitting three critical hits in less than 5s will result in a damage boost of 10% to any blunt damage.]],
 	},
 
 } :: Types.Artifact_Data

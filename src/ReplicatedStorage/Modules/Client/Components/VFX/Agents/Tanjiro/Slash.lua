@@ -10,7 +10,7 @@ local Types = require(Shared.Types.Agents)
 local Effects = require(Shared.Utility.Effects)
 
 ---
-return function(Caster: Types.AgentClass, Angle: number, Offset: CFrame, Reverse: boolean, Scale): ()
+return function(Caster: Types.AgentClass, Angle: number, Offset: CFrame, Reverse: boolean, Scale: number, ApplyGroundEffect: boolean): ()
     Offset = Offset or CFrame.new(0, -0.069, 0)
     Angle = Angle or 0
     Scale = Scale or 1
@@ -25,6 +25,17 @@ return function(Caster: Types.AgentClass, Angle: number, Offset: CFrame, Reverse
             if not Emitter:IsA("ParticleEmitter") then continue end
 
             Effects:ReverseEmitter(Emitter)
+        end
+    end
+
+    if ApplyGroundEffect then
+        local Cast = Effects:CastMapRaycast((Caster:GetModel():GetPivot() * Offset * CFrame.new(0, 0, -4)).Position, vector.create(0, -5))
+
+        if Cast then
+            local SlashGroundEffect = Effects:Create(Assets.Agents.Tanjiro.SlashGroundCutEffect, 2)
+            SlashGroundEffect:PivotTo(CFrame.lookAlong(Cast.Position, Cast.Normal, Caster:GetPivot().LookVector))
+
+            Effects:Emit(SlashGroundEffect)
         end
     end
 

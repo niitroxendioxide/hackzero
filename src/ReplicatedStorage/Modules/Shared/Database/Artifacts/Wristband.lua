@@ -15,6 +15,7 @@ return {
 	},
 
 	Piece_Descriptions = {
+		Two_Piece = 'Crit DMG +16%, Affliction Aptitude +20',
 		Four_Piece = "After hitting a critical hit, ",
 	},
 

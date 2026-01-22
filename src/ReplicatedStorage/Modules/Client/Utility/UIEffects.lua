@@ -1,4 +1,3 @@
---!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
@@ -25,31 +24,38 @@ function Util:Transition(Label: string, Time: number)
     TransitionFrame.Visible = true
 
     local BackgroundFrame = TransitionFrame:FindFirstChild("Frame") :: Frame
-    local LabelObj = TransitionFrame:FindFirstChild("Label") :: TextLabel
-    local OtherLabel = TransitionFrame:FindFirstChild("LabelName") :: TextLabel
+    local LabelObj = TransitionFrame:FindFirstChild("Label") :: (TextLabel & {UIStroke: UIStroke})
 
     LabelObj.Text = Label
 
     --
-    BackgroundFrame.Position = UDim2.fromScale(-1, 0)
-
-    LabelObj.Position = UDim2.fromScale(-0.85, 0.906)
-    OtherLabel.Position = UDim2.fromScale(-0.85, 0.869)
-    EffectsUtil:Tween(LabelObj, {.3, 'Quad'}, {Position = UDim2.fromScale(.021, 0.906)})
-    EffectsUtil:Tween(OtherLabel, {.15, 'Quad'}, {Position = UDim2.fromScale(.021, 0.869)})
+    BackgroundFrame.BackgroundTransparency = 1
+    BackgroundFrame.Top.Transparency = 1
+    BackgroundFrame.Bot.Transparency = 1
+    LabelObj.TextTransparency = 1
+    LabelObj.UIStroke.Transparency = 1
+    TransitionFrame.Icon.ImageTransparency = 1
 
     --
-    EffectsUtil:Tween(BackgroundFrame, {.125}, {Position = UDim2.fromScale(0, 0)})
+    EffectsUtil:Tween(BackgroundFrame, {.125}, {BackgroundTransparency = 0})
+    EffectsUtil:Tween(LabelObj, {.2}, {TextTransparency = 0})
+    EffectsUtil:Tween(LabelObj.UIStroke, {.2}, {Transparency = 0})
+    EffectsUtil:Tween(BackgroundFrame.Bot, {.2}, {ImageTransparency = 0.85})
+    EffectsUtil:Tween(BackgroundFrame.Top, {.2}, {ImageTransparency = 0.85})
+    EffectsUtil:Tween(TransitionFrame.Icon, {.2}, {ImageTransparency = 0})
     task.delay(Time, function()
-        EffectsUtil:Tween(BackgroundFrame, {.4}, {Position = UDim2.fromScale(1, 0)})
-        EffectsUtil:Tween(LabelObj, {.225, 'Quad', 'In'}, {Position = UDim2.fromScale(1, 0.906)})
-        EffectsUtil:Tween(OtherLabel, {.25}, {Position = UDim2.fromScale(1, 0.869)})
+        EffectsUtil:Tween(BackgroundFrame, {.125}, {BackgroundTransparency = 1})
+        EffectsUtil:Tween(LabelObj, {.2}, {TextTransparency = 1})
+        EffectsUtil:Tween(LabelObj.UIStroke, {.2}, {Transparency = 1})
+        EffectsUtil:Tween(BackgroundFrame.Bot, {.2}, {ImageTransparency = 1})
+        EffectsUtil:Tween(BackgroundFrame.Top, {.2}, {ImageTransparency = 1})
+        EffectsUtil:Tween(TransitionFrame.Icon, {.2}, {ImageTransparency = 1})
 
         task.wait(Time / 2)
         TransitionFrame.Visible = false
     end)
 
-    task.wait(.225)
+    task.wait(.25)
 end
 
 function Util:AnimateReturnButton(Button: Frame, Callback: (...any) -> ()): ()

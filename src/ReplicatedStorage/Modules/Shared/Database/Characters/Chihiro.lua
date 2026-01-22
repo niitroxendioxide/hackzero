@@ -201,6 +201,11 @@ return {
 					Daze = 10,
 					Affliction_Buildup = 7,
 					HitsAirborne = true,
+					Knockback = {
+						vector.create(0, 0, 1),
+						7,
+						0.1,
+					},
 				},
 			},
 

@@ -67,6 +67,12 @@ local function ShowAllCompanions()
         end)
     end
 
+    if Selected == nil then
+        Component:Set(false)
+
+        return;
+    end
+
     SelectCompanion(Selected.Id)
 end
 
@@ -143,7 +149,7 @@ function ShowCompanionData(CompanionData)
         end
 
         local TierName = GameEnum.KeyLookup(GameEnum.Tiers, Rarity)
-        local Value = string.format("%.2f", StatValue)
+        local Value = string.format("%.2f", StatValue :: unknown)
         local Object = Assets.Interface.Companions.StatObject:Clone()
         Object.Stat.Text = `{SplitTitleCaps(StatName)}: {Value}`
         Object.LayoutOrder = Rarity or 25
@@ -195,17 +201,16 @@ function Component:Init()
     local MainFrame = Component:GetFrame()
 
     --
-    Component:BindToStateChange(function(State: boolean)
+    Component:BindToStateChange(function(State: boolean, Raw)
         if State then
             Camera:MarkUsage("Companions")
 
             ShowAllCompanions()
         else
+            Camera:FreeUsage()
+
             local LobbyMain = UIGroups:GetElementClass('Lobby', 'MainMenu')
             LobbyMain:Set(true)
-
-            --
-            Camera:FreeUsage()
         end
     end)
 

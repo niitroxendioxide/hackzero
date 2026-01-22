@@ -8,7 +8,7 @@ return {
 	Piece_Effects = {
 		Two_Piece = {
 			Critical_Rate = 15,
-			Affliction_Aptitude = 20,
+			Attack = "6%",
 		},
 
 		Four_Piece = {
@@ -17,6 +17,7 @@ return {
 	},
 
 	Piece_Descriptions = {
+		Two_Piece = "Crit RATE +15%, ATK +6%",
 		Four_Piece = "After hitting a critical hit, ",
 	},
 

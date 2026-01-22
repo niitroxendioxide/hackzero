@@ -60,7 +60,7 @@ function Ability:Play(Agent)
 		{.5, function()
 			if M1_Count ~= 3 then return end
 
-			EffectObj = Ability:EffectSerial("Slash", Agent, 0, nil, false, 1.1)
+			EffectObj = Ability:EffectSerial("Slash", Agent, math.random(-2, 2), nil, false, 1.1, true)
 		end},
 	}, true)
 
