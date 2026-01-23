@@ -12,7 +12,7 @@ local AbilityClass = require(Client.Classes.Ability)
 local Ability = AbilityClass.new(true)
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
-	Ability:Increase(Agent, 'Count', {Limit = 3})
+	Ability:Increase(Agent, 'Count', {Limit = 4})
 end)
 
 function Ability:Play(Agent)
@@ -33,6 +33,7 @@ function Ability:Play(Agent)
 				Speed = M1_Count == 3 and 1.2 or 1,
 			})
 
+			Ability:Effect("Chihiro_NishikiFish", Agent)
 			Ability:Save(Agent, 'M1_Track', Track)
 		end,},
 
@@ -40,6 +41,14 @@ function Ability:Play(Agent)
 			if M1_Count ~= 2 then return end
 
 			EffectObj = Ability:EffectSerial("Slash", Agent, -66.229, nil, false)
+		end},
+
+		{0.183, function()
+			if M1_Count ~= 4 then
+				return;
+			end
+
+			Ability:Effect("Slash", Agent, -60, nil, true)
 		end},
 
 		{.217, function()
@@ -57,7 +66,12 @@ function Ability:Play(Agent)
 			EffectObj = Ability:EffectSerial("Slash", Agent, 70, nil, false)
 		end},
 
+
 		{.5, function()
+			if M1_Count == 4 then
+				Ability:Effect("Slash", Agent, 89, CFrame.new(0, -1.5, 0), false)
+			end
+
 			if M1_Count ~= 3 then return end
 
 			EffectObj = Ability:EffectSerial("Slash", Agent, math.random(-2, 2), nil, false, 1.1, true)

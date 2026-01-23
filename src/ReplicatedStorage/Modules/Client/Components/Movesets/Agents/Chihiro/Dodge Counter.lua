@@ -21,14 +21,20 @@ function Ability:Play(Caster)
 			})
 
 			Caster:SwitchState('Attacking', Attack_Time)
+
+             Ability:Effect("Slash", Caster, 89, CFrame.new(0, -0.5, 0), false)
 		end,},
+
+        { 0.15, function()
+            Ability:Effect("Chihiro_DodgeCounter", Caster)
+        end},
 	}, true);
 
     ---
     for i = 1, Ability:FromData("Hit_Count") do
         local Delay = (i - 1) * Ability:FromData("Hit_Frequency");
 
-        Sequence:Add(Delay, function()
+        Sequence:Add(0.15 + Delay, function()
             Ability:CreateHitbox(Caster, vector.create(0, 0, -7), vector.create(13, 8, 13), function(Enemy)  
                 Ability:Hit(Caster, Enemy, {EffectData = {
                     Highlight = true,

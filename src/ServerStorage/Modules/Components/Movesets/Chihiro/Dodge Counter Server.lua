@@ -29,7 +29,7 @@ function Ability:Play(Caster, _, _, Context)
         Sequence:Add(Delay, function()
             Ability:CreateHitbox(Caster, vector.create(0, 0, -7), vector.create(13, 8, 13), function(Enemy)  
                 Ability:Hit(Caster, Enemy, HitData)
-            end).Debug()
+            end)
         end)
     end
 

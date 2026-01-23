@@ -36,6 +36,10 @@ return function(Caster: Types.AgentClass, Angle: number, Offset: CFrame, Reverse
             SlashGroundEffect:PivotTo(CFrame.lookAlong(Cast.Position, Cast.Normal, Caster:GetPivot().LookVector))
 
             Effects:Emit(SlashGroundEffect)
+
+            task.delay(1, function()
+                Effects:Tween(SlashGroundEffect.CutEffect.Decal, { 0.25, 'Sine' }, {Transparency = 1})
+            end)
         end
     end
 

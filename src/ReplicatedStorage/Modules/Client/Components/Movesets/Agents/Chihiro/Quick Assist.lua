@@ -16,7 +16,8 @@ function Ability:Play(Caster)
 	local Sequence = Ability:Begin(Caster, {
 		{0, function(_)
 			Caster:SwitchState('Attacking', Attack_Time)
-		end,},
+			Ability:Effect("Chihiro_NishikiFish", Caster)
+		end,}, 
 	}, true);
 
     Sequence:Start()
