@@ -100,6 +100,8 @@ function CreateRoom(RoomCFrame: CFrame?, UseHall: boolean)
         Clone:PivotTo(BASE_CFRAME * CFrame.Angles(0, FirstAngle, 0))
         Clone.Parent = MapFolder
 
+        workspace:FindFirstChild('SpawnLocation').CFrame = Clone:GetPivot()
+
         State.CurrentRoomId = 1;
 
         local FirstConnector = Clone.Connections:GetChildren()[1]
@@ -208,6 +210,7 @@ function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGener
     ---
     local NewSpawnLocation = Instance.new("SpawnLocation")
     NewSpawnLocation.Transparency = 1
+    NewSpawnLocation.Duration = 0;
     NewSpawnLocation.Size = vector.create(4, 1, 4)
     NewSpawnLocation.CFrame = BASE_CFRAME * CFrame.new(0, 2, 0)
     NewSpawnLocation.Parent = workspace

@@ -12,7 +12,7 @@ return {
 			{
 				Type = 'Attack',
 				Value = '20%',
-				Time = 3,
+				Time = 10,
 			}
 		},
 		Other = {
