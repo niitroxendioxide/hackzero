@@ -3,17 +3,17 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 local MovesetClass = require(Shared.Classes.Moveset)
-local EnemyDatabase = require(Shared.Database.Enemies)
+local CharacterDatabase = require(Shared.Database.Characters)
 
 local TemplateMoveset = MovesetClass.new(script.Name)
-local Data = EnemyDatabase:GetMovesetData(script.Name)
+local Data = CharacterDatabase:GetMovesetData(script.Name)
 
 TemplateMoveset:SetAbilityInformation(Data)
 
 for _, Ability in script:GetChildren() do
 	local Success, Required = pcall(require, Ability)
 
-	if Success and typeof(Required) == 'table' and Required.SetData then
+	if Success then
 		local Ability_Name = Ability.Name:gsub(' Server', '')
 		
 		Required:SetData(TemplateMoveset:GetInfoForSkill(Ability_Name))

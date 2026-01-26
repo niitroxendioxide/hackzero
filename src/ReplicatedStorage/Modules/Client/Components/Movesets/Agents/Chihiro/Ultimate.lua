@@ -15,7 +15,7 @@ function Ability:Play(Caster: Types.AgentClass)
         {0, function()
             Caster:SwitchState('Attacking', Ability:FromData("Attack_State_Time"), true)
 
-            Ability:PlayAnimation(Caster, 'Chihiro.Abilities.Ultimate.Default', {
+            Ability:PlayAnimation(Caster, 'Chihiro.Abilities.Ultimate.Default', { 
                 Fade = 0.1,
             })
         end},

@@ -1,20 +1,22 @@
 return {
-	Display_Name = 'Naruto Uzumaki',
-	Nickname = 'Naruto',
-	Element = 'Wind',
-	Role = 'Support',
+	Display_Name = 'Sasuke Uchiha',
+	Nickname = 'Sasuke',
+	Element = 'Fire',
+	Role = 'Attack',
 	Tier = "Legendary",
 	Faction = "Team 7",
+
 	
-	IconGlowColor = Color3.fromRGB(255, 146, 83),
+	IconGlowColor = Color3.fromRGB(255, 222, 199),
 
 	Appearance = {
-		Height = 2.675
+		Height = 3
 	},
 
 	ImportantStats = {
 		'Attack',
-		'Energy_Regeneration',
+        'Critical_Rate',
+		'Critical_Damage',
 	},
 
 	--
@@ -44,17 +46,7 @@ return {
 	},
 
 	Moveset_Data = {
-		--[[['Passive'] = {
-			Description = '',
-			Meters = {
-				SaiyanSurge = {
-					Ascension = 2,
-					Description = 'When completing a full basic attack string obtain one charge of Saiyan Surge, when hitting an enemy with an EX-Special, get two charges, up to 3. Hold basic attack with two charges to use Super God Fist',
-					Id = 1,
-					Max = 4,
-				},
-			},
-		},]]
+		
 	},
 
 	Ascension_Data = {

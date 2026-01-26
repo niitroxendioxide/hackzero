@@ -30,7 +30,6 @@ function MovesetClass:Assign(Type: string, Ability: Types.AbilityClass)
 	if self.__Assigned[Type] ~= nil then
 		return
 	end
-
 	self.__Assigned[Type] = Ability
 
 	Ability.__Cooldown:Connect(function(Time: number, Agent: AgentTypes.AgentClass)
