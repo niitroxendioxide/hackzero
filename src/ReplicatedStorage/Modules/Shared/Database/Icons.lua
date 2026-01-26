@@ -106,6 +106,11 @@ return {
 				Id = 139304669014108,
 				Color = Color3.fromRGB(140, 254, 91),
 			},
+
+			['Chihiro'] = {
+				Id = 139304669014108,
+				Color = Color3.fromRGB(225, 225, 225),
+			},
 		},
 
 		['Basic_Attack'] = 84976350806139,

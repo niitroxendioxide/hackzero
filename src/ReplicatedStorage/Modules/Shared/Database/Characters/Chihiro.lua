@@ -196,31 +196,26 @@ return {
 
 		['Dodge Counter'] = {
 			Base = {
-				Hit_Count = 8,
-				Hit_Frequency = 1/8,
+				Hit_Count = 16,
+				Hit_Frequency = 1/16,
 
 				Speed = 1,
 				Animation_Speed = 1,
 				Attack_State_Time = 1.5,
 				Hit = {
-					Damage = 55,
+					Damage = 25,
 					HitType = 'Slash',
 					Affliction = 'Water',
 					Stun = 0.5,
-					Daze = 10,
-					Affliction_Buildup = 7,
+					Daze = 5,
+					Affliction_Buildup = 3,
 					HitsAirborne = true,
-					Knockback = {
-						vector.create(0, 0, 1),
-						7,
-						0.1,
-					},
 				},
 			},
 
 			Upgrade = {
 				Hit = {
-					Damage = 2.5,
+					Damage = 1.25,
 				}
 			},
 		},
@@ -252,6 +247,32 @@ return {
 				}
 			},
 		},
+
+		['Ultimate'] = {
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 1.5,
+
+				Hit = {
+					Damage = 270,
+					Daze = 56,
+					Affliction_Buildup = 79,
+					HitType = 'Slash',
+					Stun = 0.66,
+					Affliction = 'Water',
+					HitsAirborne = true,
+				},
+			},
+
+			Upgrade = {
+				Hit = {
+					Damage = 2,
+					Daze = 1,
+					Affliction_Buildup = 0.5,
+				}
+			},
+		}
 	},
 
 	Ascension_Data = {

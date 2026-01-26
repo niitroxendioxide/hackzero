@@ -22,6 +22,12 @@ function Ability:Play(Agent)
 		Ability:Get(Agent, 'M1_Track'):Stop(0.125)
 	end
 
+	--[[if true then
+		Ability:Effect("Chihiro_DodgeCounter", Agent)
+
+		return
+	end]]
+
 	--
 	local EffectObj = {}
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
@@ -33,7 +39,6 @@ function Ability:Play(Agent)
 				Speed = M1_Count == 3 and 1.2 or 1,
 			})
 
-			Ability:Effect("Chihiro_NishikiFish", Agent)
 			Ability:Save(Agent, 'M1_Track', Track)
 		end,},
 

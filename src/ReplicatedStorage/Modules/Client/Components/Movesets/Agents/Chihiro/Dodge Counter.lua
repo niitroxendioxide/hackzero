@@ -21,13 +21,11 @@ function Ability:Play(Caster)
 			})
 
 			Caster:SwitchState('Attacking', Attack_Time)
-
-             Ability:Effect("Slash", Caster, 89, CFrame.new(0, -0.5, 0), false)
+            Ability:Effect("Chihiro_DodgeCounter", Caster)
+            
+            Ability:Effect("Slash", Caster, 89, CFrame.new(0, -0.5, 0), false)
 		end,},
 
-        { 0.15, function()
-            Ability:Effect("Chihiro_DodgeCounter", Caster)
-        end},
 	}, true);
 
     ---

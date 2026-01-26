@@ -12,7 +12,9 @@ return {
 			{
 				Type = 'Attack',
 				Value = '20%',
+				Tag = 'CrystalAttackBuff',
 				Time = 10,
+				Unique = true,
 			}
 		},
 		Other = {
