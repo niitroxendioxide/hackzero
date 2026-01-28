@@ -32,7 +32,8 @@ function Movesets:Init()
 end
 
 function Movesets:Get(Name: string, default): Types.MovesetClass
-	return Movesets.__Cache[Name] or Movesets.__Cache[default and 'Saiyan' or 'Goku']
+	print(Name)
+	return Movesets.__Cache[Name] or Movesets.__Cache[default or 'Template']
 end
 
 function Movesets:RunFromTemplate(Move: string, ...)

@@ -38,7 +38,35 @@ return {
 
 	Moveset_Data = {
 		['Basic Attack'] = {
-			Cooldown = .35
+			Base = {
+				Cooldown = .35,
+				Attack_State_Time = 0.35,
+				Speed = 1,
+				Animation_Speed = 1,
+				Hit = {
+					Damage = 50,
+					HitType = 'Blunt',
+					Stun = 0.4,
+					Daze = 30,
+					Affliction = "None",
+				},
+			},
+
+			Upgrades = {
+				Hit = {
+					Damage = 1,
+				}
+			},
+		},
+
+		['Dodge'] = {
+			Base = {
+				Cooldown = 1,
+				Speed = 1,
+				Animation_Speed = 1,
+			},
+
+			Upgrades = {},
 		},
 	},
 

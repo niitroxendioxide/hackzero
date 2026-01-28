@@ -96,6 +96,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 
 		if Cooldown:IsOn(CooldownKey) then return false, 'In Cooldown' end
 
+		print(Info)
 		if not Info.Base then
 			error("Skill data is invalid. Make sure to have both Base{} and Upgrade{}")
 		end

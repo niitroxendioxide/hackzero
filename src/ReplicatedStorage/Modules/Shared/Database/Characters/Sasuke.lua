@@ -46,7 +46,14 @@ return {
 	},
 
 	Moveset_Data = {
-		
+		['Basic Attack'] = {
+			Base = {
+				Attack_State_Time = 0.35,
+				Speed = 1,
+				Animation_Speed = 1,
+			},
+			Upgrade = {},
+		}
 	},
 
 	Ascension_Data = {
