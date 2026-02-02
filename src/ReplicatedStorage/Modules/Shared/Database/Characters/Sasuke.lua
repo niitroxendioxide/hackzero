@@ -22,7 +22,7 @@ return {
 	--
 	Stats = {
 		Health = 656,
-		Attack = 127,
+		Attack = 137,
 		Defense = 49,
 		Critical_Rate = 10, -- %
 		Critical_Damage = 20,
@@ -30,7 +30,7 @@ return {
 		Pen_Ratio = 0,
 		Daze = 90,
 		Energy_Regeneration = 1.2,
-		Affliction_Aptitude = 90,
+		Affliction_Aptitude = 25,
 		Affliction_Facility = 11,
 
 		--
@@ -41,7 +41,7 @@ return {
 
 	Level_Stats = {
 		Health = 122.75,
-		Attack = 6.51,
+		Attack = 6.7,
 		Defense = 9.12,
 	},
 
@@ -51,8 +51,71 @@ return {
 				Attack_State_Time = 0.35,
 				Speed = 1,
 				Animation_Speed = 1,
+
+				Hit = {
+					Damage = 100,
+					Affliction = "Physical",
+					HitType = "Blunt",
+					Daze = 15,
+					Affliction_Buildup = 15,
+					Stun = 0.4,
+				},
 			},
 			Upgrade = {},
+		},
+
+		['Special'] = {
+			Base = {
+				Cooldown = 1,
+				Attack_State_Time = 0.35,
+				Speed = 1,
+				Animation_Speed = 1,
+				Required_Energy = 1,
+			},
+			Upgrade = {},
+		},
+
+		['EX Special'] = {
+			Base = {
+				Cooldown = 1,
+				Attack_State_Time = 0.75,
+				LockRotation = true,
+				Speed = 1,
+				Range = 120,
+				Animation_Speed = 1,
+				Required_Energy = 1,
+
+				Burst = {
+					Damage = 275,
+					Affliction = "Fire",
+					HitType = "Blunt",
+					Daze = 67,
+					Affliction_Buildup = 45,
+					Stun = 0.4,
+				},
+
+				Fireball = {
+					Damage = 330,
+					Affliction = "Fire",
+					HitType = "Blunt",
+					Daze = 32,
+					Affliction_Buildup = 33,
+					Stun = 0.3,
+				},
+			},
+			Upgrade = {
+				Burst = {
+					Damage = 3.25,
+					Daze = 1,
+					Affliction_Buildup = 1.5,
+				},
+
+				Fireball = {
+					Damage = 2,
+					Daze = 0.5,
+					Affliction_Buildup = 0.75,
+				}
+			},
 		}
 	},
 

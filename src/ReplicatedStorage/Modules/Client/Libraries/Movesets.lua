@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Abilities)
 local MovesetFolder = Client.Components.Movesets
 local SwapSkill = require(MovesetFolder.Swap)
 
@@ -32,7 +32,6 @@ function Movesets:Init()
 end
 
 function Movesets:Get(Name: string, default): Types.MovesetClass
-	print(Name)
 	return Movesets.__Cache[Name] or Movesets.__Cache[default or 'Template']
 end
 

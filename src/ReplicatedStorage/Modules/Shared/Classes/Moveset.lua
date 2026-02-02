@@ -96,7 +96,6 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 
 		if Cooldown:IsOn(CooldownKey) then return false, 'In Cooldown' end
 
-		print(Info)
 		if not Info.Base then
 			error("Skill data is invalid. Make sure to have both Base{} and Upgrade{}")
 		end
@@ -113,14 +112,16 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 			if not Type:match('Swap') then
 				local Enemy = self.__Assigned[Type]:Connect(Agent, 1, Context.IsCancel);
 				
-				if Context.Target == nil then 
+				if Context.Target == nil then
 					Context.Target = Enemy;
 				end
 			end
 
 			-- #TODO: FIX WTV THIS IS
 			if (Agent :: AgentTypes.AgentClass).BlockRotation ~= nil then
-				Agent:BlockRotation(.075)
+				local Time = Info.Base.LockRotation == true and Info.Base.Attack_State_Time or .075
+				
+				Agent:BlockRotation(Time)
 			end
 		end
 

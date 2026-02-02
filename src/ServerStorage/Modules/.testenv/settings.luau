@@ -9,7 +9,7 @@ return table.freeze({
         TYPE = 'Mission',
         STAGE = {
             --- Training, DailyImprovement, DungeonEx, HuecoMundo
-            Stage = 'HuecoMundo',
+            Stage = 'Training',
             Act = 'Intro',
         },
         DATA = {
@@ -43,7 +43,7 @@ return table.freeze({
 
     --- PASSIVE, EASY, MEDIUM, HARD, EXTREME
     DIFFICULTY = 'MEDIUM', 
-    USE_BORROW = false, -- whether to replace agents with lvl 60 max
+    USE_BORROW = true, -- whether to replace agents with lvl 60 max
     BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {

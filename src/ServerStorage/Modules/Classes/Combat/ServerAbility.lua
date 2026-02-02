@@ -309,7 +309,7 @@ function ServerAbilityClass:CreateMovingHitbox(
 	end
 
 	ClassObject.Debug = function()
-		ClassObject.Debug = true
+		ClassObject.DebugVariable = true
 	end
 
 	ClassObject.PivotTo = function(_, At: CFrame)

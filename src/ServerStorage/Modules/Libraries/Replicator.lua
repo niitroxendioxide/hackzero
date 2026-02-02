@@ -37,7 +37,7 @@ function Replicator:Effect(Name: string, Data: {}, Targets: boolean | {})
 	buffer.writestring(BufferObject, 1, Name)
 
 	for Key, Value in Data do
-		if tostring(Value) == 'ServerAgentClass' then
+		if tostring(Value):match('ServerAgentClass') then
 			local PlayerId = Value.__Player_Assigned:GetAttribute('ReplicationId')
 			local AgentId = Agents:GetIdForPlayer(PlayerId, Value)
 

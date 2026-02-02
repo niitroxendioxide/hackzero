@@ -22,7 +22,6 @@ function Ability:Play(Caster: Types.GenericClass)
 		Ability:Get(Caster, 'M1_Track'):Stop(0.125)
 	end
 
-
 	--
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
 	Ability:Begin(Caster, {
@@ -37,26 +36,11 @@ function Ability:Play(Caster: Types.GenericClass)
 			Ability:Save(Caster, 'M1_Track', Track)
 		end,},
 
-		{.1, function()
-			Caster:Walk(Ability:FromData('Walk_Time'))
-		end,},
-
 		{.18, function()
 			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.EnemyClass)
-				Target:Hit()
-				Ability:Effect('Hit', Target)
+				Ability:Hit(Caster, Target, {})
 			end)
 		end,},
-
-		{.767, function()
-			if M1_Count < 5 then return end
-
-			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.EnemyClass)
-				Ability:Hit(Caster, Target, {
-					
-				})
-			end)
-		end,}
 	})
 
 end

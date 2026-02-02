@@ -7,6 +7,7 @@ local Classes = ServerStorage.Modules.Classes
 
 local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Classes.Combat.ServerAbility)
+local SasukeGameplayController = require("./SasukeGameplayController")
 
 --
 local Ability = AbilityClass.new()
@@ -17,7 +18,19 @@ function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: numbe
 		return
 	end
 
-	print('does nothing for now.')
+	Ability:Begin(Caster, {
+		{0, function()
+
+		end},
+
+		{0.2, function()
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -5), vector.create(9, 9, 10), function(Enemy)  
+				SasukeGameplayController:ConnectThread(Enemy, Caster)
+
+				Ability:Hit(Caster, Enemy, Ability:FromData("Hit", nil, Caster:GetSkillLevel(Ability.__Name)))
+			end)
+		end}
+	})
 end
 
 return Ability
