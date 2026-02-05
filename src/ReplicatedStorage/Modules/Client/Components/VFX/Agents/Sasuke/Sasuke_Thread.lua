@@ -78,15 +78,51 @@ return function(Caster, EnemyId: number, Type: number, fn): ()
         
         task.wait(0.15)
         local FirePart = Effects:Create(VFXAssets.FirePart, 10)
-        FirePart.Size *= vector.create(1, 1, 0)
+        FirePart.Size *= vector.zero
         FirePart:PivotTo(StartCf)
 
         Effects:Tween(FirePart, {0.35, 'Quart'}, {CFrame = MidPoint, Size = vector.create(1, 1, Distance)})
+
+        task.wait(0.35)
         Effects:CleanUp(Object, 2)
 
         local FireballHitVFX = Effects:Create(SasukeVFX.FireballHit, 3.65)
         FireballHitVFX:PivotTo(EndAttachment.WorldCFrame)
         Effects:Emit(FireballHitVFX)
+
+        local Mesh = Effects:Create(SasukeVFX.ExplosionMesh, 2)
+        Mesh:PivotTo(FireballHitVFX:GetPivot())
+        Effects:ForModelParts(Mesh, {
+            Wind = function(Mesh)
+                Effects:Tween(Mesh, { 0.75, 'Sine' }, { 
+                    Transparency = 1, 
+                    CFrame = Mesh.CFrame * Effects:RandomAngles(), 
+                    Size = Mesh.Size * Effects:Random(1.8, 2.75) 
+                })
+            end,
+
+            
+            Fire = function(Mesh)
+                Effects:Tween(Mesh, { 0.3, 'Sine' }, { 
+                    Transparency = 1, 
+                    CFrame = Mesh.CFrame * Effects:RandomAngles(),
+                    Size = Mesh.Size * Effects:Random(1.4, 1.5)
+                })
+
+                Mesh.Size *= 0
+            end,
+
+            Smoke = function(Mesh)
+                Effects:Tween(Mesh, { 0.85, 'Sine' }, { 
+                    Transparency = 1, 
+                    CFrame = Mesh.CFrame * Effects:RandomAngles(),
+                })
+                Effects:Tween(Mesh, {0.4, 'Quart'}, {
+                    Size = Mesh.Size * Effects:Random(1.4, 1.6)
+                })
+                Mesh.Size *= 0
+            end
+        })
 
         EnemyObject:Hit()
 

@@ -191,6 +191,14 @@ function EffectUtil:RandomV3(): Vector3
 	return Random_Number:NextUnitVector()
 end
 
+function EffectUtil:RandomAngles()
+	return CFrame.Angles(
+		Random_Number:NextNumber(-math.pi, math.pi), 
+		Random_Number:NextNumber(-math.pi, math.pi), 
+		Random_Number:NextNumber(-math.pi, math.pi)
+	)
+end
+
 --[[
 	Returns the waited time divided by world speed, so it's useful for effects
 ]]
@@ -501,7 +509,7 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 					end
 				end
 
-				if AllInvulnerable then print("all invulnerable")  return end
+				if AllInvulnerable then return end
 				for _, Target in Targets do
 					local Result = Hit(Target)
 					if Result then

@@ -107,6 +107,11 @@ return {
 				Color = Color3.fromRGB(140, 254, 91),
 			},
 
+			['Sasuke'] = {
+				Id = 139304669014108,
+				Color = Color3.fromRGB(255, 70, 42),
+			},
+
 			['Chihiro'] = {
 				Id = 139304669014108,
 				Color = Color3.fromRGB(225, 225, 225),
@@ -165,15 +170,15 @@ return {
 			},
 
 			Fire = {
-				Main = RGB(255, 157, 0), -- the icon
+				Main = RGB(255, 255, 255), -- the icon
 				Meter = RGB(255, 81, 0), -- the circle
-				Gradient = Sequence{Key(0, White), Key(1, RGB(255, 72, 0))}, -- icon gradient
+				Gradient = Sequence{Key(0, White), Key(1, White)}, -- icon gradient
 			},
 
 			Energy = {
 				Main = White,
-				Meter = RGB(52, 157, 255),
-				Gradient = Sequence{Key(0, RGB(0, 242, 255)), Key(1, RGB(255, 0, 230))},
+				Meter = RGB(52, 218, 255),
+				Gradient = Sequence{Key(0, RGB(0, 242, 255)), Key(1, RGB(0, 191, 255))},
 			}
 		},
 	}

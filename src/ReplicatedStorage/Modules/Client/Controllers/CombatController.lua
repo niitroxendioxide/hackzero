@@ -146,7 +146,7 @@ function Controller:HandleInput(Key: string, State: string)
 
 		if InputType ~= nil then
 			local LocalPlayerId = Players.LocalPlayer:GetAttribute('ReplicationId') :: number
-			local Direction = InputType == 1 and -1 or 1
+			local Direction = InputType == 1 and 1 or -1
 			local TargetObject = Enemies:GetEnemy(Controller.__Chain_Attack_Prompt.Target)
 			local Result, NewAgentId = Characters:Switch(LocalPlayerId, Direction, TargetObject, true)
 			if not Result then

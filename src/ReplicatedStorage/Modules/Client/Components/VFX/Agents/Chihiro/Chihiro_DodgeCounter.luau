@@ -1,6 +1,7 @@
 ---
+local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local RunService = game:GetService("RunService")
 
 local Assets = ReplicatedStorage.Assets.Effects.Agents
 local Shared = ReplicatedStorage.Modules.Shared
@@ -16,6 +17,17 @@ return function(
 ): ()
     local DodgeAssets = Assets.Chihiro.DodgeCounter
     
+
+    if Caster.__Player_Assigned == Players.LocalPlayer then
+        Effects:ShakeCamera("Hit")
+
+        local impactframe = Instance.new("ColorCorrectionEffect")
+        impactframe.Saturation = -1.3
+        impactframe.Contrast = 25
+        impactframe.Parent = Lighting
+
+        Effects:CleanUp(impactframe, 1 / 12)
+    end
 
     ---
     local CF = Caster:GetPivot() * CFrame.new(0, 1.85, -7)

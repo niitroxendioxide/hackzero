@@ -116,6 +116,24 @@ return {
 					Affliction_Buildup = 0.75,
 				}
 			},
+		},
+
+		['Ultimate'] = {
+			Base = {
+				Attack_State_Time = 2.75,
+				Speed = 1,
+				Animation_Speed = 1,
+
+				Hit = {
+					Damage = 175,
+					Affliction = "Fire",
+					HitType = "Blunt",
+					Daze = 32,
+					Affliction_Buildup = 85,
+					Stun = 0.45,
+				},
+			},
+			Upgrade = {},
 		}
 	},
 
