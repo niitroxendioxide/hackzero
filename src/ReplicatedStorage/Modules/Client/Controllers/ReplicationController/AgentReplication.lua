@@ -248,5 +248,34 @@ function Controller:SetMovingStatusCompanion(Buffer: buffer)
 	Class:SetMoving(State)
 end
 
+function Controller:AddTag(Buffer: buffer, Tag: string)
+	local PlayerId = buffer.readu8(Buffer, 1)
+	local AgentId = buffer.readu8(Buffer, 2)
+	local Time = buffer.readu16(Buffer, 3) / 100
+	if Time <= 0 then
+		Time = 5e12
+	end
+
+	local AgentObj = CharacterLibrary:GetAgent(PlayerId, AgentId)
+	if not AgentObj then
+		return
+	end
+
+	AgentObj:AddTag(Tag, Time)
+end
+
+
+function Controller:RemoveTag(Buffer: buffer, Tag: string)
+	local PlayerId = buffer.readu8(Buffer, 1)
+	local AgentId = buffer.readu8(Buffer, 2)
+
+	local AgentObj = CharacterLibrary:GetAgent(PlayerId, AgentId)
+	if not AgentObj then
+		return
+	end
+
+	AgentObj:RemoveTag(Tag)
+end
+
 
 return Controller

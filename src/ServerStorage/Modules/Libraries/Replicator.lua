@@ -31,6 +31,29 @@ local function GetPlayerIds(Agent: AgentTypes.ServerAgentClass): (number, number
 	return AgentId, RepId
 end
 
+function Replicator:AddTag(Agent: AgentTypes.ServerAgentClass, Tag: string, Time: number)
+	local AgentId, PlrId = GetPlayerIds(Agent)
+
+	local Buffer = buffer.create(5)
+	buffer.writeu8(Buffer, 0, GameEnum.Replication.AddTag)
+	buffer.writeu8(Buffer, 1, PlrId)
+	buffer.writeu8(Buffer, 2, AgentId)
+	buffer.writeu16(Buffer, 3, math.clamp((Time or 0) * 100, 0, 65535))
+
+	Network:FireForAll("Replicate", Buffer, Tag)
+end
+
+function Replicator:RemoveTag(Agent: AgentTypes.ServerAgentClass, Tag: string)
+	local AgentId, PlrId = GetPlayerIds(Agent)
+
+	local Buffer = buffer.create(3)
+	buffer.writeu8(Buffer, 0, GameEnum.Replication.RemoveTag)
+	buffer.writeu8(Buffer, 1, PlrId)
+	buffer.writeu8(Buffer, 2, AgentId)
+
+	Network:FireForAll("Replicate", Buffer, Tag)
+end
+
 function Replicator:Effect(Name: string, Data: {}, Targets: boolean | {})
 	local BufferObject = buffer.create(1 + #Name)
 	buffer.writeu8(BufferObject, 0, GameEnum.Replication.PlayVisualEffect)

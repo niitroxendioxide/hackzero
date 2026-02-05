@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")    
 
 ---
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Types = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 
@@ -20,30 +21,40 @@ local Threads = {}
 local Sasuke = {}
 
 function Sasuke:ConnectThread(Enemy: Types.Enemy, Caster: Types.ServerAgentClass)
-    if Threads[Enemy] then
-        task.cancel(Threads[Enemy])
+    if not Threads[Caster] then
+        Threads[Caster] = {}
+    end
+
+    if Threads[Caster][Enemy] then
+        task.cancel(Threads[Caster][Enemy])
     end
 
     Replicator:Effect("Sasuke_Thread", {Caster, Enemy:GetId(), 1}, true)
+    Caster:AddTag(Statics.Agent_Tags.Sasuke.Has_Enemies_Connected, nil, true)
 
-    Threads[Enemy] = task.delay(12, function()
+    Threads[Caster][Enemy] = task.delay(12, function()
         Replicator:Effect("Sasuke_Thread", {Caster, Enemy:GetId(), 2}, true)
+        if not Sasuke:HasConnectedThreads() then
+            Caster:RemoveTag(Statics.Agent_Tags.Sasuke.Has_Enemies_Connected)
+        end
 
-        Threads[Enemy] = nil
+        Threads[Caster][Enemy] = nil
     end)
 end
 
-function Sasuke:UseEnemyConnectedThreads(fn: (Types.Enemy) -> ()): ()
-    for Enemy in Threads do
+function Sasuke:UseEnemyConnectedThreads(Caster: Types.ServerAgentClass, fn: (Types.Enemy) -> ()): ()
+    Caster:RemoveTag(Statics.Agent_Tags.Sasuke.Has_Enemies_Connected)
+    
+    for Enemy in (Threads[Caster] or {}) do
         task.spawn(fn, Enemy)
 
-        task.cancel(Threads[Enemy])
-        Threads[Enemy] = nil
+        task.cancel(Threads[Caster][Enemy])
+        Threads[Caster][Enemy]= nil
     end
 end
 
-function Sasuke:HasConnectedThreads(): boolean
-    for Enemy in Threads do
+function Sasuke:HasConnectedThreads(Caster: Types.ServerAgentClass): boolean
+    for Enemy in (Threads[Caster] or {}) do
         return true
     end
 

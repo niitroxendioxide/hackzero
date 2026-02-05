@@ -447,14 +447,21 @@ function ServerAgentClass:UseEnergy(Amount: number): ()
 	Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self)
 end
 
-function ServerAgentClass:AddTag(Tag: string, Time: number?)
+function ServerAgentClass:AddTag(Tag: string, Time: number?, Replicate: boolean?)
 	if self.__Tags[Tag] then
 		task.cancel(self.__Tags[Tag])
 	end
 
 	self.__Tags[Tag] = task.delay(Time or 5e12, function()
 		self.__Tags[Tag] = nil
+
+		Replicator:RemoveTag(self, Tag)
 	end)
+
+	--
+	if Replicate then
+		Replicator:AddTag(self, Tag, Time)
+	end
 end
 
 function ServerAgentClass:RemoveTag(Tag: string)
@@ -463,6 +470,8 @@ function ServerAgentClass:RemoveTag(Tag: string)
 	end
 
 	self.__Tags[Tag] = nil
+
+	Replicator:RemoveTag(self, Tag)
 end
 
 function ServerAgentClass:HasTag(Tag: string)

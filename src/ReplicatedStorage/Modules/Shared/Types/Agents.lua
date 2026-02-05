@@ -389,7 +389,7 @@ export type ServerAgentClass = {
 	RemoveGear: (self: ServerAgentClass, GearName: string) -> (),
 	GetGearManager: (self: ServerAgentClass) -> (ServerGearManager),
 
-	AddTag: (self: ServerAgentClass, Tag: string, Time: number?) -> (),
+	AddTag: (self: ServerAgentClass, Tag: string, Time: number?, Replicate: boolean?) -> (),
 	HasTag: (self: ServerAgentClass, Tag: string) -> (boolean),
 	RemoveTag: (self: ServerAgentClass, Tag: string) -> (),
 

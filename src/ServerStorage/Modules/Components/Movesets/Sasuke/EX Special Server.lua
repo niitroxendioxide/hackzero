@@ -21,8 +21,8 @@ function Ability:Play(Caster: Types.Caster): ()
 		end},
 
 		{0.25, function()
-			if SasukeGameplayController:HasConnectedThreads() then
-				SasukeGameplayController:UseEnemyConnectedThreads(function(Target)  
+			if SasukeGameplayController:HasConnectedThreads(Caster) then
+				SasukeGameplayController:UseEnemyConnectedThreads(Caster, function(Target)  
 					Ability:Effect("Sasuke_Thread", {Caster, Target:GetId(), 3}, true)
 
 					task.wait(0.3)
@@ -34,8 +34,6 @@ function Ability:Play(Caster: Types.Caster): ()
 						Ability:Hit(Caster, Target, Ability:FromData("Fireball", nil, Caster:GetSkillLevel(Ability.__Name)))
 						Projectile:Destroy()
 					end)
-
-					Projectile:Debug()
 				end
 			end
 		end}

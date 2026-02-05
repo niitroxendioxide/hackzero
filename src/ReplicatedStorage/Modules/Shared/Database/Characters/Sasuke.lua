@@ -10,7 +10,7 @@ return {
 	IconGlowColor = Color3.fromRGB(255, 222, 199),
 
 	Appearance = {
-		Height = 3
+		Height = 2.85
 	},
 
 	ImportantStats = {
@@ -86,7 +86,7 @@ return {
 				Required_Energy = 1,
 
 				Burst = {
-					Damage = 275,
+					Damage = 355,
 					Affliction = "Fire",
 					HitType = "Blunt",
 					Daze = 67,

@@ -12,12 +12,13 @@ local Enemies = require(Shared.Libraries.Enemies)
 local Cache = {}
 
 ---
-return function(Caster, EnemyId: number, Type: number): ()
+return function(Caster, EnemyId: number, Type: number, fn): ()
     if not Cache[Caster] then
         Cache[Caster] = {}
     end
 
     local VFXAssets = Assets.Effects.Agents.Sasuke.KatonThread
+    local SasukeVFX = Assets.Effects.Agents.Sasuke
     local EnemyObject = Enemies:GetEnemy(EnemyId)
     local CasterModel = Caster:GetModel()
 
@@ -27,14 +28,13 @@ return function(Caster, EnemyId: number, Type: number): ()
             return
         end
 
-        local Arms = {"Right Arm", "Left Arm"}
-        local WeldBase = CasterModel[Arms[math.random(1, #Arms)]]
+        local WeldBase = CasterModel.Head
         local Trail = Effects:Create(VFXAssets.TrailPart)
-        Trail:PivotTo(WeldBase:GetPivot())
+        Trail:PivotTo(WeldBase.CFrame)
 
         Effects:Weld(Trail, WeldBase).Name = "threadWeld"
 
-        Trail.Start.Position = vector.create(0, -1, 0)
+        Trail.Start.Position = vector.create(0, -0.25)
         Trail.End.Position = vector.zero
         Trail.End.Parent = EnemyObject:GetModel().PrimaryPart
         Cache[Caster][EnemyId] = Trail
@@ -48,6 +48,7 @@ return function(Caster, EnemyId: number, Type: number): ()
         EndAttachment.Parent = workspace
         EndAttachment.WorldCFrame = WorldCF;
 
+        Effects:CleanUp(Object, 1)
         Effects:Tween(Object.Connection, {0.25, 'Back'}, {Width0 = 0, Width1 = 0})
 
     -- Lit up
@@ -56,6 +57,7 @@ return function(Caster, EnemyId: number, Type: number): ()
 
         Cache[Caster][EnemyId] = nil
 
+        local EnemyObject = Enemies:GetEnemy(EnemyId)
         local EndAttachment = Object.Connection.Attachment1;
         local BaseCFrame = Object.Connection.Attachment0.WorldCFrame;
         local WorldCF = EndAttachment.WorldCFrame;
@@ -81,6 +83,12 @@ return function(Caster, EnemyId: number, Type: number): ()
 
         Effects:Tween(FirePart, {0.35, 'Quart'}, {CFrame = MidPoint, Size = vector.create(1, 1, Distance)})
         Effects:CleanUp(Object, 2)
+
+        local FireballHitVFX = Effects:Create(SasukeVFX.FireballHit, 3.65)
+        FireballHitVFX:PivotTo(EndAttachment.WorldCFrame)
+        Effects:Emit(FireballHitVFX)
+
+        EnemyObject:Hit()
 
         task.delay(0.5, function()
             Effects:Toggle(FirePart, false)

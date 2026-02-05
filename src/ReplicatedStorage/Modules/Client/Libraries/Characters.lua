@@ -26,6 +26,18 @@ function Characters:GetCharacterTarget(Player: Player)
 	return Characters.__Targets[Player]
 end
 
+function Characters:GetCharacterFromHitbox(Hitbox: BasePart)
+	for _, Player in Characters.__Player_Data do
+		for _, Char in Player.List do
+			if Char:GetHitbox() == Hitbox then
+				return Char
+			end
+		end
+	end
+
+	return;
+end
+
 function Characters:SetCharacterTarget(Player: Player, Id: number, Time: number)
 	if Characters.__Target_Threads[Player] then
 		task.cancel(Characters.__Target_Threads[Player])

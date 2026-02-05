@@ -22,15 +22,17 @@ return {
 		FillMeter = 22,
 		CreateMeter = 23,
 		ProcessDodge = 24,
+		AddTag = 25,
+		RemoveTag = 26,
 
 		-- Enemy
-		AddEnemy = 26,
-		RemoveEnemy = 27,
-		MoveEnemy = 28,
-		RotateEnemy = 29,
-		PivotEnemy = 30,
-		StateSwitchEnemy = 31,
-		SetEnemySpeed = 32,
+		AddEnemy = 27,
+		RemoveEnemy = 28,
+		MoveEnemy = 29,
+		RotateEnemy = 30,
+		PivotEnemy = 31,
+		StateSwitchEnemy = 32,
+		SetEnemySpeed = 33,
 
 		-- Combat
 		EnemyUseSkill = 49,

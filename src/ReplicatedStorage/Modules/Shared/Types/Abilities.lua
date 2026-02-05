@@ -155,6 +155,7 @@ export type MovingHitboxObject = {
 	PivotTo: (self: MovingHitboxObject, At: CFrame) -> (),
 	GetPivot: (self: MovingHitboxObject) -> (),
 	Destroy: (self: MovingHitboxObject) -> (),
+	Debug: (self: MovingHitboxObject) -> (),
 }
 
 export type AbilityHitInfo = {

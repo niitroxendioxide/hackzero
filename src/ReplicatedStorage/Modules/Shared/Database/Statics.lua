@@ -192,6 +192,12 @@ return {
 		Mythical = {0.85, 0.99},
 	},
 
+	Agent_Tags = {
+		Sasuke = {
+			Has_Enemies_Connected = "snc",
+		}
+	},
+
 	--
 	Difficulty_Targetting_Priorities = {
 		PASSIVE = {

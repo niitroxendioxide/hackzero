@@ -399,7 +399,7 @@ function Controller:HitAgent(Buffer: buffer)
 	})
 
 	--
-	local HitTracks = Assets.Animations.General.Hit:GetChildren()
+	local HitTracks = Assets.Animations.Enemies.Hit:GetChildren()
 	Animation:Play(AgentObject:GetModel(), HitTracks[math.random(1, #HitTracks)])
 end
 

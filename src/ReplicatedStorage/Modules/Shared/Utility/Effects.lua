@@ -12,6 +12,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local Random_Number = Random.new()
 
+local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
 local Mock = require(Shared.Utility.Mock)
 local World = require(script.Parent.Parent.World)
 local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
@@ -250,8 +251,6 @@ function EffectUtil:TweenModel(Model: Model, ScaleGoal: number, Time: number, St
 
 			Model:ScaleTo(StartScale + (ScaleGoal - StartScale) * Alpha)
 		end
-			
-
 	end)
 
 end
@@ -496,13 +495,13 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 						AllInvulnerable = false;
 					end
 
-					local Target = Enemies:GetFromCollider(Part)
+					local Target = Enemies:GetFromCollider(Part) or Characters:GetCharacterFromHitbox(Part)
 					if Target then
 						table.insert(Targets, Target)
 					end
 				end
 
-				if AllInvulnerable then return end
+				if AllInvulnerable then print("all invulnerable")  return end
 				for _, Target in Targets do
 					local Result = Hit(Target)
 					if Result then
