@@ -11,7 +11,6 @@ local AbilityClass = require(Client.Classes.Ability)
 local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.AgentClass)
-
     Ability:Begin(Caster, {
         {0, function()
             Caster:SwitchState('Attacking', Ability:FromData("Attack_State_Time"), true)

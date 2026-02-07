@@ -20,11 +20,21 @@ function Ability:Play(Caster: Types.Caster, _, _, ctx)
 	
 	Ability:Begin(Caster, {
 		{0, function(self: Types.Sequence)
-			Ability:PlayAnimation(Caster, "Sasuke.Abilities.Special.KatonThread", {})
+			local Animation = "Sasuke.Abilities.Special.Fireball"
+			if IsThreadVariant then
+				Animation = "Sasuke.Abilities.Special.KatonThread"
+			end
+			Ability:PlayAnimation(Caster, Animation, {})
 			Caster:SwitchState('Attacking',  AttackTime)
 		end},
 
-		{0.25, function()
+		{0.1, function()
+			if not IsThreadVariant then
+				Ability:Effect("Handsigns", Caster, 0.2)
+			end
+		end},
+
+		{0.36, function()
 			if not IsThreadVariant then
 				Ability:Effect("Sasuke_Fireball", Caster)
 			end
