@@ -12,7 +12,7 @@ local AbilityClass = require(Client.Classes.Ability)
 local Ability = AbilityClass.new(true)
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
-	Ability:Increase(Agent, 'Count', {Limit = 2})
+	Ability:Increase(Agent, 'Count', {Limit = 5})
 end)
 
 function Ability:Play(Caster: Types.GenericClass)
@@ -28,7 +28,7 @@ function Ability:Play(Caster: Types.GenericClass)
 		{0, function()
 			Caster:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
 
-			local Track = Ability:PlayAnimation(Caster, 'Template.Abilities.M1.'..Ability:Get(Caster, 'Count'), {
+			local Track = Ability:PlayAnimation(Caster, 'Template.Abilities.M1.'.. math.clamp(1 + M1_Count % 2, 1, 2) , {
 				Fade = .1,
 				Active_Time = Attack_Time + .25,
 			})

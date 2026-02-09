@@ -48,6 +48,7 @@ return {
 	Moveset_Data = {
 		['Basic Attack'] = {
 			Base = {
+				Cooldown = 0.01,
 				Attack_State_Time = 0.35,
 				Speed = 1,
 				Animation_Speed = 1,
@@ -71,6 +72,44 @@ return {
 				Speed = 1,
 				Animation_Speed = 1,
 				Required_Energy = 1,
+			},
+			Upgrade = {},
+		},
+
+		['Dodge Counter'] = {
+			Base = {
+				Cooldown = 1,
+				Attack_State_Time = 1.5,
+				Speed = 1,
+				Animation_Speed = 1,
+
+				Hit = {
+					Stun = 0.35,
+					Damage = 170,
+					HitType = "Slash",
+					Daze = 35,
+					Affliction_Buildup = 75,
+					Affliction = "Physical",
+					Knockback = {
+						vector.create(0, 0, 1),
+						14,
+						0.1,
+					}
+				},
+
+				PunchHit = {
+					Stun = 0.4,
+					Damage = 240,
+					HitType = "Blunt",
+					Daze = 25,
+					Affliction_Buildup = 32,
+					Affliction = "Physical",
+					Knockback = {
+						vector.create(0, 0, 1),
+						20,
+						0.1,
+					}
+				}
 			},
 			Upgrade = {},
 		},

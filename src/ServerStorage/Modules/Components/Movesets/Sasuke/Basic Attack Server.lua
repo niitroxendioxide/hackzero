@@ -25,7 +25,9 @@ function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: numbe
 
 		{0.2, function()
 			Ability:CreateHitbox(Caster, vector.create(0, 0, -5), vector.create(9, 9, 10), function(Enemy)  
-				SasukeGameplayController:ConnectThread(Enemy, Caster)
+				if M1_Count == 5 then
+					SasukeGameplayController:ConnectThread(Enemy, Caster)
+				end
 
 				Ability:Hit(Caster, Enemy, Ability:FromData("Hit", nil, Caster:GetSkillLevel(Ability.__Name)))
 			end)

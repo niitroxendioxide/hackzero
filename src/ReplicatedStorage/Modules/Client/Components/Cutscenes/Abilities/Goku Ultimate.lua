@@ -88,15 +88,20 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     end)
 
     GokuUltimate:Wait(0.733)
+    local SlashEffect = EffectsUtil:Create(Assets.Effects.Agents.Goku.SSJBurst, 2.5)
+    SlashEffect:PivotTo(Agent:GetModel():GetPivot())
+    EffectsUtil:Emit(SlashEffect)
+
     if GokuUltimate:IsCameraUser() then
         local CC = Instance.new('ColorCorrectionEffect')
-        CC.Saturation = 0.75
-        CC.Contrast = 0.75
-        CC.Brightness = 0.75
+        CC.Saturation = -1.3
+        CC.Contrast = 32
+        CC.Brightness = 1
         CC.TintColor = Color3.fromRGB(255, 194, 140)
         CC.Parent = Lighting
 
-        EffectsUtil:Tween(CC, {0.225, 'Quad'}, {Contrast = 0, Saturation = 0, Brightness = 0, TintColor = Color3.new(1,1,1)})
+        EffectsUtil:Tween(CC, {0.1, 'Quad'}, {Brightness = 0, TintColor = Color3.new(1,1,1)})
+        EffectsUtil:CleanUp(CC, 0.1)
     end
 
     EffectsUtil:Weld(SuperSaiyanAura, AgentModel.PrimaryPart)
