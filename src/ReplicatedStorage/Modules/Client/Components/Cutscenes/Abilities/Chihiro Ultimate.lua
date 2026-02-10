@@ -81,7 +81,28 @@ function Ultimate:Sequence(Agent: AgentTypes.AgentClass)
 
     local _ = Ultimate:AnimateCamera(CasterModel, CameraAnimObj)
 
+    if Ultimate:IsCameraUser() then
+        local DepthOfField = Instance.new('DepthOfFieldEffect')
+        DepthOfField.Parent = Lighting
+
+        EffectsUtil:Tween(DepthOfField, {0.2, 'Quad'}, {FarIntensity = 1, FocusDistance = 0.01, InFocusRadius = 8, NearIntensity = 0})
+        EffectsUtil:CleanUp(DepthOfField, 1.22)
+    end
+
+    local ChargeUpEffects = EffectsUtil:Create(AkaAssets.UserAura, 2)
+    ChargeUpEffects:PivotTo(CasterModel:GetPivot())
+
+    EffectsUtil:Tween(ChargeUpEffects.PaintSplatter, { 1.1, 'Sine', 'In' }, {TimeScale = 0})
+
     Ultimate:Wait(1.1)
+    ChargeUpEffects:Destroy()
+
+
+    EffectsUtil:ShakeCamera("BlowUp")
+    local ReleaseSlashVFX = EffectsUtil:Create(AkaAssets.MainSlash, 2)
+    ReleaseSlashVFX:PivotTo(CasterModel:GetPivot() * CFrame.new(0, 2.5, 0))
+    EffectsUtil:Emit(ReleaseSlashVFX)
+
     EffectsUtil:Tween(Highlight, { .25, 'Quad' }, { FillTransparency = 1, OutlineTransparency = 1 })
     EffectsUtil:Toggle(KatanaParticleAura, false)
     EffectsUtil:Toggle(KatanaModel.Blade, false)
@@ -94,6 +115,18 @@ function Ultimate:Sequence(Agent: AgentTypes.AgentClass)
 
         EffectsUtil:Tween(CC, {0.12, 'Quad'}, {Contrast = 0})
         EffectsUtil:CleanUp(CC, 0.12)
+    end
+
+    local WindMeshes = AkaAssets.Wind:GetChildren()
+    for i = 1, 5 do
+        local WindMesh = EffectsUtil:Create(WindMeshes[math.random(1, #WindMeshes)], 25)
+        WindMesh:PivotTo(CasterModel:GetPivot() * CFrame.new(0, 2, 0) * CFrame.Angles(0, 0, math.pi * 0.5) * CFrame.Angles(EffectsUtil:Random(-math.pi, math.pi), 0, 0))
+        
+        EffectsUtil:Tween(WindMesh, { 0.8, 'Sine' }, { CFrame = WindMesh.CFrame * CFrame.new(-1, 0, 0) * CFrame.Angles(EffectsUtil:Random(-math.pi * 0.25, math.pi * 0.25), 0, 0) })
+        EffectsUtil:Tween(WindMesh.Mesh, { 0.75, 'Quart' }, { Scale = WindMesh.Mesh.Scale * EffectsUtil:Random(1.2, 1.5) })
+        EffectsUtil:Tween(WindMesh.Decal, { EffectsUtil:Random(0.6, 0.7), 'Sine' }, { Transparency = 1 })
+
+        WindMesh.Mesh.Scale *= vector.create(1.5, 0.1, 0.1)
     end
 end
 

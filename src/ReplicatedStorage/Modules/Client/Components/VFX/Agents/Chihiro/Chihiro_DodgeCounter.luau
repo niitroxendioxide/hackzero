@@ -50,7 +50,7 @@ return function(
     Effects:Toggle(CutsVFX, true)
 
     local Clock = 0;
-    while Clock < 2 do
+    while Clock < 1.1 do
         Clock += Effects:Wait(1 / 6);
 
         local TransparencyTime = 0.2

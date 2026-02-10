@@ -24,6 +24,7 @@ function Ability:Play(Caster: Types.Caster): ()
 			if SasukeGameplayController:HasConnectedThreads(Caster) then
 				SasukeGameplayController:UseEnemyConnectedThreads(Caster, function(Target)  
 					Ability:Effect("Sasuke_Thread", {Caster, Target:GetId(), 3}, true)
+					Target:SetWorldSpeed(0, 0.51)
 
 					task.wait(0.5)
 					Ability:Hit(Caster, Target, Ability:FromData("Burst", nil, Caster:GetSkillLevel(Ability.__Name)))

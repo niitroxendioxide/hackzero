@@ -6,7 +6,6 @@ local Client = ReplicatedStorage.Modules.Client
 
 local Types = require(Shared.Types)
 local AbilityClass = require(Client.Classes.Ability)
-local Effects = require(Client.Libraries.Effects)
 
 --
 local Ability = AbilityClass.new()
@@ -24,6 +23,8 @@ function Ability:Play(Caster: Types.GenericClass)
 		end},
 
 		{0.45, function()
+			Ability:Effect("Sasuke_Kunais", Caster)
+
 			for i = -1, 1 do
 				local Offset = Vector3.new(math.sin(math.rad(i * 35)) * 15, 0, math.cos(math.rad(i * 33)) * -4)
 				Ability:CreateHitbox(Caster, Offset, vector.create(9, 9, 9), function(Enemy)  
@@ -37,7 +38,7 @@ function Ability:Play(Caster: Types.GenericClass)
 		end},
 
 		{1.1, function()
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), vector.create(8, 8, 12), function(Enemy)
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -2), vector.create(8, 8, 4), function(Enemy)
 				Ability:Hit(Caster, Enemy, {
 					EffectData = {
 						Highlight = true,

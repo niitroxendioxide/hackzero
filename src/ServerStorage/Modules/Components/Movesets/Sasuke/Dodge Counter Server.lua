@@ -32,7 +32,7 @@ function Ability:Play(Caster: Types.Caster): ()
 		end},
 
 		{1.1, function()
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), vector.create(8, 8, 12), function(Enemy)
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -2), vector.create(8, 8, 4), function(Enemy)
 				Ability:Hit(Caster, Enemy, PunchHitData)
 			end)
 		end}

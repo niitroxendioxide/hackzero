@@ -447,7 +447,20 @@ function EffectUtil:Quad(p0, p1, p2, t)
 	return (1 - t)^2 * p0 + 2 * (1 - t) * t * p1 + t^2 * p2
 end
 
-function EffectUtil:ShakeCamera(Preset: string)
+
+type CamShakePreset = "Bump" 
+| "Hit" 
+| "Explosion" 
+| "BlowUp" 
+| "SoftHit" 
+| "BarrageHit" 
+| "HeavilyHurt" 
+| "WindBreak" 
+| "Surprise" 
+| "Shoot" 
+| "Earthquake"
+| "Terrified"
+function EffectUtil:ShakeCamera(Preset: CamShakePreset)
 	local IsCameraShakeEnabled = Settings:Get("CameraShake", "Graphics");
 	if not IsCameraShakeEnabled then
 		return Mock;

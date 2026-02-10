@@ -5,6 +5,8 @@ local ServerStorage = game:GetService('ServerStorage')
 local Libraries = ServerStorage.Modules.Libraries
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Ping = require(ServerStorage.Modules.Libraries.Ping)
 local ClockUtil = require(Shared.Utility.Clock)
 local Replicator = require(Libraries.Replicator)
@@ -110,7 +112,7 @@ function ServerEnemy:Attack()
 		return
 	end
 
-	if not Targets:CanAttackTarget(Target, self) then
+	if not Targets:CanAttackTarget(Target, self) or Target:HasTag("Invulnerability") then
 		return
 	end
 

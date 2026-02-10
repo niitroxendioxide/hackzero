@@ -255,7 +255,7 @@ return {
 				Attack_State_Time = 1.5,
 
 				Hit = {
-					Damage = 270,
+					Damage = 190,
 					Daze = 56,
 					Affliction_Buildup = 79,
 					HitType = 'Slash',
