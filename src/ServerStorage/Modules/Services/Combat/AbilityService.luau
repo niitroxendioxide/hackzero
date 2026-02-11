@@ -204,13 +204,21 @@ function Service:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Enemy: Ag
 	Replicator:PromptChainAttack(Agent, Enemy)
 end
 
+function Service:TriggerMeterFullEvent(Id: number, CasterAgent: AgentTypes.ServerAgentClass)
+	local name = CasterAgent.Name;
+	local Moveset = MovesetLibrary:Get(name)
 
-function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: number)
+	if Moveset and Moveset:GetPassiveManager() ~= nil then
+		Moveset:GetPassiveManager():OnPassiveFilled(Id, CasterAgent)
+	end
+end
+
+function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: number, Target: number?, fn: () -> ())
 	local ReplicationId = CasterAgent.__Player_Assigned:GetAttribute("ReplicationId")
 	local AllAgents = AgentLibrary:GetAlive(ReplicationId)
 	local CurId = table.find(AllAgents, CasterAgent)
 	local AgentToSwitch = CurId + 1 > 3 and AllAgents[1] or AllAgents[CurId + 1]
-	local AgentPerpetratorId = CasterAgent.__Last_Hit_Caster
+	local AgentPerpetratorId = Target or CasterAgent.__Last_Hit_Caster
 
 	if AgentPerpetratorId == nil then
 		return
@@ -232,6 +240,9 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 
 	Prompt.Accepted:Once(function()
 		CasterAgent:MarkTarget(nil)
+		if fn then
+			fn()
+		end
 
 		Service:PlaySkill(Player, GameEnum.Skills.Quick_Assist, AgentPerpetratorId, 1, false)
 	end)

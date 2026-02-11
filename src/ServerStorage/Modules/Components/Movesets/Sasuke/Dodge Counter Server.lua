@@ -31,8 +31,12 @@ function Ability:Play(Caster: Types.Caster): ()
 			end
 		end},
 
+		{0.85, function()
+			Caster:Walk(0.25)
+		end},
+
 		{1.1, function()
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -2), vector.create(8, 8, 4), function(Enemy)
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -4), vector.create(8, 8, 8), function(Enemy)
 				Ability:Hit(Caster, Enemy, PunchHitData)
 			end)
 		end}

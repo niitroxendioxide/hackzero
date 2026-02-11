@@ -24,9 +24,12 @@ export type Sequence = {
 export type HitboxAttackData = {Size: Vector3, Offset: Vector3, Hit_Function: (Target: any) -> ()}
 
 
-export type Caster = Agents.ServerAgentClass & Agents.AgentClass & Agents.Enemy & Agents.ClientEnemy
+export type Caster = Agents.ServerAgentClass | Agents.AgentClass | Agents.Enemy | Agents.ClientEnemy
 export type Target = Caster
 export type TargetFinderFunction = (Caster: Agents.AgentClass) -> (number, Agents.ClientEnemy)
+
+export type ServerAgent = Agents.ServerAgentClass
+export type ClientAgent = Agents.AgentClass
 
 
 export type ClientSkillContext = {IsSignal: boolean, Target: Target};
@@ -136,12 +139,17 @@ export type AbilityHitRequest = HitEnemyData & {
 }
 
 export type MovesetClass = {
+	__Passive_Manager: {},
 	__Assigned: {[Default.AgentMovesetAbility]: AbilityClass & ServerAbilityClass},
 
 	--
 	GetAll: (self: MovesetClass) -> ({ServerAbilityClass}?),
 	Assign: (self: MovesetClass, Key: string, Ability: AbilityClass) -> (),
 	Verify: (self: MovesetClass, Agent: Caster, Type: string) -> boolean,
+
+	GetPassiveManager: (self: MovesetClass) -> ({
+		OnPassiveFilled: (self: any, Id: number, Caster: Caster) -> (),
+	}),
 
 	Begin: (self: MovesetClass, Key: Default.AgentMovesetAbility, Agent: Caster) -> (),
 	Release: (self: MovesetClass, Key: Default.AgentMovesetAbility, Agent: Caster) -> (),

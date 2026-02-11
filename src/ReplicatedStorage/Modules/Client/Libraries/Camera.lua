@@ -1,5 +1,6 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService('UserInputService')
 
 local Shared = ReplicatedStorage.Modules.Shared
@@ -34,6 +35,8 @@ local Camera = {
 	__Target_Part = "Head",
 	__Focused = true,
 	__Using_fov = false,
+	__Delta = 24,
+	__Delta_thread = nil,
 	__Moving_Delta = Vector2.new(),
 }
 
@@ -42,6 +45,26 @@ function Camera:RotateTo(GivenCFrame: CFrame)
 
 	Camera.__Position = GivenCFrame.Position
 	Camera.__Rotation = Vector2.new(Yaw, Pitch)
+end
+
+function Camera:StartAcceleration(Time: number, StartupTime: number)
+	if Camera.__Delta_thread then
+		task.cancel(Camera.__Delta_thread)
+	end
+
+	StartupTime = StartupTime or 0.25
+
+	local GoalTime = Time + (StartupTime)
+	Camera.__Delta = 0
+	Camera.__Delta_thread = task.spawn(function()
+		local time_passed = os.clock();
+		while (os.clock() - time_passed) < GoalTime do
+			local Alpha = TweenService:GetValue((os.clock() - time_passed) / GoalTime - (StartupTime), Enum.EasingStyle.Linear, Enum.EasingDirection.In)
+			Camera.__Delta = math.lerp(0, 24, Alpha)
+			
+			task.wait()
+		end
+	end)
 end
 
 function Camera:Init()
@@ -137,7 +160,7 @@ function Camera:Update(delta: number)
 	--
 	CameraPosition = Goal + Settings.Offset
 
-	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * 24)
+	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * Camera.__Delta)
 
 	local CameraCFrame = CFrame.lookAlong(Camera.__Position, CameraRotation.LookVector) * CFrame.new(0, 0, Camera.__Zoom)
 	--print(CameraCFrame.LookVector)

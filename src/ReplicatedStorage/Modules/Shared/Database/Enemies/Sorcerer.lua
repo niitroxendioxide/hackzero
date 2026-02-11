@@ -43,8 +43,8 @@ return {
 				Agent_Stun_Time = 0.3,
 				Damage_Mult = 120,
 
-				Range = 30,
-				Attack_Warning = 0.4,
+				Range = 50,
+				Attack_Warning = 0.8,
 			},
 
 			Upgrades = {
@@ -65,8 +65,8 @@ return {
 					Damage = 60,
 				},
 
-				Range = 80,
-				Attack_Warning = 0.3,
+				Range = 110,
+				Attack_Warning = 0.4,
 			},
 
 			Upgrades = {

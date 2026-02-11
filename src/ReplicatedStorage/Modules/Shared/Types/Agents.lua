@@ -291,6 +291,7 @@ export type ServerAgentClass = {
 	__Gear: ServerGearManager,
 	__Limit_Area: BasePart?,
 	__current_walking_object: any?,
+	__Meter_updates: {},
 
 
 	__Active: boolean,
@@ -303,11 +304,12 @@ export type ServerAgentClass = {
 	Stop: (self: ServerAgentClass) -> (),
 	Move: (self: ServerAgentClass) -> (),
 	Rotate: (self: ServerAgentClass, Angle: number) -> (),
-
+	
 	IsBeingAttacked: (self: ServerAgentClass) -> (boolean),
 	Hit: (self: ServerAgentClass, Caster: Enemy, Time: number) -> (),
 	GetMarkedTarget: (self: ServerAgentClass) -> (AssistStruct?),
-
+	
+	OnMeterUpdated: (self: ServerAgentClass, Meter: string, fn: (Id: number, Value: number, Percent: number) -> ()) -> (),
 	UpdateMeter: (self: ServerAgentClass, Name: string, Amount: number) -> (),
 	GetMeter: (self: ServerAgentClass, Name: string) -> (number, number),
 	GetAllMeters: (self: ServerAgentClass) -> ({Id: number?, [string]: any}),

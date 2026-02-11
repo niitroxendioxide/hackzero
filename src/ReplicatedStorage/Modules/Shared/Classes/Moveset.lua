@@ -51,6 +51,15 @@ function MovesetClass.GetAll(self: Types.MovesetClass): {Types.ServerAbilityClas
 	return List
 end
 
+
+function MovesetClass.GetPassiveManager(self: Types.MovesetClass)
+	return self.__Passive_Manager
+end
+
+function MovesetClass.SetPassiveManager(self: Types.MovesetClass, Module: {any})
+	self.__Passive_Manager = Module
+end
+
 function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSignal: boolean?, [string]: any}): boolean
 
 	Type = Type:gsub('_', ' ')

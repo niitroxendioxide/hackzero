@@ -12,6 +12,7 @@ local Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
 local ServerAgentClass = require(Classes.Combat.ServerAgent)
 local StagePlayerClass = require(Classes.Game.Player)
 
+local AbilityService = require(Services.Combat.AbilityService)
 local DataService = require(Services.Data.DataService)
 local AgentService = require(Services.Combat.AgentService)
 local EnemyService = require(Services.Combat.EnemyService)
@@ -76,16 +77,23 @@ function Service:Create(Player: Player)
 
 
     for _, AgentInstance in Agents do
+        local AgentAscension = AgentInstance.__Ascension or 0
         local AgentInfo = AgentDatabase:GetMovesetData(AgentInstance.Name)
         if AgentInfo and AgentInfo.Passive and AgentInfo.Passive.Meters then
             local Meters = AgentInfo.Passive.Meters
-
+            
             for MeterName, Data in Meters do
-                if (Data.Ascension == nil or AgentInstance.__Ascension == nil) or (AgentInstance.__Ascension or 0) < (Data.Ascension or 0) then
+                local MeterAscension = Data.Ascension or 0
+                if AgentAscension < MeterAscension then
                     continue
                 end
 
                 AgentInstance:CreateMeter(MeterName, Data)
+                AgentInstance:OnMeterUpdated(MeterName, function(Id: number, Value: number, Percent: number)  
+                    if Percent == 1 then
+                        AbilityService:TriggerMeterFullEvent(Id, AgentInstance)
+                    end
+                end)
             end
         end
     end

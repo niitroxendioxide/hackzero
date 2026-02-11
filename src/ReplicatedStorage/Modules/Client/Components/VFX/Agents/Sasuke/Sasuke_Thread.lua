@@ -53,14 +53,14 @@ return function(Caster: Types.AgentClass, EnemyId: number, Type: number, fn): ()
 
         Appearance:BindObject(Trail, function(self: Instance, State: boolean)  
             if State then
-                for _, Obj: Trail in Trail:GetChildren() do
-                    if Obj:IsA("Trail") then
+                for _, Obj: Beam in Trail:GetChildren() do
+                    if Obj:IsA("Beam") then
                         Obj.Enabled = true
                     end
                 end
             else
-                for _, Obj: Trail in Trail:GetChildren() do
-                    if Obj:IsA("Trail") then
+                for _, Obj: Beam in Trail:GetChildren() do
+                    if Obj:IsA("Beam") then
                         Obj.Enabled = false
                     end
                 end
@@ -89,7 +89,7 @@ return function(Caster: Types.AgentClass, EnemyId: number, Type: number, fn): ()
         local BaseCFrame = Object.Connection.Attachment0.WorldCFrame;
         local WorldCF = EndAttachment.WorldCFrame;
         EndAttachment.Parent = workspace
-        EndAttachment.WorldCFrame = WorldCF;
+        EndAttachment.WorldCFrame = Object.Connection.Attachment0.WorldCFrame;
 
         local Distance = (BaseCFrame.Position - WorldCF.Position).Magnitude
         local StartCf = CFrame.lookAt(BaseCFrame.Position, WorldCF.Position) * CFrame.new(0, 0, -3)
@@ -103,15 +103,18 @@ return function(Caster: Types.AgentClass, EnemyId: number, Type: number, fn): ()
         Effects:Tween(Object.FireTrail, { 0.25, 'Back' }, {Width0 = 0.25, Width1 = 0.25})
         Effects:Tween(Object.FireTrail, { 0.65, 'Elastic' }, {CurveSize0 = 0, CurveSize1 = 0})
         Effects:Tween(Object.Connection, { 0.25, 'Quart' }, {Width0 = 0, Width1 = 0})
+        Effects:Tween(EndAttachment, { 0.2, 'Cubic' }, {WorldCFrame = WorldCF})
         
         task.wait(0.15)
+
+        local Time = (Distance / 45) * 0.35
         local FirePart = Effects:Create(VFXAssets.FirePart, 10)
         FirePart.Size *= vector.zero
         FirePart:PivotTo(StartCf)
 
-        Effects:Tween(FirePart, {0.4, 'Sine'}, {CFrame = MidPoint, Size = vector.create(0.01, 0.01, Distance - 3)})
+        Effects:Tween(FirePart, {Time, 'Linear'}, {CFrame = MidPoint, Size = vector.create(0.01, 0.01, Distance)})
 
-        task.wait(0.35)
+        task.wait(Time)
         Effects:Toggle(FirePart, false)
         Effects:Tween(Object.FireTrail, {0.3, 'Sine'}, {Width0 = 0, Width1 = 0})
         Effects:CleanUp(Object, 2)

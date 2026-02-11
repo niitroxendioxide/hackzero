@@ -46,6 +46,17 @@ return {
 	},
 
 	Moveset_Data = {
+		['Passive'] = {
+			Meters = {
+				Sharingan = {
+					Ascension = 0,
+					Max = 3,
+					Id = 1,
+					Description = "Sharingan"
+				}
+			},
+		},
+
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = 0.01,
@@ -68,10 +79,20 @@ return {
 		['Special'] = {
 			Base = {
 				Cooldown = 1,
-				Attack_State_Time = 0.35,
+				Attack_State_Time = 0.45,
 				Speed = 1,
+				Range = 200,
 				Animation_Speed = 1,
-				Required_Energy = 1,
+				Required_Energy = 30,
+
+				Hit = {
+					Damage = 61,
+					Affliction = "Physical",
+					HitType = "Slash",
+					Daze = 15,
+					Stun = 0.15,
+					Affliction_Buildup = 21,
+				},
 			},
 			Upgrade = {},
 		},
@@ -122,7 +143,7 @@ return {
 				Speed = 1,
 				Range = 120,
 				Animation_Speed = 1,
-				Required_Energy = 1,
+				Required_Energy = 30,
 
 				Burst = {
 					Damage = 355,

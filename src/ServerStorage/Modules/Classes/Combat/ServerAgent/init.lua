@@ -45,6 +45,7 @@ function ServerAgentClass.new(Name: string, Level: number, Skills: {}, Ascension
 	self.__Active = false
 	self.__Ascension = Ascensions
 	self.__Skill_Levels = Skills
+	self.__Meter_updates = {}
 	self.__Last_Hit_Time = os.clock()
 	self.__Last_Skill_Cast = os.clock()
 	self.__Character = MovementClass.new(Name, Appearance.Height)
@@ -216,10 +217,24 @@ function ServerAgentClass.UpdateMeter(self: Types.ServerAgentClass, Meter: strin
 		return;
 	end
 
+	
 	local MeterObject = self.__Status:UpdateMeter(Meter, Amount)
 	local Percent = MeterObject.Value / MeterObject.Max
 
+	for _, MeterEvent in self.__Meter_updates do
+		if MeterEvent.Meter == Meter then
+			MeterEvent.Handle(MeterObject.Id, MeterObject.Value, Percent)
+		end
+	end
+
 	Replicator:UpdateMeter(self, MeterObject.Id, MeterObject.Value, Percent)
+end
+
+function ServerAgentClass.OnMeterUpdated(self: Types.ServerAgentClass, Meter: string, fn: (Id: number, Value: number, Percent: number) -> ())
+	table.insert(self.__Meter_updates, {
+		Meter = Meter,
+		Handle = fn,
+	})
 end
 
 function ServerAgentClass.GetAllMeters(self: Types.ServerAgentClass)

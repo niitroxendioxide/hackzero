@@ -120,7 +120,8 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 			Effects:Play('Warning', Agent)
 		end
 
-		local Ping = Replicator:GetPing()
+		local Ping = Replicator:GetPing() / 1000
+
 		if typeof(Attack_Warnings) == 'table' then
 			for _, Time in Attack_Warnings do
 				AbilitySequence:Add(math.max(Time - Ping, 0), PlayWarningEffect)

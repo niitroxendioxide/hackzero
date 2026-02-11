@@ -10,7 +10,7 @@ local Types = require(Shared.Types)
 local AnimLibrary = require(Client.Libraries.Animation)
 
 --
-local Priorities = {Idle = Enum.AnimationPriority.Core}
+local Priorities = {Idle = Enum.AnimationPriority.Movement}
 local AnimatorClass = {} :: {[string]: (self: Types.AnimatorController, any) -> any, new: (Enemy: Types.EnemyClass, Directory: string) -> Types.AnimatorController}
 AnimatorClass.__index = AnimatorClass
 
@@ -50,7 +50,7 @@ function AnimatorClass:Play(Track: string, Data: Types.AnimationDataOptions)
 	local TrackObject = AnimLibrary:GetMovementAnim(self.__Directory, Track)
 	local AnimTrack = AnimLibrary:Play(self.__Character:GetModel(), TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
 
-	AnimTrack.Priority = Priorities[RemovedId] or Enum.AnimationPriority.Movement
+	AnimTrack.Priority = Priorities[RemovedId] or Enum.AnimationPriority.Core
 	self.__Tracks[RemovedId] = AnimTrack
 
 	return AnimTrack
@@ -83,6 +83,7 @@ function AnimatorClass:Update(_: number)
 	local Walk = self:GetTrack('Walk')
 	local Right = self:GetTrack('WalkRight')
 	local Left = self:GetTrack('WalkLeft')
+	local Idle = self:GetTrack('Idle')
 	local ForwardRight = self:GetTrack('WalkFRight')
 	local ForwardLeft = self:GetTrack('WalkFLeft')
 
@@ -106,10 +107,11 @@ function AnimatorClass:Update(_: number)
 	end
 
 	for _, DippityTrack in Tracks do
-		local Weight = DippityTrack == ChosenTrack and 1 or 0.001
+		local Weight = Moving and DippityTrack == ChosenTrack and 1 or 0.001
 		DippityTrack:AdjustWeight(Weight)
 	end
 
+	Idle:AdjustWeight(not Moving and 1 or 0.001)
 	Walk:AdjustSpeed(-math.sign(Direction.Z) * 0.7)
 end
 

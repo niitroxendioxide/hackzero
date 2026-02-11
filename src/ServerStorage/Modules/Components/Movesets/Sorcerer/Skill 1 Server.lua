@@ -20,11 +20,11 @@ function Ability:Play(Caster: Types.ServerEnemyClass)
 			Caster:SwitchState('Attacking', Attack_Time)
 		end,},
 
-		{0.3, 0.65, function()
+		{0.3, 0.8, function()
 			Caster:Move(vector.create(0, 0, -1), 0.783 - 0.367, 45)
 		end},
 
-		{.8, function()
+		{1, function()
 			Ability:CreateHitbox(Caster, Vector3.zAxis* -1, vector.one * 20, function(Target: Types.GenericClass)
 				Ability:Hit(Caster, Target, {
 					Damage = Ability:FromData('Damage_Mult'),

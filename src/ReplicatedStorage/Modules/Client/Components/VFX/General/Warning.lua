@@ -14,7 +14,7 @@ local EffectsLib = require(Client.Libraries.Effects)
 return function(Enemy: Types.EnemyClass)
 	--
 	local Object = Effects:Create(Assets.Effects.General.Combat.Warning, 2.5)
-	Object.CFrame = Enemy:GetPivot() * CFrame.new(0, 0.65, 0)
+	Object.CFrame = Enemy:GetModel().HumanoidRootPart.CFrame * CFrame.new(0, 0.65, 0)
 
 	EffectsLib:Play('Glow', Enemy, {Color = Color3.new(1)})
 

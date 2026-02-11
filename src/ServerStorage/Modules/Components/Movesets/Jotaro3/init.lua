@@ -12,6 +12,11 @@ TemplateMoveset:SetAbilityInformation(Data)
 
 for _, Ability in script:GetChildren() do
 	local Success, Required = pcall(require, Ability)
+	
+	if Ability.Name == 'Passives' then
+		TemplateMoveset:SetPassiveManager(Required)
+		continue
+	end
 
 	if Success and typeof(Required) == 'table' and Required.SetData then
 		local Ability_Name = Ability.Name:gsub(' Server', '')

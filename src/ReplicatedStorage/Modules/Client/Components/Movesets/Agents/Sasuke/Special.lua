@@ -6,28 +6,29 @@ local Client = ReplicatedStorage.Modules.Client
 
 local Types = require(Shared.Types)
 local AbilityClass = require(Client.Classes.Ability)
-local Effects = require(Client.Libraries.Effects)
 
 --
 local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.GenericClass)
 	--
+	Ability:Increase(Caster, 'Counter', { Limit = 2 })
+
 	local Attack_Time = Ability:FromData("Attack_State_Time")
+	local Counter = Ability:Get(Caster, 'Counter');
+
 
 	Ability:Begin(Caster, {
 		{0, function()
-			
+			Caster:SwitchState('Attacking', Attack_Time)
+			Ability:PlayAnimation(Caster, 'Sasuke.Abilities.Special.ThrowKunai' .. Counter, {
+				Active_Time = Attack_Time,
+			})
 		end},
 
-		{0.215, function()
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -4), vector.create(8, 8, 8), function(Target: Types.EnemyClass)  
-				Ability:Hit(Caster, Target, {
-					EffectData = {
-						Highlight = true,
-					}
-				})
-			end)
+		{0.31, function()
+			--- make kunai projectile
+			Ability:Effect("KunaiProjectile", Caster, 200, 1)
 		end}
 	})
 end

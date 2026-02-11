@@ -33,7 +33,7 @@ function Ability:Play(Enemy: Types.EnemyClass)
 			Ability:Effect("Sorcerer_ElectricSmash", Enemy, 'Jump')
 		end},
 
-		{0.783, function()
+		{1, function()
 			Ability:Effect("Sorcerer_ElectricSmash", Enemy, 'Smash')
 
 			Ability:CreateHitbox(Enemy, vector.create(0, 0, -1), vector.one * 20, function(Enemy: Types.EnemyClass)  

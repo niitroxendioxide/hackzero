@@ -5,6 +5,7 @@ local Players  = game:GetService('Players')
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Camera = require(ReplicatedStorage.Modules.Client.Libraries.Camera)
 local Characters = require(ReplicatedStorage.Modules.Shared.Database.Characters)
 local AbilityClass = require(Client.Classes.Ability)
 local Types = require(Shared.Types.Agents)
@@ -31,6 +32,7 @@ function Ability:Play(Agent: Types.AgentClass, Key: string)
 
 	if TargetId then
 		self:Effect("Switch")
+		Camera:StartAcceleration(0.3)
 	end
 
 	local NewAgent = CharacterLibrary:GetCurrent(Localplr)
