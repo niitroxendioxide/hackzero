@@ -101,7 +101,31 @@ function Ultimate:Sequence(Agent: AgentTypes.AgentClass)
     EffectsUtil:ShakeCamera("BlowUp")
     local ReleaseSlashVFX = EffectsUtil:Create(AkaAssets.MainSlash, 2)
     ReleaseSlashVFX:PivotTo(CasterModel:GetPivot() * CFrame.new(0, 2.5, 0))
-    EffectsUtil:Emit(ReleaseSlashVFX)
+    ---EffectsUtil:Emit(ReleaseSlashVFX)
+
+    for m = 0, 1 do
+        local Angle = m * math.pi;
+        local CircleSlash = EffectsUtil:Create(AkaAssets.CircularSlash, 2)
+        CircleSlash:PivotTo(CasterModel:GetPivot() * CFrame.new(0, 2.5, 0) * CFrame.Angles(0, Angle, 0))
+        CircleSlash:ScaleTo(0.001)
+
+        EffectsUtil:TweenModel(CircleSlash, 1, 0.15, 'Quad', 'Out')
+        
+        task.delay(0.25, function()
+            for _, Beam: Beam in CircleSlash:GetDescendants() do
+                if not Beam:IsA('Beam') then
+                    continue
+                end
+
+                if Beam.Name == 'Wind' then
+                    EffectsUtil:FadeOutBeams(Beam, { EffectsUtil:Random(0.75, 1.25), 'Quad' })
+                else
+                    EffectsUtil:Tween(Beam, { EffectsUtil:Random(0.175, 0.275), 'Quad' }, {Width0 = 0, Width1 = 0})
+                end
+            end
+
+        end)
+    end
 
     EffectsUtil:Tween(Highlight, { .25, 'Quad' }, { FillTransparency = 1, OutlineTransparency = 1 })
     EffectsUtil:Toggle(KatanaParticleAura, false)
@@ -117,13 +141,15 @@ function Ultimate:Sequence(Agent: AgentTypes.AgentClass)
         EffectsUtil:CleanUp(CC, 0.12)
     end
 
+    if true then return end
+
     local WindMeshes = AkaAssets.Wind:GetChildren()
     for i = 1, 5 do
         local WindMesh = EffectsUtil:Create(WindMeshes[math.random(1, #WindMeshes)], 25)
         WindMesh:PivotTo(CasterModel:GetPivot() * CFrame.new(0, 2, 0) * CFrame.Angles(0, 0, math.pi * 0.5) * CFrame.Angles(EffectsUtil:Random(-math.pi, math.pi), 0, 0))
         
         EffectsUtil:Tween(WindMesh, { 0.8, 'Sine' }, { CFrame = WindMesh.CFrame * CFrame.new(-1, 0, 0) * CFrame.Angles(EffectsUtil:Random(-math.pi * 0.25, math.pi * 0.25), 0, 0) })
-        EffectsUtil:Tween(WindMesh.Mesh, { 0.75, 'Quart' }, { Scale = WindMesh.Mesh.Scale * EffectsUtil:Random(1.2, 1.5) })
+        EffectsUtil:Tween(WindMesh.Mesh, { 0.75, 'Quart' }, { Scale = WindMesh.Mesh.Scale * EffectsUtil:Random(0.75, 1.5) })
         EffectsUtil:Tween(WindMesh.Decal, { EffectsUtil:Random(0.6, 0.7), 'Sine' }, { Transparency = 1 })
 
         WindMesh.Mesh.Scale *= vector.create(1.5, 0.1, 0.1)

@@ -32,7 +32,7 @@ function Ability:Play(Agent: Types.AgentClass, Key: string)
 
 	if TargetId then
 		self:Effect("Switch")
-		Camera:StartAcceleration(0.3)
+		Camera:StartAcceleration(0.45)
 	end
 
 	local NewAgent = CharacterLibrary:GetCurrent(Localplr)

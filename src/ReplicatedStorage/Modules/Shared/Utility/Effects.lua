@@ -92,6 +92,47 @@ function EffectUtil:CustomTween(Object: Instance, Info: { number | string | bool
 	return task.spawn(DoTween)
 end
 
+function EffectUtil:FadeOutBeams(Object: Beam, Info: { number | string | boolean })
+	local function DoTween()
+		local StartTime = os.clock();
+		local StartValues = {};
+
+		for _, Keypoint in Object.Transparency.Keypoints do
+			table.insert(StartValues, {
+				Keypoint.Time,
+				Keypoint.Value,
+				Keypoint.Envelope,
+			})
+		end
+
+		while os.clock() - StartTime < Info[1] do
+			local ProgressValue = math.min((os.clock() - StartTime) / Info[1], 1)
+			local Alpha = TweenService:GetValue(ProgressValue, Enum.EasingStyle[Info[2] or 'Quad'], Enum.EasingDirection[Info[3] or 'Out'])
+
+			local Keypoints = {}
+			for _, KeypointValue in StartValues do
+				local Time = KeypointValue[1]
+				local Value = KeypointValue[2] + (1 - KeypointValue[2]) * Alpha
+				local Envelope = KeypointValue[3]
+				table.insert(Keypoints, NumberSequenceKeypoint.new(Time, Value, Envelope))
+			end
+
+			Object.Transparency = NumberSequence.new(Keypoints)
+
+			task.wait()
+		end
+	end
+
+	if Info[4] then
+		DoTween()
+
+		return;
+	end
+
+	return task.spawn(DoTween)
+end
+
+
 function EffectUtil:FromGui<T>(name: string): T & GuiObject
 	local PlayerGui = Players.LocalPlayer.PlayerGui
 
