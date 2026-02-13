@@ -97,21 +97,30 @@ function Ultimate:Sequence(Agent: AgentTypes.AgentClass)
     Ultimate:Wait(1.1)
     ChargeUpEffects:Destroy()
 
-
     EffectsUtil:ShakeCamera("BlowUp")
+
     local ReleaseSlashVFX = EffectsUtil:Create(AkaAssets.MainSlash, 2)
     ReleaseSlashVFX:PivotTo(CasterModel:GetPivot() * CFrame.new(0, 2.5, 0))
-    ---EffectsUtil:Emit(ReleaseSlashVFX)
+    EffectsUtil:Emit(ReleaseSlashVFX)
 
-    for m = 0, 1 do
+    for m = 0, 0 do
         local Angle = m * math.pi;
         local CircleSlash = EffectsUtil:Create(AkaAssets.CircularSlash, 2)
         CircleSlash:PivotTo(CasterModel:GetPivot() * CFrame.new(0, 2.5, 0) * CFrame.Angles(0, Angle, 0))
         CircleSlash:ScaleTo(0.001)
 
-        EffectsUtil:TweenModel(CircleSlash, 1, 0.15, 'Quad', 'Out')
+        EffectsUtil:TweenModel(CircleSlash, 1, 0.4, 'Sine', 'Out')
         
-        task.delay(0.25, function()
+        for _, Beam: Beam in CircleSlash:GetChildren() do
+            if Beam:IsA("BasePart") then
+                EffectsUtil:Tween(Beam, { 0.85, 'Quart' }, { CFrame = Beam.CFrame * CFrame.Angles(0, -math.pi * 0.75, 0) })
+
+                continue
+            end
+        end
+        
+
+        task.delay(0.2, function()
             for _, Beam: Beam in CircleSlash:GetDescendants() do
                 if not Beam:IsA('Beam') then
                     continue
@@ -140,8 +149,6 @@ function Ultimate:Sequence(Agent: AgentTypes.AgentClass)
         EffectsUtil:Tween(CC, {0.12, 'Quad'}, {Contrast = 0})
         EffectsUtil:CleanUp(CC, 0.12)
     end
-
-    if true then return end
 
     local WindMeshes = AkaAssets.Wind:GetChildren()
     for i = 1, 5 do

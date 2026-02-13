@@ -19,6 +19,7 @@ return function(
 		HueShift: number?, 
 		HueShiftFilter: ((any) -> (number))?, HitstopTime: number?,
 		Highlight: boolean?,
+		HighlightColor: Color3,
 
 		Audio: {
 			Id: string, 

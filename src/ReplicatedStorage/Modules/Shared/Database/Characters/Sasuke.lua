@@ -60,7 +60,7 @@ return {
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = 0.01,
-				Attack_State_Time = 0.35,
+				Attack_State_Time = 0.25,
 				Speed = 1,
 				Animation_Speed = 1,
 
@@ -174,6 +174,37 @@ return {
 					Damage = 2,
 					Daze = 0.5,
 					Affliction_Buildup = 0.75,
+				}
+			},
+		},
+
+		['Quick Assist'] = {
+			Base = {
+				Attack_State_Time = 1.1,
+				HitRate = 0.35 / 6,
+				Speed = 1,
+				Animation_Speed = 1,
+
+				Hit = {
+					Damage = 46,
+					Affliction = "Fire",
+					HitType = "Blunt",
+					Daze = 27,
+					Affliction_Buildup = 15,
+					Stun = 0.225,
+
+					Knockback = {
+						vector.create(0, 0, 1),
+						15,
+						0.1
+					}
+				},
+			},
+			Upgrade = {
+				Hit = {
+					Damage = 1,
+					Daze = 0.5,
+					Stun = 0.01,
 				}
 			},
 		},

@@ -124,6 +124,7 @@ function EffectUtil:FadeOutBeams(Object: Beam, Info: { number | string | boolean
 	end
 
 	if Info[4] then
+		print('non deferred')
 		DoTween()
 
 		return;

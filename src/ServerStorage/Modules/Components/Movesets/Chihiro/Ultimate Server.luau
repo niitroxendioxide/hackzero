@@ -26,11 +26,11 @@ function Ability:Play(Caster: Types.ServerAgentClass)
             Caster:SwitchState('Attacking', AttackStateTime, true)
         end},
 
+        {1.15, HitEnemy},
+        {1.2, HitEnemy},
+        {1.25, HitEnemy},
         {1.3, HitEnemy},
-        {1.4, HitEnemy},
-        {1.5, HitEnemy},
-        {1.6, HitEnemy},
-        {1.7, HitEnemy},
+        {1.35, HitEnemy},
     })
 end
 

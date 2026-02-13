@@ -12,7 +12,10 @@ function HitStop:Apply(Agent: any, Sequence: any, AnimTrack: AnimationTrack, Dur
     end
 
     if ActiveHitStops[Agent] then
-        task.cancel(ActiveHitStops[Agent].Thread)
+        if ActiveHitStops[Agent].Thread ~= coroutine.running() then
+            task.cancel(ActiveHitStops[Agent].Thread)
+        end
+
         ActiveHitStops[Agent].Track:AdjustSpeed(ActiveHitStops[Agent].OriginalSpeed)
     end
     
