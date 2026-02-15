@@ -21,14 +21,18 @@ function Ability:Play(Caster)
 			Ability:PlayAnimation(Caster, "Sasuke.Abilities.Assist.Default", {})
 		end,}, 
 
-		{0.5, 0.85, function()
+		{0.33, function()
+			Ability:Effect("Sasuke_FireballBarrage", Caster)
+		end},
+
+		{0.35, 0.85, function()
 			if (os.clock() - LastHit) < HitRate then
 				return
 			end
 
 			LastHit = os.clock()
 
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -3), vector.create(12, 12, 19), function(Enemy)
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), vector.create(12, 12, 16), function(Enemy)
 				Ability:Hit(Caster, Enemy, {
 					NoHitStop = true,
 					EffectData = {

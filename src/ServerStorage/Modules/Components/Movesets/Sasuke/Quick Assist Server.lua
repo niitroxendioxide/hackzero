@@ -26,14 +26,14 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context)
 
 		end,},
 
-		{0.5, 0.85, function()
+		{0.3, 0.825, function()
 			if (os.clock() - LastHit) < HitRate then
 				return
 			end
 
 			LastHit = os.clock()
 
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -3), vector.create(12, 12, 19), function(Enemy)  
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), vector.create(12, 12, 19), function(Enemy)  
 				Ability:Hit(Caster, Enemy, HitData)
 			end)
 		end}

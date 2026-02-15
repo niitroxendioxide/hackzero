@@ -181,12 +181,12 @@ return {
 		['Quick Assist'] = {
 			Base = {
 				Attack_State_Time = 1.1,
-				HitRate = 0.35 / 6,
+				HitRate = 0.5 / 8,
 				Speed = 1,
 				Animation_Speed = 1,
 
 				Hit = {
-					Damage = 46,
+					Damage = 36,
 					Affliction = "Fire",
 					HitType = "Blunt",
 					Daze = 27,
@@ -195,7 +195,7 @@ return {
 
 					Knockback = {
 						vector.create(0, 0, 1),
-						15,
+						7,
 						0.1
 					}
 				},
