@@ -15,6 +15,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context)
 	--
 	
 	local Buffs = Ability:FromData("Buffs")
+	local Hit =  Ability:FromData("Hit", nil, Caster:GetSkillLevel(Ability.__Name))
 	
 	-- Hitbox data
 	Ability:Begin(Caster, {
@@ -27,6 +28,12 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context)
 				end
 			end)
 		end,},
+
+		{0.3, function()
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -16), vector.create(10, 10, 32), function(Enemy)  
+				Ability:Hit(Caster, Enemy, Hit)
+			end);
+		end}
 	})
 end
 

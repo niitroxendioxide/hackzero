@@ -27,7 +27,7 @@ return function(
         local Ground = Effects:CastMapRaycast(Caster:GetPivot() * Offset, vector.create(0, -2500))
         if Ground then
             local BaseCF = CFrame.lookAt(Model:GetPivot().Position, Ground.Position)
-            local Kunai = Effects:Create(KunaiVFX.Kunai, 3)
+            local Kunai = Effects:Create(KunaiVFX.Kunai, 3) 
             Kunai:PivotTo(BaseCF)
 
             if (i == 0) then

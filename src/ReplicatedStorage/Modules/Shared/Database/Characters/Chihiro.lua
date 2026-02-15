@@ -236,6 +236,15 @@ return {
 					}
 				},
 
+				Hit = {
+					Damage = 520,
+					Affliction = "Water",
+					HitType = "Slash",
+					Daze = 80,
+					Affliction_Buildup = 120,
+					Stun = 0.7,
+				},
+
 				Speed = 1,
 				Animation_Speed = 1,
 				Attack_State_Time = 0.5,

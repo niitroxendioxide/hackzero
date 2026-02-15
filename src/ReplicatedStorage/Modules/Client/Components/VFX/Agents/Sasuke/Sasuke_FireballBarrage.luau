@@ -37,10 +37,20 @@ return function(
 
             local Floor = Effects:CastMapRaycast(NewPos, vector.create(0, -100))
             if Floor then
-                local NewEffect = Effects:Create(SasukeVFX.Assist.GroundVFX, 2)
-                NewEffect.CFrame = CFrame.lookAlong(Floor.Position, Floor.Normal)
+                local Origin = Caster:GetModel().Torso:GetPivot() * CFrame.new(0, 1.35, -0.75)
+                local Model = Effects:Create(SasukeVFX.Assist.Fireball, 1)
+                Model:PivotTo(Origin)
+                Effects:Tween(Model.PrimaryPart, {1/6, 'Linear'}, { CFrame = CFrame.lookAlong(Floor.Position, CFrame.lookAt(Origin.Position, Floor.Position).LookVector) })
 
-                Effects:Emit(NewEffect, true)
+                task.delay(1 / 6, function()
+                    Effects:Toggle(Model, false)
+                    Model.Ball.Transparency = 1
+
+                    local NewEffect = Effects:Create(SasukeVFX.Assist.GroundVFX, 2)
+                    NewEffect.CFrame = CFrame.lookAlong(Floor.Position, Floor.Normal)
+
+                    Effects:Emit(NewEffect, true)
+                end)
             end
         end
     end
