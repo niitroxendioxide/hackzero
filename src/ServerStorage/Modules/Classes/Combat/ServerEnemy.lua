@@ -48,6 +48,7 @@ function ServerEnemy.new(At: Vector3, Name: string, Level: number)
 	self.__EnemyId = -1
 	self.__Next = 1
 	self.__Next_Attack = 'Skill 1'
+	self.__Tags = {}
 	self.__Snapfix = os.clock()
 
 	return self
@@ -267,6 +268,21 @@ end
 
 function ServerEnemy.AddEffect(self: Types.ServerEnemyClass, Data: Types.EnemyEffectParameters)
 	return self.__Status:AddEffect(Data)
+end
+
+function ServerEnemy.AddTag(self: Types.ServerEnemyClass, Tag: string)
+	table.insert(self.__Tags, Tag)
+end
+
+function ServerEnemy.RemoveTag(self: Types.ServerEnemyClass, Tag: string)
+	local Index = table.find(self.__Tags, Tag)
+	if Index then
+		table.remove(self.__Tags, Index)
+	end
+end
+
+function ServerEnemy.HasTag(self: Types.ServerEnemyClass, Tag: string)
+	return table.find(self.__Tags, Tag) ~= nil
 end
 
 function ServerEnemy.GetEffect(self: Types.ServerEnemyClass, Tag: string)

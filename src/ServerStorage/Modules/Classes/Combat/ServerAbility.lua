@@ -17,6 +17,7 @@ local Hitbox = require(Shared.Utility.Hitbox)
 local Sequence = require(Shared.Utility.Sequence)
 local GameEnum = require(Shared.GameEnum)
 
+local GrabService = require(ServerStorage.Modules.Services.Combat.GrabService)
 local ServerHitboxUtil = require(ServerStorage.Modules.Libraries.Hitbox)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local DamageLibrary = require(ServerStorage.Modules.Libraries.Damage)
@@ -69,6 +70,12 @@ function ServerAbilityClass:CreateHitbox(Caster: (AgentTypes.ServerAgentClass & 
 	if (StringCaster == 'EnemyClass') then
 		self:CreateAgentHitbox(At, Offset, Size, Event, Time, Repeat)
 	elseif StringCaster == 'ServerAgentClass' or StringCaster == 'CFrame' then
+		if StringCaster == 'ServerAgentClass' then
+			for _, GrabbedEnemy in GrabService:GetGrabbedEnemies(Caster) do
+				task.spawn(Event, GrabbedEnemy)
+			end
+		end
+
 		self:CreateEnemyHitbox(At, Offset, Size, Event, Time, Repeat)
 	end
 
@@ -108,7 +115,7 @@ function ServerAbilityClass:CreateEnemyHitbox(At: CFrame, Offset: Vector3, Size:
 				continue
 			end
 
-			if Targets[Enemy] == true then
+			if Targets[Enemy] == true or Enemy:HasTag("Grabbed") then
 				continue
 			end
 

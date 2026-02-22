@@ -66,6 +66,9 @@ return {
 		CreateCompanion = 86,
 		MoveCompanion = 87,
 		SetMovingStatusCompanion = 88,
+
+		BeginGrabEnemy = 89,
+		EndGrabEnemy = 90,
 	},
 
 	ChaosControlAction = {
