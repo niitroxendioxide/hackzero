@@ -1,5 +1,8 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService('Players')
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
 
 local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
@@ -10,6 +13,7 @@ local Assets = ReplicatedStorage.Assets
 local World = workspace:FindFirstChild("World")
 
 
+local Effects = require(ReplicatedStorage.Modules.Client.Libraries.Effects)
 local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
 local Icons = require(ReplicatedStorage.Modules.Shared.Database.Icons)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
@@ -52,22 +56,47 @@ local States = {
     __Current_Slot_Picked = 0,
     __Current_Item_Filter = "Artifacts",
     __Current_Drive_Selected = nil,
+    __Model_Base_CF = nil,
+    __Rotation_Model = 0,
 }
 
 --
 local function SwitchModel(Name: string)
+    local PlayEffect = false
+    local CharacterPlace = World:FindFirstChild("LobbyCutscenes"):FindFirstChild("AgentsRoom")
+    if States.__Current_Model ~= nil and States.__Current_Model.Name ~= Name then
+        PlayEffect = true
+        States.__Rotation_Model = 0
+    end
+    
     if States.__Current_Model then
         States.__Current_Model:Destroy()
     end
-
+    
     local CharacterModel = Assets.Characters.Agents:FindFirstChild(Name)
     if CharacterModel then
+        local PivotCFrame = RoomLocations.CharacterPlace.CFrame
+        local Params = RaycastParams.new()
+        Params.FilterType = Enum.RaycastFilterType.Include
+        Params.FilterDescendantsInstances = {CharacterPlace.Grass}
+
+        local Ground = Workspace:Raycast(PivotCFrame.Position, vector.create(0, -10), Params)
+        if not Ground then
+            return
+        end
+        
+        local Appearance = CharacterDatabase:GetAppearanceData(Name)
+        States.__Model_Base_CF = CFrame.lookAlong(Ground.Position + vector.create(0, Appearance.Height), PivotCFrame.LookVector)
+
         local Cloned = CharacterModel:Clone()
         Cloned.PrimaryPart.Anchored = true;
-        Cloned:PivotTo(RoomLocations.CharacterPlace.CFrame)
+        Cloned:PivotTo(States.__Model_Base_CF)
         Cloned.Parent = World.Entities.Appearances
 
-        States.__Current_Model = Cloned
+        States.__Current_Model = Cloned;
+        if PlayEffect then 
+            Effects:Play("CharSwitch", Cloned)
+        end
     end
 end
 
@@ -179,6 +208,38 @@ function Component:Init()
     local MainFrame = Component:GetFrame()
 
     --
+    RunService.Heartbeat:Connect(function(Delta: number)  
+        if not States.__Current_Model or not States.__Model_Base_CF then
+            return
+        end
+
+        local Pivot = States.__Model_Base_CF * CFrame.Angles(0, math.rad(States.__Rotation_Model), 0)
+        States.__Current_Model:PivotTo(States.__Current_Model:GetPivot():Lerp(Pivot, Delta * 20))
+    end)
+
+    UserInputService.InputBegan:Connect(function(Obj: InputObject, a1: boolean)  
+        if a1 then 
+            return 
+        end
+
+        if Obj.UserInputType == Enum.UserInputType.MouseButton1 then
+           if Component:Peek(States.__Current_Tab) == 'None' or Component:Peek(States.__Current_Tab) == "" then
+                return
+           end
+            
+           while UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+                UserInputService.MouseBehavior = Enum.MouseBehavior.LockCurrentPosition
+                local _TimeDelta = task.wait()
+
+                local MouseDelta = UserInputService:GetMouseDelta();
+                States.__Rotation_Model += MouseDelta.X;
+                
+           end
+
+           UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+        end
+    end)
+
     local ReturnHolder: Frame & {Btn: TextButton, UIStroke: UIStroke, UIScale: UIScale} = MainFrame.Return
     local ReturnButton: TextButton = ReturnHolder.Btn
     Component:BindToStateChange(function(State: boolean)
@@ -1069,7 +1130,9 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
     }
     local Weights = {['Health'] = 0, ['Attack'] = 1, ['Defense'] = 2, ['Daze'] = 3, ['Critical_Rate'] = 4, ['Critical_Damage'] = 5}
 
+    local k = 0;
     for Stat, Value in AgentStats do
+        k += 1
         if table.find(Ignored, Stat) then continue end
 
         local ShownValue = Value
@@ -1079,7 +1142,8 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
 
         local NewFrame = Assets.Interface.Agents.Stats.Stat:Clone()
         NewFrame.StatName.Text = RenamedStat[Stat] or (string.gsub(Stat, "_", " "))
-        NewFrame.LayoutOrder = Weights[Stat] or 15
+        NewFrame.LayoutOrder = Weights[Stat] or 6
+        NewFrame.UIScale.Scale = 0
         NewFrame.StatValue.Text = math.floor(ShownValue * 10) / 10 .. (table.find(AddPercent, Stat) and '%' or '')
         if Stat == 'Energy_Regeneration' then
             NewFrame.StatValue.Text = NewFrame.StatValue.Text.."/s"
@@ -1101,6 +1165,10 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
         end
 
         NewFrame.Parent = Frame.Stats.ValuesArea.Holder
+
+        task.delay((NewFrame.LayoutOrder) * 0.04, function()
+            EffectUtil:Tween(NewFrame.UIScale, {0.15, 'Back'}, {Scale = 1})
+        end)
     end
 
     --
