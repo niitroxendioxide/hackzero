@@ -24,7 +24,7 @@ export type Sequence = {
 export type HitboxAttackData = {Size: Vector3, Offset: Vector3, Hit_Function: (Target: any) -> ()}
 
 
-export type Caster = Agents.ServerAgentClass | Agents.AgentClass | Agents.Enemy | Agents.ClientEnemy
+export type Caster = (Agents.ServerAgentClass | Agents.AgentClass | Agents.Enemy | Agents.ClientEnemy)
 export type Target = Caster
 export type TargetFinderFunction = (Caster: Agents.AgentClass) -> (number, Agents.ClientEnemy)
 
@@ -154,6 +154,8 @@ export type MovesetClass = {
 	Begin: (self: MovesetClass, Key: Default.AgentMovesetAbility, Agent: Caster) -> (),
 	Release: (self: MovesetClass, Key: Default.AgentMovesetAbility, Agent: Caster) -> (),
 	CancelSkill: (self: MovesetClass, Key: Default.AgentMovesetAbility, Agent: Caster, Context: {ClientInstruction: boolean?}?) -> (),
+
+	IsOnCooldown: (self: MovesetClass, Agent: Caster, Type: string) -> (boolean),
 
 	GetInfoForSkill: (self: MovesetClass, Name: string) -> {},
 	SetAbilityInformation: (self: MovesetClass, Data: {}) -> (),

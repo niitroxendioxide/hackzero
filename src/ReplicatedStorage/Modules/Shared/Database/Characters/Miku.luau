@@ -44,12 +44,13 @@ return {
 
         ['Special'] = {
             Base = {
-                Cooldown = 2.5,
+                Cooldown = 0.2,
                 Attack_State_Time = 5e12,
                 Speed = 1,
                 Animation_Speed = 1,
 
                 Required_Energy = 100,
+				CustomVerify = true,
 
                 Buffs = {
                     {
