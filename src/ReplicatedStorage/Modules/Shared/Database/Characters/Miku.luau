@@ -7,7 +7,7 @@ return {
 	Faction = "VOCALOID",
 
 	Appearance = {
-		Height = 3.15
+		Height = 3
 	},
 
 	--
@@ -39,7 +39,60 @@ return {
 
 	Moveset_Data = {
 		['Basic Attack'] = {
-			Cooldown = .35
+			Base = {
+                Cooldown = 0.05,
+				AttackData = {
+					[1] = {0.15, 0.25, 1},
+					[1.1] = {0, 0.35},
+					[1.2] = {0, 0.45},
+					[1.3] = {0, 0.55},
+					[1.4] = {0, 0.65},
+					[2] = {0, 0.7, 0.75},
+					[2.1] = {0, 0.8},
+					[2.2] = {0, 0.9},
+				},
+                Speed = 1.3,
+                Animation_Speed = 1.15,
+				Range = 35,
+
+				EffectData = {
+					Highlight = true,
+					HueShift = 80,
+				},
+
+				DamageMult = {
+					[1] = 67,
+					[2] = 89,
+				},
+
+				DazeMult = {
+					[1] = 20,
+					[2] = 75,
+				},
+
+				Hit = {
+					Stun = 0.3,
+					HitType = "Blunt",
+					Affliction = "Ice",
+					Knockback = {
+						vector.create(0, 0, 1),
+						10,
+						0.2,
+					},
+				},
+			},
+
+			Upgrade = {
+				Damage = {
+					[1] = 2,
+					[2] = 4,
+				},
+
+				Daze = {
+					[1] = 0.5,
+					[2] = 1,
+				}
+			}
 		},
 
         ['Special'] = {
@@ -49,7 +102,7 @@ return {
                 Speed = 1,
                 Animation_Speed = 1,
 
-                Required_Energy = 100,
+                Required_Energy = 101,
 				CustomVerify = true,
 
                 Buffs = {

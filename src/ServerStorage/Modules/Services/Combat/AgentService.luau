@@ -206,20 +206,22 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer, ParameterTarget
 		Character:SetActive(Character == New)
 	end
 
-	New:PivotTo(CharacterCFrame)
-	New:Rotate(RebuiltRotationVector)
+	if not New:HasTag("CharacterStatic") then
+		New:PivotTo(CharacterCFrame)
+		New:Rotate(RebuiltRotationVector)
 
-	if not Target then
-		New:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, Statics.Dodge_Active_Time)
-		New:ImpulseForward(Statics.Switch_Character_Dash_Strength, 0.75)
+		if not Target then
+			New:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, Statics.Dodge_Active_Time)
+			New:ImpulseForward(Statics.Switch_Character_Dash_Strength, 0.75)
+		end
+
+		if WasMoving then
+			Service:Move(Player)
+		end
+
+		Replicator:CharacterSwitch(Player, AgentIndex, Direction, Target and Target:GetId())
+		Replicator:Rotate(Player, RebuiltRotationVector)
 	end
-
-	if WasMoving then
-		Service:Move(Player)
-	end
-
-	Replicator:CharacterSwitch(Player, AgentIndex, Direction, Target and Target:GetId())
-	Replicator:Rotate(Player, RebuiltRotationVector)
 
 	--
 	if MarkedAgentStruct then

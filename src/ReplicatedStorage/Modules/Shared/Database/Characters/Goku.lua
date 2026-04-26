@@ -1,6 +1,6 @@
 return {
 	Display_Name = 'Sonku (Z)',
-	Nickname = 'Son Goku',
+	Nickname = 'Carrotman',
 	Element = 'Energy',
 	Role = 'Affliction',
 	Tier = "Legendary",

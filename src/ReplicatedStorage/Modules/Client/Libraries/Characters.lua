@@ -18,6 +18,7 @@ local Characters = {
 	__Player_Data = {} :: {[number]: {Active: number, List: {AgentTypes.AgentClass}}},
 	__Targets = {},
 	__Target_Threads = {},
+	__Current_Hitting_Target = 0,
 }
 
 local Switch_Threads = {}
@@ -147,13 +148,17 @@ function Characters:HandleSwitchFor(RepId: number, Previous: Types.AgentClass, A
 	
 
 	local Animator = NewCharacter:GetAnimator()
-	NewCharacter:PivotTo(At, Snap)
 	NewCharacter:SetVisible(true)
 
-	if not HasTarget then
-		Animator:Play('DashForth', {Name = 'Dash', Speed = 1.25})
-		NewCharacter:ImpulseForward(Statics.Switch_Character_Dash_Strength, 0.75)
+	if not NewCharacter:HasTag("CharacterStatic") then
+		NewCharacter:PivotTo(At, Snap)
+
+		if not HasTarget then
+			Animator:Play('DashForth', {Name = 'Dash', Speed = 1.25})
+			NewCharacter:ImpulseForward(Statics.Switch_Character_Dash_Strength, 0.75)
+		end
 	end
+	
 
 	return true
 end

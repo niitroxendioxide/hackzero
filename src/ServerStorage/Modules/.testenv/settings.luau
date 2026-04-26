@@ -42,12 +42,12 @@ return table.freeze({
 
 
     --- PASSIVE, EASY, MEDIUM, HARD, EXTREME
-    DIFFICULTY = 'MEDIUM', 
+    DIFFICULTY = 'PASSIVE', 
     USE_BORROW = true, -- whether to replace agents with lvl 60 max
     BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {
-        'Chihiro',
+        'Goku',
         'Miku',
         "Sasuke",
     },

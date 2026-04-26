@@ -187,6 +187,8 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 			else
 				EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, Range, true)
 			end
+
+			CharactersLib.__Current_Hitting_Target = EnemyId
 		end
 
 		Agent:AddTag('Movlock', 0.15)

@@ -107,7 +107,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 		local Verified = self:Verify(Agent, Type)
 		if Info.Base.CustomVerify and AbilityModule.Verify ~= nil then
 			Verified = AbilityModule:Verify(Agent, Type)
-			print('Custom verify: ', Verified)
+			--print('Custom verify: ', Verified)
 		end
 
 		if not Verified then
