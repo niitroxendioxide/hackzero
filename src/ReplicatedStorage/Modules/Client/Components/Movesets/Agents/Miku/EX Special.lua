@@ -4,49 +4,74 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
--- local Types = require(Shared.Types.Abilities)
+local Types = require(Shared.Types.Abilities)
+local Enemies = require(Shared.Libraries.Enemies)
+local CharactersLib = require(Client.Libraries.Characters)
 local AbilityClass = require(Client.Classes.Ability)
 
 --
 local Ability = AbilityClass.new()
 
+function Ability:Verify(Caster: Types.Caster)
+	if Caster:GetState() == "Attacking" and Caster:HasTag("MikuBoostIdleState") then
+		return true
+	end
+
+	return Caster:GetState() == "Idle"
+end
+
+
 function Ability:Play(Caster)
+	if Ability:Get(Caster, "SingTrack") then
+		Ability:Get(Caster, "SingTrack"):Stop()
+	end
+	
+	if Caster:HasTag("MikuBoostIdleState") then
+		Caster:SwitchState("Idle", 0)
+		Caster:RemoveTag("MikuBoostIdleState")
+		Caster:RemoveTag('CharacterStatic')
+
+		return
+	end
 
 	--
+	local Animation = Ability:PlayAnimation(Caster, "Miku.Abilities.Special.EX", {})
 	local Attack_Time = Ability:FromData('Attack_State_Time')
 	Ability:Begin(Caster, {
 		{0, function(_)
-			Ability:PlayAnimation(Caster, 'Chihiro.Abilities.Special.Default', {
-				Fade = .1,
-				Active_Time = Attack_Time + 0.25,
-			})
-
+			Caster:AddTag('MikuBoostIdleState', Attack_Time)
 			Caster:SwitchState('Attacking', Attack_Time)
-		end,},
+			Caster:AddTag('CharacterStatic')
+			Ability:Effect("Miku_ToggleLeek", Caster, "Enable")
 
-		{2/60, function()
-			Ability:EffectSerial("Chihiro_Kuro", Caster, 'Charge')
-		end},
+			
+			Ability:Save(Caster, "SingTrack", Animation)
 
-		{.41, function()
-			local Targets = {};
-			local Hits = {};
+			task.spawn(function()
+				while Caster:GetState() == 'Attacking' do
+					local Target = Enemies:GetEnemy(CharactersLib.__Current_Hitting_Target)
+					if Target then
+						Caster:LookAtTarget(Target, true)
+					end	
 
-			Ability:EffectSerial("Chihiro_Kuro", Caster, 'Attack', function(Target)
-				if Targets[Target:GetId()] or (Hits[Target] or 0) >= 4 then
-					return
+					task.wait(1 / 24)
 				end
 
-				Targets[Target:GetId()] = true
-				task.delay(1/4, function()
-					Targets[Target:GetId()] = false
-				end)
+				Ability:Effect("Miku_ToggleLeek", Caster, "Enable", 1)
+				Caster:RemoveTag("MikuBoostIdleState")
+				Caster:RemoveTag('CharacterStatic')
 
-				Hits[Target:GetId()] = (Hits[Target:GetId()] or 0) + 1
-
-				Ability:Hit(Caster, Target, {EffectData = Ability:FromData("HitEffectData")})
+				if Animation and Animation.IsPlaying then
+					Animation:Stop(0.1)
+				end
 			end)
-		end},
+
+		end,},
+
+		{0.6, function()
+			Animation:AdjustSpeed(0)
+		end}
+
 	})
 end
 

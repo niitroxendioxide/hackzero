@@ -11,7 +11,7 @@ function Prompts:SetState(Prompt: ProximityPrompt, State: boolean)
     States[Prompt] = State
 end
 
-function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number, ActionText: string, ObjectText: string)
+function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number, ActionText: string, ObjectText: string, Distance: number?)
     local Attachment = Instance.new("Attachment")
     Attachment.Name = "PromptAttachment"
     Attachment.Parent = BasePart
@@ -20,10 +20,16 @@ function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number, ActionText
     Prompt.RequiresLineOfSight = false
     Prompt.ActionText = ActionText or "Interact"
     Prompt.ObjectText = ObjectText or GameEnum.KeyLookup(GameEnum.InteractionType, Type)
-    Prompt.MaxActivationDistance = 25
+    Prompt.MaxActivationDistance = Distance or 25
     Prompt.KeyboardKeyCode = Enum.KeyCode.F
     Prompt.ClickablePrompt = false
     Prompt.Enabled = not Prompts.__Disabled
+
+    --if Type == GameEnum.InteractionType.UIInteraction or Type == GameEnum.InteractionType.LobbyNPC then
+        Prompt.Style = Enum.ProximityPromptStyle.Custom
+        Prompt.HoldDuration = 0.01
+    --end
+    
     Prompt.Parent = Attachment
 
     States[Prompt] = true

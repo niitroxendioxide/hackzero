@@ -50,6 +50,8 @@ return {
 					[2] = {0, 0.7, 0.75},
 					[2.1] = {0, 0.8},
 					[2.2] = {0, 0.9},
+					[3] = {0.15, 0.4, 1.35, 0.3},
+					[3.1] = {0, 1.27},
 				},
                 Speed = 1.3,
                 Animation_Speed = 1.15,
@@ -63,11 +65,13 @@ return {
 				DamageMult = {
 					[1] = 67,
 					[2] = 89,
+					[3] = 170,
 				},
 
 				DazeMult = {
 					[1] = 20,
 					[2] = 75,
+					[3] = 70,
 				},
 
 				Hit = {
@@ -76,7 +80,7 @@ return {
 					Affliction = "Ice",
 					Knockback = {
 						vector.create(0, 0, 1),
-						10,
+						8,
 						0.2,
 					},
 				},
@@ -102,35 +106,53 @@ return {
                 Speed = 1,
                 Animation_Speed = 1,
 
-                Required_Energy = 101,
+                Required_Energy = 60,
 				CustomVerify = true,
 
                 Buffs = {
                     {
                         Type = "Attack",
-                        Time = 30,
-                        Value = "30%",
+                        Time = 20,
+                        Value = "25%",
                         Tag = "MikuStrengthBuff",
                     },
 
                     {
                         Type = "Defense",
-                        Time = 30,
+                        Time = 20,
                         Value = 120,
                         Tag = "MikuDefenseBuff",
                     }
                 },
             },
-
-            ['EX Special'] = {
-                Base = {
-                    Cooldown = 2,
-                    Speed = 1,
-                    Animation_Speed = 1,
-                    --- (IDK WHAT I?LL DO YET)
-                },
-            }
         },
+
+		['EX Special'] = {
+			Base = {
+				Cooldown = 2,
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 5e12,
+				Required_Energy = 60,
+				CustomVerify = true,
+
+				Buffs = {
+					{
+						Type = "Attack",
+						Time = 30,
+						Value = "35%",
+						Tag = "MikuStrengthBuff",
+					},
+
+					{
+						Type = "Defense",
+						Time = 30,
+						Value = 140,
+						Tag = "MikuDefenseBuff",
+					}
+				},
+			},
+		}
 	},
 
 	Ascension_Data = {

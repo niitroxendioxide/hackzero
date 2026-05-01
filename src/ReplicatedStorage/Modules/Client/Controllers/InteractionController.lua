@@ -5,11 +5,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = ReplicatedStorage.Modules.Shared.Database
+local Assets = ReplicatedStorage.Assets.Interface
 
 local InterfaceController = require(script.Parent.InterfaceController)
 local LocalData = require(ReplicatedStorage.Modules.Client.Libraries.LocalData)
 local NPCS = require(ReplicatedStorage.Modules.Client.Libraries.NPCS)
 local Prompts = require(ReplicatedStorage.Modules.Client.Libraries.Prompts)
+local Places = require(ReplicatedStorage.Modules.Shared.Places)
+local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local StageDatabase = require(Database.Stages)
 local Chests = require(Client.Libraries.Chests)
 local Network = require(Shared.Network)
@@ -21,6 +24,18 @@ local Controller = {
 }
 
 function Controller:Init()
+    if Places:IsInPlace("Lobby") then
+        Controller:SetupLobbyNPCS()
+    end
+
+    ProximityPromptService.PromptShown:Connect(function(GivenPrompt: ProximityPrompt, _: Enum.ProximityPromptInputType)
+        if GivenPrompt.Style == Enum.ProximityPromptStyle.Custom then
+            Controller:CreatePromptWithCustomDesign(GivenPrompt)
+        end
+    end)
+
+
+    ---
     ProximityPromptService.PromptTriggered:Connect(function(Prompt, Player)
         local PromptType = Prompt:GetAttribute("Type")
 
@@ -34,11 +49,69 @@ function Controller:Init()
             Chests:SetOpenState(ChestId, true)
 
             Network:Fire("ChestInteraction", GameEnum.ChestInteractions.Open, ChestId)
+        elseif PromptType == GameEnum.InteractionType.UIInteraction then
+            local PromptOwner = Prompt:FindFirstAncestorOfClass("Model")
+            local InterfaceId = PromptOwner:GetAttribute("UIElement")
+
+            local Element = InterfaceController:GetComponent(InterfaceId)
+            if Element then
+                Element:Set(true)
+                Prompt.Enabled = false
+                Element:AwaitStateChange(function()  
+                    Prompt.Enabled = true
+                end)
+            end
         elseif PromptType == GameEnum.InteractionType.NPC then
             Controller:InteractWithNPC(Prompt)
         elseif PromptType == GameEnum.InteractionType.LobbyNPC then
             Npcs:TalkToNPC(Prompt:GetAttribute("NpcId"))
         end
+    end)
+end
+
+function Controller:CreatePromptWithCustomDesign(Prompt: ProximityPrompt)
+    local CustomPromptDesign = Assets.Lobby.Main.PromptAtt:FindFirstChild('PromptGUI'):Clone()
+    local KeyObject = CustomPromptDesign.Background.Key
+    CustomPromptDesign.Background.Key.Label.Text = Prompt.KeyboardKeyCode.Name
+    CustomPromptDesign.Background.Action.Text = Prompt.ActionText
+    CustomPromptDesign.Background.Description.Text = Prompt.ObjectText
+    CustomPromptDesign.Parent = Prompt.Parent
+    CustomPromptDesign.Background.UIScale.Scale = 0
+
+    KeyObject.UIScale.Scale = 0
+    CustomPromptDesign.StudsOffset = vector.zero
+    Effects:Tween(CustomPromptDesign.Background.UIScale, { 0.4, 'Back', 'Out' }, {Scale = 1})
+
+    Effects:Tween(CustomPromptDesign, { 0.5, 'Quart', 'Out' }, {StudsOffset = vector.create(4, 0, 0)})
+    task.delay(0.15, function()
+        Effects:Tween(KeyObject.UIScale, { 0.3, 'Back' }, {Scale = 1})
+    end)
+
+    local PressConnection; PressConnection = Prompt.PromptButtonHoldBegan:Connect(function(a0: Player)  
+        KeyObject.UIScale.Scale = 0.75
+        KeyObject.UIStroke.Thickness = 0.08
+
+        Effects:Tween(KeyObject.UIStroke, { 0.5, 'Back' }, {Thickness = 0.04})
+        Effects:Tween(KeyObject.UIScale, { 0.5, 'Back' }, {Scale = 1})
+    end)
+
+    Prompt.PromptHidden:Once(function(...)  
+        Effects:Tween(KeyObject.UIScale, { 0.2, 'Quad', 'In' }, {Scale = 0})
+        Effects:Tween(CustomPromptDesign.Background.UIScale, { 0.45, 'Quad', 'In' }, {Scale = 0.65})
+
+        Effects:Tween(CustomPromptDesign.Background, { 0.3, 'Quad' }, {Transparency = 1})
+        for _, Child: Instance in CustomPromptDesign.Background:GetDescendants() do
+            if Child:IsA("ImageLabel") then
+                Effects:Tween(Child, { 0.3, 'Linear'}, {ImageTransparency = 1})
+            elseif Child:IsA("GuiObject") or Child:IsA("UIStroke") then
+                Effects:Tween(Child, { 0.3, 'Linear'}, {Transparency = 1})
+            elseif Child:IsA("TextLabel") then
+                Effects:Tween(Child, { 0.3, 'Linear'}, {TextTransparency = 1, TextStrokeTransparency = 1})  
+            end
+        end
+        Effects:CleanUp(CustomPromptDesign, 0.5)
+
+        PressConnection:Disconnect()
     end)
 end
 
@@ -69,6 +142,16 @@ function Controller:InteractWithNPC(Prompt: ProximityPrompt)
         --
         Network:Fire("NPCInteraction", GameEnum.NPCInteractions.Talk, {Name = NpcName})
     end
+end
+
+
+---- Setting up npcs
+function Controller:SetupLobbyNPCS()
+    local MapDesign = workspace:WaitForChild("World"):FindFirstChild("Map"):FindFirstChild("Design")
+    local ChaosControlNPC = MapDesign:FindFirstChild("ChaosControlRig") :: Model
+    ChaosControlNPC:SetAttribute("UIElement", "ChaosControl")
+
+    Prompts:CreatePromptOnPart(ChaosControlNPC.PrimaryPart, GameEnum.InteractionType.UIInteraction, "Interact", "Check Chaos Control", 8)
 end
 
 return Controller

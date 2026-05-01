@@ -579,6 +579,12 @@ end
 function ShowRewards(List)
     local MainFrame = Component:GetFrame()
 
+    for _, Item in MainFrame.Mission.RewardsPlate.List:GetChildren() do
+        if Item:IsA('Frame') then
+            Item:Destroy()
+        end
+    end
+
     for _, Item in List do
         UIUtils:CreateRewardItem(Item.Name or Item.Type, Item.Type, Item.Amount, false, MainFrame.Mission.RewardsPlate.List)
     end

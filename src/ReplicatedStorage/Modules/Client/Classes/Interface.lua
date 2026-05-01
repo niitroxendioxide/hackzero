@@ -36,6 +36,7 @@ function ComponentClass.new(Name: string, Group: string, Data: {KeyToBind: Enum.
 	self.__UI_State = false
 	self.__State_Change_Callback = nil
 	self.__Bound_To_Key = Data.KeyToBind
+	self.__Next_Events = {}
 
 	return self
 end
@@ -48,6 +49,12 @@ function ComponentClass:Init()
 	if RunService:IsStudio() then
 		print('Component', self.__Name, 'inited')
 	end
+end
+
+function ComponentClass:AwaitStateChange(fn: () -> ())
+	assert(typeof(fn) == 'function')
+
+	table.insert(self.__Next_Events, fn)
 end
 
 function ComponentClass:GetScope()
@@ -78,6 +85,12 @@ function ComponentClass:Set(Visible: boolean?, Raw: boolean)
 		self.__Main_Frame.Visible = Visible
 	end
 
+	if self.__UI_State ~= self.__Main_Frame.Visible then
+		for _, Event in self.__Next_Events do
+			task.spawn(Event)
+		end
+	end
+
 	self.__UI_State = self.__Main_Frame.Visible
 
 	if Visible == true then
@@ -85,6 +98,8 @@ function ComponentClass:Set(Visible: boolean?, Raw: boolean)
 	elseif Visible == false and UIGroups:GetActiveElementName(self.__Group) == self.__Name then
 		UIGroups:SetActiveElement(self.__Group, nil)
 	end
+
+	self.__Next_Events = {}
 
 	if (self.__State_Change_Callback ~= nil and typeof(self.__State_Change_Callback) == 'function') and not Raw then
 		task.spawn(self.__State_Change_Callback, self.__UI_State)

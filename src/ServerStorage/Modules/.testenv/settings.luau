@@ -47,8 +47,8 @@ return table.freeze({
     BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {
-        'Goku',
         'Miku',
+        'Goku',
         "Sasuke",
     },
 })

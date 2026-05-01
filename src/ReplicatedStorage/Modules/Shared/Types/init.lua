@@ -482,6 +482,7 @@ export type UIComponent = {
 	]]
 	Set: (self: UIComponent, State: boolean?, Raw: boolean?) -> (),
 	BindToStateChange: (self: UIComponent, Callback: (State: boolean) -> ()) -> (),
+	AwaitStateChange: (self: UIComponent, Callback: () -> ()) -> (),
 
 	[string]: (self: UIComponent, ...any) -> () | any?,
 }

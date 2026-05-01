@@ -96,6 +96,7 @@ return {
 		Chest = 1,
 		NPC = 2,
 		LobbyNPC = 3,
+		UIInteraction = 4,
 	},
 
 	MarketplaceRequestTypes = {

@@ -22,11 +22,9 @@ function ReturnsResult(A: number, B: any): Res.Result<number, string>
 end
 
 function Controller:Init()
-    if true then
-        return
-    end
 
-    local ListOfTries = {true, "Dog", 15, workspace.Baseplate} :: { any }
+    if true then return end
+    local ListOfTries = {true, "Dog", 15} :: { any }
 
     for idx, ValueToTry in ListOfTries do
         local MyResult = ReturnsResult(5, ValueToTry)

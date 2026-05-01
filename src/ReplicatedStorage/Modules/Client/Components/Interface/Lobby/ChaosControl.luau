@@ -21,7 +21,7 @@ local Drives = require(Shared.Database.Drives)
 local Artifacts = require(Shared.Database.Artifacts)
 local UIUtils = require(Client.Libraries.UIUtils)
 
-local Component = BaseClass.new("ChaosControl", "Lobby", {KeyToBind = Enum.KeyCode.L})
+local Component = BaseClass.new("ChaosControl", "Lobby", {}) --KeyToBind = Enum.KeyCode.L
 
 ---
 local CleanupObjects = {}
@@ -437,6 +437,7 @@ function Component:Init()
             return
         end
 
+        self:Set(false)
         Network:Fire("ChaosControl", GameEnum.ChaosControlAction.Begin, GameEnum.ChaosControlTab[States.CurrentTab], States.SelectedNode)
     end)
 
