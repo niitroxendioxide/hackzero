@@ -26,6 +26,10 @@ return {
 		Tags = {
 			GOKU_MODE_BUFF = 92866058949877,
 			SS2 = 110082389480306,
+			MikuOrbStrBuff = 70731719961060,
+			MikuOrbDefBuff = 70731719961060,
+			MikuStrengthBuff = 126683577406553,
+			MikuDefenseBuff = 126683577406553,
 		},
 
 		Values = {

@@ -136,6 +136,22 @@ return {
 				Required_Energy = 60,
 				CustomVerify = true,
 
+				OrbBuffs = {
+					{
+						Type = "Attack",
+						Time = 3,
+						Value = "10%",
+						Tag = "MikuOrbStrBuff",
+					},
+
+					{
+						Type = "Defense",
+						Time = 3,
+						Value = "15%",
+						Tag = "MikuOrbDefBuff",
+					}
+				},
+
 				Buffs = {
 					{
 						Type = "Attack",

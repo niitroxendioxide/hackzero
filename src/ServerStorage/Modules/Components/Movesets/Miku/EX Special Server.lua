@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
+local Agents = require(ServerStorage.Modules.Libraries.Agents)
 local AbilityService = require(ServerStorage.Modules.Services.Combat.AbilityService)
 local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Types = require(Shared.Types.Agents)
@@ -36,6 +37,73 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name);
 	local Buffs = Ability:FromData("Buffs", nil, SkillLevel)
 
+	local OrbBuffs = Ability:FromData("OrbBuffs")
+	local Hitboxes = {}
+	local function SpawnOrbs()
+		local Params = OverlapParams.new()
+		Params.FilterDescendantsInstances = {}
+		Params.FilterType = Enum.RaycastFilterType.Include
+
+		local Clock = os.clock()
+		while Caster:GetState() == 'Attacking' and Caster:HasTag("MIKU_ASSIST_MODE") do
+			local _ = task.wait(1 / 24)
+
+			for i = #Hitboxes, 1, -1 do
+				-- calculate any user going inside this hitbox
+				local Hitbox = Hitboxes[i]
+				local Position = Hitbox[1]
+				local Time = Hitbox[2]
+
+				local ReverseLookup, AgentHitboxes = Agents:GetActiveAgentsHitboxes()
+				Params.FilterDescendantsInstances = AgentHitboxes
+
+				local Remove = (os.clock() - Time) > 10 
+				local HitboxHits = workspace:GetPartBoundsInBox(Position, vector.create(5, 5, 5), Params)
+				for _, Object in HitboxHits do
+					local Agent = ReverseLookup[Object]
+
+					for _, Buff in OrbBuffs do
+						if Agent:GetEffect(Buff.Tag) then
+							continue
+						end
+
+						Agent:AddEffect(Buff)
+						Remove = true
+					end
+				end
+				
+				if Remove then
+					if Hitbox[3] then
+						Hitbox[3]:Destroy()
+					end
+
+					table.remove(Hitboxes, i)
+				end
+			end
+			
+			if (os.clock() - Clock) >= 2.25 then
+				Clock = os.clock()
+
+				local Offset = CFrame.new(Random.new():NextNumber(-30, 30), 0, Random.new():NextNumber(-30, 30))
+				local CasterPos = Caster:GetPivot() * Offset
+
+				local new_part = Instance.new("Part")
+				new_part.Size = vector.create(4, 4, 4)
+				new_part.Color = Color3.fromRGB(255)
+				new_part.Transparency = 0.75
+				new_part.Anchored = true
+				new_part.CFrame = CasterPos
+				new_part.Parent = workspace
+
+				table.insert(Hitboxes, {
+					CasterPos,
+					os.clock(),
+					new_part
+				})
+			end
+		end
+	end
+
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState("Attacking", 5e12)
@@ -60,30 +128,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 		end},
 
 		{1, function()
-			task.spawn(function()
-				local Clock = os.clock()
-				while Caster:GetState() == 'Attacking' and Caster:HasTag("MIKU_ASSIST_MODE") do
-					local _ = task.wait(1 / 24)
-					
-					if (os.clock() - Clock) >= 2.25 then
-						Clock = os.clock()
-
-						local Offset = CFrame.new(Random.new():NextNumber(-30, 30), 0, Random.new():NextNumber(-30, 30))
-						local CasterPos = Caster:GetPivot() * Offset
-
-						local Box = Instance.new("Part")
-						Box.Size = vector.create(4, 4, 4)
-						Box.Color = Color3.fromRGB(255, 0, 0)
-						Box.Transparency = 0
-						Box.Material = Enum.Material.ForceField
-						Box.CFrame = CasterPos
-						Box.Parent = workspace
-
-						task.delay(10, Box.Destroy, Box)
-					end
-				end
-
-			end)
+			task.spawn(SpawnOrbs)
 		end},
 	})
 end
