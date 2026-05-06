@@ -416,6 +416,12 @@ export type ServerAgentClass = {
 		@return `EffectObject` The effect object. Effect.Remove() to delete.
 	]]
 	GetEffect: (self: ServerAgentClass, Tag: string) -> (EffectObject?),
+
+	--[[
+		Refresh an agent buff effect, recreate it from scratch.
+		@param Tag The tag to find and refresh. beware as repeated tags could cause trouble and refresh unwanted effects
+	]]
+	RefreshEffect: (self: ServerAgentClass, Tag: string) -> (),
 }
 
 export type AgentItemsClass = {

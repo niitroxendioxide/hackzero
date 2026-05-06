@@ -239,6 +239,7 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 		Value = Effect.Value,
 		Hide = Effect.Hide,
 		Created = os.clock(),
+		Thread = nil,
 
 		Remove = function()
 			self:RemoveEffect(NewId)
@@ -250,7 +251,7 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 	}
 
 	if Effect.Time then
-		task.delay(Effect.Time, EffectObject.Remove)
+		EffectObject.Thread = task.delay(Effect.Time, EffectObject.Remove)
 	end
 
 	self.__Effects[NewId] = EffectObject
@@ -270,6 +271,10 @@ end
 
 function StatusClass.RemoveEffect(self: Types.AgentStatusClass, Id: number)
 	local PreviousEffect = self.__Effects[Id]
+	if PreviousEffect.Thread and coroutine.running() ~= PreviousEffect.Thread then
+		task.cancel(PreviousEffect.Thread)
+	end
+
 	if PreviousEffect ~= nil then
 		self.__Effects[Id] = nil
 

@@ -500,10 +500,18 @@ function ServerAgentClass.AddEffect(self: Types.ServerAgentClass, EffectParams: 
 
 	local Effect = self.__Status:AddEffect(EffectParams)
 
-
 	Replicator:AddEffect(self, EffectParams)
 
 	return Effect
+end
+
+function ServerAgentClass.RefreshEffect(self: Types.ServerAgentClass, EffectTag: string)
+	local EffectFound = self:GetEffect(EffectTag) :: Types.EffectObject
+	if EffectFound then
+		self:RemoveEffect(EffectFound.Id)
+	end
+
+	self:AddEffect({Type = EffectFound.Type, Time = EffectFound.Time, Value = EffectFound.Value, Tag = EffectTag})
 end
 
 function ServerAgentClass.RemoveEffect(self: Types.ServerAgentClass, EffectId: number): Types.EffectObject

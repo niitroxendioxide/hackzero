@@ -39,6 +39,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 
 	local OrbBuffs = Ability:FromData("OrbBuffs")
 	local Hitboxes = {}
+	local Id = 0
 	local function SpawnOrbs()
 		local Params = OverlapParams.new()
 		Params.FilterDescendantsInstances = {}
@@ -53,29 +54,32 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 				local Hitbox = Hitboxes[i]
 				local Position = Hitbox[1]
 				local Time = Hitbox[2]
+				local HitboxId = Hitbox[3]
 
 				local ReverseLookup, AgentHitboxes = Agents:GetActiveAgentsHitboxes()
 				Params.FilterDescendantsInstances = AgentHitboxes
 
 				local Remove = (os.clock() - Time) > 10 
 				local HitboxHits = workspace:GetPartBoundsInBox(Position, vector.create(5, 5, 5), Params)
+				local HitBuff = false
 				for _, Object in HitboxHits do
 					local Agent = ReverseLookup[Object]
 
 					for _, Buff in OrbBuffs do
+						HitBuff = true
+
 						if Agent:GetEffect(Buff.Tag) then
+							Agent:RefreshEffect(Buff.Tag)
 							continue
 						end
-
+						
 						Agent:AddEffect(Buff)
-						Remove = true
 					end
 				end
 				
-				if Remove then
-					if Hitbox[3] then
-						Hitbox[3]:Destroy()
-					end
+				if Remove or HitBuff then
+
+					Ability:Effect("Miku_MusicOrb", {HitboxId, false, HitBuff}, true)
 
 					table.remove(Hitboxes, i)
 				end
@@ -87,19 +91,16 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 				local Offset = CFrame.new(Random.new():NextNumber(-30, 30), 0, Random.new():NextNumber(-30, 30))
 				local CasterPos = Caster:GetPivot() * Offset
 
-				local new_part = Instance.new("Part")
-				new_part.Size = vector.create(4, 4, 4)
-				new_part.Color = Color3.fromRGB(255)
-				new_part.Transparency = 0.75
-				new_part.Anchored = true
-				new_part.CFrame = CasterPos
-				new_part.Parent = workspace
-
-				table.insert(Hitboxes, {
+				Id += 1
+				local HitboxObj = {
 					CasterPos,
 					os.clock(),
-					new_part
-				})
+					Id,
+				}
+				
+				table.insert(Hitboxes, HitboxObj)
+
+				Ability:Effect("Miku_MusicOrb", {HitboxObj[3], true, CasterPos}, true)
 			end
 		end
 	end
