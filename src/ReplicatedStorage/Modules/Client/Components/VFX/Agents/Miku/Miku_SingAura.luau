@@ -15,7 +15,8 @@ local EffectsLibrary = require(Client.Libraries.Effects)
 local Cache = {}
 return function(
     Caster: Types.Caster,
-    State: string
+    State: string,
+    IsEx: boolean
 ): ()
     local MikuAssets = Assets.Miku
 
@@ -42,7 +43,7 @@ return function(
 
         local MikuSinging = Effects:Create(MikuAssets.SpecialAuraMusic)
         MikuSinging:ScaleTo(0.001)
-        MikuSinging:PivotTo(Caster:GetModel():GetPivot() * CFrame.new(0, 0.4, 0))
+        MikuSinging:PivotTo(Caster:GetModel():GetPivot() * CFrame.new(0, if IsEx then 2 else 0.4, 0))
         Effects:Weld(MikuSinging.Main, Caster:GetModel().PrimaryPart)
         Effects:TweenModel(MikuSinging, 1, 0.25, 'Quart')
 

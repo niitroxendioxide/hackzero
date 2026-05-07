@@ -43,7 +43,6 @@ function Ability:Play(Caster)
 			Caster:SwitchState('Attacking', Attack_Time)
 			Caster:AddTag('CharacterStatic')
 			Ability:Effect("Miku_ToggleLeek", Caster, "Enable")
-
 			
 			Ability:Save(Caster, "SingTrack", Animation)
 
@@ -60,6 +59,7 @@ function Ability:Play(Caster)
 				Ability:Effect("Miku_ToggleLeek", Caster, "Enable", 1)
 				Caster:RemoveTag("MikuBoostIdleState")
 				Caster:RemoveTag('CharacterStatic')
+				Ability:Effect("Miku_SingAura", Caster, "Disable")
 
 				if Animation and Animation.IsPlaying then
 					Animation:Stop(0.1)
@@ -69,6 +69,10 @@ function Ability:Play(Caster)
 		end,},
 
 		{0.6, function()
+			Ability:Effect("Miku_SingAura", Caster, "Enable", true)
+		end},
+
+		{0.7, function()
 			Animation:AdjustSpeed(0)
 		end}
 
