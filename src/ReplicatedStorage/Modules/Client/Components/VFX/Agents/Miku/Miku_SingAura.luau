@@ -19,6 +19,7 @@ return function(
     IsEx: boolean
 ): ()
     local MikuAssets = Assets.Miku
+    local CasterModel = Caster:GetModel()
 
     ---
     if State == 'Enable' then
@@ -33,21 +34,49 @@ return function(
         Highlight.FillTransparency = 0.75
         Highlight.OutlineColor = Color3.fromRGB(24, 232, 255)
         Highlight.OutlineTransparency = 0
-        Highlight.Parent = Caster:GetModel()
+        Highlight.Parent = CasterModel
         Highlight.Name = "mikuhighlightsing"
 
         local Aura = Effects:Create(MikuAssets.SingingAura)
-        Aura.CFrame = Caster:GetModel():GetPivot()
-        Effects:Weld(Aura, Caster:GetModel().PrimaryPart)
+        Aura.CFrame = CasterModel:GetPivot()
+        Effects:Weld(Aura, CasterModel.PrimaryPart)
         EffectsLibrary:Play("Miku_ToggleLeek", Caster, "Enable")
 
         local MikuSinging = Effects:Create(MikuAssets.SpecialAuraMusic)
         MikuSinging:ScaleTo(0.001)
-        MikuSinging:PivotTo(Caster:GetModel():GetPivot() * CFrame.new(0, if IsEx then 2 else 0.4, 0))
-        Effects:Weld(MikuSinging.Main, Caster:GetModel().PrimaryPart)
+        MikuSinging:PivotTo(CasterModel:GetPivot() * CFrame.new(0, if IsEx then 2 else 0.4, 0))
+        Effects:Weld(MikuSinging.Main, CasterModel.PrimaryPart)
         Effects:TweenModel(MikuSinging, 1, 0.25, 'Quart')
 
+        local Mesh = if IsEx then Effects:Create(MikuAssets.TransparentOrb) else nil
+
+        local Thread = task.spawn(function()
+            if not IsEx then
+                return
+            end
+
+            Mesh.Transparency = 1
+            Effects:Tween(Mesh, { 0.3, 'Quad' }, { Transparency = 0.5 })
+
+            local Clock = 0
+            while true do
+                Clock += (task.wait() * math.pi * 2)
+
+                local Angle = math.sin(Clock)
+                local Sz = 7 + Angle
+
+                Mesh.CFrame = CFrame.lookAlong(CasterModel.Torso.Position, Vector3.zAxis)
+                Mesh.Size = vector.create(Sz, Sz, Sz)
+            end
+        end)
+
         Cache[Caster] = function()
+            if Mesh then
+                Mesh:Destroy()
+            end
+
+            task.cancel(Thread)
+
             Effects:CleanUp(Aura, 2)
             Effects:Toggle(Aura, false)
 
