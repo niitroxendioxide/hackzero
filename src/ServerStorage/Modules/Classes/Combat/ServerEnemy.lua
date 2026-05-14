@@ -267,7 +267,11 @@ function ServerEnemy:Knockback(Dir: Vector3, Pow: number, Time: number)
 end
 
 function ServerEnemy.AddEffect(self: Types.ServerEnemyClass, Data: Types.EnemyEffectParameters)
-	return self.__Status:AddEffect(Data)
+	self.__Status:AddEffect(Data)
+
+	if Data.Type == "Speed" then
+		self:SetWorldSpeed(self.__Status:GetStat("Speed"), Data.Time)
+	end
 end
 
 function ServerEnemy.AddTag(self: Types.ServerEnemyClass, Tag: string)
@@ -401,7 +405,7 @@ function ServerEnemy:TakeDamage(number: number): boolean
 end
 
 function ServerEnemy:Kill()
-	self:TakeDamage(9e12)
+	self:TakeDamage(9e24)
 end
 
 function ServerEnemy:TakeDaze(number: number)

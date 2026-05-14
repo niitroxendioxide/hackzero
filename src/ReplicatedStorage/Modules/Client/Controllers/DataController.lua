@@ -164,6 +164,9 @@ function Controller:Init()
         local Match_Agents = DecompressTableOfAgents(Agents)
 
         SharedData:SetData(Player, Match_Agents, Match_Drives, Match_Artifacts)
+
+        --
+        Network:Fire("SharedData")
     end)
 end
 

@@ -373,7 +373,10 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 
 	--
 
-	Enemy:Stun(Data.Stun, Data.Airborne)
+	if Data.Stun then
+		Enemy:Stun(Data.Stun, Data.Airborne)
+	end
+
 	Enemy:Rotate(AgentPivot.Position)
 
 	if Enemy:TimeSinceLastPivot() > 0.5 then

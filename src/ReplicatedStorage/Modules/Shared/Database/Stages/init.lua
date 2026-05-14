@@ -57,6 +57,9 @@ end
 
 function Stages:GetEvent(StageName: string, ActName: string, Event: string)
     local Act = Stages:GetAct(StageName, ActName)
+    if not Act then
+        return
+    end
 
     return Act.Guide[Event]
 end

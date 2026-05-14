@@ -31,6 +31,7 @@ local LastPlayerId = 0
 local AvailableIds = {}
 
 --
+local PlayersResponse = {}
 local DataCache = {}
 local function SyncPlayerDataWithOthers(Player: Player, AgentTeam: {}?, PlayerToSync: Player)
 	if DataCache[Player] == nil and AgentTeam ~= nil then
@@ -128,6 +129,10 @@ function Service:Init(): ()
 	Notifications:Init()
 	Service:SetupStarterPlayer()
 
+	Network:On("SharedData", function(Player: Player, ...)  
+		PlayersResponse[Player] = true
+	end)
+
 	for i = 1, 255 do
 		table.insert(AvailableIds, i)
 	end
@@ -223,6 +228,10 @@ function Service.PlayerAdded(Player: Player): ()
 			SyncPlayerDataWithOthers(Player, {HashMap, Borrowed}, NetPlayer)
 		end
 
+		repeat
+			task.wait()
+		until (PlayersResponse[Player] == true)
+
 		Service:InitializeCharacters(Player)
 	end
 end
@@ -237,7 +246,7 @@ end
 
 --
 function Service:InitializeCharacters(Player: Player): ()
-	Player:LoadCharacter()
+	Player:LoadCharacterAsync()
 
 	--
 	TeamService:Create(Player)

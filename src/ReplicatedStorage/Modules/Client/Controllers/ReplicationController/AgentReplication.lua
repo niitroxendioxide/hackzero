@@ -16,6 +16,7 @@ local GameEnum = require(Shared.GameEnum)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
 local CharacterDatabase = require(Shared.Database.Characters)
 local SharedData = require(Client.Libraries.SharedData)
+local LocalData = require(Client.Libraries.LocalData)
 
 --
 local function GetPlayerById(Id: number)
@@ -47,7 +48,10 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 	end
 
 	local AgentOwner = GetPlayerById(UserId)
-	local AgentData = SharedData:GetAgentData(AgentOwner, CharacterName)-- or {Level = 1, Name = CharacterName, Artifacts = {}, Drive = nil}
+	local AgentData = SharedData:GetAgentData(AgentOwner, CharacterName) -- or {Level = 1, Name = CharacterName, Artifacts = {}, Drive = nil}
+	if AgentData == nil and (IsOwnId(UserId)) then
+		AgentData = LocalData:GetAgent(CharacterName)
+	end
 
 	local CharacterInstance = AgentClass.new(CharacterName, AgentData.Level)
 	

@@ -72,6 +72,8 @@ function EnemyData:GetStatsAtLevel(Character: string, Level: number)
 		end
 	end
 
+	Converted.Speed = 1
+
 	return table.freeze(Converted)
 end
 

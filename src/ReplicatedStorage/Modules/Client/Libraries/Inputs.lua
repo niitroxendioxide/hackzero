@@ -47,7 +47,7 @@ function Inputs:Init()
 	end
 
 	if Places:CanFight() then
-		local Required = require(Players.LocalPlayer.PlayerScripts:FindFirstChild("PlayerModule"))
+		local Required = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"))
 		Required:GetControls():Disable()
 	end
 end

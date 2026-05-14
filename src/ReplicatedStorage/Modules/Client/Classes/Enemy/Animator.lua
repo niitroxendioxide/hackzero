@@ -49,6 +49,7 @@ function AnimatorClass:Play(Track: string, Data: Types.AnimationDataOptions)
 	local RemovedId = tonumber(Track:sub(#Track, #Track)) ~= nil and Track:sub(1, #Track - 1) or Track
 	local TrackObject = AnimLibrary:GetMovementAnim(self.__Directory, Track)
 	local AnimTrack = AnimLibrary:Play(self.__Character:GetModel(), TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
+	AnimTrack:SetAttribute("spd", AnimTrack.Speed)
 
 	AnimTrack.Priority = Priorities[RemovedId] or Enum.AnimationPriority.Core
 	self.__Tracks[RemovedId] = AnimTrack
@@ -86,6 +87,7 @@ function AnimatorClass:Update(_: number)
 	local Idle = self:GetTrack('Idle')
 	local ForwardRight = self:GetTrack('WalkFRight')
 	local ForwardLeft = self:GetTrack('WalkFLeft')
+	local StatSpeed = self.__Character.__Status:GetStat("Speed")
 
 	local Direction =  self.__Character:GetDirection()
 	local CorrectedDirection = vector.create(Direction.X, 0, math.abs(Direction.Z))
@@ -108,6 +110,7 @@ function AnimatorClass:Update(_: number)
 
 	for _, DippityTrack in Tracks do
 		local Weight = Moving and DippityTrack == ChosenTrack and 1 or 0.001
+		DippityTrack:AdjustSpeed(StatSpeed * DippityTrack:GetAttribute("spd"))
 		DippityTrack:AdjustWeight(Weight)
 	end
 

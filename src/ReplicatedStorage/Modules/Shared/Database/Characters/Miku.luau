@@ -127,6 +127,46 @@ return {
             },
         },
 
+		['Quick Assist'] = {
+            Base = {
+                Cooldown = 0.2,
+                Attack_State_Time = 1.1,
+                Speed = 1,
+                Animation_Speed = 1,
+
+				CustomVerify = true,
+
+				HitData = {
+					Damage = 170,
+					Daze = 50,
+					Affliction = "Ice",
+					Affliction_Buildup = 40,
+					HitType = "Blunt",
+					Knockback = {
+						vector.create(0, 0, 1),
+						8,
+						0.2,
+					}
+				},
+
+				EffectData = {
+					Highlight = true,
+					HueShift = 80,
+				},
+
+				SlownessEffect = {
+					Type = "Speed",
+					Time = 25,
+					Value = -0.75,
+					Tag = "mikuslowness",
+				}
+            },
+
+			Upgrade = {
+
+			}
+        },
+
 		['EX Special'] = {
 			Base = {
 				Cooldown = 2,
