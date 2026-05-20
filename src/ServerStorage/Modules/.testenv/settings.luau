@@ -42,7 +42,7 @@ return table.freeze({
 
 
     --- PASSIVE, EASY, MEDIUM, HARD, EXTREME
-    DIFFICULTY = 'PASSIVE', 
+    DIFFICULTY = 'EASY', 
     USE_BORROW = true, -- whether to replace agents with lvl 60 max
     BORROWED_AGENT_LEVEL = 60,
 

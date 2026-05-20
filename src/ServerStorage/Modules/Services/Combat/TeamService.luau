@@ -59,6 +59,7 @@ function Service:Create(Player: Player)
         end
 
         AgentInstance:Init(Player)
+        AgentInstance:AddTag("Invulnerability", 5)
         AgentService:AddAgent(Player, AgentInstance)
 
         if index == 1 then

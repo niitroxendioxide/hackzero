@@ -21,19 +21,14 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 			Caster:SwitchState("Attacking", AttackStateTime)
 		end},
 
-		{0.5, function()
-			if Context.Target then
-				Ability:Hit(Caster, Context.Target, HitData)
-
-				MikuGameplayController:InflictSlowness(Context.Target)
-			end
+		{0.45, function()
 		end},
 
 		{0.85, function()
-			Ability:CreateHitbox(Caster, vector.zero, vector.create(36, 12, 36), function(Enemy)  
-				Ability:Hit(Caster, Enemy, HitData)
-			end)
-		end},
+			if Context.Target then
+				MikuGameplayController:AddFanStateStack(Context.Target, 6)
+			end
+		end}
 	})
 end
 

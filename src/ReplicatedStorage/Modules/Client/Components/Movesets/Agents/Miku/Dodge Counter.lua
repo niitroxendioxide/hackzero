@@ -17,32 +17,17 @@ function Ability:Play(Agent, _, _, Context)
 
 	local Sequence = Ability:Begin(Agent, {
 		{0, function(_)
-			Ability:PlayAnimation(Agent, 'Miku.Abilities.Assist.Default', {
-				Fade = .1,
-				Active_Time = Attack_Time + .125,
-			})
-
 			Agent:SwitchState('Attacking', Attack_Time)
-			Ability:Effect("Miku_ToggleLeek", Agent, "Enable", 2)
 		end,},
 	
 		{.06, function()
-			Agent:Walk(0.25)
 		end},
 
-		{0.45, function()
-			if Context.Enemy then
-				Ability:Hit(Agent, Context.Enemy, {EffectData = EffectData})
-			end
+		{0.47, function()
 		end},
 
 		{0.85, function()
-			Ability:Effect("Miku_M1Explosion", Agent, CFrame.new(0, 1.5, 0), 1.2)
-
-			Ability:CreateHitbox(Agent, vector.zero, vector.create(36, 12, 36), function(Enemy)  
-				Ability:Hit(Agent, Enemy, {EffectData = EffectData})
-			end)
-		end},
+		end}
 
 	}, true)
 

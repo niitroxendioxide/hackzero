@@ -185,6 +185,10 @@ function EnemyClass:Hit()
 	return self.__Animator:Hit()
 end
 
+function EnemyClass:GetAnimator(): Types.AnimatorController
+	return self.__Animator
+end
+
 function EnemyClass:PivotTo(Vector: Vector3)
 	self.__Movement.__Position = Vector
 end

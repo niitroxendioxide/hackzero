@@ -307,7 +307,7 @@ end
 
 function EmitObj(Objects: ParticleEmitter)
 	local GraphicSettings = math.max(UserSettings().GameSettings.SavedQualityLevel.Value / 10, 0.3)
-	local CorrectedAmount = math.ceil(Objects:GetAttribute('EmitCount') * GraphicSettings)
+	local CorrectedAmount = math.ceil((Objects:GetAttribute('EmitCount') or 0) * GraphicSettings)
 
 	Objects:Emit(CorrectedAmount)
 end

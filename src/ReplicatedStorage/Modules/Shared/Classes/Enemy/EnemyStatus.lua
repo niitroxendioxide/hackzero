@@ -15,6 +15,9 @@ local ElementDatabase = require(Database.Weakness)
 local Statics = require(Database.Statics)
 
 --
+local Priorities = { 
+	['Frozen'] = 15,
+}
 local EnemyStatus = {}
 EnemyStatus.__index = EnemyStatus
 
@@ -49,8 +52,13 @@ function EnemyStatus:SwitchState(State: string, Time: number)
 	if not table.find(GameEnum.Agent_States, State) then
 		return warn('Tried to switch to invalid state')
 	end
-
+	
+	local StatePriority = Priorities[State] or 1
+	local CurrentPriority = Priorities[self.__State] or 1
 	local CurrentThread = self.__Threads['CurrentState']
+	if CurrentPriority > StatePriority then
+		return
+	end
 
 	if typeof(CurrentThread) == 'thread' then
 		task.cancel(CurrentThread)

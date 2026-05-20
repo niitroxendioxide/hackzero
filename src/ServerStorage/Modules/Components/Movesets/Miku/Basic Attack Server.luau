@@ -7,6 +7,7 @@ local Classes = ServerStorage.Modules.Classes
 
 local AbilityClass = require(Classes.Combat.ServerAbility)
 local Types = require(Shared.Types.Abilities)
+local MikuGameplayController = require(script.Parent.MikuGameplayController)
 
 --
 local Ability = AbilityClass.new()
@@ -55,6 +56,8 @@ function Ability:Play(Caster: Types.Caster, _, State, Context): ()
     AttackHitData.Damage = DamageMult
     AttackHitData.Daze = DazeMult
 
+	local Hits = {}
+
 	for i = 0, 9 do
 		local Count = M1_Count + 0.1*i
 		local AttackData = Ability:FromData("AttackData", Count)
@@ -68,6 +71,10 @@ function Ability:Play(Caster: Types.Caster, _, State, Context): ()
 		Sequence:Add(AttackData[2], function()
 			Caster:LookAtTarget(Context.Enemy)
 			Ability:CreateHitbox(Caster, vector.create(0, 0, -HitboxSize.z/2), HitboxSize, function(Enemy) 
+				if not Hits[Enemy] then
+					MikuGameplayController:AddFanStateStack(Enemy, 6)
+				end
+
 				Ability:Hit(Caster, Enemy, AttackHitData)
 			end)
 		end)

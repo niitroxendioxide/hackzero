@@ -153,13 +153,29 @@ return {
 					Highlight = true,
 					HueShift = 80,
 				},
+            },
 
-				SlownessEffect = {
-					Type = "Speed",
-					Time = 25,
-					Value = -0.75,
-					Tag = "mikuslowness",
-				}
+			Upgrade = {
+
+			}
+        },
+
+		['Dodge Counter'] = {
+            Base = {
+                Cooldown = 0.2,
+                Attack_State_Time = 0.65,
+                Speed = 1,
+                Animation_Speed = 1,
+
+				CustomVerify = true,
+
+				HitData = {
+					Damage = 450,
+					Daze = 175,
+					Affliction = "Ice",
+					Affliction_Buildup = 100,
+					HitType = "Blunt",
+				},
             },
 
 			Upgrade = {
