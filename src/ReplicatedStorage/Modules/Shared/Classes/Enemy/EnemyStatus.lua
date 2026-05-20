@@ -290,10 +290,15 @@ end
 function EnemyStatus.GetStatEffects(self: Types.EnemyStatus, Type: Types.Stat)
 	local Amount = 0
 
+
 	for _, Effect in self.__Effects do
 		if Effect.Type == Type then
 			Amount += Effect.Value
 		end
+	end
+
+	if Type == 'Speed' then
+		Amount = math.clamp(Amount, -0.99, math.huge)
 	end
 
 	return Amount

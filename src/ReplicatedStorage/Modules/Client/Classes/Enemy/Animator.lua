@@ -1,6 +1,7 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
+local Stats = game:GetService("Stats")
 
 --
 local Client = ReplicatedStorage.Modules.Client
@@ -87,7 +88,7 @@ function AnimatorClass:Update(_: number)
 	local Idle = self:GetTrack('Idle')
 	local ForwardRight = self:GetTrack('WalkFRight')
 	local ForwardLeft = self:GetTrack('WalkFLeft')
-	local StatSpeed = self.__Character.__Status:GetStat("Speed")
+	local StatSpeed = self.__Character.__Movement.__World_Speed or 1
 
 	local Direction =  self.__Character:GetDirection()
 	local CorrectedDirection = vector.create(Direction.X, 0, math.abs(Direction.Z))
@@ -115,7 +116,7 @@ function AnimatorClass:Update(_: number)
 	end
 
 	Idle:AdjustWeight(not Moving and 1 or 0.001)
-	Walk:AdjustSpeed(-math.sign(Direction.Z) * 0.7)
+	Walk:AdjustSpeed(-math.sign(Direction.Z) * 0.7 * StatSpeed)
 end
 
 function AnimatorClass:Destroy()

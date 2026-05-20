@@ -127,6 +127,34 @@ return {
             },
         },
 
+		['Ultimate'] = {
+            Base = {
+                Cooldown = 5,
+                Attack_State_Time = 2.5,
+                Speed = 1,
+                Animation_Speed = 1,
+
+                Required_Energy = 60,
+				CustomVerify = true,
+
+                Buffs = {
+                    {
+                        Type = "Attack",
+                        Time = 20,
+                        Value = "25%",
+                        Tag = "MikuStrengthBuff",
+                    },
+
+                    {
+                        Type = "Defense",
+                        Time = 20,
+                        Value = 120,
+                        Tag = "MikuDefenseBuff",
+                    }
+                },
+            },
+        },
+
 		['Quick Assist'] = {
             Base = {
                 Cooldown = 0.2,
@@ -137,7 +165,7 @@ return {
 				CustomVerify = true,
 
 				HitData = {
-					Damage = 170,
+					Damage = 70,
 					Daze = 50,
 					Affliction = "Ice",
 					Affliction_Buildup = 40,

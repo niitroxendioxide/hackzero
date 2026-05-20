@@ -24,22 +24,34 @@ function Ability:Play(Agent, _, _, Context)
 
 			Agent:SwitchState('Attacking', Attack_Time)
 			Ability:Effect("Miku_ToggleLeek", Agent, "Enable", 2)
+			Agent:WalkBack(0.25, 0.85)
 		end,},
-	
-		{.06, function()
-			Agent:Walk(0.25)
+
+		{0.55, function()
+			if Context.Enemy then
+				Ability:Hit(Agent, Context.Enemy, {EffectData = EffectData})
+
+				Ability:Effect("Miku_AirStrike", Context.Enemy:GetPivot(), 0.25)
+			end
 		end},
 
-		{0.45, function()
+		{0.65, function()
+			if Context.Enemy then
+				Ability:Hit(Agent, Context.Enemy, {EffectData = EffectData})
+			end
+		end},
+
+		{0.75, function()
 			if Context.Enemy then
 				Ability:Hit(Agent, Context.Enemy, {EffectData = EffectData})
 			end
 		end},
 
 		{0.85, function()
-			Ability:Effect("Miku_M1Explosion", Agent, CFrame.new(0, 1.5, 0), 1.2)
+			local OffsetToTarget = if Context.Enemy then Agent:GetPivot():ToObjectSpace(Context.Enemy:GetPivot()) else CFrame.new(0, 0, 0)
+			Ability:Effect("Miku_M1Explosion", Agent, OffsetToTarget * CFrame.new(0, 1.5, 0), 1.2)
 
-			Ability:CreateHitbox(Agent, vector.zero, vector.create(36, 12, 36), function(Enemy)  
+			Ability:CreateHitbox(Agent, OffsetToTarget.Position, vector.create(16, 12, 16), function(Enemy)  
 				Ability:Hit(Agent, Enemy, {EffectData = EffectData})
 			end)
 		end},

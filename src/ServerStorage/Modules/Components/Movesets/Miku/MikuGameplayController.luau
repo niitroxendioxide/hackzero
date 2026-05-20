@@ -14,7 +14,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local FAN_STATE_TIME  = 3
 local SLOWNESS_DEBUFF = {
     Type = "Speed",
-    Time = 12,
+    Time = 2,
     Value = -0.75,
     Tag = "mikuslowness",
 }
