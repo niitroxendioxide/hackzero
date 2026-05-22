@@ -85,7 +85,7 @@ return {
 	},
 
 	Max_Skill_Level = 20,
-	Skill_Upgrade_Cost = function(Level: number): number return math.floor(0.17 * Level^2 + 1) end,
+	Skill_Upgrade_Cost = function(Level: number): number return math.floor(0.26 * Level^2 + 1) end,
 
 	--
 	Daze_Length_Level_Multiplier = 0.01416666666,

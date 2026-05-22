@@ -67,10 +67,18 @@ function UIUtils:CreateUpgradeChipModel(Element: string, Tier: number?, Parent: 
 
     if not Target then return false end
 
+    local ExtraOffset = CFrame.new()
+    local r = math.rad
     local ClonedModel = Target:Clone()
     Parent.WorldModel:ClearAllChildren()
 
-    ClonedModel:PivotTo(CFrame.new() * CFrame.Angles(math.rad(45), math.rad(-25), math.rad(15)))
+    if Tier == 2 then
+        ExtraOffset = CFrame.new(0, -0.1, 0)
+    elseif Tier == 3 then
+        ExtraOffset = CFrame.new(0, -0.1, 10)
+    end
+
+    ClonedModel:PivotTo(CFrame.new() * CFrame.Angles(r(45), r(-25), r(15)))
     ClonedModel.Parent = Parent.WorldModel
 
     if Parent:FindFirstChild('Camera') then
@@ -80,7 +88,7 @@ function UIUtils:CreateUpgradeChipModel(Element: string, Tier: number?, Parent: 
     --
     local NewCamera = Instance.new("Camera")
     NewCamera.FieldOfView = 1
-    NewCamera.CFrame = CFrame.new(0, 0, -100) * CFrame.Angles(0, math.pi, 0)
+    NewCamera.CFrame = CFrame.new(0, 0, -100) * ExtraOffset * CFrame.Angles(0, math.pi, 0)
     NewCamera.Parent = Parent
 
     Parent.CurrentCamera = NewCamera

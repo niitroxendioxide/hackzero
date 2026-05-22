@@ -17,6 +17,13 @@ local DataService = require(Services.Data.DataService)
 local AgentDatabase = require(Shared.Database.Characters)
 local ItemDatabase = require(Shared.Database.Items)
 
+---
+local CHIPS_PREFIX = {
+    [1] = '',
+    [2] = 'Upgraded',
+    [3] = 'Tier3',
+}
+
 -- Artifacts
 local function AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass, Agent: Types.PlayerAgentDataClass): ()
     Network:Fire('UpdateAgent', Player, GameEnum.BuildEvent.UpdateArtifactSlot, {
@@ -175,7 +182,7 @@ function Service:AscendAgent(Player: Player, AgentName: string, Times: number)
     AscendAgent(Player, Agent)
 end
 
-function Service:UpgradeAgentSkill(Player: Player, AgentName: string, SkillName: number)
+function Service:UpgradeAgentSkill(Player: Player, AgentName: string, SkillName: number, ItemsUsed: { [number]: number })
     local Agent = DataService:GetAgent(Player, AgentName)
 
     if not Agent.Skills[SkillName] or (Agent.Skills[SkillName] + 1 > 20) then
@@ -187,17 +194,61 @@ function Service:UpgradeAgentSkill(Player: Player, AgentName: string, SkillName:
     local Cost = Statics.Skill_Upgrade_Cost(Agent.Skills[SkillName] + 1)
     local ItemName = Element..'Chip'
 
-    local HasOfItem = DataService:HasItem(Player, ItemName, Cost)
-    if not HasOfItem then
+    local TotalUsedAmount = 0;
+    for Tier, Amount in ItemsUsed do
+        TotalUsedAmount += math.max((Tier-1) * 3, 1) * Amount
+
+        local HasOfItem = DataService:HasItem(Player, CHIPS_PREFIX[Tier] .. ItemName, Amount)
+        if not HasOfItem then
+            print('User doesnt have enough of: ', CHIPS_PREFIX[Tier] .. ItemName)
+
+            return false
+        end
+    end
+
+    if TotalUsedAmount < Cost then
         return
     end
 
-    DataService:TakeItem(Player, ItemName, Cost)
+    local Refund = {}
+    local Remaining = Cost
+    local SortedTiers = {}
+    for Tier in ItemsUsed do
+        table.insert(SortedTiers, Tier)
+    end
+
+    table.sort(SortedTiers, function(a, b) return a > b end)
+
+    for _, Tier in SortedTiers do
+        local Amount = ItemsUsed[Tier]
+        local TierValue = math.max((Tier - 1) * 3, 1)
+        local AmountNeeded = math.ceil(Remaining / TierValue)
+        local AmountUsed = math.min(AmountNeeded, Amount)
+        local AmountRefunded = Amount - AmountUsed
+
+        Remaining -= AmountUsed * TierValue
+
+        if AmountRefunded > 0 then
+            Refund[Tier] = AmountRefunded
+        end
+    end
+
+    for Tier, Amount in ItemsUsed do
+        local Refunded = Refund[Tier] or 0
+        local ActualTaken = Amount - Refunded
+
+        print('Supossed to take:', Amount, ' taken: ', ActualTaken, 'refunded: ', Refund, 'for chip:', CHIPS_PREFIX[Tier] .. ItemName)
+        if ActualTaken > 0 then
+            DataService:TakeItem(Player, CHIPS_PREFIX[Tier] .. ItemName, ActualTaken)
+        end
+    end
 
     Agent:SetSkill(SkillName, Agent.Skills[SkillName] + 1)
 
     DataService:UpdatePlayerItems(Player)
     UpdateSkills(Player, Agent)
+
+    return true
 end
 
 function Service:SetAgentArtifactSlot(Player: Player, AgentName: string, ArtifactId: string)

@@ -27,10 +27,17 @@ local DEFAULT_DESCRIPTIONS = {
     Quick_Assist = 'Agent\'s quick assist',
 }
 
+local CHIPS_PREFIX = {
+    [1] = '',
+    [2] = 'Upgraded',
+    [3] = 'Tier3',
+}
+
 local NOT_ENOUGH_COLOR = Color3.fromRGB(255, 133, 133)
 local ENOUGH_COLOR = Color3.new(1, 1, 1)
 
 --
+local CurrentUpgradeItemsQueue = {}
 local SkillComponent = {
     __Agent = '',
     __Skill = '',
@@ -48,27 +55,46 @@ type MainFrame = Frame & {
     }
 }
 
+local function UpdateTotalUsedCount(StatsTab, Agent, Skill)
+    local AgentSkills = Agent.Skills
+    local SkillLevel = (AgentSkills[Skill] or 0)
+    local BaseToUpgrade = Statics.Skill_Upgrade_Cost(SkillLevel + 1)
+
+    local TotalUpgraded = 0
+    for Tier, Amt in CurrentUpgradeItemsQueue do
+        TotalUpgraded += math.max((Tier-1) * 3, 1) * Amt
+    end
+
+    StatsTab.UpgradeNeeded.Text = `{TotalUpgraded} / {BaseToUpgrade}`
+end
+
 local function UpdateSkillUpgradeRequirements(StatsTab, Agent, Skill)
     local AgentCompleteData = AgentData:GetCharacterData(Agent.Name)
     local AgentSkills = Agent.Skills
-    local SkillData = AgentCompleteData.Moveset_Data[Skill] or {}
     local Element = AgentCompleteData.Element
     local BaseItem = Element..'Chip'
-
+    
     local SkillLevel = (AgentSkills[Skill] or 0)
+    
+    --local SkillData = AgentCompleteData.Moveset_Data[Skill] or {}
+    --[[for Item, Amount in (SkillData.Upgrade_Requirements or {}) do
+            table.insert(ItemNames, Item)
+            table.insert(ItemsToUpgrade, {Item, Amount})
+        end]]
 
     if SkillLevel < Statics.Max_Skill_Level then
         local TotalItems = LocalData:GetItems()
         local ItemsToUpgrade = {}
         local BaseToUpgrade = Statics.Skill_Upgrade_Cost(SkillLevel + 1)
 
-        local ItemNames = {BaseItem}
-        table.insert(ItemsToUpgrade, {BaseItem, BaseToUpgrade})
-
-        for Item, Amount in (SkillData.Upgrade_Requirements or {}) do
-            table.insert(ItemNames, Item)
-            table.insert(ItemsToUpgrade, {Item, Amount})
+        local ItemNames = {}
+        for Tier = 1, 3 do
+            local NewItemName = CHIPS_PREFIX[Tier] .. BaseItem
+            table.insert(ItemNames, NewItemName)
+            table.insert(ItemsToUpgrade, {NewItemName, BaseToUpgrade, Tier})
         end
+
+        StatsTab.UpgradeNeeded.Text = '0 / '..BaseToUpgrade
 
         for _, Item in StatsTab.ItemList:GetChildren() do
             if Item:IsA('Frame') and not table.find(ItemNames, Item.Name) then
@@ -89,6 +115,7 @@ local function UpdateSkillUpgradeRequirements(StatsTab, Agent, Skill)
         for _, Items in ItemsToUpgrade do
             local ItemToShow = Items[1]
             local AmountToShow = Items[2]
+            local Tier = Items[3]
 
             local PlayerItem = GetByName(ItemToShow) or {Amount = 0}
             local PlayerHas = PlayerItem.Amount
@@ -98,15 +125,45 @@ local function UpdateSkillUpgradeRequirements(StatsTab, Agent, Skill)
                 continue
             end
 
+            CurrentUpgradeItemsQueue[Tier] = (CurrentUpgradeItemsQueue[Tier] or 0) 
+
             local Existed = StatsTab.ItemList:FindFirstChild(ItemToShow)
             local NewItem = Existed or Assets.Interface.Agents.Skills.ItemRequired:Clone()
             NewItem.Name = ItemToShow
             --NewItem.Item.ItemIcon.Image = 'rbxassetid://' .. ItemDBData.Icon
-            NewItem.Count.TextLabel.Text = `{PlayerHas} / <b>{AmountToShow}</b>`
+            NewItem.Count.TextLabel.Text = `{CurrentUpgradeItemsQueue[Tier]} / <b>{PlayerHas}</b>`
             NewItem.Count.TextLabel.TextColor3 = PlayerHas >= AmountToShow and ENOUGH_COLOR or NOT_ENOUGH_COLOR
             NewItem.Parent = StatsTab.ItemList
+            
+            if not Existed then
+                NewItem.Subtract.Button.MouseButton1Click:Connect(function()
+                    local CanChange = CurrentUpgradeItemsQueue[Tier] > 0
+                    if CanChange then
+                        NewItem.Subtract.UIScale.Scale = 0.85
+                        Effects:Tween(NewItem.Subtract.UIScale, { 0.3, 'Back' }, {Scale = 1})
+                    end
 
-            local _ = UIUtils:CreateUpgradeChipModel(Element, 1, NewItem.Item.Viewport)
+                    CurrentUpgradeItemsQueue[Tier] = math.clamp(CurrentUpgradeItemsQueue[Tier] - 1, 0, PlayerHas)
+                    NewItem.Count.TextLabel.Text = `{CurrentUpgradeItemsQueue[Tier]} / <b>{PlayerHas}</b>`
+
+                    UpdateTotalUsedCount(StatsTab, Agent, Skill)
+                end)
+
+                NewItem.Add.Button.MouseButton1Click:Connect(function()
+                    local CanChange = CurrentUpgradeItemsQueue[Tier] < PlayerHas
+                    if CanChange then
+                        NewItem.Add.UIScale.Scale = 0.85
+                        Effects:Tween(NewItem.Add.UIScale, { 0.3, 'Back' }, {Scale = 1})
+                    end
+
+                    CurrentUpgradeItemsQueue[Tier] = math.clamp(CurrentUpgradeItemsQueue[Tier] + 1, 0, PlayerHas)
+                    NewItem.Count.TextLabel.Text = `{CurrentUpgradeItemsQueue[Tier]} / <b>{PlayerHas}</b>`
+    
+                    UpdateTotalUsedCount(StatsTab, Agent, Skill)
+                end)
+            end
+
+            local _ = UIUtils:CreateUpgradeChipModel(Element, Tier, NewItem.Item.Viewport)
 
             if Existed then
                 NewItem.Count.UIScale.Scale = 0.65
@@ -219,7 +276,7 @@ function SkillComponent:ShowInformation(MainFrame: MainFrame, Skill: string?)
     StatsTab.Label.Text = string.gsub(Skill, '_', ' ')
     StatsTab.Desc.Text = Description
     StatsTab.Desc.TextSize = ScreenUtil:GetTextSize(15)
-    StatsTab.Level.Text = `<b>Lvl.</b> {(SkillLevel or 0)} / 20`
+    StatsTab.Level.Text = `<b>Lvl. {(SkillLevel or 0)}</b>`
 
     -- Upgrading
     UpdateSkillUpgradeRequirements(StatsTab, AgentObject, Skill)

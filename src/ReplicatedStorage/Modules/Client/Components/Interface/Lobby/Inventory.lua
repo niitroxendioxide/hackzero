@@ -8,7 +8,9 @@ local Database = Shared.Database
 
 local Assets = ReplicatedStorage.Assets
 
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
+local String = require(ReplicatedStorage.Modules.Shared.Utility.String)
 local Types = require(Shared.Types)
 local DataTypes = require(Shared.Types.Data)
 local _GameEnum = require(Shared.GameEnum)
@@ -32,6 +34,17 @@ local Filters = {}
 local AgentTokenDesc = "A copy of the agent: %s. Can be exchanged to promote your agent up to 6 times. Each ascension brings upgrades to the characters's gameplay or stats."
 
 --
+local GetChipNameFromString = function(Name: string)
+    local Cut = string.split(String:SplitTitleCaps(Name), " ")
+    for idx, k in Cut do
+        if k:lower() == 'chip' then
+            return Cut[idx - 1]
+        end
+    end
+
+    return string.gsub(Name, 'Chip', '')
+end
+
 local function ShowItemInfo(ItemId: string?)
     local MainFrame = Component:GetFrame()
     local InventoryFrame = MainFrame.InventoryFrame
@@ -111,8 +124,9 @@ local function ShowItemInfo(ItemId: string?)
         local Size = #tostring(ItemInfo.Amount)
 
         if OtherData.Type == 'Upgrade' then
-            --ItemInfo.Tier
-            UIUtils:CreateUpgradeChipModel(string.gsub(ItemInfo.Name, "Chip", ""), 1, DataFrame.ItemInfo.Viewport)
+
+            local ConvertedTier = 6 - GameEnum.Tiers[OtherData.Tier]
+            UIUtils:CreateUpgradeChipModel(GetChipNameFromString(ItemInfo.Name), ConvertedTier, DataFrame.ItemInfo.Viewport)
             DataFrame.ItemInfo.ItemDescription.Position = UDim2.fromScale(0.486, 0.75)
         else
             DataFrame.ItemInfo.ItemDescription.Position = UDim2.fromScale(0.486, 0.931)
@@ -321,8 +335,10 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
     elseif Type == 'Item' and ItemInfo then
         ObjectDesign.DriveIcon.Visible = false
 
-        local ChipName = ItemInfo.Type == 'Upgrade' and string.gsub(ItemData.Name, "Chip", "") or ItemData.Name
-        local HasModel = UIUtils:CreateUpgradeChipModel(ChipName, ItemData.Tier, ObjectDesign.Viewport)
+        local ChipName = ItemInfo.Type == 'Upgrade' and GetChipNameFromString(ItemData.Name) or ItemData.Name
+        local Tier = 6 - (GameEnum.Tiers[ItemInfo.Tier] or 5)
+
+        local HasModel = UIUtils:CreateUpgradeChipModel(ChipName, Tier, ObjectDesign.Viewport)
         if HasModel then
             ObjectDesign.ItemIcon.Visible = false
         elseif (ItemInfo and ItemInfo.Icon)then
