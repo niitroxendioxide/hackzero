@@ -29,8 +29,10 @@ local function RollForStat(Range: NumberRange, Invert: boolean): (number, number
         Tier = 'Mythical'
     elseif Chance < 7.5 then
         Tier = 'Legendary'
-    elseif Chance < 38 then
+    elseif Chance < 18 then
         Tier = 'Epic'
+    elseif Chance < 38 then
+        Tier = 'Rare'
     end
 
     local MultRange = Statics.Stat_Tier_Mults[Tier]

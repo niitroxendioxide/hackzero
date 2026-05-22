@@ -60,6 +60,34 @@ function UIUtils:CreateArtifactModel(Artifact_Name: string, SlotId: number, Pare
     return true
 end
 
+function UIUtils:CreateUpgradeChipModel(Element: string, Tier: number?, Parent: ViewportFrame): boolean
+    
+    local ChipsFolder = Assets:FindFirstChild('Items'):FindFirstChild('Chips')
+    local Target = ChipsFolder:FindFirstChild(Element.."_Tier"..(Tier or 1))
+
+    if not Target then return false end
+
+    local ClonedModel = Target:Clone()
+    Parent.WorldModel:ClearAllChildren()
+
+    ClonedModel:PivotTo(CFrame.new() * CFrame.Angles(math.rad(45), math.rad(-25), math.rad(15)))
+    ClonedModel.Parent = Parent.WorldModel
+
+    if Parent:FindFirstChild('Camera') then
+        Parent.Camera:Destroy()
+    end
+
+    --
+    local NewCamera = Instance.new("Camera")
+    NewCamera.FieldOfView = 1
+    NewCamera.CFrame = CFrame.new(0, 0, -100) * CFrame.Angles(0, math.pi, 0)
+    NewCamera.Parent = Parent
+
+    Parent.CurrentCamera = NewCamera
+
+    return true
+end
+
 function UIUtils:CreateRewardItem(ItemName: string, ItemType: string, Amount: number, Selected: boolean?, Parent: Instance, Base: Instance?)
     local NewItem = Base and Base:Clone() or Assets.Interface.Lobby.Nodes.RewardItem:Clone()
     NewItem.Data.Amount.Text = 'x' .. Amount;

@@ -1,5 +1,5 @@
 return {
-    DisplayName = 'Electric Upgrade Modules',
+    DisplayName = 'Electric Upgrade  Module',
     Description = 'Used to upgrade Electric Element agent skills.',
 
     Type = "Upgrade",

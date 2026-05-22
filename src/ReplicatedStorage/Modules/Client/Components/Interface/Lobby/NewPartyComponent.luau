@@ -674,6 +674,9 @@ function Component:Init()
         if State then
             local Data = Fetcher:FetchAgents()
             States.OwnedAgents:set(Data)
+        else
+            SetDockState('Agents', false)
+            SetDockState('Maps', false)
         end
 
         --

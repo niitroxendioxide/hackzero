@@ -96,6 +96,12 @@ function Controller:CreatePromptWithCustomDesign(Prompt: ProximityPrompt)
     end)
 
     Prompt.PromptHidden:Once(function(...)  
+        PressConnection:Disconnect()
+
+        if not KeyObject:FindFirstChild('UIScale') then
+            return
+        end
+
         Effects:Tween(KeyObject.UIScale, { 0.2, 'Quad', 'In' }, {Scale = 0})
         Effects:Tween(CustomPromptDesign.Background.UIScale, { 0.45, 'Quad', 'In' }, {Scale = 0.65})
 
@@ -110,8 +116,6 @@ function Controller:CreatePromptWithCustomDesign(Prompt: ProximityPrompt)
             end
         end
         Effects:CleanUp(CustomPromptDesign, 0.5)
-
-        PressConnection:Disconnect()
     end)
 end
 

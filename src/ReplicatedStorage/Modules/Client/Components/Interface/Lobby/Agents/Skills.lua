@@ -5,6 +5,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 
+local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
 local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
 local ItemsDatabase = require(Shared.Database.Items)
 local GameEnum = require(Shared.GameEnum)
@@ -100,10 +101,12 @@ local function UpdateSkillUpgradeRequirements(StatsTab, Agent, Skill)
             local Existed = StatsTab.ItemList:FindFirstChild(ItemToShow)
             local NewItem = Existed or Assets.Interface.Agents.Skills.ItemRequired:Clone()
             NewItem.Name = ItemToShow
-            NewItem.Item.ItemIcon.Image = 'rbxassetid://' .. ItemDBData.Icon
+            --NewItem.Item.ItemIcon.Image = 'rbxassetid://' .. ItemDBData.Icon
             NewItem.Count.TextLabel.Text = `{PlayerHas} / <b>{AmountToShow}</b>`
             NewItem.Count.TextLabel.TextColor3 = PlayerHas >= AmountToShow and ENOUGH_COLOR or NOT_ENOUGH_COLOR
             NewItem.Parent = StatsTab.ItemList
+
+            local _ = UIUtils:CreateUpgradeChipModel(Element, 1, NewItem.Item.Viewport)
 
             if Existed then
                 NewItem.Count.UIScale.Scale = 0.65

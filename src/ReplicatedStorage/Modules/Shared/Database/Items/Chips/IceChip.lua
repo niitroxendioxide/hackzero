@@ -1,5 +1,5 @@
 return {
-    DisplayName = 'Ice Upgrade Modules',
+    DisplayName = 'Ice Upgrade Module',
     Description = 'Used to upgrade Ice Element agent skills.',
 
     Type = "Upgrade",

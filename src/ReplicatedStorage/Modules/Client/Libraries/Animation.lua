@@ -97,6 +97,17 @@ function AnimationLibrary:GetTracks(Character: Model): {AnimationTrack}
 	return Animator:GetPlayingAnimationTracks()
 end
 
+function AnimationLibrary:GetTrackWithTag(Character: Model, Tag: string): {AnimationTrack}
+	local Animator = AnimationLibrary:GetAnimator(Character)
+
+	for _, Track in Animator:GetPlayingAnimationTracks() do
+		if Track:HasTag(Tag) then
+			return Track
+		end
+	end
+end
+
+
 function AnimationLibrary:GetAnimator(Character: Model): Animator
 	local Humanoid = Character:FindFirstChild('Humanoid') :: Humanoid or Character:FindFirstChild('AnimationController') :: Humanoid
 	local Animator = Humanoid:FindFirstChild('Animator') :: Animator

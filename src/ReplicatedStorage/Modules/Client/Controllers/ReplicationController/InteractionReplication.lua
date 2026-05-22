@@ -15,8 +15,9 @@ local Controller = {}
 
 function Controller:CreateChest(Buffer: buffer, Part: BasePart)
     local Id = buffer.readu16(Buffer, 1)
+	local Design = 1--buffer.readu16(Buffer, 3)
 
-    Chests:CreateWithBase(Part, Id)
+    Chests:CreateWithBase(Part, Id, Design)
 end
 
 function Controller:CreateNPC(Buffer: buffer, Part: BasePart)

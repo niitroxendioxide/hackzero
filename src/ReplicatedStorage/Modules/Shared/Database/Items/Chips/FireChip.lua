@@ -1,5 +1,5 @@
 return {
-    DisplayName = 'Fire Upgrade Modules',
+    DisplayName = 'Fire Upgrade  Module',
     Description = 'Used to upgrade Fire Element agent skills.',
 
     Type = "Upgrade",

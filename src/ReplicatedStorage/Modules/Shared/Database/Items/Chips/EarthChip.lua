@@ -1,5 +1,5 @@
 return {
-    DisplayName = 'Earth Upgrade Modules',
+    DisplayName = 'Earth Upgrade Module',
     Description = 'Used to upgrade Earth Element agent skills.',
 
     Type = "Upgrade",

@@ -382,7 +382,8 @@ return {
 		["Mythical"] = 1,
 		["Legendary"] = 2,
 		["Epic"] = 3,
-		["Common"] = 4,
+		["Rare"] = 4,
+		["Common"] = 5,
 	},
 
 	AFKEvent = {
@@ -395,6 +396,12 @@ return {
 		Medium = "MEDIUM",
 		Hard = "HARD",
 		Challenge = "EXTREME"
+	},
+
+	Interactables = {
+		Chests = {
+			Default = 1,
+		}
 	},
 
 	StageHook = {

@@ -20,7 +20,7 @@ function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number, ActionText
     Prompt.RequiresLineOfSight = false
     Prompt.ActionText = ActionText or "Interact"
     Prompt.ObjectText = ObjectText or GameEnum.KeyLookup(GameEnum.InteractionType, Type)
-    Prompt.MaxActivationDistance = Distance or 25
+    Prompt.MaxActivationDistance = Distance or 15
     Prompt.KeyboardKeyCode = Enum.KeyCode.F
     Prompt.ClickablePrompt = false
     Prompt.Enabled = not Prompts.__Disabled

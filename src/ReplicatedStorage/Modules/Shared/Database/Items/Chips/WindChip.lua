@@ -1,5 +1,5 @@
 return {
-    DisplayName = 'Wind Upgrade Modules',
+    DisplayName = 'Wind Upgrade Module',
     Description = 'Used to upgrade Wind Element agent skills.',
 
     Type = "Upgrade",

@@ -1,5 +1,5 @@
 return {
-    DisplayName = 'Specialized Stun Modules',
+    DisplayName = 'Specialized Stun Module',
     Description = 'Used to level up Stun Speciality agents.',
 
     Type = "Upgrade",

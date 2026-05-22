@@ -1,5 +1,5 @@
 return {
-    DisplayName = 'Specialized Affliction Modules',
+    DisplayName = 'Specialized Affliction Module',
     Description = 'Used to level up Affliction Speciality agents.',
 
     Type = "Upgrade",

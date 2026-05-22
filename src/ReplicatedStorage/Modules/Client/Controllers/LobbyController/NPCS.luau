@@ -127,7 +127,7 @@ function HandleNewNPCCreation(): ()
         return
     end
 
-    local Prompt = Prompts:CreatePromptOnPart(NewNpc.Collider, GameEnum.InteractionType.LobbyNPC, "Talk", "Agent")
+    local Prompt = Prompts:CreatePromptOnPart(NewNpc.Collider, GameEnum.InteractionType.LobbyNPC, "Talk", "Agent", 6)
     Prompt:SetAttribute("NpcId", NewNpc.Id)
 
     task.delay(.5, function()

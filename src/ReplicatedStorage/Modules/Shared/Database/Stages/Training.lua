@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Types = require("../../Types/Stages")
 
 
@@ -42,6 +44,7 @@ return {
                 ['LootChest'] = {
                     Type = 'Chest',
                     Name = 'LootChest1',
+                    Design = GameEnum.Interactables.Chests.Default,
                     ItemList = {
                         {Type = "Gold", Amount = 2500},
                     },

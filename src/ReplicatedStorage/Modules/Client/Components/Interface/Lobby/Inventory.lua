@@ -27,6 +27,7 @@ local States = {
     __Selected_Item = nil,
     ClosingConnection = nil,
 }
+local TypeFilters = {"Artifact", "Drive", "Item"}
 local Filters = {}
 local AgentTokenDesc = "A copy of the agent: %s. Can be exchanged to promote your agent up to 6 times. Each ascension brings upgrades to the characters's gameplay or stats."
 
@@ -63,7 +64,7 @@ local function ShowItemInfo(ItemId: string?)
     end
 
     DataFrame.ItemType.Text = ItemType
-    DataFrame.ItemName.Text = string.gsub(OtherData.Name or ItemInfo.Name, 'AgentToken:', '')
+    DataFrame.ItemName.Text = string.gsub(OtherData.Name or OtherData.DisplayName or ItemInfo.Name, 'AgentToken:', '')
 
     DataFrame.ItemInfo.Visible = ItemType == 'Item'
     DataFrame.ItemInfo.Viewport.WorldModel:ClearAllChildren()
@@ -82,6 +83,7 @@ local function ShowItemInfo(ItemId: string?)
         EffectUtil:Tween(Exp.Fill, { 0.3, 'Quad' }, {Size = UDim2.fromScale(ItemInfo.Level / 60, 1)})
 
         DataFrame.ItemInfo.ItemDescription.Text = `<b>Passive Effect:</b> {(OtherData.Passive_Description or "")}`
+        DataFrame.ItemInfo.ItemDescription.Position = UDim2.fromScale(0.486, 0.931)
     elseif ItemType == 'Artifact' then
         DataFrame.ItemInfo.Visible = true
         DataFrame.ItemInfo.Icon.Visible = false
@@ -96,6 +98,7 @@ local function ShowItemInfo(ItemId: string?)
         local Info = OtherData :: Types.Artifact_Data
         local Description = `<b>2-Piece Effect:</b> {Info.Piece_Descriptions.Two_Piece}\n\n<b>4-Piece Effect:</b> {Info.Piece_Descriptions.Four_Piece}`
         DataFrame.ItemInfo.ItemDescription.Text = Description
+        DataFrame.ItemInfo.ItemDescription.Position = UDim2.fromScale(0.486, 0.931)
         --
     else
         DataFrame.DriveData.Visible = false
@@ -107,9 +110,18 @@ local function ShowItemInfo(ItemId: string?)
         DataFrame.ItemInfo.ItemCount.Label.Text = `x{ItemInfo.Amount or 0}`
         local Size = #tostring(ItemInfo.Amount)
 
+        if OtherData.Type == 'Upgrade' then
+            --ItemInfo.Tier
+            UIUtils:CreateUpgradeChipModel(string.gsub(ItemInfo.Name, "Chip", ""), 1, DataFrame.ItemInfo.Viewport)
+            DataFrame.ItemInfo.ItemDescription.Position = UDim2.fromScale(0.486, 0.75)
+        else
+            DataFrame.ItemInfo.ItemDescription.Position = UDim2.fromScale(0.486, 0.931)
+        end
+
         DataFrame.ItemInfo.ItemCount.Size = UDim2.fromScale(0.182 + (0.05 * math.max(Size - 2, 0)), 0.095)
         DataFrame.ItemInfo.ItemCount.Position = UDim2.fromScale(0.059 + (0.025 * math.max(Size - 2, 0)), 0.035)
         DataFrame.ItemInfo.ItemDescription.Text = OtherData.Description
+        
     end
     DataFrame.ItemInfo.ItemDescription.TextSize = ScreenUtil:GetTextSize(24)
     DataFrame.ItemInfo.ItemDescription.TextScaled = not DataFrame.ItemInfo.ItemDescription.TextFits
@@ -158,6 +170,9 @@ local function SetFilter(FilterName: string, State: boolean)
         end
     end
 
+    local IsTypeFilter = table.find(TypeFilters, FilterName)
+    local Lower = FilterName:lower()
+
     for _, Object in InvFrame.ItemList:GetChildren() do
         if not Object:IsA("Frame") or not Object:FindFirstChild('Type') then
             continue
@@ -170,7 +185,13 @@ local function SetFilter(FilterName: string, State: boolean)
             continue
         end
 
-        Object.Visible = Filters[Type]
+        local TextMatches = (string.match(string.lower(Object.ObjName.Value), Lower) == Lower)
+
+        if (not IsTypeFilter and State) then
+            Object.Visible = Filters[Type] or TextMatches
+        else
+            Object.Visible = Filters[Type]
+        end
     end
 end
 
@@ -268,6 +289,10 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
 
     if InventoryFrame.ItemList:FindFirstChild(ItemId) then
         local Prev = InventoryFrame.ItemList:FindFirstChild(ItemId)
+        if not Prev:FindFirstChild('Equipped') then
+            return
+        end
+
         Prev.Equipped.Visible = ItemData.Equipped ~= nil
 
         return
@@ -278,6 +303,7 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
     InventoryObject.Name = ItemId
     InventoryObject.Id.Value = ItemId
     InventoryObject.Type.Value = Type
+    InventoryObject.ObjName.Value = ItemData.Name
 
     --
     local ObjectDesign = InventoryObject.Design
@@ -292,6 +318,17 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
         ObjectDesign.ItemIcon.Visible = false
         ObjectDesign.Level.Visible = true
         ObjectDesign.Level.Label.Text = 'Lv. '..ItemData.Level
+    elseif Type == 'Item' and ItemInfo then
+        ObjectDesign.DriveIcon.Visible = false
+
+        local ChipName = ItemInfo.Type == 'Upgrade' and string.gsub(ItemData.Name, "Chip", "") or ItemData.Name
+        local HasModel = UIUtils:CreateUpgradeChipModel(ChipName, ItemData.Tier, ObjectDesign.Viewport)
+        if HasModel then
+            ObjectDesign.ItemIcon.Visible = false
+        elseif (ItemInfo and ItemInfo.Icon)then
+            ObjectDesign.ItemIcon.Visible = true
+            ObjectDesign.ItemIcon.Image = Prefix .. ItemInfo.Icon
+        end
     else
         ObjectDesign.DriveIcon.Visible = false
 
@@ -372,7 +409,8 @@ end
 
 function Component:Init()
     local MainFrame = Component:GetFrame()
-    local UsedFilters = {"Artifact", "Drive", "Item"}
+    local UsedFilters = table.clone(TypeFilters)
+    UsedFilters[#UsedFilters + 1] = "Chip"
 
     for _, FilterName in UsedFilters do
         CreateFilterBtn(FilterName)

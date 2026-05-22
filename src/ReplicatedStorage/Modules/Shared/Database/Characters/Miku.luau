@@ -1,7 +1,7 @@
 return {
 	Display_Name = 'Hatsune Miku',
 	Nickname = 'Miku',
-	Element = 'Energy',
+	Element = 'Ice',
 	Role = 'Support',
 	Tier = "Legendary",
 	Faction = "VOCALOID",

@@ -1,5 +1,5 @@
 return {
-    DisplayName = 'Specialized Attack Modules',
+    DisplayName = 'Specialized Attack Module',
     Description = 'Used to level up Attack Speciality agents.',
 
     Type = "Upgrade",

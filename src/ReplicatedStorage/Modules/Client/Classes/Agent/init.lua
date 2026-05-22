@@ -205,6 +205,12 @@ function AgentClass:Look(Vector, Instant, Bypass)
 	return self.__Character:Look(Vector, Instant)
 end
 
+function asd()
+	if true then
+		asd()
+	end
+end
+
 function AgentClass:SetVisible(...)
 	return self.__Character:SetVisible(...)
 end
@@ -220,6 +226,8 @@ function AgentClass:Init(PlayerId: number)
 			self.__Player_Assigned = Player
 		end
 	end
+
+	local a  = nil
 
 	self:SetMaxHealth(self:GetStat("Health"), true)
 

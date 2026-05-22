@@ -1,5 +1,5 @@
 return {
-    DisplayName = 'Specialized Support Modules',
+    DisplayName = 'Specialized Support Module',
     Description = 'Used to level up Support Speciality agents.',
 
     Type = "Upgrade",

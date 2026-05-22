@@ -1,5 +1,5 @@
 return {
-    DisplayName = 'Physical Upgrade Modules',
+    DisplayName = 'Physical Upgrade Module',
     Description = 'Used to upgrade Physical Element agent skills.',
 
     Type = "Upgrade",
