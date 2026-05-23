@@ -95,7 +95,7 @@ function Service.__HandleEvent(Player: Player, Type: number, Request: {})
     elseif Type == GameEnum.BuildEvent.UpdateDrive then
         Service:SetAgentDrive(Player, Request[1], Request[2])
     elseif Type == GameEnum.BuildEvent.UpgradeAgentSkill then
-        Service:UpgradeAgentSkill(Player, Request[1], Request[2])
+        Service:UpgradeAgentSkill(Player, Request[1], Request[2], Request[3])
     elseif Type == GameEnum.BuildEvent.AscendAgent then
         Service:AscendAgent(Player, Request[1], Request[2])
     elseif Type == GameEnum.BuildEvent.LevelAgent then
@@ -145,6 +145,7 @@ function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
         Agent.Level += 1
         Next = Statics.Experience_For_Level(Agent.Level + 1)
 
+        print('Hello!')
         if Next == nil then
             break;
         end
@@ -211,25 +212,18 @@ function Service:UpgradeAgentSkill(Player: Player, AgentName: string, SkillName:
     end
 
     local Refund = {}
-    local Remaining = Cost
-    local SortedTiers = {}
-    for Tier in ItemsUsed do
-        table.insert(SortedTiers, Tier)
-    end
+    while (TotalUsedAmount > Cost) do
+        local Difference = TotalUsedAmount - Cost
+        for Tier = 3, 1, -1 do
+            local TierUpgradeAmount = math.max((Tier-1) * 3, 1)
 
-    table.sort(SortedTiers, function(a, b) return a > b end)
+            while Difference % TierUpgradeAmount == 0 and Difference > 0 do
+                print('current diff:', Difference)
 
-    for _, Tier in SortedTiers do
-        local Amount = ItemsUsed[Tier]
-        local TierValue = math.max((Tier - 1) * 3, 1)
-        local AmountNeeded = math.ceil(Remaining / TierValue)
-        local AmountUsed = math.min(AmountNeeded, Amount)
-        local AmountRefunded = Amount - AmountUsed
-
-        Remaining -= AmountUsed * TierValue
-
-        if AmountRefunded > 0 then
-            Refund[Tier] = AmountRefunded
+                Refund[Tier] = (Refund[Tier] or 0) + 1;
+                TotalUsedAmount -= TierUpgradeAmount
+                Difference = math.max(TotalUsedAmount - Cost, 0)
+            end
         end
     end
 
@@ -237,9 +231,10 @@ function Service:UpgradeAgentSkill(Player: Player, AgentName: string, SkillName:
         local Refunded = Refund[Tier] or 0
         local ActualTaken = Amount - Refunded
 
-        print('Supossed to take:', Amount, ' taken: ', ActualTaken, 'refunded: ', Refund, 'for chip:', CHIPS_PREFIX[Tier] .. ItemName)
         if ActualTaken > 0 then
             DataService:TakeItem(Player, CHIPS_PREFIX[Tier] .. ItemName, ActualTaken)
+        elseif ActualTaken < 0 then
+            DataService:AddItem(Player, CHIPS_PREFIX[Tier] .. ItemName, Refunded)
         end
     end
 

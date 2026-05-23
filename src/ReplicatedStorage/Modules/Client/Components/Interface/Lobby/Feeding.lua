@@ -193,8 +193,9 @@ function UpdatePreview()
     LevelBar.Exp.Fill.Visible = AddedLevels <= 0
     LevelBar.Lvl.Text = `Level: {CharacterData.Level + AddedLevels} / 60`
     LevelBar.Added.Visible = AddedLevels > 0
-    LevelBar.Added.Text = `+{AddedLevels} Levels ({TotalAddedExperience} EXP)`
-    LevelBar.NeededExperience.Text = `{math.floor(Total)} / {math.ceil(ExpForLevel)}`
+    LevelBar.Added.Text = `+{AddedLevels} Levels`
+    LevelBar.CurrentExperience.Text = `{math.floor(Total)} EXP`
+    LevelBar.NeededExperience.Text = `{math.ceil(ExpForLevel)} EXP`
     LevelBar.Lvl.TextColor3 = AddedLevels > 0 and Color3.fromRGB(164, 193, 255) or Color3.new(1,1,1)
 
     EffectUtil:Tween(LevelBar.Exp.Preview, {.25, 'Cubic'}, {Size = UDim2.fromScale(Total / ExpForLevel, 1)})
@@ -276,17 +277,11 @@ function Component:Init()
     end)
 
     CloseButtonList.Button.MouseEnter:Connect(function()
-        EffectUtil:Tween(CloseButtonList, TransitionTime, {Rotation = 90})
-        EffectUtil:Tween(CloseButtonList.Bg, TransitionTime, {Rotation = -90})
-        EffectUtil:Tween(CloseButtonList.TabLabel, TransitionTime, {Rotation = -90})
         EffectUtil:Tween(CloseButtonList.UIStroke, TransitionTime, {Thickness = 0.08})
         EffectUtil:Tween(CloseButtonList.UIScale, {.5, 'Cubic'}, {Scale = 1.2})
     end)
 
     CloseButtonList.Button.MouseLeave:Connect(function()
-        EffectUtil:Tween(CloseButtonList, TransitionTime, {Rotation = 12})
-        EffectUtil:Tween(CloseButtonList.Bg, TransitionTime, {Rotation = 0})
-        EffectUtil:Tween(CloseButtonList.TabLabel, TransitionTime, {Rotation = -12})
         EffectUtil:Tween(CloseButtonList.UIStroke, TransitionTime, {Thickness = 0.04})
         EffectUtil:Tween(CloseButtonList.UIScale, {.5, 'Cubic'}, {Scale = 1})
     end)

@@ -287,6 +287,7 @@ function SkillComponent:ShowInformation(MainFrame: MainFrame, Skill: string?)
             Network:Fire('UpdateAgent', GameEnum.BuildEvent.UpgradeAgentSkill, {
                 SkillComponent.__Agent,
                 SkillComponent.__Skill,
+                CurrentUpgradeItemsQueue,
             })
         end)
     end

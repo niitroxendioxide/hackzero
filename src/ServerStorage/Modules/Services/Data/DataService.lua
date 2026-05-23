@@ -733,6 +733,15 @@ function Service:TakeItem(Player: Player, ItemName: string, Amount: number)
     Retrieved:SetAmount(Retrieved.__Amount - Amount)
 end
 
+function Service:AddItem(Player: Player, ItemName: string, Amount: number)
+    local Retrieved = Service:GetItem(Player, ItemName)
+    if not Retrieved then
+        return
+    end
+
+    Retrieved:SetAmount(Retrieved.__Amount + Amount)
+end
+
 function Service:SetupCompanions(Player: Player)
     local Data = Service:GetDataFor(Player)
 
