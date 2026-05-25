@@ -11,7 +11,7 @@ local Enemies = require(Shared.Libraries.Enemies)
 local AnimLibrary = require(Client.Libraries.Animation)
 
 ---
-local AirStrikeAssets = Assets:FindFirstChild('Miku'):FindFirstChild("AirStrike")
+local AirStrikeAssets = Assets:FindFirstChild('Miku') and Assets.Miku:FindFirstChild("AirStrike")
 function GroundWave(Origin: Vector3)
     local GoalSize = Vector3.new(11.648, 11.911, 13.464)
     local WindWave = Effects:Create(AirStrikeAssets.WindWave, 1)

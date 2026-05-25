@@ -9,7 +9,7 @@ local Effects = require(Shared.Utility.Effects)
 
 
 ---
-return function(Character: Model): ()
+return function(Character: Model, LevelUp: boolean): ()
 
     local Highlight = Instance.new("Highlight")
     Highlight.DepthMode = Enum.HighlightDepthMode.Occluded
@@ -22,7 +22,7 @@ return function(Character: Model): ()
     Effects:CleanUp(Highlight, 0.25)
 
     ---
-    local ParticleVFX = Effects:Create(Assets.Effects.General.Lobby.CharacterLoadEffect, 2)
+    local ParticleVFX = Effects:Create(Assets.Effects.General.Lobby[LevelUp and 'LevelUpEffect' or 'CharacterLoadEffect'], 2)
     ParticleVFX:PivotTo(Character:GetPivot())
     Effects:Emit(ParticleVFX)
 end

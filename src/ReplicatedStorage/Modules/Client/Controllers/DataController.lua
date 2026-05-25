@@ -179,7 +179,7 @@ function Controller:LevelAgent(Payload: {})
 
     --
     local UI = InterfaceController:GetComponent("Agents")
-    UI:RefreshInformation()
+    UI:RefreshInformation(true)
 end
 
 function Controller:AscendAgent(Payload: {})

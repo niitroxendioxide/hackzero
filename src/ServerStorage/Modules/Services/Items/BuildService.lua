@@ -109,8 +109,6 @@ function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
     local Agent = DataService:GetAgent(Player, AgentName)
 
     if Agent.Level >= Statics.Max_Character_Level then
-        
-
         return
     end
 
@@ -118,7 +116,20 @@ function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
     local TotalExperience = 0
     local MaxExperience = Statics.GetExperienceForMax(Agent.Level, Agent.Experience)
 
-    for Item, Count in Items do
+    local Keys = {}
+    for Item in Items do
+        table.insert(Keys, Item)
+    end
+
+    table.sort(Keys, function(a0, a1): boolean
+        local AItem = ItemDatabase:GetItemData(a0)
+        local BItem = ItemDatabase:GetItemData(a1)
+
+        return (BItem.Other.FeedExp < AItem.Other.FeedExp) 
+    end)
+
+    for _, Item in Keys do
+        local Count = Items[Item]
         local ItemInfo = ItemDatabase:GetItemData(Item)
         if not ItemInfo or not ItemInfo.Other.FeedExp then continue end
 
@@ -127,13 +138,17 @@ function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
             continue
         end
 
-        if TotalExperience + ItemInfo.Other.FeedExp > MaxExperience then
-            continue
+        local UsedCount = 1
+        for CurCount = Count, 1, -1 do
+            if (TotalExperience + ItemInfo.Other.FeedExp * CurCount) <= MaxExperience then
+                UsedCount = CurCount
+                break
+            end
         end
 
-        local Amount = Count * ItemInfo.Other.FeedExp
+        local Amount = UsedCount * ItemInfo.Other.FeedExp
 
-        DataService:TakeItem(Player, Item, Count)
+        DataService:TakeItem(Player, Item, UsedCount)
         TotalExperience += Amount
     end
 

@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService('Players')
+local TweenService = game:GetService("TweenService")
 
 local Player = Players.LocalPlayer
 local Client = ReplicatedStorage.Modules.Client
@@ -27,6 +28,7 @@ local States = {
     ItemMenuOpen = false,
     CompanionId = '',
     Type = 'Agent',
+    PreviewThreads = {} :: {thread}?,
 }
 
 local function Feed()
@@ -50,10 +52,10 @@ local function ToggleItemMenu(State: boolean)
     local HolderList = MainFrame.Agent.ItemList.Holder
     States.ItemMenuOpen = if State ~= nil then State else (not States.ItemMenuOpen)
 
-    local Scale = States.ItemMenuOpen and 1 or 0
-    local Pos = States.ItemMenuOpen and UDim2.fromScale(1.284,0.5) or UDim2.fromScale(1,0.5)
-    EffectUtil:Tween(MainFrame.Agent.ItemList.UIScale, {.3, 'Back'}, {Scale = Scale})
-    EffectUtil:Tween(MainFrame.Agent.ItemList, {.3, 'Sine', 'Out'}, {Position = Pos})
+    local Pos = States.ItemMenuOpen and UDim2.fromScale(1.251,0.5) or UDim2.fromScale(2.25,0.5)
+
+    --EffectUtil:Tween(MainFrame.Agent.ItemList.UIScale, {.3, 'Back'}, {Scale = 1})
+    EffectUtil:Tween(MainFrame.Agent.ItemList, {.25, 'Quart', 'Out'}, {Position = Pos})
 
     if not States.ItemMenuOpen then return end
 
@@ -69,7 +71,6 @@ local function ToggleItemMenu(State: boolean)
         local Object = Exists or Assets.Interface.Lobby.Feeding.Item:Clone()
 
         Object.Name = Name
-        Object.Amount.Position = UDim2.fromScale(-0.039, 0.6)
         Object.Amount.Text = `{OwnedAmount}`
         Object.Parent = HolderList
         Object.Design.ItemIcon.Image = 'rbxassetid://' .. ItemInformation.Icon
@@ -85,9 +86,24 @@ local function ToggleItemMenu(State: boolean)
             end
 
             States.SelectedFeedItems[Name] = Amount + 1
+            Object.Used.Visible = true
+            Object.Used.Amount.Text = `{States.SelectedFeedItems[Name]}`
             Object.Amount.Text = `{UpdatedOwnedAmount - States.SelectedFeedItems[Name]}`
 
+            Object.Design.UIScale.Scale = 0.8
+            Object.Used.UIScale.Scale = 1.1
+            EffectUtil:Tween(Object.Design.UIScale, { 0.5, 'Back', 'Out' }, {Scale = 1})
+            EffectUtil:Tween(Object.Used.UIScale, { 0.4, 'Back', 'Out' }, {Scale = 1})
+
             AddItemToFeed(Name, UpdatedOwnedAmount)
+        end)
+
+        Object.Button.MouseEnter:Connect(function()
+            EffectUtil:Tween(Object.Design.Outer, { 0.25, 'Quad', 'Out' }, {Color = Color3.new(1, 1, 1)})
+        end)
+
+        Object.Button.MouseLeave:Connect(function()
+            EffectUtil:Tween(Object.Design.Outer, { 0.25, 'Quad', 'Out' }, {Color = Color3.new()})
         end)
     end
 end
@@ -100,15 +116,30 @@ function AddItemToFeed(Name: string, Max: number)
     local Exists = HolderList:FindFirstChild(Name)
     local Object = Exists or Assets.Interface.Lobby.Feeding.Item:Clone()
     Object.Name = Name
-    Object.Amount.Text = `{States.SelectedFeedItems[Name]} / <b>{Max}</b>`
+    Object.Amount.Text = `{States.SelectedFeedItems[Name]}`
     Object.Parent = HolderList
     Object.Design.ItemIcon.Image = 'rbxassetid://' .. ItemInformation.Icon
 
     UpdatePreview()
 
     if not Exists then
+        Object.Design.UIScale.Scale = 0.1
+        Object.Design.Outer.Color = Color3.new(1, 1, 1)
+        EffectUtil:Tween(Object.Design.UIScale, { 0.15, 'Quart' }, {Scale = 1})
+        EffectUtil:Tween(Object.Design.Outer, { 0.3, 'Quad' }, {Color = Color3.new(), Thickness = 0.025})
+
         Object.Button.MouseButton1Click:Connect(function()
+            Object.Design.UIScale.Scale = 0.85
+            EffectUtil:Tween(Object.Design.UIScale, { 0.3, 'Back' }, {Scale = 1})
             RemoveItemToFeed(Name)
+        end)
+
+        Object.Button.MouseEnter:Connect(function()
+            EffectUtil:Tween(Object.Design.Outer, { 0.25, 'Quad' }, {Color = Color3.new(1, 1, 1), Thickness = 0.035})
+        end)
+
+        Object.Button.MouseLeave:Connect(function()
+            EffectUtil:Tween(Object.Design.Outer, { 0.25, 'Quad' }, {Color = Color3.new(), Thickness = 0.025})
         end)
     end
 end
@@ -118,7 +149,7 @@ function RemoveItemToFeed(Name: string, RemoveAll: boolean?)
     local MainFrame = Component:GetFrame()
     local HolderList = MainFrame.Agent.Items.Holder
 
-    States.SelectedFeedItems[Name] = States.SelectedFeedItems[Name] - 1
+    States.SelectedFeedItems[Name] = (States.SelectedFeedItems[Name] or 1) - 1
 
     if RemoveAll then
         States.SelectedFeedItems[Name] = 0
@@ -134,12 +165,10 @@ function RemoveItemToFeed(Name: string, RemoveAll: boolean?)
 
         Exists:Destroy()
     else
-        Exists.Amount.Text = `{States.SelectedFeedItems[Name]} / <b>{CurrentItem.Amount}</b>`
+        Exists.Amount.Text = `{States.SelectedFeedItems[Name]}`
     end
 
-    if not RemoveAll then
-        UpdatePreview()
-    end
+    UpdatePreview()
 
     if States.ItemMenuOpen then
         local MainHolder = MainFrame.Agent.ItemList.Holder
@@ -148,32 +177,48 @@ function RemoveItemToFeed(Name: string, RemoveAll: boolean?)
         if ItemMain and not RemoveAll then
             local SelectedAmount = States.SelectedFeedItems[Name] or 0
             ItemMain.Amount.Text = `{CurrentItem.Amount - SelectedAmount}`
+            ItemMain.Used.Amount.Text = `{SelectedAmount}`
+
+            if SelectedAmount <= 0 then
+                ItemMain.Used.Visible = false
+            end
         end
     end
 end
 
+local LastLevelPreview = 0;
 function UpdatePreview()
     local MainFrame = Component:GetFrame()
     local LevelBar = MainFrame.Agent.Data.LvlBar
     local IsAgent = States.Type == 'Agent'
 
     local CharacterData = IsAgent and LocalData:GetAgent(States.SelectedAgent) or LocalData:GetCompanion(States.SelectedAgent)
+    local ExpForLevel = IsAgent and Statics.Experience_For_Level(CharacterData.Level + 1) or Statics.Companion_Experience_For_Level(CharacterData.Level + 1)
     if not CharacterData then
         return
     end
 
+    for _, Thread in States.PreviewThreads do
+        task.cancel(Thread) 
+    end
+
     if TableUtil:GetDictLength(States.SelectedFeedItems) == 0 then
+        LastLevelPreview = 0
         LevelBar.Exp.Preview.Visible = false
         LevelBar.Added.Visible = false
+        LevelBar.Added.Text = `+0 Levels`
+        LevelBar.Lvl.Text = `Level: {CharacterData.Level} / 60`
+        LevelBar.CurrentExperience.Text = `{CharacterData.Experience} EXP`
+        LevelBar.NeededExperience.Text = `{ExpForLevel} EXP`
         LevelBar.Lvl.TextColor3 = Color3.new(1, 1, 1)
-        LevelBar.Exp.Preview.Size = UDim2.fromScale(0, 1)
+        EffectUtil:Tween(LevelBar.Exp.Preview, {.2, 'Cubic'}, {Size = UDim2.fromScale(0, 1)})
+        
         return
     end
 
     LevelBar.Exp.Preview.Visible = true
 
     local AddedLevels = 0
-    local ExpForLevel = IsAgent and Statics.Experience_For_Level(CharacterData.Level + 1) or Statics.Companion_Experience_For_Level(CharacterData.Level + 1)
     local Total = CharacterData.Experience
     for Item, Count in States.SelectedFeedItems do
         local ValidItemData = ItemDatabase:GetItemData(Item)
@@ -182,7 +227,7 @@ function UpdatePreview()
         Total += ValidItemData.Other.FeedExp * Count
     end
 
-    local TotalAddedExperience = Total
+    --local TotalAddedExperience = Total
 
     while Total > ExpForLevel do
         AddedLevels += 1
@@ -191,14 +236,50 @@ function UpdatePreview()
     end
 
     LevelBar.Exp.Fill.Visible = AddedLevels <= 0
-    LevelBar.Lvl.Text = `Level: {CharacterData.Level + AddedLevels} / 60`
+    LevelBar.Lvl.Text = `Level: {CharacterData.Level} / 60`
     LevelBar.Added.Visible = AddedLevels > 0
-    LevelBar.Added.Text = `+{AddedLevels} Levels`
+    LevelBar.Added.Text = `+{LastLevelPreview} Levels`
     LevelBar.CurrentExperience.Text = `{math.floor(Total)} EXP`
     LevelBar.NeededExperience.Text = `{math.ceil(ExpForLevel)} EXP`
     LevelBar.Lvl.TextColor3 = AddedLevels > 0 and Color3.fromRGB(164, 193, 255) or Color3.new(1,1,1)
 
-    EffectUtil:Tween(LevelBar.Exp.Preview, {.25, 'Cubic'}, {Size = UDim2.fromScale(Total / ExpForLevel, 1)})
+
+    local Origin, End = LastLevelPreview, AddedLevels
+    local LevelsTweenTime = math.abs(AddedLevels - LastLevelPreview) * 1/16
+    table.insert(States.PreviewThreads, task.spawn(function()
+        local Start = os.clock() 
+
+        while (os.clock() - Start < LevelsTweenTime) do
+            local Alpha = (os.clock() - Start ) / LevelsTweenTime
+            local AlfaValue = TweenService:GetValue(Alpha, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            local Number = math.floor(math.lerp(Origin, End, AlfaValue))
+
+            LevelBar.Added.Text = `+{Number} Levels`
+            LevelBar.Lvl.Text = `Level: {CharacterData.Level + Number} / 60`
+
+            task.wait()
+        end
+
+        LevelBar.Added.Text = `+{End} Levels`
+        LevelBar.Lvl.Text = `Level: {CharacterData.Level + End} / 60`
+    end))
+
+    local BarIsLowerThanCurrent = (LevelBar.Exp.Preview :: GuiObject).Size.X.Scale < Total / ExpForLevel;
+    if BarIsLowerThanCurrent then
+        local Values = (LastLevelPreview < AddedLevels and {1, 0} or {0, 1})
+        LastLevelPreview = AddedLevels
+
+        EffectUtil:Tween(LevelBar.Exp.Preview, {.2, 'Linear'}, {Size = UDim2.fromScale(Values[1], 1)})
+
+        table.insert(States.PreviewThreads, task.delay(0.2, function()
+            LevelBar.Exp.Preview.Size = UDim2.fromScale(Values[2], 1)
+            EffectUtil:Tween(LevelBar.Exp.Preview, {.2, 'Sine'}, {Size = UDim2.fromScale(Total / ExpForLevel, 1)})
+        end))
+    else
+        LastLevelPreview = AddedLevels
+
+        EffectUtil:Tween(LevelBar.Exp.Preview, {.25, 'Cubic'}, {Size = UDim2.fromScale(Total / ExpForLevel, 1)})
+    end
 end
 
 function Component:Link()
@@ -212,8 +293,6 @@ end
 
 function Component:Init()
     local MainFrame = Component:GetFrame()
-
-    Component:Set(true)
 
     local TransitionTime = {0.3, 'Back'}
     local CloseButtonMain = MainFrame.Agent.Close
@@ -230,18 +309,19 @@ function Component:Init()
     end)
 
     CloseButtonMain.Button.MouseEnter:Connect(function()
-        EffectUtil:Tween(CloseButtonMain.UIStroke, {.3, 'Cubic'}, {Thickness = 0.09})
+        EffectUtil:Tween(CloseButtonMain.Inner, {.3, 'Cubic'}, {Thickness = 0.09})
+        EffectUtil:Tween(CloseButtonMain.Outer, {.3, 'Cubic'}, {Thickness = 0.09})
         EffectUtil:Tween(CloseButtonMain.UIScale, TransitionTime, {Scale = 1.2})
     end)
 
     CloseButtonMain.Button.MouseLeave:Connect(function()
-        EffectUtil:Tween(CloseButtonMain.UIStroke, {.3, 'Cubic'}, {Thickness = 0.06})
+        EffectUtil:Tween(CloseButtonMain.Inner, {.3, 'Cubic'}, {Thickness = 0.06})
+        EffectUtil:Tween(CloseButtonMain.Outer, {.3, 'Cubic'}, {Thickness = 0.06})
         EffectUtil:Tween(CloseButtonMain.UIScale, TransitionTime, {Scale = 1})
     end)
 
     Component:BindToStateChange(function(State)
         MainFrame.Visible = true
-
         MainFrame.Agent.Visible = true
         if States.ClosingConnection then
             States.ClosingConnection:Disconnect()
@@ -249,12 +329,12 @@ function Component:Init()
 
         if State then
             EffectUtil:Tween(MainFrame.Background, {.25, 'Sine'}, {Transparency = 0.225})
-            EffectUtil:Tween(MainFrame.Agent.UIScale, {.3, 'Back'}, {Scale = 1})
+            EffectUtil:Tween(MainFrame.Agent, {.25, 'Quad', 'Out'}, {Position = UDim2.fromScale(0.5, 0.5)})
         else
-            local SizeTween = EffectUtil:Tween(MainFrame.Agent.UIScale, {.3, 'Quad', 'In'}, {Scale = 0})
+            local Tween = EffectUtil:Tween(MainFrame.Agent, {.25, 'Quad', 'Out'}, {Position = UDim2.fromScale(0.5, -0.75)})
             EffectUtil:Tween(MainFrame.Background, {.25, 'Sine'}, {Transparency = 1})
 
-            States.ClosingConnection = SizeTween.Completed:Once(function()
+            States.ClosingConnection = Tween.Completed:Once(function(a0: Enum.PlaybackState)
                 MainFrame.Agent.Visible = false
             end)
         end
@@ -356,6 +436,8 @@ function Component:ShowAgentFeeding(AgentName: string)
 
     States.SelectedAgent = AgentName
 
+    UpdatePreview()
+
     Component:UpdateProgressBar()
 end
 
@@ -411,7 +493,8 @@ function Component:UpdateProgressBar()
 
     local Maxexp = Statics.Experience_For_Level(AgentData.Level + 1)
     LevelBar.Lvl.Text = `Level: {AgentData.Level} / 60`
-    LevelBar.NeededExperience.Text = `{AgentData.Experience} / {Maxexp}`
+    LevelBar.NeededExperience.Text = `{Maxexp} EXP`
+    LevelBar.CurrentExperience.Text = `{AgentData.Experience} EXP`
     LevelBar.Lvl.TextColor3 = Color3.new(1, 1, 1)
     LevelBar.Exp.Fill.Visible = true
     LevelBar.Added.Visible = false

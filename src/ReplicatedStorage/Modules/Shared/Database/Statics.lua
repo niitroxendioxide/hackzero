@@ -104,11 +104,12 @@ return {
 	Experience_For_Level = GetExpForLevel,
 	GetExperienceForMax = function(StartLevel, CurrentExperience)
 		local ExpForLevels = 0
-		for i = StartLevel + 1, 60 - StartLevel do
+		local ExtraLevels = 0
+		for i = StartLevel + 1, 60 do
 			ExpForLevels += GetExpForLevel(i)
 		end
 
-		return (ExpForLevels - CurrentExperience)
+		return (ExpForLevels - CurrentExperience), ExtraLevels
 	end,
 
 	Experience_To_Ascend = {

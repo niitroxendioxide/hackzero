@@ -356,7 +356,23 @@ function Component:Init()
     --
     local StatsFrame = MainFrame.Stats
     local AgentUpgrade = StatsFrame.AgentData.Upgrade
+    
+    AgentUpgrade.Button.MouseEnter:Connect(function()
+        EffectUtil:Tween(AgentUpgrade.UIStroke, { 0.4, 'Quad' }, {Color = Color3.fromRGB(74, 223, 0), Thickness = 0.07})
+        EffectUtil:Tween(AgentUpgrade.Bg, { 0.4, 'Quad' }, {ImageTransparency = 0.4})
+        EffectUtil:Tween(AgentUpgrade.UIScale, { 0.3, 'Quad' }, {Scale = 1.04})
+    end)
+
+    AgentUpgrade.Button.MouseLeave:Connect(function()
+        EffectUtil:Tween(AgentUpgrade.UIStroke, { 0.4, 'Quad' }, {Color = Color3.fromRGB(45, 141, 0), Thickness = 0.05})
+        EffectUtil:Tween(AgentUpgrade.Bg, { 0.4, 'Quad' }, {ImageTransparency = 0.85})
+        EffectUtil:Tween(AgentUpgrade.UIScale, { 0.3, 'Quad' }, {Scale = 1})
+    end)
+
     AgentUpgrade.Button.MouseButton1Click:Connect(function()
+        AgentUpgrade.UIScale.Scale = 0.8
+        EffectUtil:Tween(AgentUpgrade.UIScale, { 0.25, 'Back' }, {Scale = 1})
+
         local Element = UIGroups:GetElementClass("Feeding", "Feeding")
         if not States.__Current_Agent then
             return
@@ -417,11 +433,15 @@ function Component:CheckAvailable(): boolean
     return true
 end
 
-function Component:RefreshInformation()
+function Component:RefreshInformation(LevelUp: boolean)
     Component:SelectAgent(States.__Current_Agent)
 
     if States.__Last_Tab == 'Stats' then
         local Element = UIGroups:GetElementClass("Feeding", "Feeding")
+
+        if LevelUp then
+            Effects:Play("CharSwitch", States.__Current_Model, true)
+        end
 
         Element:UpdateProgressBar()
     end
