@@ -356,8 +356,16 @@ function Component:Init()
     --
     local StatsFrame = MainFrame.Stats
     local AgentUpgrade = StatsFrame.AgentData.Upgrade
-    
+    local GlowTween = nil;
+
     AgentUpgrade.Button.MouseEnter:Connect(function()
+        if GlowTween then
+            GlowTween:Cancel();
+        end
+
+        AgentUpgrade.Glow.UIGradient.Offset = Vector2.new(-0.8, 0)
+        GlowTween = EffectUtil:Tween(AgentUpgrade.Glow.UIGradient, { 0.4, 'Quad' }, {Offset = Vector2.new(0.8, 0)})
+
         EffectUtil:Tween(AgentUpgrade.UIStroke, { 0.4, 'Quad' }, {Color = Color3.fromRGB(74, 223, 0), Thickness = 0.07})
         EffectUtil:Tween(AgentUpgrade.Bg, { 0.4, 'Quad' }, {ImageTransparency = 0.4})
         EffectUtil:Tween(AgentUpgrade.UIScale, { 0.3, 'Quad' }, {Scale = 1.04})

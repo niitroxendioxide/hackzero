@@ -342,11 +342,56 @@ function Component:Init()
 
     self:Set(false)
 
-    MainFrame.Agent.Upgrade.Btn.MouseButton1Click:Connect(Feed)
+    local UpgradeButton = MainFrame.Agent.Upgrade
+    UpgradeButton.Btn.MouseButton1Click:Connect(function()
+        Feed()
+
+        UpgradeButton.UIScale.Scale = 0.9
+        EffectUtil:Tween(UpgradeButton.UIScale, { 0.4, 'Back', 'Out' }, {Scale = 1})
+    end)
+
+    local GlowTween: Tween? = nil
+    UpgradeButton.MouseEnter:Connect(function()
+        if GlowTween then
+            GlowTween:Cancel()
+        end
+
+        UpgradeButton.Glow.UIGradient.Offset = Vector2.new(-0.9, 0)
+        GlowTween = EffectUtil:Tween(UpgradeButton.Glow.UIGradient, { 0.4, 'Quad' }, {Offset = Vector2.new(0.9, 0)})
+
+        EffectUtil:Tween(UpgradeButton, { 0.4, 'Sine' }, {BackgroundColor3 = Color3.fromRGB(22, 65, 0)})
+        EffectUtil:Tween(UpgradeButton.UIScale, { 0.35, 'Quad', 'Out' }, {Scale = 1.09})
+        EffectUtil:Tween(UpgradeButton.Bg, { 0.4, 'Sine' }, {ImageTransparency = 0.5})
+        EffectUtil:Tween(UpgradeButton.UIStroke, { 0.3, 'Quart', 'Out' }, {Color = Color3.fromRGB(97, 255, 24)})
+        EffectUtil:Tween(UpgradeButton.TabLabel.UIStroke, { 0.35, 'Quart' }, { Color = Color3.fromRGB(0, 111, 17) })
+    end)
+
+    UpgradeButton.MouseLeave:Connect(function()
+        EffectUtil:Tween(UpgradeButton, { 0.4, 'Sine' }, {BackgroundColor3 = Color3.fromRGB(14, 43, 0)})
+        EffectUtil:Tween(UpgradeButton.Bg, { 0.4, 'Sine' }, {ImageTransparency = 0.85})
+        EffectUtil:Tween(UpgradeButton.UIScale, { 0.35, 'Quad', 'Out' }, {Scale = 1})
+        EffectUtil:Tween(UpgradeButton.UIStroke, { 0.3, 'Quart', 'Out' }, {Color = Color3.fromRGB(0, 39, 8)})
+        EffectUtil:Tween(UpgradeButton.TabLabel.UIStroke, { 0.35, 'Sine' }, { Color = Color3.fromRGB(0, 40, 6) })
+    end)
 
     --
     local AddButton = MainFrame.Agent.Items.Holder.Add
-    AddButton.Button.MouseButton1Click:Connect(ToggleItemMenu)
+    AddButton.Button.MouseButton1Click:Connect(function()
+        ToggleItemMenu()
+
+        AddButton.Design.UIScale.Scale = 0.85
+        EffectUtil:Tween(AddButton.Design.UIScale, { 0.3, 'Back' }, {Scale = 1})
+    end)
+
+    AddButton.Button.MouseEnter:Connect(function()
+        EffectUtil:Tween(AddButton.Design.UIScale, { 0.35, 'Quad', 'Out' }, {Scale = 1.09})
+        EffectUtil:Tween(AddButton.Design.Outer, { 0.3, 'Quart', 'Out' }, {Transparency = 0, Thickness = 0.035})
+    end)
+
+    AddButton.Button.MouseLeave:Connect(function()
+        EffectUtil:Tween(AddButton.Design.UIScale, { 0.25, 'Quad', 'In' }, {Scale = 1})
+        EffectUtil:Tween(AddButton.Design.Outer, { 0.3, 'Quart', 'Out' }, {Transparency = 0.4, Thickness = 0.025})
+    end)
 
     local CloseButtonList = MainFrame.Agent.ItemList.Close
     CloseButtonList.Button.MouseButton1Click:Connect(function()
