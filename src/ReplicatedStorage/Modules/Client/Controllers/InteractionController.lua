@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -46,8 +47,6 @@ function Controller:Init()
                 return
             end
 
-            Chests:SetOpenState(ChestId, true)
-
             Network:Fire("ChestInteraction", GameEnum.ChestInteractions.Open, ChestId)
         elseif PromptType == GameEnum.InteractionType.UIInteraction then
             local PromptOwner = Prompt:FindFirstAncestorOfClass("Model")
@@ -65,6 +64,32 @@ function Controller:Init()
             Controller:InteractWithNPC(Prompt)
         elseif PromptType == GameEnum.InteractionType.LobbyNPC then
             Npcs:TalkToNPC(Prompt:GetAttribute("NpcId"))
+        end
+    end)
+
+    Network:On("ChestInteraction", function(Player: Player, ChestId: number, Items: {})
+        local ChestObject = Chests:GetById(ChestId)
+        if not ChestObject or ChestObject.Opened then
+            return
+        end
+
+        Chests:SetOpenState(ChestId, true, Items, Player)
+
+        if Player == Players.LocalPlayer then
+            local UIElement = InterfaceController:GetComponent("ItemNotifications")
+
+            local Count = 0;
+            for _, Item in Items do
+                if Item[1] == 'Artifact' or Item[1] == 'Drive' then
+                    task.delay(2.45 + Count * 0.1, function()
+                        UIElement:AddItem(Item[1], Item[2], Item[3])
+                    end)
+
+                    Count += 1;
+                else
+                    UIElement:AddItem(Item[1], Item[2], Item[3])
+                end
+            end
         end
     end)
 end

@@ -1,4 +1,3 @@
---!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -43,9 +42,14 @@ local function ChestInteractionEvent(Player: Player, Type: number, ChestId: numb
     if GameEnum.ChestInteractions.Open == Type then
         if ChestObject.Opened then return end
 
+        local ItemList = {}
         for _, ItemObject in ChestObject.Items do
+            table.insert(ItemList, {ItemObject.Type, ItemObject.Amount, ItemObject.Extra and ItemObject.Extra.Name or ""})
+            
             StagePlayer:AddLoot(ItemObject.Type, {Amount = ItemObject.Amount, Extra = ItemObject.Extra or {}})
         end
+
+        Network:FireForAll("ChestInteraction", Player, ChestId, ItemList)
     end
 
 end

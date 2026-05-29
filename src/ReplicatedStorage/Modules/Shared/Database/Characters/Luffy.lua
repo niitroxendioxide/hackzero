@@ -1,6 +1,6 @@
 return {
-	Display_Name = 'Monkey D. Luffy',
-	Nickname = 'Luffy',
+	Display_Name = 'Monk-E D. Roofie',
+	Nickname = 'Roofie',
 	Element = 'Physical',
 	Role = 'Stun',
 	Tier = "Legendary",
@@ -20,6 +20,7 @@ return {
 		Penetration = 0,
 		Pen_Ratio = 0,
 		Daze = 70,
+		Speed = 1,
 		Energy_Regeneration = 0.5,
 		Affliction_Aptitude = 80,
 		Affliction_Facility = 10,

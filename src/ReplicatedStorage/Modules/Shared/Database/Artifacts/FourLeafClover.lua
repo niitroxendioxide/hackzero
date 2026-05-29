@@ -18,7 +18,7 @@ return {
 
 	Piece_Descriptions = {
 		Two_Piece = "Crit RATE +15%, ATK +6%",
-		Four_Piece = "After hitting a critical hit, ",
+		Four_Piece = "Passive Effect: After hitting a critical hit, ",
 	},
 
 } :: Types.Artifact_Data

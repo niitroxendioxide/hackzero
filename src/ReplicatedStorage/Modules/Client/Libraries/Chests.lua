@@ -2,11 +2,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Assets = ReplicatedStorage.Assets:FindFirstChild('Interactables')
 local Shared = ReplicatedStorage.Modules.Shared
+local Client = ReplicatedStorage.Modules.Client
 
 local Prompts = require(script.Parent.Prompts)
 local Animlib = require(script.Parent.Animation)
-local Effects = require(Shared.Utility.Effects)
 local GameEnum = require(Shared.GameEnum)
+local EffectsLib = require(Client.Libraries.Effects)
 
 
 --
@@ -23,7 +24,7 @@ export type ChestObjectData = {
 local ChestsLibrary = {}
 local Chests = {}
 
-function HandleOpeningAnimation(Chest: ChestObjectData)
+function HandleOpeningAnimation(Chest: ChestObjectData, Items: {}, Player: Player?)
     local Model = Chest.Model;
     
     if Chest.Opened then
@@ -34,7 +35,7 @@ function HandleOpeningAnimation(Chest: ChestObjectData)
         Track:AddTag('ChestOpening')
         
 
-        task.delay(.1, PlayChestOpeningEffect, Chest)
+        task.delay(.1, PlayChestOpeningEffect, Chest, Items, Player)
         task.delay(1.5, function()
             if not(Track) or not(Track.IsPlaying) or (Track.Speed < 1) then
                 return
@@ -52,12 +53,8 @@ function HandleOpeningAnimation(Chest: ChestObjectData)
 
 end
 
-function PlayChestOpeningEffect(Chest: ChestObjectData)
-    local Vfx = ReplicatedStorage.Assets.Effects.General.Interactions.OpenChest:Clone()
-    Vfx:PivotTo(Chest.Base:GetPivot() * CFrame.new(0, 1, 0))
-    Vfx.Parent = workspace.World.Effects
-    Effects:Emit(Vfx, true)
-    Effects:CleanUp(Vfx, 2)
+function PlayChestOpeningEffect(Chest: ChestObjectData, Items: {}, Player: Player?)
+    EffectsLib:Play('ChestOpening', Chest.Base:GetPivot(), Items or {}, Player)
 end
 
 function CreateModelOnBasePart(BasePart: BasePart, Design: string)
@@ -97,7 +94,7 @@ function ChestsLibrary:GetById(Id: number): ChestObjectData?
 end
 
 
-function ChestsLibrary:SetOpenState(Id: number, OpenState: boolean): ()
+function ChestsLibrary:SetOpenState(Id: number, OpenState: boolean, Items: {}?, Player: Player?): ()
     assert(typeof(OpenState) == "boolean", "Invalid state given")
 
     local Chest = ChestsLibrary:GetById(Id)
@@ -111,7 +108,7 @@ function ChestsLibrary:SetOpenState(Id: number, OpenState: boolean): ()
         Chest.Prompt.Enabled = false
     end
 
-    HandleOpeningAnimation(Chest)
+    HandleOpeningAnimation(Chest, Items, Player)
 end
 
 function ChestsLibrary:Remove(Id: number): boolean

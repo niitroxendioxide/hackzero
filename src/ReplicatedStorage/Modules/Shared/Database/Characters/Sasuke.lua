@@ -1,6 +1,6 @@
 return {
-	Display_Name = 'Sasuke Uchiha',
-	Nickname = 'Sasuke',
+	Display_Name = 'Sazuki Uchiro',
+	Nickname = 'Sazuki',
 	Element = 'Fire',
 	Role = 'Attack',
 	Tier = "Legendary",
@@ -29,6 +29,7 @@ return {
 		Penetration = 0,
 		Pen_Ratio = 0,
 		Daze = 90,
+		Speed = 1,
 		Energy_Regeneration = 1.2,
 		Affliction_Aptitude = 25,
 		Affliction_Facility = 11,

@@ -9,7 +9,7 @@ return table.freeze({
         TYPE = 'Mission',
         STAGE = {
             --- Training, DailyImprovement, DungeonEx, HuecoMundo
-            Stage = 'Training',
+            Stage = 'Testing',
             Act = 'Intro',
         },
         DATA = {
@@ -47,8 +47,7 @@ return table.freeze({
     BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {
+        'Chihiro',
         'Miku',
-        'Goku',
-        "Sasuke",
     },
 })

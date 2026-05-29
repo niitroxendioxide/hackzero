@@ -1,5 +1,5 @@
 return {
-	Display_Name = 'Hatsune Miku',
+	Display_Name = 'Mitsune Haku',
 	Nickname = 'Miku',
 	Element = 'Ice',
 	Role = 'Support',
@@ -20,6 +20,7 @@ return {
 		Penetration = 0,
 		Pen_Ratio = 0,
 		Daze = 70,
+		Speed = 1,
 		Energy_Regeneration = 1.2,
 		Affliction_Aptitude = 80,
 		Affliction_Facility = 10,

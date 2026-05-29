@@ -1,6 +1,6 @@
 return {
-	Display_Name = 'Naruto Uzumaki',
-	Nickname = 'Naruto',
+	Display_Name = 'Natsuro Uzaki',
+	Nickname = 'Naru-kage',
 	Element = 'Wind',
 	Role = 'Support',
 	Tier = "Legendary",
@@ -27,6 +27,7 @@ return {
 		Penetration = 0,
 		Pen_Ratio = 0,
 		Daze = 90,
+		Speed = 1,
 		Energy_Regeneration = 1.2,
 		Affliction_Aptitude = 90,
 		Affliction_Facility = 11,

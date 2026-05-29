@@ -20,6 +20,7 @@ return {
 		Penetration = 0,
 		Pen_Ratio = 0,
 		Daze = 95,
+		Speed = 1,
 		Energy_Regeneration = 0.5,
 		Affliction_Aptitude = 120,
 		Affliction_Facility = 10,

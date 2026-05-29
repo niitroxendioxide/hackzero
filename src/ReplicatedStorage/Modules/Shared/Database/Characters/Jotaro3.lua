@@ -1,6 +1,6 @@
 return {
 	Display_Name = 'Jotaro Kujo',
-	Nickname = 'Jojo',
+	Nickname = 'Jotaro (P3)',
 	Element = 'Physical',
 	Role = 'Stun',
 	Tier = "Legendary",
@@ -27,6 +27,7 @@ return {
 		Penetration = 0,
 		Pen_Ratio = 0,
 		Daze = 119,
+		Speed = 1,
 		Energy_Regeneration = 0.5,
 		Affliction_Aptitude = 90,
 		Affliction_Facility = 91,
