@@ -43,6 +43,7 @@ local Controller = {
 	__Trove = Trove.new(),
 	__CurrentMovementVector = Vector3.zero,
 	__Dead = false,
+	__Shiftlock = false,
 }
 
 function Controller:Init(): ()
@@ -51,6 +52,12 @@ function Controller:Init(): ()
 		Controller:SetupKeybinds();
 	else
 		CameraLibrary:SetTargetPart("HumanoidRootPart")
+		UserInputService.InputBegan:Connect(function(Obj: InputObject, GP: boolean)
+			if GP then return end
+			if Obj.KeyCode == Enum.KeyCode.LeftShift then
+				Controller.__Shiftlock = not Controller.__Shiftlock
+			end
+		end)
 	end
 
 	RunService:BindToRenderStep('PlayerControllerMainLoop', Enum.RenderPriority.Camera.Value, function(Delta: number)
@@ -75,7 +82,9 @@ function Controller:Init(): ()
 			CameraLibrary:SetSubject(Character)
 			CameraLibrary:Update(Delta)
 
-			if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+			if Controller.__Shiftlock then
+				UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+			elseif UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) or UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton3) then
 				UserInputService.MouseBehavior = Enum.MouseBehavior.LockCurrentPosition
 			else
 				UserInputService.MouseBehavior = Enum.MouseBehavior.Default

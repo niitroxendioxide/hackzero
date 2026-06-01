@@ -20,6 +20,7 @@ local Effects = require(Shared.Utility.Effects)
 local Drives = require(Shared.Database.Drives)
 local Artifacts = require(Shared.Database.Artifacts)
 local UIUtils = require(Client.Libraries.UIUtils)
+local Animation = require(Client.Libraries.Animation)
 
 local Component = BaseClass.new("ChaosControl", "Lobby", {}) --KeyToBind = Enum.KeyCode.L
 
@@ -39,6 +40,7 @@ local NodeName = {
 }
 
 local States = {
+    Active = false,
     CurrentTab = '',
     --Pulled = false,
     RetreivedServerData = {},
@@ -49,9 +51,41 @@ local States = {
     SelectedNode = 0,
     ItemListActive = false,
     SelectionDebounce = false,
+    CurrentTrack = nil,
+    CurrentTrackThread = nil,
 }
 
 ---
+function SetNPCAnimPlaying(Track: string)
+    if Track == 'Inactive' and (States.Active == true) then
+        return
+    end
+
+    local AnimsFolder = ReplicatedStorage.Assets.Animations.Lobby.ChaosControlNPC
+    local Character = workspace.World.Map.Design:FindFirstChild('ChaosControlRig')
+
+    if States.CurrentTrackThread then
+        task.cancel(States.CurrentTrackThread)
+    end
+
+    if States.CurrentTrack ~= nil then
+        States.CurrentTrack:Stop(0.3)
+    end
+
+    if Track == 'Active' then
+        States.CurrentTrack = Animation:Play(Character, AnimsFolder.ActiveIdle)
+    elseif Track == 'Inactive' then
+        States.CurrentTrack = Animation:Play(Character, AnimsFolder.InactiveIdle)
+    elseif Track == 'Salute' then
+        States.CurrentTrack = Animation:Play(Character, AnimsFolder.SaluteAnim)
+
+        States.CurrentTrackThread = task.delay(0.483, function()
+            States.CurrentTrack:Stop(.2)
+            States.CurrentTrack = Animation:Play(Character, AnimsFolder.SaluteIdle)
+        end)
+    end
+end
+
 function ClearNodes()
     for _, NodeObject in Component:GetFrame().Stages:GetChildren() do
         NodeObject:Destroy()
@@ -416,6 +450,8 @@ function Component:Init()
     local ReturnObj = Main.Return;
     States.InformationFrame = Main.Information;
 
+    SetNPCAnimPlaying('Inactive')
+
     ReturnObj.Btn.MouseEnter:Connect(function()
         Effects:Tween(ReturnObj.UIScale, { 0.2, 'Back' }, { Scale = 1.1 })
         Effects:Tween(ReturnObj.UIStroke, { 0.3, 'Quart' }, { Color = Color3.fromRGB(90, 19, 19) })
@@ -446,6 +482,7 @@ function Component:Init()
     ---
     Component:BindToStateChange(function(State: boolean)  
         Main.Visible = true
+        States.Active = State
 
         for _, TweenOrThread in CleanupObjects do
             if typeof(TweenOrThread) == 'thread' then
@@ -458,6 +495,7 @@ function Component:Init()
         CleanupObjects = {}
 
         if State then
+            SetNPCAnimPlaying('Active')
             ShowInformation(nil);
 
             Camera:MarkUsage("ChaosControl")
@@ -516,6 +554,7 @@ function Component:Init()
                 States.Pulled = true
             end
         else
+            SetNPCAnimPlaying('Inactive')
             local Correction: ColorCorrectionEffect = Lighting:FindFirstChild("ChaosCorrection")
 
             if Correction then
@@ -546,6 +585,16 @@ function Component:Init()
         if not Object:IsA('Frame') then
             continue;
         end
+
+        Object.Button.MouseEnter:Connect(function()
+            Effects:Tween(Object.OuterStroke, { .3, 'Quad' }, { Color = Color3.new(1, 1, 1) })
+            Effects:Tween(Object.UIScale, { .4, 'Sine' }, { Scale = 1.03 })
+        end)
+
+        Object.Button.MouseLeave:Connect(function()
+            Effects:Tween(Object.OuterStroke, { .3, 'Quad' }, { Color = Color3.new() })
+            Effects:Tween(Object.UIScale, { .4, 'Sine' }, { Scale = 1 })
+        end)
 
         Object.Button.MouseButton1Click:Connect(function()
             CreateNodes(Object.Name, Amounts[Object.Name])
@@ -578,6 +627,15 @@ function Component:ShowChaosData(Data: {})
     ---
     local ApocalypseTowerFrame = MissionList:FindFirstChild('ApocalypseTower')
     ApocalypseTowerFrame.Level.Text = `Floor {Data.ApocalypseTower.Floor}`
+end
+
+function Component:ShownPromptInteraction()
+    return SetNPCAnimPlaying("Salute")
+end
+
+
+function Component:HiddenPromptInteraction()
+    return SetNPCAnimPlaying("Inactive")
 end
 
 return Component

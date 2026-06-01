@@ -143,7 +143,7 @@ function NewCharacter(): Character?
         return nil
     end
 
-    local BaseCF = (BaseChar:FindFirstChild("HumanoidRootPart") :: BasePart):GetPivot()
+    local BaseCF = CFrame.new(0, 3, 0)  -- (BaseChar:FindFirstChild("HumanoidRootPart") :: BasePart):GetPivot()
     local RandomId = HttpService:GenerateGUID(false)
     local DirCF = BaseCF * CFrame.Angles(0, RNG:NextNumber(-math.pi * 2, math.pi * 2), 0)
     local Len = RNG:NextInteger(MIN_SPAWN_RANGE, MAX_SPAWN_RANGE)

@@ -24,6 +24,34 @@ local Controller = {
     __Current_Action = {},
 }
 
+function HandlePromptShown(Prompt: ProximityPrompt)
+    local PromptType = Prompt:GetAttribute("Type")
+
+    if PromptType == GameEnum.InteractionType.UIInteraction then
+        local PromptOwner = Prompt:FindFirstAncestorOfClass("Model")
+        local InterfaceId = PromptOwner:GetAttribute("UIElement")
+
+        local Element = InterfaceController:GetComponent(InterfaceId)
+        if Element and Element.ShownPromptInteraction then
+            Element:ShownPromptInteraction()
+        end
+    end
+end
+
+function HandleHiddenPrompt(Prompt: ProximityPrompt)
+    local PromptType = Prompt:GetAttribute("Type")
+
+    if PromptType == GameEnum.InteractionType.UIInteraction then
+        local PromptOwner = Prompt:FindFirstAncestorOfClass("Model")
+        local InterfaceId = PromptOwner:GetAttribute("UIElement")
+
+        local Element = InterfaceController:GetComponent(InterfaceId)
+        if Element and Element.HiddenPromptInteraction then
+            Element:HiddenPromptInteraction()
+        end
+    end
+end
+
 function Controller:Init()
     if Places:IsInPlace("Lobby") then
         Controller:SetupLobbyNPCS()
@@ -33,10 +61,13 @@ function Controller:Init()
         if GivenPrompt.Style == Enum.ProximityPromptStyle.Custom then
             Controller:CreatePromptWithCustomDesign(GivenPrompt)
         end
+
+        HandlePromptShown(GivenPrompt)
     end)
 
 
     ---
+
     ProximityPromptService.PromptTriggered:Connect(function(Prompt, Player)
         local PromptType = Prompt:GetAttribute("Type")
 
@@ -121,6 +152,7 @@ function Controller:CreatePromptWithCustomDesign(Prompt: ProximityPrompt)
     end)
 
     Prompt.PromptHidden:Once(function(...)  
+        task.spawn(HandleHiddenPrompt, Prompt)
         PressConnection:Disconnect()
 
         if not KeyObject:FindFirstChild('UIScale') then
