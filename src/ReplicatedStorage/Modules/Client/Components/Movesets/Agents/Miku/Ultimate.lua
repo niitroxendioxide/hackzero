@@ -12,20 +12,35 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Agent, _, _, Context)
 	--
-	local EffectData = Ability:FromData("EffectData")
-	local Attack_Time = Ability:FromData('Attack_State_Time')
+	local Ult_Length = Ability:FromData("Ult_Length")
+	local Base_Attack_Time = Ability:FromData('Attack_State_Time')
 
-	local Sequence = Ability:Begin(Agent, {
-		{0, function(_)
-			Ability:PlayAnimation(Agent, 'Miku.Abilities.Assist.Default', {
+	Ability:Begin(Agent, {
+		{0, function(Seq)
+			local Track = Ability:PlayAnimation(Agent, 'Miku.Abilities.Ultimate.Default', {
 				Fade = .1,
-				Active_Time = Attack_Time + .125,
+				Active_Time = Base_Attack_Time + Ult_Length - 1.3,
 			})
 
-			Agent:SwitchState('Attacking', Attack_Time)
-			Ability:Effect("Miku_ToggleLeek", Agent, "Enable", 2)
+			Ability:Save(Agent, "Track", Track)
+
+			Agent:SwitchState('Attacking', Base_Attack_Time + Ult_Length - 1.3)
 		end,},
 
+		{0.35, function()
+			Ability:Effect("Miku_StageUltimate", Agent, 'Activate')
+		end},
+
+		{1.3, function()
+			local CurrentTrack = Ability:Get(Agent, "Track")
+			CurrentTrack:AdjustSpeed(0)
+		end},
+
+		{Ult_Length, function()
+			local CurrentTrack = Ability:Get(Agent, "Track")
+			CurrentTrack:AdjustSpeed(1)
+			Ability:Effect("Miku_StageUltimate", Agent, 'Deactivate')
+		end},
 	})
 end
 

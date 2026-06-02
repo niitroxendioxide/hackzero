@@ -23,8 +23,6 @@ return function(
     local Model = Target:GetModel()
     local AuraEffect = IsFanState and 'DancingAura' or 'SlowedAura'
 
-    print(Time)
-
     if Cache[Model] then
         Cache[Model](true)
     else

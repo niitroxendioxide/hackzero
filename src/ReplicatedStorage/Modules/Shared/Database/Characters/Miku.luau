@@ -130,29 +130,32 @@ return {
 
 		['Ultimate'] = {
             Base = {
-                Cooldown = 5,
-                Attack_State_Time = 2.5,
+                Cooldown = 2,
+				Ult_Length = 6,
+                Attack_State_Time = 2.183,
                 Speed = 1,
                 Animation_Speed = 1,
+				Hit_Frequency = 1 / 3,
+                Hit_Data = {
+					Damage = 120,
+					Daze = 45,
+					Affliction = "Ice",
+					Affliction_Buildup = 65,
+					HitType = "Blunt",
+				},
 
-                Required_Energy = 60,
-				CustomVerify = true,
-
-                Buffs = {
-                    {
-                        Type = "Attack",
-                        Time = 20,
-                        Value = "25%",
-                        Tag = "MikuStrengthBuff",
-                    },
-
-                    {
-                        Type = "Defense",
-                        Time = 20,
-                        Value = 120,
-                        Tag = "MikuDefenseBuff",
-                    }
-                },
+				Collat_Hit = {
+					Damage = 65,
+					Daze = 15,
+					Affliction = "Ice",
+					Affliction_Buildup = 25,
+					HitType = "Blunt",
+					Knockback = {
+						vector.create(0, 0, 1),
+						8,
+						0.2,
+					}
+				},
             },
         },
 

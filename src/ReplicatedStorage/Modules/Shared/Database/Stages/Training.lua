@@ -91,7 +91,7 @@ return {
                     Enemies = {
                         [1] = {
                             {Name = "Sorcerer", Amount = 1, Level = 60,}
-                        } --"Dazed", 1, 60}
+                        }
                     },
                     Dialogue = {
                         {

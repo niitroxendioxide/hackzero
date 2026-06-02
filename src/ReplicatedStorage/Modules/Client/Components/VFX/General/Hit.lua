@@ -41,9 +41,10 @@ return function(
 	end
 
 	local Offset = Data.Offset or CFrame.new()
-
+	local BaseCFrame = typeof(Enemy) == 'table' and Enemy:GetModel():GetPivot() or Enemy
+	
 	local Object = Effects:Create(CombatFolder[EmitterId], 25)
-	Object.CFrame = Enemy:GetModel():GetPivot() * Offset
+	Object.CFrame = BaseCFrame * Offset
 
 	if Data.HueShift or Data.HueShiftFilter then
 		Effects:HueShift(Object, Data.HueShift or 0, Data.HueShiftFilter)
@@ -68,7 +69,7 @@ return function(
 
 	if Data.Audio then
 		AudioLib:PlayId(Data.Audio.Id, {
-			At = Enemy:GetPivot().Position,
+			At = BaseCFrame.Position,
 			Volume = Data.Audio.Volume or 1,
 			Category = 'Effects',
 			Priority = Data.Audio.Priority,

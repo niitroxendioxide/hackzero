@@ -8,8 +8,8 @@ return table.freeze({
         --- Types: ChaosControl, Mission
         TYPE = 'Mission',
         STAGE = {
-            --- Training, DailyImprovement, DungeonEx, HuecoMundo
-            Stage = 'Testing',
+            --- Training, Testing, DailyImprovement, DungeonEx, HuecoMundo
+            Stage = 'Training',
             Act = 'Intro',
         },
         DATA = {

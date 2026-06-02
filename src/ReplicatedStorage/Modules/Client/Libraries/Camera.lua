@@ -148,7 +148,7 @@ function Camera:Update(delta: number)
 
 	local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
 	local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
-	local Goal = Vector3.new(Torso.X, Torso:Lerp(Root, 0.5).Y, Torso.Z)
+	local Goal = Vector3.new(Torso.X, Torso:Lerp(Root, 0).Y, Torso.Z)
 
 	if Camera.__Moving_Delta.Magnitude > 0 then
 		local IsConsole = Inputs:GetDevice() == GameEnum.Device.Console
