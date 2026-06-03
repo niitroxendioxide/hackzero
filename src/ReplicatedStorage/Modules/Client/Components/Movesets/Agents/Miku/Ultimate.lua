@@ -14,24 +14,22 @@ function Ability:Play(Agent, _, _, Context)
 	--
 	local Ult_Length = Ability:FromData("Ult_Length")
 	local Base_Attack_Time = Ability:FromData('Attack_State_Time')
+	local Startup_Length = Ability:FromData("Startup_Length")
 
 	Ability:Begin(Agent, {
 		{0, function(Seq)
 			local Track = Ability:PlayAnimation(Agent, 'Miku.Abilities.Ultimate.Default', {
 				Fade = .1,
-				Active_Time = Base_Attack_Time + Ult_Length - 1.3,
+				Active_Time = Base_Attack_Time + Ult_Length - Startup_Length,
 			})
 
 			Ability:Save(Agent, "Track", Track)
 
-			Agent:SwitchState('Attacking', Base_Attack_Time + Ult_Length - 1.3)
+			Agent:SwitchState('Attacking', Base_Attack_Time + Ult_Length - Startup_Length)
+			Ability:Effect("Miku_StageUltimate", Agent, 'Activate')
 		end,},
 
-		{0.35, function()
-			Ability:Effect("Miku_StageUltimate", Agent, 'Activate')
-		end},
-
-		{1.3, function()
+		{Startup_Length, function()
 			local CurrentTrack = Ability:Get(Agent, "Track")
 			CurrentTrack:AdjustSpeed(0)
 		end},

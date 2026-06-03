@@ -131,11 +131,16 @@ return {
 		['Ultimate'] = {
             Base = {
                 Cooldown = 2,
-				Ult_Length = 6,
-                Attack_State_Time = 2.183,
                 Speed = 1,
                 Animation_Speed = 1,
+				
+				-- Times
+				Ult_Length = 6,
+                Attack_State_Time = 2.183,
+				Startup_Length = 1.5,
 				Hit_Frequency = 1 / 3,
+
+				
                 Hit_Data = {
 					Damage = 120,
 					Daze = 45,
