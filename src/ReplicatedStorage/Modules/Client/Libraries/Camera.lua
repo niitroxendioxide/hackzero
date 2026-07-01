@@ -146,6 +146,11 @@ function Camera:Update(delta: number)
 	local CameraRotation = CFrame.Angles(0, -Camera.__Rotation.X, 0) * CFrame.Angles(-Camera.__Rotation.Y, 0, 0)
 	local CameraPosition;
 
+	if not (Model:FindFirstChild('UpperTorso')) and not (Model:FindFirstChild('Torso')) then
+		return
+	end
+
+
 	local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
 	local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
 	local Goal = Vector3.new(Torso.X, Torso:Lerp(Root, 0).Y, Torso.Z)

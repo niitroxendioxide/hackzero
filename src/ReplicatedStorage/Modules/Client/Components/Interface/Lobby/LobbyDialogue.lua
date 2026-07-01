@@ -99,6 +99,7 @@ function Component:OpenDialogue(Name: string, Data: {}): boolean
     Component:Set(true)
 
     --
+    Box.DialogueText.Text = ''
     Box.CharacterName.Visible = false
     Box.NameFrame.UIStroke.Enabled = false
     Box.NameFrame.Size = UDim2.fromScale(0, 0.179)

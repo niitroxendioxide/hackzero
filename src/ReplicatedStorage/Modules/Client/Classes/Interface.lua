@@ -45,6 +45,10 @@ function ComponentClass:CheckAvailable(): boolean
 	return true;
 end
 
+function ComponentClass:IsActive()
+	return self.__UI_State
+end
+
 function ComponentClass:Init()
 	if RunService:IsStudio() then
 		print('Component', self.__Name, 'inited')

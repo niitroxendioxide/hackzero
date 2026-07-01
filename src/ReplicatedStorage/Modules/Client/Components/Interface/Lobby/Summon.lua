@@ -6,6 +6,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Assets = ReplicatedStorage.Assets
+local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local Network = require(Shared.Network)
 local Types = require(Shared.Types)
 local GameEnum = require(Shared.GameEnum)
@@ -53,9 +54,24 @@ end
 function Component:Init()
 	local Summon = Component:GetButton("Summon")
 	local SummonTen = Component:GetButton("SummonTen")
+	local ReturnBtn = self:GetFrame():FindFirstChild("Return")
 
 	Summon.Button.MouseButton1Click:Connect(RequestSummonOne)
 	SummonTen.Button.MouseButton1Click:Connect(RequestSummonTen)
+
+	ReturnBtn.Btn.MouseButton1Click:Connect(function()
+		self:Set(false)
+	end)
+
+	ReturnBtn.MouseEnter:Connect(function()
+		Effects:Tween(ReturnBtn.ThinStroke, {0.3, 'Quart'}, {Thickness = 0.04, Color = Color3.fromRGB(245, 47, 47)})
+		Effects:Tween(ReturnBtn.UIShadow, {0.5, 'Quart'}, {Transparency = 0.75})
+	end)
+
+	ReturnBtn.MouseLeave:Connect(function()
+		Effects:Tween(ReturnBtn.ThinStroke, {0.3, 'Quart'}, {Thickness = 0.05, Color = Color3.fromRGB(152, 29, 29)})
+		Effects:Tween(ReturnBtn.UIShadow, {0.5, 'Quart'}, {Transparency = 1})
+	end)
 
 	Component:BindToStateChange(function(State: boolean)
 		if not State then

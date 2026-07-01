@@ -46,6 +46,10 @@ function Controller.__BannerUpdated(BannerId: number, BannerData: {})
     end
 
     local SummonMenu = InterfaceController:GetComponent("Summon")
+    while SummonMenu == nil do
+        SummonMenu = InterfaceController:GetComponent("Summon")
+        task.wait()
+    end
 
     local SubCharacters = {}
     for i = 2, #BannerData do

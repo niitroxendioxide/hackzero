@@ -140,6 +140,7 @@ function PartyComponent:Init(): ()
 
     PartyComponent:BindToStateChange(function(State: boolean)
         NavStates:Set('Movement_Locked', State)
+        NavStates:Set("CanInteract", not State)
     end)
 
     --[[Scope:Observer(States.Team):onChange(function()

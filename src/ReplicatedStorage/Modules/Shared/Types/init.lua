@@ -467,6 +467,7 @@ export type UIComponent = {
 	GetFrame: (self: UIComponent) -> Frame & { [string] : any },
 	Peek: (self: UIComponent, Value: Fusion.Value<any, any>) -> (any),
 	CheckAvailable: (self: UIComponent) -> (boolean),
+	IsActive: (self: UIComponent) -> (boolean),
 
 	Init: (self: UIComponent) -> (),
 

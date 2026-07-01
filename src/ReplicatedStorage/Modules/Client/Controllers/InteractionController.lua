@@ -12,6 +12,7 @@ local InterfaceController = require(script.Parent.InterfaceController)
 local LocalData = require(ReplicatedStorage.Modules.Client.Libraries.LocalData)
 local NPCS = require(ReplicatedStorage.Modules.Client.Libraries.NPCS)
 local Prompts = require(ReplicatedStorage.Modules.Client.Libraries.Prompts)
+local Navigation = require(ReplicatedStorage.Modules.Client.States.Navigation)
 local Places = require(ReplicatedStorage.Modules.Shared.Places)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local StageDatabase = require(Database.Stages)
@@ -79,7 +80,7 @@ function Controller:Init()
             end
 
             Network:Fire("ChestInteraction", GameEnum.ChestInteractions.Open, ChestId)
-        elseif PromptType == GameEnum.InteractionType.UIInteraction then
+        elseif PromptType == GameEnum.InteractionType.UIInteraction and (Navigation:Get("CanInteract") == true) then
             local PromptOwner = Prompt:FindFirstAncestorOfClass("Model")
             local InterfaceId = PromptOwner:GetAttribute("UIElement")
 
@@ -87,6 +88,7 @@ function Controller:Init()
             if Element then
                 Element:Set(true)
                 Prompt.Enabled = false
+
                 Element:AwaitStateChange(function()  
                     Prompt.Enabled = true
                 end)
@@ -208,11 +210,31 @@ end
 
 ---- Setting up npcs
 function Controller:SetupLobbyNPCS()
-    local MapDesign = workspace:WaitForChild("World"):FindFirstChild("Map"):FindFirstChild("Design")
-    local ChaosControlNPC = MapDesign:FindFirstChild("ChaosControlRig") :: Model
-    ChaosControlNPC:SetAttribute("UIElement", "ChaosControl")
+    local NPCFolder = workspace:WaitForChild("World"):FindFirstChild("Map"):FindFirstChild("Design"):FindFirstChild("NPCS")
+    
 
-    Prompts:CreatePromptOnPart(ChaosControlNPC.PrimaryPart, GameEnum.InteractionType.UIInteraction, "Interact", "Check Chaos Control", 8)
+    --- Chaos Control
+    
+
+    --- Mission NPCS
+    for _, NPC in NPCFolder:GetChildren() do
+        local Id = NPC.Name;
+        print(Id)
+
+        if Id == 'ChaosControlRig' then
+            NPC:SetAttribute("UIElement", "ChaosControl")
+
+            Prompts:CreatePromptOnPart(NPC.PrimaryPart, GameEnum.InteractionType.UIInteraction, "Interact", "Check Chaos Control", 8)
+        elseif Id == 'MissionNPCRig' then
+            NPC:SetAttribute("UIElement", "Interactions")
+
+            Prompts:CreatePromptOnPart(NPC.PrimaryPart, GameEnum.InteractionType.UIInteraction, "Interact", "Check Mission Desk", 18)
+        elseif Id == 'SummonNPC' then
+            NPC:SetAttribute("UIElement", "Summon")
+
+            Prompts:CreatePromptOnPart(NPC.PrimaryPart, GameEnum.InteractionType.UIInteraction, "Interact", "Talk to Agent Recruiter", 18)
+        end
+    end
 end
 
 return Controller

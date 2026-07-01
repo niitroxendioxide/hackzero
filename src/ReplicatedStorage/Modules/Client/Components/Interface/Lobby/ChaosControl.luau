@@ -62,7 +62,7 @@ function SetNPCAnimPlaying(Track: string)
     end
 
     local AnimsFolder = ReplicatedStorage.Assets.Animations.Lobby.ChaosControlNPC
-    local Character = workspace.World.Map.Design:FindFirstChild('ChaosControlRig')
+    local Character = workspace.World.Map.Design.NPCS:FindFirstChild('ChaosControlRig')
 
     if States.CurrentTrackThread then
         task.cancel(States.CurrentTrackThread)

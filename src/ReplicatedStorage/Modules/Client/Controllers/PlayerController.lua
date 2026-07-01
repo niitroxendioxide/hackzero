@@ -10,6 +10,7 @@ local Player = Players.LocalPlayer
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Trove = require(Shared.Utility.Trove)
@@ -47,6 +48,8 @@ local Controller = {
 }
 
 function Controller:Init(): ()
+	NavStates:Set("CanInteract", true)
+
 	local FightEnabled = Places:CanFight()
 	if FightEnabled then
 		Controller:SetupKeybinds();
@@ -54,11 +57,13 @@ function Controller:Init(): ()
 		CameraLibrary:SetTargetPart("HumanoidRootPart")
 		UserInputService.InputBegan:Connect(function(Obj: InputObject, GP: boolean)
 			if GP then return end
-			if Obj.KeyCode == Enum.KeyCode.LeftShift then
+			if Obj.KeyCode == Enum.KeyCode.LeftControl then
 				Controller.__Shiftlock = not Controller.__Shiftlock
 			end
 		end)
 	end
+
+	local RunningTrack = nil;
 
 	RunService:BindToRenderStep('PlayerControllerMainLoop', Enum.RenderPriority.Camera.Value, function(Delta: number)
 		if not FightEnabled then
@@ -68,19 +73,33 @@ function Controller:Init(): ()
 			local Humanoid = Character:FindFirstChild("Humanoid") :: Humanoid
 			if not Humanoid then return end
 
+			local Direction = Humanoid.MoveDirection.Magnitude;
+			if RunningTrack == nil then
+				RunningTrack = Animation:Play(Character, ReplicatedStorage.Assets.Animations.General.Movement.Jog, 0.1, 1, 1.6)
+			end
+
 			local MovementBlocked = Player:HasTag("InParty") or NavStates:Get('Movement_Locked')
+			local IsHoldingRun = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsGamepadButtonDown(Enum.UserInputType.Gamepad1, Enum.KeyCode.ButtonL2)
 
 			if MovementBlocked then
 				Humanoid.WalkSpeed = 0
 				Humanoid.JumpPower = 0
 			else
-				Humanoid.WalkSpeed = 16
+				Humanoid.WalkSpeed = 16 + (if IsHoldingRun then 16 else 0)
 				Humanoid.JumpPower = 50
 			end
 
 			--
 			CameraLibrary:SetSubject(Character)
 			CameraLibrary:Update(Delta)
+
+			if RunningTrack ~= nil then
+				if IsHoldingRun and Direction > 0 and not (MovementBlocked) then
+					RunningTrack:AdjustWeight(1)
+				else
+					RunningTrack:AdjustWeight(0)
+				end
+			end
 
 			if Controller.__Shiftlock then
 				UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter

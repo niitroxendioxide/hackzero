@@ -8,7 +8,7 @@ local Client = ReplicatedStorage.Modules.Client
 
 local Types = require(Shared.Types.Abilities)
 local Effects = require(Shared.Utility.Effects)
-local Enemies = require(Shared.Libraries.Enemies)
+local EffectsLib = require(Client.Libraries.Effects)
 local AnimLibrary = require(Client.Libraries.Animation)
 
 ---
@@ -36,6 +36,8 @@ return function(
             Cache[Caster]()
             Cache[Caster] = nil
         end
+
+        EffectsLib:Play("Miku_ToggleLeek", Caster, "Disable")
 
         local Stage = Effects:Create(MikuAssets.Ultimate.MikuStage)
         Stage:PivotTo(GetCFTorso(Model))
@@ -88,7 +90,7 @@ return function(
 
                 Object.Transparency = 1
                 Object.Size*=0;
-            end
+            end 
         end
 
         local MicOutThread = task.delay(0.15, function()

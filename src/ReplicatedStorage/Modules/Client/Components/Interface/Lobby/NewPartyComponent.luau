@@ -10,6 +10,7 @@ local Assets = ReplicatedStorage.Assets.Interface
 
 local UIGroups = require(ReplicatedStorage.Modules.Client.Libraries.UIGroups)
 local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
+local Navigation = require(ReplicatedStorage.Modules.Client.States.Navigation)
 local Network = require(Shared.Network)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
@@ -68,6 +69,8 @@ local function RequestPartyCreation()
 
     local Data = Fetcher:FetchAgents()
     States.OwnedAgents:set(Data)
+
+    return true
 end
 
 local function RequestPartyTeamUpdate(): ()
@@ -672,9 +675,11 @@ function Component:Init()
 
     Component:BindToStateChange(function(State: boolean)
         if State then
+            Navigation:Set("CanInteract", false)
             local Data = Fetcher:FetchAgents()
             States.OwnedAgents:set(Data)
         else
+            Navigation:Set("CanInteract", true)
             SetDockState('Agents', false)
             SetDockState('Maps', false)
         end
@@ -687,6 +692,10 @@ function Component:Init()
 
         Effects:Tween(Frame.Background, { 0.3, 'Quad' }, { BackgroundTransparency = State and 0.45 or 1 })
     end)
+end
+
+function Component:IsInParty()
+    return Component:IsActive()
 end
 
 function Component:CreateParty()
