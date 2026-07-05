@@ -1,6 +1,6 @@
 return {
     ['LeafVillage_P01'] = {
-        Display_Name = "Anima overflow in the Leaf",
+        Display_Name = "Overwhelming Anima in the Leaf",
         Description = 'There seems to be an anomaly on the leaf village, I was tasked with investigating and taking care of any possible problem. I heard there might be a Relic worth recovering.',
         Recommended_Level = 1,
 
@@ -46,13 +46,13 @@ return {
             GrassArea = {
                 Objective = "Stop the Anima-affected bandits {objective[KillEnemies]}/5",
                 Goal = {
-                    --['KillEnemies'] = 5,
+                    ['KillEnemies'] = 5,
                 },
                 Enemies = {
-                   --[[ [1] = {
-                        {Name = 'Saiyan', Level = 1, Amount = 3,},
-                        {Name = 'Saiyan', Level = 3, Amount = 2,}
-                    }]]
+                    [1] = {
+                        {Name = 'SandShinobi', Level = 1, Amount = 3, Affected_Aura = true},
+                        {Name = 'SandShinobi', Level = 3, Amount = 2, Affected_Aura = true}
+                    }
                 },
                 Dialogue = {{
                     Speaker = "Agency",

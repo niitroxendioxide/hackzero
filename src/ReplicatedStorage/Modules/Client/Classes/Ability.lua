@@ -291,6 +291,9 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	local Type = tostring(Agent):match('AgentClass') and 'Characters.' or 'Enemies.'
 	local TrackObject = AnimLibrary:GetAnim(Type..Track)
 	local AnimTrack = AnimLibrary:Play(Model, TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
+	if not AnimTrack then
+		return
+	end
 	AnimLibrary:StopTracksWithTag(Model, Data.State or "Attacking")
 
 	AnimTrack:SetAttribute('BaseSpeed', Data.Speed);

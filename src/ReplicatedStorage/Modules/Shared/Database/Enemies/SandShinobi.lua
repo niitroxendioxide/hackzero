@@ -1,0 +1,71 @@
+return {
+	Display_Name = 'Training Dummy',
+	RemoveFromChaosControl = true,
+
+	Appearance = {
+		Height = 3.15
+	},
+
+	--
+	Stats = {
+		Health = 1274,
+		Attack = 60,
+		Defense = 50,
+		Daze = 662,
+		Daze_Length = 10,
+
+		Weakness = {'Physical'},
+		Strength = {'Energy'},
+
+
+		--
+		Daze_Multiplier = 200,
+		Daze_Resistance = 27,
+		Resistance = 25,
+
+		Movement_Speed = 10,
+	},
+
+	Level_Stats = {
+		Attack = 32.7,
+		Health = 895,
+		Defense = 8.1,
+		Daze = 4,
+	},
+
+	Moveset_Data = {
+		['Skill 1'] = {
+			Base = {
+				Range = 60,
+				Cooldown = 2,
+
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.66,
+
+				Agent_Stun_Time = 0.3,
+				Damage_Mult = 220,
+				Attack_Warning = 0.25,
+			},
+
+			Upgrades = {}
+		},
+
+		['Skill 2'] = {
+			Base = {
+				Range = 7,
+				Cooldown = 2,
+
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.66,
+
+				Agent_Stun_Time = 0.3,
+				Damage_Mult = 220,
+				Attack_Warning = 0.25,
+			},
+
+			Upgrades = {}
+		},
+	},
+}

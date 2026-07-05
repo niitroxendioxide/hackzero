@@ -14,32 +14,34 @@ local Ability = AbilityClass.new()
 function Ability:Play(Caster: Types.ServerAgentClass)
     local AttackStateTime = Ability:FromData("Attack_State_Time")
     local HitData = Ability:FromData("Hit", nil, Caster:GetSkillLevel(Ability.__Name))
-    local Angle = 0
     local Hits = {}
+    local Left, Right = CFrame.Angles(0, math.rad(38), 0), CFrame.Angles(0, math.rad(-38), 0)
+
+    local function FireballHit(Enemy)
+        Hits[Enemy] = true;
+        task.delay(Ability:FromData("Hit_Frequency"), function()
+            Hits[Enemy] = false;
+        end)
+
+        Ability:Hit(Caster, Enemy, HitData)
+    end
 
 	Ability:Begin(Caster, {
         {0, function()
             Caster:SwitchState('Attacking', AttackStateTime, true)
+            Ability:Effect("Sasuke_DragonFire", {Caster}, true)
         end},
 
-        {0.65, 2.5, function(Sequence, delta: number)
-            Angle += delta * (math.pi * 2)
-            
-            local Radius = (1 + math.floor(Angle / (math.pi * 2))) * 7
-            local Cos, Sin = math.cos(-Angle) * Radius, math.sin(-Angle) * Radius
+        {0.7, function(Sequence)
+            Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * Left * CFrame.new(0, 0, -1), vector.create(12, 12, 12), 75, 2, FireballHit)
+        end},
 
-            Ability:CreateHitbox(Caster, vector.create(Sin, 0, Cos), vector.create(12, 12, 12), function(Enemy)  
-                if Hits[Enemy] then
-                    return
-                end
+        {1.05, function(Sequence)
+            Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * CFrame.new(0, 0, -1), vector.create(12, 12, 12), 75, 3, FireballHit)
+        end},
 
-                Ability:Hit(Caster, Enemy, HitData)
-
-                Hits[Enemy] = true
-                task.delay(0.2, function()
-                    Hits[Enemy] = nil
-                end)
-            end).Debug(1  /  60)
+        {1.3, function(Sequence)
+            Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * Right * CFrame.new(0, 0, -1), vector.create(12, 12, 12), 75, 3, FireballHit)
         end}
     })
 end

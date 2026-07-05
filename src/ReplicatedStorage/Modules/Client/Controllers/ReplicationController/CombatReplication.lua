@@ -156,6 +156,9 @@ function Controller:EnemyUseSkill(Buffer: buffer)
 	local Key = 'Skill '..Skill
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	local CharacterMoveset = Movesets:Get(Enemy.Name, true)
+	if not CharacterMoveset then
+		return;
+	end
 
 	if State == 'Begin' then
 		CharacterMoveset:Begin(Key, Enemy)

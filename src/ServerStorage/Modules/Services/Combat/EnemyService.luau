@@ -79,7 +79,10 @@ function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string
 
 		Spawn = RandomSpawn[math.random(1, #RandomSpawn)]
 
-		if not Spawn then print('no spawns') return end
+		if not Spawn then 
+			print('no spawns') 
+			return 
+		end
 	end
 
 	local At = Service:__GenerateLocation(Spawn)
@@ -144,6 +147,14 @@ function Service:__Add(Enemy: Types.ServerEnemyClass, Buffs: { {string | number}
 	table.insert(Service.__EnemyCache, Enemy)
 
 	for _, Buff in Buffs do
+		if Buff[1] == 'Affected_Aura' then
+			task.delay(.1, function()
+				Replicator:Effect("Aura", {EnemyKey}, true)
+			end)
+
+			continue
+		end
+
 		Enemy:AddEffect({
 			Tag = 'EnemyBuff',
 			Type = Buff[1],

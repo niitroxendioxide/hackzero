@@ -215,9 +215,10 @@ return {
 				Attack_State_Time = 2.75,
 				Speed = 1,
 				Animation_Speed = 1,
+				Hit_Frequency = 1 / 10,
 
 				Hit = {
-					Damage = 175,
+					Damage = 90,
 					Affliction = "Fire",
 					HitType = "Blunt",
 					Daze = 32,
