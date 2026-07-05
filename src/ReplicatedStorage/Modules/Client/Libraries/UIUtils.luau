@@ -122,7 +122,7 @@ function UIUtils:CreateRewardItem(ItemName: string, ItemType: string, Amount: nu
         end
     elseif ItemType == 'Drive' then
         NewItem.ItemIcon.Visible = true
-    elseif ItemType == 'Money' then
+    elseif ItemType == 'Gold' then
         NewItem.ItemIcon.Visible = true
         NewItem.ItemIcon.Image = Icons.PREFIX .. Icons.Currency.Money
     elseif ItemType == 'Gems' then

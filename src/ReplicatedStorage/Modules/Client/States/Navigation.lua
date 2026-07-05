@@ -6,7 +6,7 @@ local Stores = {}
 
 local Module = {}
 
-type keys = 'Movement_Locked' | 'CanInteract' | string
+type keys = 'Movement_Locked' | 'CanInteract' | 'IsOnEndScreen' | string
 function Module:Get(Key: keys)
     return States[Key]
 end

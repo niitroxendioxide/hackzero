@@ -15,6 +15,8 @@ local PartyPlayerClass = require(Classes.Party.PartyPlayer)
 local PartyClass = require(Classes.Party.Party)
 local Notifications = require(Modules.Packages.Notifications)
 local StagesDatabase = require(Shared.Database.Stages)
+local MissionDatabase = require(Shared.Database.Missions)
+
 
 local DataService = require(DataModules.DataService)
 local TeleportService = require(DataModules.TeleportService)
@@ -106,17 +108,33 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         local Request = ({...})[1]
         local Party = Service:GetParty(Service:GetCode(Player)) :: Types.PartyClass
         local Class = Service:GetClass(Player)
+        
 
         if not Party:IsOwner(Class) then
             return
         end
 
-        Party:SwitchStage(Request[1], Request[2], Request[3])
+        
+        if Request[1] == 'Expedition' then
+            Party:SwitchStage(Request[1], Request[2], Request[3])
+            
+        elseif Request[1] == 'Mission' then
+            local MissionInfo = MissionDatabase:Get(Request[2])
+            if not MissionInfo.Stage_Act then
+                return;
+            end
 
-        print('Switched the party to:', Party.__Stage)
+            local Stage = string.split(MissionInfo.Stage_Act, '/');
 
-        for _, NetPlayer in Party:GetRawPlayers() do
-            Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.ChangeStage, {Party.__Stage})
+            Party:SetData({
+                MissionId = Request[2],
+                Difficulty = 'EASY'
+            })
+            Party:SwitchStage(Request[1], Stage[1], Stage[2])
+
+            for _, NetPlayer in Party:GetRawPlayers() do
+                Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.ChangeStage, {Party.__Stage, Request[2]})
+            end
         end
     elseif Type == GameEnum.PartyManaging.Leave then
         local Code = Service:GetCode(Player)

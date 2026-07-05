@@ -47,22 +47,22 @@ MissionClass.__index = MissionClass
     @param 'Act', can also be 'Data', for custom missions.
 
 --]]
-MissionClass.new = function(Type: string, Stage: string, Act: string | {}): Types.MissionClass
+MissionClass.new = function(Type: string, Stage: string, Extra: string | {}): Types.MissionClass
     local self = setmetatable({}, MissionClass)
     self.Finished = Signal.new()
 
     self.__Is_Finished = false
     self.__Active = false
-    self.__Act = Act :: string;
+    self.__Act = Extra :: string;
     self.__Stage = Stage;
     self.__Current_Events = {};
     self.__Current_Active_Triggers = {};
     self.__Current_State = {};
-    self.__Hooks = StageHandlers:Get(Stage, Act) or Mock
+    self.__Hooks = StageHandlers:Get(Stage, Extra) or Mock
 
-    if Type == 'ChaosControl' then
-        self.__Is_Chaos_Control = true
-        self.__Custom_Data = Act
+    if Type == 'ChaosControl' or Type == 'Mission' then
+        self.__Is_Custom_Data = true
+        self.__Custom_Data = Extra
     end
 
     return self
@@ -95,8 +95,11 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
     if Trigger and Trigger:HasTag("CustomObject") then
         IsCustom = true;
         EventData = MapCache:GetTriggerData(Event)
-    elseif not Trigger and self.__Is_Chaos_Control then
-        EventData = self.__Custom_Data[Event];
+    elseif self.__Is_Custom_Data then
+        IsCustom = true;
+        local Guide = self.__Custom_Data.Guide[Event]
+
+        EventData = Guide
     else
         EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
     end
@@ -157,7 +160,17 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
             end
         end
 
+        local Values = EventObject:GetCompletionValueAdditions();
+        for Keys, AddedValue in Values do
+            if typeof(AddedValue) == 'boolean' then
+                self.__Current_State[Keys] = AddedValue
+            elseif typeof(AddedValue) == 'number' then
+                self.__Current_State[Keys] += AddedValue
+            end
+        end
+
         if Next_Stage == "End" then
+            print('Should end the mission.')
             self:Finish()
 
             return
@@ -194,6 +207,30 @@ function MissionClass.DetectAreaTriggers(self: Types.MissionClass)
 
     for _, Area in Map.Triggers:GetChildren() do
         self:AddTrigger(Area)
+    end
+end
+
+function MissionClass.ObtainMissionRank(self: Types.MissionClass, Won: boolean)
+    if not Won then
+        return 'X'
+    end
+    
+    if self.__Is_Custom_Data then
+        local EventData = self.__Custom_Data;
+        local Completion = EventData.Completion;
+        if Completion and typeof(Completion.Handler) == 'function' then
+            return (Completion.Handler(self.__Current_State) or 'B')
+        end
+
+        return 'S';
+    else
+        local EventData = Stages:GetAct(self.__Stage, self.__Act)
+        local RewardsTable = EventData.Completion.Rewards;
+        if typeof(RewardsTable.Handler) == 'function' then
+            return (RewardsTable.Handler(self.__Current_State) or 'B')
+        end
+
+        return 'S'
     end
 end
 

@@ -5,15 +5,17 @@ return table.freeze({
     },
 
     MISSION = {
-        --- Types: ChaosControl, Mission
+        --- Types: ChaosControl, Mission, Expedition
         TYPE = 'Mission',
         STAGE = {
-            --- Training, Testing, DailyImprovement, DungeonEx, HuecoMundo
-            Stage = 'Training',
+            --- LeafVillage, Training, Testing, DailyImprovement, DungeonEx, HuecoMundo
+            Stage = 'LeafVillage',
             Act = 'Intro',
         },
         DATA = {
-            ChaosControlData = {
+            MissionId = 'LeafVillage_P01',
+            Difficulty = 'EASY',
+            --[[ChaosControlData = {
                 Type = 'DailyImprovement',
                 Node = 1,
             },
@@ -25,7 +27,7 @@ return table.freeze({
                         {Type = 'Gold', Amount = 1000},
                         {Type = 'Gems', Amount = 60},
                         {Type = 'Artifact', Amount = 1, Extra = {
-                            Name = 'CorpCapsule',
+                            Name = 'CorpCapsule', 
                         }}
                     },
                 },
@@ -34,7 +36,7 @@ return table.freeze({
                 [1] = {
                     {Amount = 6, Level = 50, Name = 'Sorcerer'}
                 },
-            },
+            },]]
         }--]]
     },
 
@@ -47,6 +49,7 @@ return table.freeze({
     BORROWED_AGENT_LEVEL = 60,
 
     TEST_AGENTS = {
+        'Goku',
         'Chihiro',
         'Miku',
     },

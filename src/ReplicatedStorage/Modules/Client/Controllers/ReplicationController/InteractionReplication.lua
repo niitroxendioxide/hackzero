@@ -7,6 +7,7 @@ local Chests = require(Client.Libraries.Chests)
 local NPCS = require(Client.Libraries.NPCS)
 local LocalData = require(Client.Libraries.LocalData)
 local StageDatabase = require(Shared.Database.Stages)
+local MissionsDatabase = require(Shared.Database.Missions)
 local InterfaceController = require(Client.Controllers.InterfaceController)
 -- TODO: Add destructibles here too :v
 
@@ -29,8 +30,15 @@ end
 function Controller:PlayEventDialogue(Buffer: buffer)
 	local EventName = buffer.readstring(Buffer, 1, buffer.len(Buffer)-1)
 
-	local Stage, Act = LocalData:GetStageData()
-	local EventData = StageDatabase:GetEvent(Stage, Act, EventName)
+	local MissionData = LocalData:GetStageData()
+	
+	local EventData;
+	if MissionData.MissionId == nil then
+		EventData = StageDatabase:GetEvent(MissionData.Stage, MissionData.Act, EventName)
+	else
+		local Data = MissionsDatabase:Get(MissionData.MissionId)
+		EventData = Data.Triggers[EventName]
+	end
 
 	local Dialogue = InterfaceController:GetComponent("Dialogue")
 

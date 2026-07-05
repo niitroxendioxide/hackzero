@@ -11,11 +11,52 @@ local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
 local ComponentClass = require(Client.Classes.Interface)
 local UIGroups = require(Client.Libraries.UIGroups)
 local Camera = require(Client.Libraries.Camera)
+local Animation = require(Client.Libraries.Animation)
 
 local Interactions = ComponentClass.new("Interactions", "Interactions")
 :: Types.UIComponent & {GetButton: (Name: string) -> (TextButton), SetButton: (Name: string, State: boolean) -> ()}
 
+
+local States = {
+    Active = false
+}
 local LastClick = os.clock()
+
+function SetNPCAnimPlaying(Track: string): ()
+    if Track == 'Inactive' and (States.Active == true) then
+        
+        return
+    end
+
+    local AnimsFolder = ReplicatedStorage.Assets.Animations.Lobby.MissionDesk
+    local Character = workspace.World.Map.Design.NPCS:FindFirstChild('MissionNPCRig')
+
+    if States.CurrentTrackThread then
+        task.cancel(States.CurrentTrackThread)
+    end
+
+    if States.CurrentTrack ~= nil then
+        States.CurrentTrack:Stop(0.3)
+    end
+
+    if Track == 'Active' then
+        States.CurrentTrack = Animation:Play(Character, AnimsFolder.AttentionToWait)
+
+        States.CurrentTrackThread = task.delay(0.533, function()
+            States.CurrentTrack:Stop(.2)
+            States.CurrentTrack = Animation:Play(Character, AnimsFolder.WaitingPose)
+        end)
+    elseif Track == 'Inactive' then
+        States.CurrentTrack = Animation:Play(Character, AnimsFolder.Idle)
+    elseif Track == 'Attention' then
+        States.CurrentTrack = Animation:Play(Character, AnimsFolder.Attention)
+
+        States.CurrentTrackThread = task.delay(0.567, function()
+            States.CurrentTrack:Stop(.35)
+            States.CurrentTrack = Animation:Play(Character, AnimsFolder.AttentionIdle)
+        end)
+    end
+end
 
 function AnimateTabHovers(Tab: Frame)
     
@@ -97,10 +138,13 @@ function Interactions:Init()
 		Effects:Tween(ReturnBtn.UIShadow, {0.5, 'Quart'}, {Transparency = 1})
 	end)
 
+    SetNPCAnimPlaying("Inactive", true)
+
     local CleanupObjects = {}
     local Positions = { [true] = UDim2.fromScale(.825, .5), [false] = UDim2.fromScale(1.25, 0.5) }
     self:BindToStateChange(function(State: boolean)
         self:GetFrame().Visible = true
+        States.Active = State
 
         for _, TweenOrThread in CleanupObjects do
             if typeof(TweenOrThread) == 'thread' then
@@ -111,12 +155,14 @@ function Interactions:Init()
         end
 
         if State then
+            SetNPCAnimPlaying("Active")
             Camera:MarkUsage("ChaosControl")
 
             table.insert(CleanupObjects, Effects:Tween(workspace.CurrentCamera, { 0.45, 'Quint' }, { CFrame = workspace.World.LobbyCutscenes.MissionDesk.Camera.CFrame }))
             table.insert(CleanupObjects, Effects:Tween(workspace.CurrentCamera, { 0.6, 'Back' }, { FieldOfView = 60 }))
             Navigation:Set("Movement_Locked", true)
         else
+            SetNPCAnimPlaying("Inactive")
             Camera:FreeUsage()
             Navigation:Set("Movement_Locked", false)
         end
@@ -133,6 +179,14 @@ function Interactions:FireLeaveSignal()
     if typeof(Interactions.__FiringSignal) == "function" then
         task.defer(Interactions.__FiringSignal)
     end
+end
+
+function Interactions:ShownPromptInteraction()
+    return SetNPCAnimPlaying("Attention")
+end
+
+function Interactions:HiddenPromptInteraction()
+    return SetNPCAnimPlaying("Inactive")
 end
 
 return Interactions

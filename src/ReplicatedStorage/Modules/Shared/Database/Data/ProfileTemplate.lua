@@ -66,6 +66,9 @@ return {
         Main = {},
         Interactions = {},
     },
+    Missions = {
+        Completed = {},
+    },
     Companions = {},
     Agents = {},
     Achievements = {},

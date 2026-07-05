@@ -8,6 +8,7 @@ local Companions = require(ReplicatedStorage.Modules.Shared.Types.Companions)
 local LocalData = {
     __Cache = {},
     __Stage_Data = {},
+    __MissionId = nil :: string,
 }
 
 function LocalData:SetAgents(Data: {Types.ClientAgentData}): ()
@@ -20,6 +21,10 @@ function LocalData:GetAgents(): {Types.ClientAgentData}
     return LocalData.__Cache["Agents"] or {}
 end
 
+function LocalData:SetMissionId(MissionId: string)
+    LocalData.__MissionId = MissionId
+end
+
 function LocalData:SetStageData(Stage: string, Act: string)
     LocalData.__Stage_Data.Stage = Stage
     LocalData.__Stage_Data.Act = Act
@@ -29,8 +34,12 @@ end
     @return Stage (string)
     @return Act (string)
 ]]
-function LocalData:GetStageData(): (string, string)
-    return LocalData.__Stage_Data.Stage, LocalData.__Stage_Data.Act
+function LocalData:GetStageData(): { Stage: string, Act: string, MissionId: string }
+    return {
+        Stage = LocalData.__Stage_Data.Stage, 
+        Act = LocalData.__Stage_Data.Act,
+        MissionId = LocalData.__MissionId,
+    }
 end
 
 function LocalData:GetAgent(Name: string): Types.ClientAgentData?

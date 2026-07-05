@@ -267,6 +267,7 @@ return {
 		PlayerDied = 9,
 		SingularPlayerLeave = 10,
 		UpdateWave = 11,
+		SetMissionId = 12,
 	},
 
 	SummonDropTypes = {

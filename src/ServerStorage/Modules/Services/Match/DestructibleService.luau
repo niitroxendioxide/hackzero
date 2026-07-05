@@ -52,12 +52,13 @@ function Service:Init()
     Service.__Total_Destructibles = Heap.new(255)
 end
 
-function Service:SetupStage(Structure_Map_Data: {})
+function Service:SetupStage(Structure_Map_Data: {}, Mission_Structure_Data: {})
     if not Structure_Map_Data then
         return
     end
 
-    for _, StructureObj in Structure_Map_Data do
+    for Key, StructureObj in Structure_Map_Data do
+        print(Key, StructureObj)
         local Id = StructureObj.Id
         if not Id then
             warn("No given ID for destructible:", StructureObj)

@@ -175,14 +175,14 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
     Service.__Reserving[Party.Code] = true
 
     -- Logic checks
-    local PartyData = Party:GetData()
+    local PartyData = Party:GetData() or {}
     local PartyStage = string.split(Party:GetStage(), '/')
     local TeleportData = {
         Mission = {
             Type = PartyStage[1],
             Stage = PartyStage[2],
             Act = PartyStage[3],
-            Difficulty = PartyData.Stage and PartyData.Stage.Difficulty or 'EASY',
+            Difficulty = Party:GetDifficulty(),
             Seed = (PartyData.Stage and PartyData.Stage.Seed) or 0,
             Data = PartyData,
         },
@@ -308,6 +308,8 @@ export type MatchData = {
         Seed: number,
 
         Data: {
+            MissionId: string,
+            Difficulty: string,
             [string]: any,
         }
     }, 

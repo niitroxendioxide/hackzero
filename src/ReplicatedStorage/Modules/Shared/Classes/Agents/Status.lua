@@ -271,7 +271,7 @@ end
 
 function StatusClass.RemoveEffect(self: Types.AgentStatusClass, Id: number)
 	local PreviousEffect = self.__Effects[Id]
-	if PreviousEffect.Thread and coroutine.running() ~= PreviousEffect.Thread then
+	if PreviousEffect and PreviousEffect.Thread and coroutine.running() ~= PreviousEffect.Thread then
 		task.cancel(PreviousEffect.Thread)
 	end
 

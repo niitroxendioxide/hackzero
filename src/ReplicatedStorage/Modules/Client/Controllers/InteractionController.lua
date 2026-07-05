@@ -16,6 +16,7 @@ local Navigation = require(ReplicatedStorage.Modules.Client.States.Navigation)
 local Places = require(ReplicatedStorage.Modules.Shared.Places)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local StageDatabase = require(Database.Stages)
+local MissionsDatabase = require(Database.Missions)
 local Chests = require(Client.Libraries.Chests)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
@@ -183,16 +184,23 @@ function Controller:InteractWithNPC(Prompt: ProximityPrompt)
     local NpcObject = NPCS:GetById(Id)
     local NpcName = NpcObject.Name
 
-    local Stage, Act = LocalData:GetStageData()
+    local Data = LocalData:GetStageData()
 
-    local ActData = StageDatabase:GetAct(Stage, Act)
+    local NpcData = nil;
+    if Data.MissionId == nil then
+        local StageData = StageDatabase:GetAct(Data.Stage, Data.Act)
+        NpcData = StageData.Markers[NpcName]
+    elseif Data.MissionId ~= nil then
+        local StageData = MissionsDatabase:Get(Data.MissionId)
+        NpcData = StageData.Triggers[NpcName]
+    end
 
-    if ActData.Markers[NpcName] then
+    if NpcData then
         local DialogueComponent = InterfaceController:GetComponent("Dialogue")
 
         Prompts:DisableAll()
 
-        DialogueComponent:PlaySequence(ActData.Markers[NpcName].Dialogue, true, NpcName)
+        DialogueComponent:PlaySequence(NpcData.Markers[NpcName].Dialogue, true, NpcName)
 
         DialogueComponent.EventTriggered:Connect(function(Id: number, NpcName: string)
             Network:Fire("NPCInteraction", GameEnum.NPCInteractions.Event, {Id = Id, Name = NpcName})

@@ -8,6 +8,7 @@ local Assets = ReplicatedStorage.Assets.Interface
 
 local Types = require(Shared.Types)
 local Stages = require(Shared.Database.Stages)
+local Missions = require(Shared.Database.Missions)
 local EventStates = require(Client.States.Events)
 local ComponentClass = require(Client.Classes.Interface)
 
@@ -18,6 +19,7 @@ local State = {
     Stage = "",
     Act = "",
     Mode = 'Mission',
+    MissionId = nil,
     ClockBeginTime = os.clock(),
     ClockMaxTime = 9999,
 }
@@ -63,7 +65,14 @@ function Component:CreateEvent(Event: string)
         return;
     end
 
-    local EventData = Stages:GetEvent(State.Stage, State.Act, Event)
+    local EventData;
+    if State.MissionId ~= nil then
+        local MissionData = Missions:Get(State.MissionId)
+
+        EventData = MissionData.Triggers[Event]
+    else
+        EventData = Stages:GetEvent(State.Stage, State.Act, Event)
+    end
 
     if not EventData then
         return
@@ -112,6 +121,10 @@ function Component:CreateEvent(Event: string)
 
         table.insert(State.Observers[Event], disconnect)
     end
+end
+
+function Component:SetMissionId(MissionId: string)
+    State.MissionId = MissionId
 end
 
 function Component:DeleteEvent(Event: string)

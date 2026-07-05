@@ -119,7 +119,7 @@ function Controller:Init(): ()
 			return
 		end
 
-		local Active = UIGroups:IsActive("END", "EndScreen") or UIGroups:IsActive("MenuGui", "IngameMenu")
+		local Active = NavStates:Get('IsOnEndScreen') or UIGroups:IsActive("MenuGui", "IngameMenu")
 		local HoldingKeys = not(UserInputService:IsKeyDown(Enum.KeyCode.Tab)) or UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton3)
 
 		if HoldingKeys and not(Active) then

@@ -9,14 +9,13 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage.Assets
 
-local Inputs = require(ReplicatedStorage.Modules.Client.Libraries.Inputs)
-local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
-local Icons = require(ReplicatedStorage.Modules.Shared.Database.Icons)
-local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
-local Types = require(ReplicatedStorage.Modules.Shared.Types)
-local String = require(ReplicatedStorage.Modules.Shared.Utility.String)
+local UIUtils = require(Client.Libraries.UIUtils)
+local Icons = require(Shared.Database.Icons)
+local Statics = require(Shared.Database.Statics)
+local Types = require(Shared.Types)
+local String = require(Shared.Utility.String)
 local ComponentClass = require(Client.Classes.Interface)
-local UIGroups = require(Client.Libraries.UIGroups)
+local NavStates = require(Client.States.Navigation)
 local EffectUtil = require(Shared.Utility.Effects)
 local GameEnum = require(Shared.GameEnum)
 local Network = require(Shared.Network)
@@ -161,7 +160,8 @@ type MatchResultData = {
 }
 
 function Component:ShowMatchResult(ServerData: MatchResultData)
-    
+    NavStates:Set("IsOnEndScreen", true)
+
     local Frame = self:GetFrame()
     local BackgroundEffects = Frame.BackgroundEffects
     local Borders = BackgroundEffects.Borders;
@@ -252,8 +252,8 @@ function Component:ShowMatchResult(ServerData: MatchResultData)
             local Alpha = (os.clock() - Clock) / 0.6;
             local Value = TweenService:GetValue(Alpha, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             
-            Main.StageInformation.PlayerLevelTitle.Text = `Lv. {math.ceil(math.lerp(0, ServerData.PlayerLevel, Value))}`
-            Main.StageInformation.PlayerExpTitle.Text = `+{math.ceil(math.lerp(0, ServerData.Experience, Value))} EXP`
+            Main.StageInformation.PlayerLevelTitle.Text = `Lv. {math.ceil(math.lerp(0, ServerData.PlayerLevel or 1, Value))}`
+            Main.StageInformation.PlayerExpTitle.Text = `+{math.ceil(math.lerp(0, ServerData.Experience or 0, Value))} EXP`
             task.wait()
         end
         
@@ -261,11 +261,12 @@ function Component:ShowMatchResult(ServerData: MatchResultData)
 
     ---
     task.wait(0.3);
-    print(ServerData.Items)
 
+
+    print(ServerData.Items)
     for k, Item in ServerData.Items do
-        print(k, Item)
-        local ItemObject = UIUtils:CreateRewardItem(Item.Extra and Item.Extra.Name or Item.Type, Item.Type, Item.Amount, false, Main.Rewards.List, Assets.Interface.EndScreen.RewardItem)
+        local Type, Amount, Extra = Item[1], Item[2], Item[3]
+        local ItemObject = UIUtils:CreateRewardItem(Extra ~= nil and Extra.Name or Type, Type, Amount, false, Main.Rewards.List, Assets.Interface.EndScreen.RewardItem)
         ItemObject.UIScale.Scale = 0;
 
         EffectUtil:Tween(ItemObject.UIScale, { 0.25, 'Back' }, {Scale = 1});

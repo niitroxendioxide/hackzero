@@ -16,6 +16,7 @@ local NPCService = require(script.Parent.NPCService)
 local Stages = require(ReplicatedStorage.Modules.Shared.Types.Stages)
 local World = require(ReplicatedStorage.Modules.Shared.World)
 local Map = require(ServerStorage.Modules.Libraries.Map)
+
 local Network = require(Shared.Network)
 local Targets = require(ServerStorage.Modules.Libraries.Targets)
 local AgentService = require(ServerStorage.Modules.Services.Combat.AgentService)
@@ -25,8 +26,10 @@ local ChaosControlService = require(ServerStorage.Modules.Services.Lobby.ChaosCo
 local Rewards = require(ServerStorage.Modules.Services.Match.MatchService.Rewards)
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local GameEnum = require(Shared.GameEnum)
+
 local MissionClass = require(Classes.Game.Mission)
 local StageDatabase = require(Database.Stages)
+local MissionDatabase = require(Database.Missions)
 local PlayersLibrary = require(Modules.Libraries.Players)
 local AbilityService = require(Services.Combat.AbilityService)
 local TeleportService = require(Services.Data.TeleportService);
@@ -40,7 +43,7 @@ local Service = {
     __Total_Players = 0,
     __All_Loaded = false,
     __Player_Status = {},
-    __Mission_Data = {},
+    __Mission_Data = nil,
 }
 
 function Service:Init()
@@ -110,31 +113,26 @@ function Service:End(Won: boolean)
     local StageActData = if IsCustomMission then Service.__Mission_Data else StageDatabase:GetAct(Service.__Current_Stage, Service.__Current_Act)
 
     ---
-    local List = {"B", "A", "S"}
-    local Rank; if IsCustomMission then
-        --- Gotta see how to hasndle it
-        Rank = "S"
-    else
-        Rank = Won and List[math.random(1, #List)] or "X"
-    end
 
     ---
     World:SetEndScreenMode(true)
     World:TweenSpeed(0.01, 2)
-    Service.__Active_Match = nil
 
     --- Calculate and Spread completion info
+    local List = {"B", "A", "S"}
+    local Rank = Service.__Active_Match:ObtainMissionRank(Won);
     local RawRewards = StageActData.Completion.Rewards
     local CompletionRewards = {}
-
+    local RankTier = table.find(List, Rank)
+    
     for Tier, LetterRank in List do
-        if Tier < table.find(List, Rank) and RawRewards[LetterRank] then
+        if Tier <= RankTier and RawRewards[LetterRank] then
             for _, Object in RawRewards[LetterRank] do
                 table.insert(CompletionRewards, {Object.Type, Object.Amount, Object.Extra})
             end
         end
     end
-
+    
     local MissionInformation  = TeleportService:GetStageData().Mission
     local MatchCompletionData = {
         Stage = {
@@ -154,6 +152,8 @@ function Service:End(Won: boolean)
         ChaosControlService:MarkCompletion(Player, MatchCompletionData)
     end
 
+    Service.__Active_Match = nil
+
     Rewards:SpreadRewards(PlayersLibrary:GetAll(), CompletionRewards, MatchCompletionData)
 end
 
@@ -168,9 +168,25 @@ end
 
 function Service:Begin(Stage: string, Act: string)
     local MissionData = TeleportService:GetStageData().Mission
-    local Data;
+    local Data = nil; 
+    
     if MissionData.Type == 'Mission' then
-        Data = StageDatabase:GetAct(Stage, Act)
+        local StageData = StageDatabase:GetAct(Stage, Act)
+
+        local MissionId = MissionData.Data.MissionId
+        local MissionInfo = MissionDatabase:Get(MissionId)
+
+        local WorldData = {
+            Markers = StageData.Markers;
+            Guide = MissionInfo.Triggers;
+            Destructibles = MissionInfo.Destructibles;
+            Completion = MissionInfo.Completion;
+        }
+
+        Network:FireForAll("Match", GameEnum.MatchEvents.SetMissionId, MissionId)
+
+        Service.__Mission_Data = WorldData
+        Data = WorldData;
     elseif MissionData.Type == 'ChaosControl' then
         Data = MissionData.Data
         Service.__Mission_Data = MissionData.Data
@@ -192,17 +208,16 @@ function Service:Begin(Stage: string, Act: string)
     Targets:SetDifficulty(Difficulty)
 
     --
-    local ClientPayloadData = {
-        
-    }
+    local ClientPayloadData = {}
     local AllPlayers = Players:GetPlayers()
     if #AllPlayers == 0 then
         warn('No players found. Match is debug')
         return
     end
 
+    local Extra = MissionData.Type == 'Mission' and Data or Act
     local Marker_Data = Map:SetupMarkers(Data.Markers)
-    local MissionClass = MissionClass.new(MissionData.Type, Stage, MissionData.Type == 'ChaosControl' and MissionData.Act or Act)
+    local MissionClass = MissionClass.new(MissionData.Type, Stage,Extra)
     Map:AssignCurrentMission(MissionClass)
 
     NPCService.__Stage = Stage
@@ -241,6 +256,7 @@ function Service:Begin(Stage: string, Act: string)
 
     --
     MissionClass.Finished:Once(function(State: boolean)
+        print('Hello?')
         Service:End(State)
     end)
 

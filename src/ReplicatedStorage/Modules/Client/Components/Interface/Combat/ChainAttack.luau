@@ -163,5 +163,8 @@ function Component:Close(Chosen: number?)
     Effects:Tween(MainFrame.Borders, { 0.35, 'Quad' }, { ImageTransparency = 1 })
 end
 
+function Component:Init()
+    
+end
 
 return Component

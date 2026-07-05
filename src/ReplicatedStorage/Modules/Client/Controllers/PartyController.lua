@@ -42,9 +42,12 @@ function Controller:Init()
             
             if StageData.ChaosControlData then
                 NewComponent:SetMode('ChaosControl', StageData)
-            else
+            elseif StageData.MapAnalysisData then
                 NewComponent:SetMode('Mission')
                 NewComponent:UpdateStages(StageData)
+            else
+                NewComponent:SetMode('Mission')
+                NewComponent:UpdateMissions(StageData)
             end
 
             StageData.Rewards = StageData.Rewards or {}

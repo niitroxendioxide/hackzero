@@ -40,8 +40,11 @@ EventClass.new = function(Stage: string, Act: string, Event: string)
 
     -- Privates
     self.__Finish_Status = false
-    self.__Stage = Stage
-    self.__Act = Act
+    if typeof(Stage) == 'string' then
+        self.__Stage = Stage
+        self.__Act = Act
+    end
+
     self.__Event = Event
     self.__Players = {};
     self.__Current_Time = 0;
@@ -71,6 +74,7 @@ function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): boolean
     end
 
     if EventData == nil then
+        print('No event data for: ', self.__Stage, self.__Act, self.__Event)
         return false;
     end
 
@@ -94,19 +98,29 @@ function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): boolean
         self.__Current_State[Goal] = Default;
     end
 
+    if EventData.Dialogue then
+        for _, StagePlayer in self:GetPlayerObjects() do
+            ReplicateEvent(StagePlayer, self.__Event)
+        end
+
+        if TotalGoals <= 0 and (typeof(EventData.Finished) == 'string' and EventData.Finished == 'End') then
+            local ToWait = 0;
+            for _, Dialogue in EventData.Dialogue do
+                ToWait += (Dialogue.NextDialogue or 0)
+            end
+
+            task.wait(ToWait)
+        end
+    end
+
     if TotalGoals <= 0 then
-        self:Destroy(true)
+        self:Destroy()
 
         return false
     end
 
     self.__Current_Goals = EventData.Goal
 
-    if EventData.Dialogue then
-        for _, StagePlayer in self:GetPlayerObjects() do
-            ReplicateEvent(StagePlayer, self.__Event)
-        end
-    end
     --
     if #EventData.Enemies > 0 then
         if Trigger then
@@ -309,7 +323,7 @@ function EventClass.Destroy(self: Types.EventClass, Not_Finished: boolean)
         else Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
 
     local CorrectedState = self:GetCorrectedState()
-    local Next_Stage = if self.__Is_Custom_Event then self.__Custom_Event_Data.Finished else EventData.Finished()
+    local Next_Stage = typeof(EventData.Finished) == 'function' and EventData.Finished(self.__Current_State) or tostring(EventData.Finished)
     self:SetBarrierCollision(false)
 
     if Not_Finished then
@@ -368,6 +382,17 @@ function EventClass.GetCorrectedState(self: Types.EventClass)
     end
 
     return State
+end
+
+function EventClass.GetCompletionValueAdditions(self: Types.EventClass)
+    local EventData = if self.__Is_Custom_Event then self.__Custom_Event_Data 
+        else Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
+
+    if not EventData then
+        return {}
+    end
+
+    return (EventData.Complete or {})
 end
 
 return EventClass

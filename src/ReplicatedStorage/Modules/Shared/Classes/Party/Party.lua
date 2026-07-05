@@ -69,6 +69,19 @@ function Party.CancelReady(self: Types.PartyClass, Player: Types.PartyPlayer): b
     return true
 end
 
+function Party.GetDifficulty(self: Types.PartyClass)
+    local Data = self:GetData()
+    if Data then
+        if Data.Stage ~= nil then
+            return Data.Stage.Difficulty
+        else
+            return Data.Difficulty or 'EASY'
+        end
+    end
+
+    return 'EASY'
+end
+
 function Party.SwitchStage(self: Types.PartyClass, Type: string, Stage: string, Act: string)
     self.__Stage = Type..'/'..Stage..'/'..Act
 end

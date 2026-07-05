@@ -17,6 +17,7 @@ local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local String = require(ReplicatedStorage.Modules.Shared.Utility.String)
 local GameEnum = require(Shared.GameEnum)
 local StagesDatabase = require(Shared.Database.Stages)
+local MissionsDatabase = require(Shared.Database.Missions)
 
 local BaseClass = require(Client.Classes.Interface)
 local Component = BaseClass.new("NewPartyComponent", "Lobby")
@@ -29,18 +30,23 @@ local DockPositions = {
     },
 
     Maps = {
-        Open = UDim2.fromScale(0.769, 0.5),
+        Open = UDim2.fromScale(0.769, 0.512),
         Closed = UDim2.fromScale(1.25, 0.5),
     },
 
     Mission = {
         Open = UDim2.fromScale(0.5, 0.5),
-        Closed = UDim2.fromScale(0.5, -0.5)
+        Closed = UDim2.fromScale(0.5, 0.5)
     },
 
     Acts = {
         Open = UDim2.fromScale(0.905, 0.397),
         Closed = UDim2.fromScale(1.2, 0.397),
+    },
+
+    Info = {
+        Open = UDim2.fromScale(0.918, 0.343),
+        Closed = UDim2.fromScale(.77, 0.343),
     }
 }
 
@@ -48,6 +54,8 @@ local Threads = {}
 local States = {
     Agents = true,
     Maps = true,
+    MissionId = '',
+    SelectedMission = nil,
 
     IsReady = false,
     Queueing = Component:GetScope():Value(false),
@@ -82,7 +90,11 @@ local function RequestInvitePlayer(Player: string)
 end
 
 local function RequestMapChange(ActName: string): ()
-    Network:Fire("Party", GameEnum.PartyManaging.ChangeStage, {"Mission", Component:Peek(States.Stage), ActName})
+    Network:Fire("Party", GameEnum.PartyManaging.ChangeStage, {"Expedition", Component:Peek(States.Stage), ActName})
+end
+
+local function RequestMissionChange(): ()
+    Network:Fire("Party", GameEnum.PartyManaging.ChangeStage, {"Mission", States.MissionId})
 end
 
 local function HandlePlayButton()
@@ -137,6 +149,7 @@ function ChangePlayButtonState()
         Play.BackgroundColor3 = Color3.fromRGB(27, 76, 24)
         Play.Inner.Color = Color3.fromRGB(35, 100, 0)
         Play.Tag.UIStroke.Color = Color3.fromRGB(0, 56, 5)
+        Play.UIShadow.Color = Color3.fromRGB(24, 58, 15)
         
         if TotalParty <= 1 then
             Play.Tag.Text = 'Ready'
@@ -148,6 +161,7 @@ function ChangePlayButtonState()
         Play.Inner.Color = Color3.fromRGB(100, 24, 24)
         Play.Tag.UIStroke.Color = Color3.fromRGB(56, 7, 7)
         Play.Tag.Text = 'Unready (' .. TotalReady .. '/' .. TotalParty .. ')'
+        Play.UIShadow.Color = Color3.fromRGB(58, 0, 0)
     end
 end
 
@@ -205,19 +219,47 @@ function SetDockState(DockName: string, State: boolean)
         task.cancel(Threads[DockName])
     end
     
+    local MainFrame = Component:GetFrame()
     local Positions = DockPositions[DockName]
-    local DockFrame = Component:GetFrame():FindFirstChild(DockName)
+    local DockFrame = MainFrame:FindFirstChild(DockName)
     if not DockFrame then
         return;
     end
 
     if State then
-        DockFrame.Visible = true
         Effects:Tween(DockFrame.UIScale, { 0.2, 'Cubic' }, { Scale = 1 })
         Effects:Tween(DockFrame, { 0.2, 'Cubic' }, { Position = Positions.Open })
+
+        if DockName == 'Mission' or DockName == 'Info' then
+            DockFrame.Parent = MainFrame.Transition
+            MainFrame.Transition.GroupTransparency = 1
+
+            Effects:Tween(MainFrame.Transition, {.2, 'Quad'}, {GroupTransparency = 0})
+            
+            Threads[DockName] = task.delay(0.2, function()
+                DockFrame.Parent = MainFrame
+            end)
+        end
+
+        DockFrame.Visible = true
     else
         if DockName == 'Maps' then
             SetDockState('Acts', false)
+            SetDockState('Info', false)
+        elseif DockName == 'Mission' or DockName == 'Info' then
+            MainFrame.Transition.GroupTransparency = 0
+            DockFrame.Parent = MainFrame.Transition
+
+            Effects:Tween(DockFrame, { 0.3, 'Cubic', 'In' }, { Position = Positions.Closed })
+            Effects:Tween(DockFrame.UIScale, { 0.5, 'Cubic', 'In' }, { Scale = 0.5 })
+            Effects:Tween(MainFrame.Transition, {.2, 'Quad'}, {GroupTransparency = 1})
+            
+            Threads[DockName] = task.delay(0.2, function()
+                DockFrame.Visible = false
+                DockFrame.Parent = MainFrame
+            end)
+
+            return
         end
 
         Effects:Tween(DockFrame.UIScale, { 0.5, 'Cubic', 'In' }, { Scale = 0.5 })
@@ -230,7 +272,13 @@ function SetDockState(DockName: string, State: boolean)
 end
 
 function SetupCloseButton(DockName: string, button_fn: () -> ())
-    local Dock = Component:GetFrame():FindFirstChild(DockName)
+    local Dock = Component:GetFrame():FindFirstChild(DockName) or Component:GetFrame().Transition:FindFirstChild(DockName)
+    if Dock == nil and DockName == 'Mission' then
+        Dock = States.MissionDock
+    end
+
+    print(Dock, DockName)
+
     local CloseFrame = Dock:FindFirstChild("CloseButton")
     if not CloseFrame then
         return;
@@ -305,7 +353,7 @@ end
 
 function AddPlayerToList(PlayerId: number)
     local User = Players:GetPlayerByUserId(PlayerId)
-    local MissionDock = Component:GetFrame():FindFirstChild("Mission")
+    local MissionDock = States.MissionDock
     local Object = Assets.Lobby.Party.UserObject:Clone()
     Object.PlayerName.Text = User.DisplayName
     --Object.TeamCharacters.Text = Team
@@ -327,7 +375,7 @@ function AddPlayerToList(PlayerId: number)
 end
 
 local function RemovePlayer(PlayerId: number)
-    local MissionDock = Component:GetFrame():FindFirstChild("Mission")
+    local MissionDock = States.MissionDock
     local PlayerObject = MissionDock.UsersPlate.List:FindFirstChild(PlayerId) :: Frame
 
     if PlayerObject then
@@ -336,7 +384,7 @@ local function RemovePlayer(PlayerId: number)
 end
 
 local function ClearParty()
-    local MissionDock = Component:GetFrame():FindFirstChild("Mission")
+    local MissionDock = States.MissionDock
     local PlayerList = MissionDock.UsersPlate.List :: ScrollingFrame
 
     for _, Object in PlayerList:GetChildren() do
@@ -401,7 +449,7 @@ function MarkSelectedAgents()
 end
 
 function UpdateTeamPreviews()
-    local Dock = Component:GetFrame():FindFirstChild("Mission")
+    local Dock = States.MissionDock
     local TeamPlate = Dock:FindFirstChild("TeamPlate")
 
     local AgentFolder = TeamPlate:FindFirstChild("Agents")
@@ -448,9 +496,88 @@ function UpdateTeamPreviews()
     end
 end
 
+local function GetDock(DockName: string)
+    return Component:GetFrame():FindFirstChild(DockName) or Component:GetFrame().Transition:FindFirstChild(DockName)
+end
+
+local function UpdateMissions(Unlocked: {})
+    local Missions = MissionsDatabase:GetAll(true)
+    local MapsDock = Component:GetFrame():FindFirstChild("Maps")
+
+    for _, obj in MapsDock.List:GetChildren() do
+        if obj:IsA("Frame") then
+            obj:Destroy()
+        end
+    end
+
+    for MissionId, MissionData in Missions do
+        if not MissionData.Stage_Act then
+            continue
+        end
+
+        local StageInfo = StagesDatabase:GetStage(string.split(MissionData.Stage_Act, "/")[1])
+        local Object = Assets.Lobby.Party.MissionObject:Clone()
+        Object.Parent = MapsDock.List
+        Object.MissionName.Text = MissionData.Display_Name or MissionId
+        Object.Name = MissionId
+        Object.LvlRec.Text = 'Lv.'..(MissionData.Recommended_Level or 1);
+        Object.Banner.Image = StageInfo.Icon and 'rbxassetid://' .. StageInfo.Icon or "rbxassetid://118719541712234"
+
+        -- TODO: Make this actually do something lmao.
+        if Unlocked[MissionId] == nil then
+            --
+        end
+
+        Object.Button.MouseButton1Click:Connect(function()
+            if States.SelectedMission == MissionId then
+                SetDockState('Info', false)
+                States.SelectedMission = nil
+                Effects:Tween(Object.UIShadow, { 0.25, 'Quad' }, {Transparency = 1})
+                Effects:Tween(Object.Outer, { 0.2, 'Quart' }, {Color = Color3.new(0, 0, 0), Thickness = 0.045})
+                Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1})
+                return
+            elseif States.SelectedMission ~= nil then
+                local OldObj = MapsDock.List:FindFirstChild(States.SelectedMission)
+                Effects:Tween(OldObj.UIShadow, { 0.25, 'Quad' }, {Transparency = 1})
+                Effects:Tween(OldObj.Outer, { 0.2, 'Quart' }, {Color = Color3.new(0, 0, 0), Thickness = 0.045})
+                Effects:Tween(OldObj.UIScale, { 0.3, 'Quad' }, {Scale = 1})
+            end
+
+            States.SelectedMission = MissionId;
+
+            Effects:Tween(Object.UIShadow, { 0.25, 'Quad' }, {Transparency = 0})
+            Effects:Tween(Object.Outer, { 0.2, 'Quart' }, {Color = Color3.new(1, 1, 1), Thickness = 0.025})
+            Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1.05})
+
+            ---
+            local InfoDock = GetDock('Info')
+            InfoDock.Description.Text = MissionData.Description;
+            InfoDock.LvlRec.Lvl.Text = 'Lv.'..(MissionData.Recommended_Level or 1);
+
+            SetDockState('Info', true)
+        end)
+
+        Object.Button.MouseEnter:Connect(function()
+            Effects:Tween(Object.Outer, { .2, 'Quad' }, {Color = Color3.new(1, 1, 1)})
+            Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1.01})
+        end)
+
+        Object.Button.MouseLeave:Connect(function()
+            if States.SelectedMission == MissionId then
+                return
+            end
+            
+            Effects:Tween(Object.Outer, { .2, 'Quad' }, {Color = Color3.new(), Thickness = 0.045})
+            Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1})
+        end)
+    end
+
+end
+
+
 local function UpdateStages(Unlocked: {})
     local Stages = StagesDatabase:GetAll()
-    local MapsDock = Component:GetFrame():FindFirstChild("Maps")
+    local MapsDock = GetDock("Maps")
 
     for _, obj in MapsDock.List:GetChildren() do
         if obj:IsA("Frame") then
@@ -490,26 +617,32 @@ local function UpdateStages(Unlocked: {})
     end
 end
 
-function ShowStageInfo(CodeStage: string)
+function ShowStageInfo(CodeStage: string, Id: string)
     local MissionDock = Component:GetFrame():FindFirstChild("Mission")
     local MapPlate = MissionDock.MapPlate
     
     if CodeStage == '' or #CodeStage < 1 then
         MapPlate.MapName.Text = "Unknown"
         MapPlate.ActName.Text = ""
+        MapPlate.Banner.Image = 'rbxassetid://118719541712234'
         
         return
     end
     
     local Split = string.split(CodeStage, "/")
+    local Type = Split[1]
     local Stage = Split[2]
     local Act = Split[3]
 
+    if Id ~= nil and Type == 'Mission' then
+        
+    end
+
     local StageData = StagesDatabase:GetStage(Stage)
 
-    MapPlate.MapName.Text = Stage
+    MapPlate.MapName.Text = String:SplitTitleCaps(Stage)
     MapPlate.ActName.Text = Act
-    MapPlate.Banner.Image = 'rbxassetid:// ' .. (StageData.Icon or 118719541712234)
+    MapPlate.Banner.Image = 'rbxassetid://'.. (StageData.Icon or 118719541712234)
 end
 
 function LoadActs(Stage: string, Stages: {})
@@ -593,6 +726,26 @@ function ShowRewards(List)
     end
 end
 
+function HandleMissionSelect()
+    local Dock = GetDock('Info')
+
+    Dock.SelectBtn.Button.MouseButton1Click:Connect(function()
+        States.MissionId = States.SelectedMission
+        RequestMissionChange()
+        Dock.SelectBtn.UIScale.Scale = 0.9
+        Effects:Tween(Dock.SelectBtn.UIScale, {0.3, 'Back'}, {Scale = 1})
+    end)
+    Dock.SelectBtn.Button.MouseEnter:Connect(function()
+        Effects:Tween(Dock.SelectBtn.OuterStroke, {0.3, 'Quad'}, {Color = Color3.fromRGB(34, 255, 0)})
+        Effects:Tween(Dock.SelectBtn.UIShadow, {0.25, 'Quart'}, {Transparency = 0.25})
+    end)
+
+    Dock.SelectBtn.Button.MouseLeave:Connect(function()
+        Effects:Tween(Dock.SelectBtn.OuterStroke, {0.3, 'Quad'}, {Color = Color3.fromRGB(13, 97, 0)})
+        Effects:Tween(Dock.SelectBtn.UIShadow, {0.25, 'Quart'}, {Transparency = 1})
+    end)
+end
+
 --- Publics
 function Component:Link()
     local PlayerGui = Player.PlayerGui
@@ -607,15 +760,20 @@ function Component:SetMode(State: string, Data: {})
     SetMode(State or 'Mission', Data)
 end
 
+
 function Component:Init()
     
     local Frame = Component:GetFrame()
     local MissionDock = Frame:FindFirstChild("Mission")
 
+    States.MissionDock = MissionDock
+
     for Dock in DockPositions do
         SetDockState(Dock, false)
         SetupCloseButton(Dock)
     end
+
+    HandleMissionSelect()
 
     SetupCloseButton('Mission', function()  
         Network:Fire('Party', GameEnum.PartyManaging.Leave)
@@ -699,7 +857,7 @@ function Component:IsInParty()
 end
 
 function Component:CreateParty()
-    --UpdateStageInfo("")
+    ShowStageInfo("")
 
     return RequestPartyCreation()
 end
@@ -737,6 +895,10 @@ end
 
 function Component:UpdateStages(Table: {})
     return UpdateStages(Table)
+end
+
+function Component:UpdateMissions(Table: {})
+    return UpdateMissions(Table)
 end
 
 function Component:SetPlayerReady(ReadyCount: number)

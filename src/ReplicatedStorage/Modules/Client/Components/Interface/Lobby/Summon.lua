@@ -17,6 +17,7 @@ local UIGroups = require(Client.Libraries.UIGroups)
 local Component = ComponentClass.new(script.Name, 'Lobby', {KeyToBind = Enum.KeyCode.J}) :: Types.UIComponent & Types.UIGetSetButton
 local States = {
 	MainModel = nil,
+	BaseFrame = nil,
 }
 
 --
@@ -46,15 +47,18 @@ function Component:SetButton(Button: string, State: boolean)
 end
 
 function Component:GetButton(Name: string): Frame
-    local Frame = self:GetFrame()
+    local Frame = States.BaseFrame
 
     return Frame:FindFirstChild("Buttons"):FindFirstChild(Name.."Button")
 end
 
 function Component:Init()
+	local BaseFrame = self:GetFrame().Main.SummonTab
+	States.BaseFrame = BaseFrame
+
 	local Summon = Component:GetButton("Summon")
 	local SummonTen = Component:GetButton("SummonTen")
-	local ReturnBtn = self:GetFrame():FindFirstChild("Return")
+	local ReturnBtn = BaseFrame:FindFirstChild("Return")
 
 	Summon.Button.MouseButton1Click:Connect(RequestSummonOne)
 	SummonTen.Button.MouseButton1Click:Connect(RequestSummonTen)
@@ -66,24 +70,47 @@ function Component:Init()
 	ReturnBtn.MouseEnter:Connect(function()
 		Effects:Tween(ReturnBtn.ThinStroke, {0.3, 'Quart'}, {Thickness = 0.04, Color = Color3.fromRGB(245, 47, 47)})
 		Effects:Tween(ReturnBtn.UIShadow, {0.5, 'Quart'}, {Transparency = 0.75})
+		Effects:Tween(ReturnBtn.UIScale, {0.4, 'Back'}, {Scale = 1.05})
 	end)
 
 	ReturnBtn.MouseLeave:Connect(function()
 		Effects:Tween(ReturnBtn.ThinStroke, {0.3, 'Quart'}, {Thickness = 0.05, Color = Color3.fromRGB(152, 29, 29)})
 		Effects:Tween(ReturnBtn.UIShadow, {0.5, 'Quart'}, {Transparency = 1})
+		Effects:Tween(ReturnBtn.UIScale, {0.4, 'Sine'}, {Scale = 1})
 	end)
 
+	local CancelThread = nil;
+	local Canvas, Main = self:GetFrame().Canvas, self:GetFrame().Main;
 	Component:BindToStateChange(function(State: boolean)
+		self:GetFrame().Visible = true
+		if CancelThread then
+			task.cancel(CancelThread)
+		end
+
 		if not State then
+			Canvas.GroupTransparency = 0;
+			BaseFrame.Parent = Canvas;
+			Effects:Tween(BaseFrame.UIScale, {0.275, 'Quad'}, {Scale = 0.8})
+			Effects:Tween(Canvas, {.175}, {GroupTransparency = 1})
+
 			local LobbyMain = UIGroups:GetElementClass("Lobby", "MainMenu")
 
 			LobbyMain:Set(true, true)
+		else
+			Canvas.GroupTransparency = 1;
+			BaseFrame.Parent = Canvas;
+			Effects:Tween(BaseFrame.UIScale, {0.3, 'Back'}, {Scale = 1})
+			Effects:Tween(Canvas, {.15}, {GroupTransparency = 0})
+
+			CancelThread = task.delay(0.25, function()
+				BaseFrame.Parent = Main;
+			end)
 		end
 	end)
 end
 
 function Component:SetBanner(Data: {Main: string, Sub: {string}})
-	local Frame = Component:GetFrame()
+	local Frame = States.BaseFrame
 
 	for _, Character in Frame.BannerFrame.OtherCharacters.Scroll:GetChildren() do
 		if Character:IsA("TextLabel") then

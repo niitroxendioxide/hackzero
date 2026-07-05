@@ -1,0 +1,127 @@
+return {
+    ['LeafVillage_P01'] = {
+        Display_Name = "Anima overflow in the Leaf",
+        Description = 'There seems to be an anomaly on the leaf village, I was tasked with investigating and taking care of any possible problem. I heard there might be a Relic worth recovering.',
+        Recommended_Level = 1,
+
+        Stage_Act = 'LeafVillage/Intro',
+        Difficulty = 'EASY',
+
+        Destructibles = {
+            ['Boxes1'] = {
+                Destructible_Id = "Boxes1",
+                Broken = {
+                    Drops = {
+                        {Type = 'Artifact', Amount = 1, Extra = {
+                            Name = "Scroll",
+                        }}
+                    },
+                    SetValues = {
+                        ['Recover_Lost_Relic'] = true
+                    },
+                },
+            }
+        },
+        Triggers = {
+            Begin = {
+                Objective = "Find the cause for all this anima",
+                Goal = {
+                    Investigate_The_Area = false,
+                },
+                Enemies = {},
+                Dialogue = {{
+                    Speaker = "Agency",
+                    Text = "There's unusual levels of Anima flowing through the area...",
+                    NextDialogue = 3,
+                },{
+                    Speaker = "Agency",
+                    Text = "What sort of scenario could've caused this?",
+                    NextDialogue = 3,
+                },},
+                Global = true,
+
+                Finished = 'None',
+            },
+
+            GrassArea = {
+                Objective = "Stop the Anima-affected bandits {objective[KillEnemies]}/5",
+                Goal = {
+                    --['KillEnemies'] = 5,
+                },
+                Enemies = {
+                   --[[ [1] = {
+                        {Name = 'Saiyan', Level = 1, Amount = 3,},
+                        {Name = 'Saiyan', Level = 3, Amount = 2,}
+                    }]]
+                },
+                Dialogue = {{
+                    Speaker = "Agency",
+                    Text = "These guys... they're heavily affected by Anima... what is going on?!",
+                    NextDialogue = 3,
+                }},
+                Global = true,
+
+                Finished = 'None',
+            },
+
+            Entrance = {
+                Objective = "",
+                Goal = {},
+                Dialogue = {{
+                    Speaker = 'Agency',
+                    Text = 'So it seems someone\'s messing with Orochimaru\'s strength, look at the disaster he has caused over the city. ',
+                    NextDialogue = 5,
+                }},
+                Global = true,
+
+                Finished = "End"
+            },
+        },
+        Completion = {
+            Experience = 1250,
+            Rewards = {
+                ['S'] = {
+                    {Type = 'Gold', Amount = 7500},
+                    {Type = 'Gems', Amount = 45},
+                    {Type = 'Artifact', Amount = 1, Extra = {
+                        Name = 'CorpCapsule', 
+                    }}
+                },
+
+                ['A'] = {
+                    {Type = 'Gold', Amount = 5000},
+                    {Type = 'Gems', Amount = 15},
+                },
+
+                ['B'] = {
+                    {Type = 'Gold', Amount = 2500},
+                }
+            },
+
+            Handler = function(State: {})
+                return 'B'
+            end,
+        },
+    },
+
+    ['LeafVillage_P02'] = {
+        Requires = {'LeafVillage_P01'},
+
+        Description = 'Part 2',
+        Recommended_Level = 3,
+        Difficulty = 'EASY',
+
+        Stage_Act = 'LeafVillage/Intro',
+    },
+
+    ['LeafVillage_P03'] = {
+        Requires = {'LeafVillage_P02'},
+
+        Description = 'Part 3',
+        Recommended_Level = 6,
+        Difficulty = 'EASY',
+
+        Stage_Act = 'LeafVillage/Intro',
+    }
+
+}

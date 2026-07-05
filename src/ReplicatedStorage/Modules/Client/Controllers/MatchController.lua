@@ -23,6 +23,9 @@ local Camera = require(Client.Libraries.Camera)
 local Controller = {
     __Began = false :: boolean,
     __Total_Waves = 0 :: number,
+    __Mission_Id = nil :: string,
+    __Stage = nil :: string,
+    __Act = nil :: string,
 }
 
 function Controller:HasBegun(): boolean
@@ -41,6 +44,8 @@ function Controller:Init()
             Controller:BeginEvent(...)
         elseif Type == GameEnum.MatchEvents.EndEvent then
             Controller:EndEvent(...)
+        elseif Type == GameEnum.MatchEvents.SetMissionId then
+            Controller:SetMissionId(...)
         elseif Type == GameEnum.MatchEvents.SetupStage then
             Controller:SetupStage(...)
         elseif Type == GameEnum.MatchEvents.ProgressUpd then
@@ -82,8 +87,19 @@ function Controller:PromptGearChoice(List: {string})
     Network:Fire("Gear", GameEnum.GearEvent.Choose, {ChosenName})
 end
 
+
+function Controller:SetMissionId(MissionId: string)
+    local Component = InterfaceController:GetComponent("Objective")
+
+    LocalData:SetMissionId(MissionId)
+    Component:SetMissionId(MissionId)
+end
+
 function Controller:SetupStage(StageName: string, ActName: string)
     local Component = InterfaceController:GetComponent("Objective")
+
+    Controller.__Stage = StageName
+    Controller.__Act = ActName
 
     LocalData:SetStageData(StageName, ActName)
     Component:SetStage(StageName, ActName)
