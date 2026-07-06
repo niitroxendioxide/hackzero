@@ -207,14 +207,26 @@ function EffectUtil:MultiClean(Objects: {any}, Time: number)
 	end
 end
 
-function EffectUtil:CastMapRaycast(from: Vector3 | vector | CFrame, dir: vector | Vector3)
+function EffectUtil:CastMapRaycast(from: Vector3 | vector | CFrame, dir: vector | Vector3): RaycastResult & {Color: Color3}
 	local Params = RaycastParams.new()
 	Params.FilterType = Enum.RaycastFilterType.Include
 	Params.FilterDescendantsInstances = {workspace.World.Map}
 
 	from = (if typeof(from) == 'CFrame' then from.Position else from) :: Vector3
 
-	return workspace:Raycast(from, dir, Params)
+	local Result = workspace:Raycast(from, dir, Params);
+	if Result then
+		Result = {
+			Instance = Result.Instance,
+			Color = if Result.Instance:GetAttribute('GroundColor') then Result.Instance:GetAttribute('GroundColor') else Result.Instance.Color,
+			Material = Result.Material,
+			Position = Result.Position,
+			Distance = Result.Distance,
+			Normal = Result.Normal,
+		}
+	end
+
+	return Result
 end
 
 function EffectUtil:SetRandomSeed(n: number)
@@ -336,11 +348,15 @@ function EffectUtil.TableShortcut(tab: {})
 	return tab
 end
 
-function EffectUtil:CreateRocks(RaycastResult: RaycastResult, Size: Vector3 | vector, Count: number | {number}, Range: number, Rotation: {number}, Parent: Instance?)
+function EffectUtil:CreateRocks(RaycastResult: RaycastResult, Size: Vector3 | vector, Count: number | {number}, Range: number, Rotation: {number}, Parent: Instance?, Time: number?)
 	local RocksToCreate = typeof(Count) == 'table' and Random_Number:NextInteger(Count[1], Count[2]) or Count
 	local Center = RaycastResult.Position
 	local Base = RaycastResult.Instance
 	local Normal = RaycastResult.Normal
+
+	local hasColor = pcall(function(...)
+		return RaycastResult.Color;
+	end)
 
 	local RangeError = (360 / RocksToCreate)
 	local RockItems = Assets.General.Rocks:GetChildren()
@@ -361,14 +377,14 @@ function EffectUtil:CreateRocks(RaycastResult: RaycastResult, Size: Vector3 | ve
 		RockCreated.CFrame =  RockBaseCFrame;
 		RockCreated.CanCollide = false;
 		RockCreated.Anchored = true;
-		RockCreated.Material = Base.Material;
-		RockCreated.Color = Base.Color;
+		RockCreated.Material = RaycastResult.Material;
+		RockCreated.Color = hasColor and RaycastResult.Color or Base.Color;
 		RockCreated.Parent = Parent or workspace.World.Effects
 
 		EffectUtil:Tween(RockCreated, { Random_Number:NextNumber(0.15, 0.25), 'Back' }, { Size = RockSize })
 		EffectUtil:Tween(RockCreated, { 0.2, 'Quint' }, {CFrame = RockGoalCFrame * CFrame.Angles(0, Random_Number:NextNumber(-math.pi * 0.25, math.pi * 0.25), 0)})
 
-		task.delay(2.5, function()
+		task.delay(Time or 2.5, function()
 			EffectUtil:Tween(RockCreated, { 0.7, 'Cubic', 'InOut' }, {Position = RockCreated.Position - Normal * 2.5})
 			EffectUtil:Tween(RockCreated, { 0.5, 'Cubic', 'InOut' }, {Size = Vector3.zero})
 
@@ -378,9 +394,13 @@ function EffectUtil:CreateRocks(RaycastResult: RaycastResult, Size: Vector3 | ve
 end
 
 function EffectUtil:RecolorSmoke(RaycastResult: RaycastResult, Particles: {Instance | ParticleEmitter})
+	local HasColor = pcall(function(...)
+		return RaycastResult.Color == nil;
+	end)
+
 	for _, Particle in Particles do
 		if Particle:HasTag('Smoke') then
-			Particle.Color = ColorSequence.new(RaycastResult.Instance.Color)
+			Particle.Color = ColorSequence.new(HasColor and RaycastResult.Color or RaycastResult.Instance.Color)
 		end
 	end
 end

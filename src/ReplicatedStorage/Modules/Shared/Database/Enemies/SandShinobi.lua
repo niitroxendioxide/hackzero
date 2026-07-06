@@ -45,7 +45,7 @@ return {
 
 				Agent_Stun_Time = 0.3,
 				Damage_Mult = 220,
-				Attack_Warning = 0.25,
+				Attack_Warning = 0.2,
 			},
 
 			Upgrades = {}

@@ -163,7 +163,9 @@ function ServerEnemy:Attack()
 		Replicator:EnemyUseSkill(self.__EnemyId, ReplicationSkillId, 'Begin')
 
 		task.wait(PlayerPing)
-		Moveset:Begin(SkillToUse.Name, self)
+		Moveset:Begin(SkillToUse.Name, self, {
+			Target = Target,
+		})
 	end
 end
 

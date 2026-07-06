@@ -154,7 +154,7 @@ function DamageLibrary:DealEnemyToAgent(Caster: AgentTypes.Enemy, Target: AgentT
 	Target:TakeDamage(Total)
 
 	if AgentStun then
-		Target:Hit(Caster, AgentStun)
+		Target:Hit(Caster, AgentStun, Data.AnimId)
 	end
 end
 

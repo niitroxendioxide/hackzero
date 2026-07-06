@@ -33,11 +33,11 @@ function AnimatorClass:Init()
 	end
 
 	self:Play('Idle')
-	self:Play('Walk', {Weight = 0.001, Speed = 0.8})
-	self:Play('WalkLeft', {Weight = 0.001, Speed = 0.8})
-	self:Play('WalkFLeft', {Weight = 0.001, Speed = 0.8})
-	self:Play('WalkFRight', {Weight = 0.001, Speed = 0.8})
-	self:Play('WalkRight', {Weight = 0.001, Speed = 0.8})
+	self:Play('Walk', {Weight = 0.001, Speed = 1.2})
+	self:Play('WalkLeft', {Weight = 0.001, Speed = 1})
+	self:Play('WalkFLeft', {Weight = 0.001, Speed = 1})
+	self:Play('WalkFRight', {Weight = 0.001, Speed = 1})
+	self:Play('WalkRight', {Weight = 0.001, Speed = 1})
 
 	self.__Thread = RunService.PostSimulation:Connect(function(delta: number)
 		self:Update(delta)

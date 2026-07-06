@@ -403,7 +403,27 @@ function Controller:HitAgent(Buffer: buffer)
 
 	--
 	local HitTracks = Assets.Animations.Enemies.Hit:GetChildren()
-	Animation:Play(AgentObject:GetModel(), HitTracks[math.random(1, #HitTracks)])
+	table.sort(HitTracks, function(a0, a1): boolean  
+		return a0.Name < a1.Name;
+	end)
+
+	local Track;
+	if buffer.readu8(Buffer, 4) > 0 then
+		Track = HitTracks[buffer.readu8(Buffer, 4)]
+	else
+		for k = #HitTracks, 1, -1 do
+			local STrack = HitTracks[k];
+			if tonumber(STrack.Name) < 9 then
+				continue
+			end
+
+			table.remove(HitTracks, k)
+		end
+
+		Track = HitTracks[math.random(1, #HitTracks)]
+	end
+
+	Animation:Play(AgentObject:GetModel(), Track)
 end
 
 

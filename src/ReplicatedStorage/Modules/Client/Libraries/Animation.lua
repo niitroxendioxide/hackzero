@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Animations = ReplicatedStorage.Assets.Animations
 local Characters = Animations.Characters
+local Enemies = Animations:FindFirstChild('Enemies')
 local General = Animations.General
 
 --
@@ -40,6 +41,8 @@ function AnimationLibrary:GetMovementAnim(Character: string, TrackName: string)
 
 	if Characters:FindFirstChild(Character) and Characters:FindFirstChild(Character):FindFirstChild('Movement') then
 		MovementDirectory = Characters:FindFirstChild(Character)
+	elseif Enemies:FindFirstChild(Character) and Enemies:FindFirstChild(Character):FindFirstChild('Movement') then
+		MovementDirectory = Enemies:FindFirstChild(Character)
 	end
 
 	if not MovementDirectory:FindFirstChild('Movement') then

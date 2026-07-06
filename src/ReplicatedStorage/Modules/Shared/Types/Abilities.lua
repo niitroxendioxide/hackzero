@@ -130,6 +130,7 @@ export type HitEnemyData = {
 	DontChargeUlt: boolean,
 	HitsAirborne: boolean,
 	Airborne: boolean,
+	AnimId: number?,
 
 	Knockback: {number | number | number}?,
 }

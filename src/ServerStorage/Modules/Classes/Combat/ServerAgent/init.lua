@@ -98,7 +98,7 @@ function ServerAgentClass:ImpulseForward(Power: number, Time: number)
 	return self.__Character:ApplyForwardImpulse(Power, Time)
 end
 
-function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.Enemy, Time: number)
+function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.Enemy, Time: number, AnimId: number?)
 	local Ping = Ping:Get(self.__Player_Assigned)
 	local CurrentSkill = self:GetCurrentSkill()
 	if CurrentSkill then
@@ -112,7 +112,7 @@ function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.Enemy,
 
 	task.delay(Ping / 2, self.SwitchState, self, "Stunned", Time)
 
-	Replicator:HitAgent(self, Time)
+	Replicator:HitAgent(self, Time, AnimId)
 end
 
 function ServerAgentClass.IsBeingAttacked(self: Types.ServerAgentClass)
