@@ -21,6 +21,10 @@ local Threads = {}
 local Sasuke = {}
 
 function Sasuke:ConnectThread(Enemy: Types.Enemy, Caster: Types.ServerAgentClass)
+    if tostring(Enemy) == 'DestructibleClass' then
+        return
+    end
+
     if not Threads[Caster] then
         Threads[Caster] = {}
     end
@@ -36,6 +40,10 @@ function Sasuke:ConnectThread(Enemy: Types.Enemy, Caster: Types.ServerAgentClass
         Replicator:Effect("Sasuke_Thread", {Caster, Enemy:GetId(), 2}, true)
         if not Sasuke:HasConnectedThreads() then
             Caster:RemoveTag(Statics.Agent_Tags.Sasuke.Has_Enemies_Connected)
+        end
+
+        if not Threads[Caster] or (Threads[Caster][Enemy] == nil) then
+            return;
         end
 
         Threads[Caster][Enemy] = nil
@@ -55,6 +63,13 @@ end
 
 function Sasuke:HasConnectedThreads(Caster: Types.ServerAgentClass): boolean
     for Enemy in (Threads[Caster] or {}) do
+        if typeof(Enemy) == 'table' and Enemy.GetHealth and Enemy:GetHealth() <= 0 then
+            Threads[Caster] = nil
+            Replicator:Effect("Sasuke_Thread", {Caster, Enemy:GetId(), 2}, true)
+
+            continue
+        end
+
         return true
     end
 

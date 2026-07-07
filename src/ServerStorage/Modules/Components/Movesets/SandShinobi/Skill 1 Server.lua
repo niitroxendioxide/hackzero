@@ -33,7 +33,7 @@ function Ability:Play(Caster: Types.ServerEnemyClass, _, _, Context)
 
 			Ability:CreateHitbox(Caster, TargetPosition, Vector3.new(7, 13, 7), function(Target: Types.GenericClass)
 				Ability:Hit(Caster, Target, {
-					Damage = 250,
+					Damage = 2,
 					Stun = 0.9,
 					AnimId = 9,
 				})

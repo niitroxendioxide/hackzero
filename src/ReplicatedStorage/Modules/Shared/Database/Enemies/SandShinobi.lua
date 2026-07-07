@@ -1,9 +1,9 @@
 return {
-	Display_Name = 'Training Dummy',
+	Display_Name = 'Sand Shinobi',
 	RemoveFromChaosControl = true,
 
 	Appearance = {
-		Height = 3.15
+		Height = 2.95
 	},
 
 	--
@@ -36,14 +36,14 @@ return {
 	Moveset_Data = {
 		['Skill 1'] = {
 			Base = {
-				Range = 60,
-				Cooldown = 2,
+				Range = 45,
+				Cooldown = 3,
 
 				Speed = 1,
 				Animation_Speed = 1,
-				Attack_State_Time = 0.66,
+				Attack_State_Time = 1.45,
 
-				Agent_Stun_Time = 0.3,
+				Agent_Stun_Time = 0.85,
 				Damage_Mult = 220,
 				Attack_Warning = 0.2,
 			},
@@ -53,7 +53,7 @@ return {
 
 		['Skill 2'] = {
 			Base = {
-				Range = 7,
+				Range = 0,
 				Cooldown = 2,
 
 				Speed = 1,
@@ -61,7 +61,7 @@ return {
 				Attack_State_Time = 0.66,
 
 				Agent_Stun_Time = 0.3,
-				Damage_Mult = 220,
+				Damage_Mult = 5,
 				Attack_Warning = 0.25,
 			},
 

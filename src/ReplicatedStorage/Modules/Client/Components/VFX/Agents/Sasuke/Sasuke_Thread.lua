@@ -71,10 +71,16 @@ return function(Caster: Types.AgentClass, EnemyId: number, Type: number, fn): ()
         local Object = Cache[Caster][EnemyId]
         Cache[Caster][EnemyId] = nil
 
+        if Object == nil or Object.Connection == nil then
+            return
+        end
+
         local EndAttachment = Object.Connection.Attachment1;
-        local WorldCF = EndAttachment.WorldCFrame;
-        EndAttachment.Parent = workspace
-        EndAttachment.WorldCFrame = WorldCF;
+        if EndAttachment ~= nil then
+            local WorldCF = EndAttachment.WorldCFrame;
+            EndAttachment.Parent = workspace
+            EndAttachment.WorldCFrame = WorldCF;
+        end
 
         Effects:CleanUp(Object, 1)
         Effects:Tween(Object.Connection, {0.25, 'Back'}, {Width0 = 0, Width1 = 0})

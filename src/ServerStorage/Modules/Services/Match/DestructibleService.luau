@@ -29,7 +29,21 @@ type StructureData = {
 
     Other: {
         Energy: number?,
-    }?
+    }?,
+
+    Drops: {
+        [number]: {
+            Type: string,
+            Amount: number,
+            Extra: {
+                Name: string?,
+            }
+        }
+    }?,
+
+    SetValues: {
+        [string]: (number | boolean)?,
+    }?,
 }
 
 --
@@ -58,8 +72,7 @@ function Service:SetupStage(Structure_Map_Data: {}, Mission_Structure_Data: {})
     end
 
     for Key, StructureObj in Structure_Map_Data do
-        print(Key, StructureObj)
-        local Id = StructureObj.Id
+        local Id = StructureObj.Id 
         if not Id then
             warn("No given ID for destructible:", StructureObj)
 
@@ -72,9 +85,11 @@ function Service:SetupStage(Structure_Map_Data: {}, Mission_Structure_Data: {})
             continue
         end
 
+        local Custom_Data = Mission_Structure_Data[Id];
+
         for _, Part in StructureObj.Parts do
             local At = (Part.CFrame * CFrame.new(0, -Part.Size.Y/2, 0))
-            Service:Create(Id, At, Structure_Data.Default_Structure_Data)
+            Service:Create(Id, At,  Custom_Data or Structure_Data.Default_Structure_Data)
         end
     end
 
@@ -112,6 +127,8 @@ function Service:GiveRewards(Data: StructureData, Caster: Types.ServerEnemyClass
             Caster:GiveEnergy(Data.Other.Energy)
         end
     end
+
+    print(Data.Drops)
 
     -- do other stuff here !
     if Data.Effects and Caster.AddEffect then

@@ -404,6 +404,10 @@ function ServerEnemy:TakeDamage(number: number): boolean
 	return false;
 end
 
+function ServerEnemy:GetHealth()
+	return self.__Status:GetHealth()
+end
+
 function ServerEnemy:Kill()
 	self:TakeDamage(9e24)
 end

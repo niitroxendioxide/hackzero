@@ -51,7 +51,6 @@ function AnimatorClass:Play(Track: string, Data: Types.AnimationDataOptions)
 	local TrackObject = AnimLibrary:GetMovementAnim(self.__Directory, Track)
 	local AnimTrack = AnimLibrary:Play(self.__Character:GetModel(), TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
 	AnimTrack:SetAttribute("spd", AnimTrack.Speed)
-
 	AnimTrack.Priority = Priorities[RemovedId] or Enum.AnimationPriority.Core
 	self.__Tracks[RemovedId] = AnimTrack
 
@@ -82,6 +81,7 @@ end
 function AnimatorClass:Update(_: number)
 	local Character = self.__Character
 	local Moving = Character:IsMoving() and Character:IsWalking()
+	local IsAttacking = Character:GetState() ~= 'Idle'
 	local Walk = self:GetTrack('Walk')
 	local Right = self:GetTrack('WalkRight')
 	local Left = self:GetTrack('WalkLeft')
@@ -110,12 +110,12 @@ function AnimatorClass:Update(_: number)
 	end
 
 	for _, DippityTrack in Tracks do
-		local Weight = Moving and DippityTrack == ChosenTrack and 1 or 0.001
+		local Weight = Moving and DippityTrack == ChosenTrack and not IsAttacking and 1 or 0.001
 		DippityTrack:AdjustSpeed(StatSpeed * DippityTrack:GetAttribute("spd"))
 		DippityTrack:AdjustWeight(Weight)
 	end
 
-	Idle:AdjustWeight(not Moving and 1 or 0.001)
+	Idle:AdjustWeight(not Moving and not IsAttacking and 1 or 0.001)
 	Walk:AdjustSpeed(-math.sign(Direction.Z) * 0.7 * StatSpeed)
 end
 

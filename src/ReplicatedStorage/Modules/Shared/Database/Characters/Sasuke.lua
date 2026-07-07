@@ -215,15 +215,20 @@ return {
 				Attack_State_Time = 2.75,
 				Speed = 1,
 				Animation_Speed = 1,
-				Hit_Frequency = 1 / 10,
+				Hit_Frequency = 0.03,
 
 				Hit = {
-					Damage = 90,
+					Damage = 75,
 					Affliction = "Fire",
 					HitType = "Blunt",
 					Daze = 32,
-					Affliction_Buildup = 85,
-					Stun = 0.45,
+					Affliction_Buildup = 65,
+					Stun = 0.3,
+					Knockback = {
+						vector.create(0, 0, -1),
+						6,
+						.1
+					}
 				},
 			},
 			Upgrade = {},

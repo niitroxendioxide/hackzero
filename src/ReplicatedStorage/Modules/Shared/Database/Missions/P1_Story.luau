@@ -8,19 +8,16 @@ return {
         Difficulty = 'EASY',
 
         Destructibles = {
-            ['Boxes1'] = {
-                Destructible_Id = "Boxes1",
-                Broken = {
-                    Drops = {
-                        {Type = 'Artifact', Amount = 1, Extra = {
-                            Name = "Scroll",
-                        }}
-                    },
-                    SetValues = {
-                        ['Recover_Lost_Relic'] = true
-                    },
+            ['CrateLoot'] = {
+                Drops = {
+                    {Type = 'Artifact', Amount = 1, Extra = {
+                        Name = "Scroll",
+                    }}
                 },
-            }
+                SetValues = {
+                    ['Recover_Lost_Relic'] = true
+                },
+            },
         },
         Triggers = {
             Begin = {
@@ -46,11 +43,11 @@ return {
             GrassArea = {
                 Objective = "Stop the Anima-affected bandits {objective[KillEnemies]}/5",
                 Goal = {
-                    ['KillEnemies'] = 5,
+                    ['KillEnemies'] = 4,
                 },
                 Enemies = {
                     [1] = {
-                        {Name = 'SandShinobi', Level = 1, Amount = 3, Affected_Aura = true},
+                        {Name = 'SandShinobi', Level = 1, Amount = 2, Affected_Aura = true},
                         {Name = 'SandShinobi', Level = 3, Amount = 2, Affected_Aura = true}
                     }
                 },
@@ -64,7 +61,7 @@ return {
                 Finished = 'None',
             },
 
-            Entrance = {
+            Cross = {
                 Objective = "",
                 Goal = {},
                 Dialogue = {{
@@ -75,6 +72,32 @@ return {
                 Global = true,
 
                 Finished = "End"
+            },
+
+            Entrance = {
+                Objective = "Stop the Anima-affected bandits {objective[KillEnemies]}/5",
+                Goal = {
+                    ['KillEnemies'] = 10,
+                },
+                Enemies = {
+                    [1] = {
+                        {Name = 'SandShinobi', Level = 1, Amount = 2, Affected_Aura = true},
+                        {Name = 'SandShinobi', Level = 3, Amount = 3, Affected_Aura = true}
+                    },
+
+                    [2] = {
+                        {Name = 'SandShinobi', Level = 3, Amount = 4, Affected_Aura = true},
+                        {Name = 'SandShinobi', Level = 6, Amount = 1, Affected_Aura = true}
+                    }
+                },
+                Dialogue = {{
+                    Speaker = "Agency",
+                    Text = "There's even more?!",
+                    NextDialogue = 3,
+                }},
+                Global = true,
+
+                Finished = 'None',
             },
         },
         Completion = {

@@ -18,6 +18,10 @@ function Ability:Play(Caster: Types.ServerAgentClass)
     local Left, Right = CFrame.Angles(0, math.rad(38), 0), CFrame.Angles(0, math.rad(-38), 0)
 
     local function FireballHit(Enemy)
+        if Hits[Enemy] == true then
+            return
+        end
+
         Hits[Enemy] = true;
         task.delay(Ability:FromData("Hit_Frequency"), function()
             Hits[Enemy] = false;
@@ -33,15 +37,26 @@ function Ability:Play(Caster: Types.ServerAgentClass)
         end},
 
         {0.7, function(Sequence)
-            Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * Left * CFrame.new(0, 0, -1), vector.create(12, 12, 12), 75, 2, FireballHit)
+            local Object; Object = Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * Left * CFrame.new(0, 0, -1), vector.create(12, 12, 12), 75, 1, function(Target)
+                Object:SetSpeed(20)
+                FireballHit(Target)
+            end)
         end},
 
         {1.05, function(Sequence)
-            Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * CFrame.new(0, 0, -1), vector.create(12, 12, 12), 75, 3, FireballHit)
+            local Object; Object = Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * CFrame.new(0, 0, -1), vector.create(12, 12, 12), 75, 1, function(Target)
+                Object:SetSpeed(20)
+                FireballHit(Target)
+            end)
+
+            Object:Debug()
         end},
 
         {1.3, function(Sequence)
-            Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * Right * CFrame.new(0, 0, -1), vector.create(12, 12, 12), 75, 3, FireballHit)
+            local Object; Object = Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * Right * CFrame.new(0, 0, -1), vector.create(12, 12, 12), 75, 1, function(Target)
+                Object:SetSpeed(20)
+                FireballHit(Target)
+            end)
         end}
     })
 end

@@ -8,6 +8,7 @@ local Assets = ReplicatedStorage.Assets.Effects.Agents
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local Types = require(Shared.Types.Abilities)
 local Effects = require(Shared.Utility.Effects)
 local Library = require(Client.Libraries.Effects)
@@ -39,9 +40,12 @@ local function ShootDragon(BaseCFrame)
     FireballShootVFX:PivotTo(BaseCFrame)
     Effects:Emit(FireballShootVFX)
     
-    local FireballVFX = Effects:Create(SasukeVFX.Dragon, 4, workspace)
+    local FireballVFX = Effects:Create(SasukeVFX.Dragon, 4)
     FireballVFX:PivotTo(BaseCFrame)
     FireballVFX:ScaleTo(0.001)
+    local Anim = Animation:GetAnim('Characters.Sasuke.Abilities.Ultimate.DragonFire')
+    Animation:Play(FireballVFX, Anim, 0, 1, 1.25)
+
     Effects:TweenModel(FireballVFX, 5.859, 0.45, 'Back')
 
     local Cleaned = false;
@@ -52,16 +56,20 @@ local function ShootDragon(BaseCFrame)
 
         Cleaned = true;
 
+        for _, Part in FireballVFX:GetChildren() do
+            if Part:IsA('BasePart') then
+                Effects:Tween(Part, {.1}, {Transparency = 1})
+            end
+        end
+
+        Library:Play("Sasuke_FireExplosion", FireballVFX:GetPivot())
         Effects:Toggle(FireballVFX, false)
         Effects:Tween(FireballVFX.PrimaryPart, { 0.1, 'Quad' }, {Transparency = 1})
     end
 
-    Effects:MoveProjectile(FireballVFX, vector.create(12, 12), 75, 3, function(): boolean  
-        CleanUp()
-
-        Library:Play("Sasuke_FireExplosion", FireballVFX:GetPivot())
-
-        return true
+    local Object; Object = Effects:MoveProjectile(FireballVFX, vector.create(12, 12), 75, 3, function(Target): boolean
+        Object:SetSpeed(20);
+        Target:Hit()
     end)
 
     task.delay(3, CleanUp)
@@ -90,9 +98,9 @@ return function(
 ): ()
     --
 
-    local Offset = CFrame.new(0, 0, -1)
+    local Offset = CFrame.new(0, 0, -3.5)
 
-    task.delay(0.7, ShootDragon, Caster:GetPivot() * CFrame.Angles(0, math.rad(38), 8) * Offset)
+    task.delay(0.7, ShootDragon, Caster:GetPivot() * CFrame.Angles(0, math.rad(38), 0) * Offset)
     task.delay(1.05, ShootDragon, Caster:GetPivot() * Offset)
-    task.delay(1.3, ShootDragon, Caster:GetPivot() * CFrame.Angles(0, math.rad(-38), 8) * Offset)
+    task.delay(1.3, ShootDragon, Caster:GetPivot() * CFrame.Angles(0, math.rad(-38), 0) * Offset)
 end

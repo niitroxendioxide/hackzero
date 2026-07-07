@@ -1,10 +1,11 @@
---!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local EffectUtil = require(Shared.Utility.Effects)
-local Util = {}
+local Util = {
+    ActionBarsThread = nil,
+}
 
 local OriginalScreenTransparency = {} :: { [any] : { string | number} }
 
@@ -92,6 +93,36 @@ function Util:HideNonUserCharacters(Time: number?): () -> ()
     end
 
     return Show
+end
+
+--[[
+    Shows action bars in the screen
+    @param Time: time in seconds;
+    @param Thickness: 0-0.5;
+]]
+function Util:ShowActionBars(Time: number, Thickness: number, TransitionTime: number?)
+    local PlayerGui = Players.LocalPlayer:FindFirstChild("PlayerGui")
+    if not PlayerGui then
+        return
+    end
+
+    if Util.ActionBarsThread then
+        task.cancel(Util.ActionBarsThread)
+    end
+
+    local ActionBars = PlayerGui:WaitForChild("Effects"):WaitForChild("ActionBars")
+    local Top = ActionBars.Top;
+    local Bot = ActionBars.Bot;
+
+    TransitionTime = TransitionTime or .15
+
+    EffectUtil:Tween(Top, {TransitionTime, 'Quad'}, {Position = UDim2.new(0, 0, -0.5 + Thickness, 0)})
+    EffectUtil:Tween(Bot, {TransitionTime, 'Quad'}, {Position = UDim2.new(0, 0, 1.5 - Thickness, 0)})
+
+    Util.ActionBarsThread = task.delay(Time, function()
+        EffectUtil:Tween(Top, {TransitionTime, 'Quad', 'InOut'}, {Position = UDim2.new(0, 0, -0.5, -12)})
+        EffectUtil:Tween(Bot, {TransitionTime, 'Quad', 'InOut'}, {Position = UDim2.new(0, 0, 1.5, 12)})
+    end)
 end
 
 return Util

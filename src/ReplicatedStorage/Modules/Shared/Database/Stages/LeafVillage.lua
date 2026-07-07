@@ -20,6 +20,21 @@ return {
                     Type = 'Trigger',
                     Name = 'Entrance',
                 },
+
+                ['Cross'] = {
+                    Type = 'Trigger',
+                    Name = 'Cross',
+                },
+
+                ['Crate'] = {
+                    Type = 'Destructible',
+                    Destructible_Id = 'Crate',
+                },
+
+                ['CrateLoot'] = {
+                    Type = 'Destructible',
+                    Destructible_Id = 'Crate',
+                },
             },
         },
     }

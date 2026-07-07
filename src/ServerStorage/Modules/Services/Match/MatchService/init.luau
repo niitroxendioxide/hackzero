@@ -223,7 +223,7 @@ function Service:Begin(Stage: string, Act: string)
     NPCService.__Stage = Stage
     NPCService.__Act = Act
 
-    DestructibleService:SetupStage(Marker_Data.Destructibles)
+    DestructibleService:SetupStage(Marker_Data.Destructibles, Data.Destructibles)
     LootService:SetupChests(Marker_Data.Chests)
     NPCService:SetupNPCS(Marker_Data.NPCS)
 

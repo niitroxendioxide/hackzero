@@ -100,7 +100,7 @@ function MapLoader:Unpack(p_MapPath: string, p_SpawnToUse: string?)
     return true
 end
 
-function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destructibles: {}, Chests: {}}?
+function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}, SubLookup: { Destructibles: {}, Triggers: {} }): {Destructibles: {}, Chests: {}}?
     local MapData = {
         Destructibles = {},
         Chests = {},

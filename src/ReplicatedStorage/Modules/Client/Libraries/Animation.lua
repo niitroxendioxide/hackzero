@@ -64,6 +64,10 @@ end
 
 function AnimationLibrary:Load(Character: Model, Track: Animation)
 	local Animator = AnimationLibrary:GetAnimator(Character)
+	if not Animator then
+		return
+	end
+
 	local LoadedTrack = Animator:LoadAnimation(Track)
 
 	return LoadedTrack
@@ -75,6 +79,10 @@ function AnimationLibrary:Play(Character: Model, TrackObject: Animation, ...)
 	end
 
 	local Track = AnimationLibrary:Load(Character, TrackObject)
+	if Track == nil then
+		return;
+	end
+
 	Track:Play(...)
 
 	Track.Stopped:Once(function()
@@ -113,6 +121,10 @@ end
 
 function AnimationLibrary:GetAnimator(Character: Model): Animator
 	local Humanoid = Character:FindFirstChild('Humanoid') :: Humanoid or Character:FindFirstChild('AnimationController') :: Humanoid
+	if not Humanoid then
+		return nil
+	end
+
 	local Animator = Humanoid:FindFirstChild('Animator') :: Animator
 
 	if Animator == nil then

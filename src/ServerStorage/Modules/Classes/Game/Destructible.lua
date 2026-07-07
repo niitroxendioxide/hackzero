@@ -34,6 +34,9 @@ end
 --
 local DestructibleClass = {}
 DestructibleClass.__index =  DestructibleClass;
+DestructibleClass.__tostring = function()
+    return 'DestructibleClass'
+end
 
 function DestructibleClass.new(Type: string, Position: Vector3, Rotation: number?)
     local self = setmetatable({}, DestructibleClass)

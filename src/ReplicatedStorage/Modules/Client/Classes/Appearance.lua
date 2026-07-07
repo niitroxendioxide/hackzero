@@ -192,7 +192,7 @@ function AppearanceClass:JoinTo(BasePart: BasePart, Responsiveness: number?)
 	AlignPosition.Responsiveness = 100
 	AlignPosition.MaxForce = 1e7
 	AlignOrientation.Responsiveness = Responsiveness or 100
-	AlignOrientation.MaxTorque = 1e7
+	AlignOrientation.MaxTorque = math.huge
 
 	AlignPosition.Parent = Att0
 	AlignOrientation.Parent = Att0

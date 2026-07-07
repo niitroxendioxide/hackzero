@@ -275,7 +275,6 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 		ActiveAgent:Look(LookAt)
 
 		if SpacelessSkill == "EX Special" then
-			print(Info)
 			if ActiveAgent:GetEnergy() < Info.Base.Required_Energy then
 				return false;
 			end

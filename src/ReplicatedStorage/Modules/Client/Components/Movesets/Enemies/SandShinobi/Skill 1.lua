@@ -20,8 +20,8 @@ function Ability:Play(Enemy: Types.EnemyClass)
 
 			local _ = Ability:PlayAnimation(Enemy, 'SandShinobi.Abilities.EarthJutsu', {
 				Speed = Ability:FromData('Animation_Speed'), 
-				Fade = .1,
-				Active_Time = Attack_Time,
+				Fade = 0.1,
+				Priority = Enum.AnimationPriority.Action3,
 			})
 		end,},
 
