@@ -142,7 +142,8 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}, SubLookup:
             end
 
             table.insert(MapData.Destructibles, {
-                Id = MarkerObj.Destructible_Id,
+                Id = MarkerId,
+                Type = MarkerObj.Destructible_Id,
                 Parts = PartList,
             })
         elseif MarkerObj.Type == 'Chest' then

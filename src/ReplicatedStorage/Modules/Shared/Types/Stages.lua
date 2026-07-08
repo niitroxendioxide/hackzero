@@ -186,6 +186,8 @@ export type MissionClass = {
 	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?, Players: {StagePlayer}, Ignore_Replay: boolean?, Trigger: BasePart?) -> (),
 	SummonEnemyWave: (self: MissionClass, Wave: number) -> (),
 	Finish: (self: MissionClass) -> (),
+	GetProgressValue: (self: MissionClass, Key: string) -> (),
+	SetProgressValue: (self: MissionClass, Key: string, Value: any) -> (),
 
 	--[[
 		Sync with all clients the current events and information
@@ -241,7 +243,7 @@ export type EventClass = {
 	GetCorrectedState: (self: EventClass) -> (),
 }
 
-export type LootType = "Item" | "Artifact" | "Drive" | "Gold" | "Gems"
+export type LootType = "Item" | "Artifact" | "Drive" | "Money" | "Gems"
 export type LootObject = {
 	Type: LootType,
 	Amount: number,

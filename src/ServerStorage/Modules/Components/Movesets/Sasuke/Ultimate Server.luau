@@ -48,8 +48,6 @@ function Ability:Play(Caster: Types.ServerAgentClass)
                 Object:SetSpeed(20)
                 FireballHit(Target)
             end)
-
-            Object:Debug()
         end},
 
         {1.3, function(Sequence)

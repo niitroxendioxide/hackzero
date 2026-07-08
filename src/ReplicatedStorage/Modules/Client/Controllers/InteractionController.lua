@@ -126,6 +126,19 @@ function Controller:Init()
             end
         end
     end)
+
+    Network:On("ItemObtained", function(Items: {})
+        local UIElement = InterfaceController:GetComponent("ItemNotifications")
+
+        local Count = 0;
+        for _, Item in Items do
+            task.delay(Count * 0.1, function()
+                UIElement:AddItem(Item[1], Item[2], Item[3])
+            end)
+
+            Count += 1
+        end
+    end)
 end
 
 function Controller:CreatePromptWithCustomDesign(Prompt: ProximityPrompt)

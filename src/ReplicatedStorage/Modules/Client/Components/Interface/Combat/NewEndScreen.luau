@@ -263,9 +263,12 @@ function Component:ShowMatchResult(ServerData: MatchResultData)
     task.wait(0.3);
 
 
-    print(ServerData.Items)
     for k, Item in ServerData.Items do
-        local Type, Amount, Extra = Item[1], Item[2], Item[3]
+        local Type, Amount, Extra = Item.Type, Item.Amount, Item.Extra
+        if Type == 'Money' then
+            Type = 'Gold'
+        end
+
         local ItemObject = UIUtils:CreateRewardItem(Extra ~= nil and Extra.Name or Type, Type, Amount, false, Main.Rewards.List, Assets.Interface.EndScreen.RewardItem)
         ItemObject.UIScale.Scale = 0;
 

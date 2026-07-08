@@ -56,6 +56,9 @@ return {
 				},
 			},
 		},]]
+		['Basic Attack'] = {
+			
+		}
 	},
 
 	Ascension_Data = {

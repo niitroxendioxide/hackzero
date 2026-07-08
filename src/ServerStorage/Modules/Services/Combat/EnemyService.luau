@@ -190,11 +190,13 @@ end
 
 function Service:__GenerateLocation(SpawnLocation: BasePart)
 	local cFrame = SpawnLocation.CFrame
-	local Size = SpawnLocation.Size
+
+	local Size = (SpawnLocation:GetAttribute("AreaSize") or SpawnLocation.Size) :: Vector3
+	local BaseOffset = CFrame.new(SpawnLocation:GetAttribute("AreaOffset") or Vector3.new()) :: CFrame
 
 	local RNG = Random.new()
 
-	return cFrame * CFrame.new(RNG:NextNumber(-Size.X/2, Size.X/2), Size.Y/2, RNG:NextNumber(-Size.Z/2, Size.Z/2))
+	return (cFrame * BaseOffset) * CFrame.new(RNG:NextNumber(-Size.X/2, Size.X/2), Size.Y/2, RNG:NextNumber(-Size.Z/2, Size.Z/2))
 end
 
 return Service

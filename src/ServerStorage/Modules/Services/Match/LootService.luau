@@ -36,18 +36,12 @@ local function ChestInteractionEvent(Player: Player, Type: number, ChestId: numb
         return
     end
 
-    local StagePlayer = PlayersLibrary:Get(Player)
     local ChestObject = Chests[ChestId]
 
     if GameEnum.ChestInteractions.Open == Type then
         if ChestObject.Opened then return end
 
-        local ItemList = {}
-        for _, ItemObject in ChestObject.Items do
-            table.insert(ItemList, {ItemObject.Type, ItemObject.Amount, ItemObject.Extra and ItemObject.Extra.Name or ""})
-            
-            StagePlayer:AddLoot(ItemObject.Type, {Amount = ItemObject.Amount, Extra = ItemObject.Extra or {}})
-        end
+        local ItemList = Service:GiveLootToPlayer(Player, ChestObject.Items)
 
         Network:FireForAll("ChestInteraction", Player, ChestId, ItemList)
     end
@@ -59,7 +53,25 @@ function Service:Init()
     Service.OnLootboxOpened = Signal.new()
 
     Network.new("ChestInteraction", "Event")
+    Network.new("ItemObtained", "Event")
     Network:On("ChestInteraction", ChestInteractionEvent)
+end
+
+function Service:GiveLootToPlayer(Player: Player, Loot: {}, SendItemNotification: boolean?)
+    local StagePlayer = PlayersLibrary:Get(Player)
+
+    local ItemList = {}
+    for _, ItemObject in Loot do
+        table.insert(ItemList, {ItemObject.Type, ItemObject.Amount, ItemObject.Extra and ItemObject.Extra.Name or ""})
+        
+        StagePlayer:AddLoot(ItemObject.Type, {Amount = ItemObject.Amount, Extra = ItemObject.Extra or {}})
+    end
+
+    if SendItemNotification then
+        Network:Fire("ItemObtained", Player, ItemList)
+    end
+
+    return ItemList
 end
 
 function Service:SetupChests(Chest_Data: {{ItemList: {}, Parts: {BasePart}}})

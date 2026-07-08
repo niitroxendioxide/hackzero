@@ -109,6 +109,7 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 
 	local SIZE_K = workspace.World.Map.Design:GetAttribute("Generated") and 1.1 or 1.25
 	local Size = (TriggerObject:GetAttribute("AreaSize") or (TriggerObject.Size * SIZE_K)) :: Vector3
+	local BaseOffset = CFrame.new(TriggerObject:GetAttribute("AreaOffset") or Vector3.new()) :: CFrame
 
     local Sizes = {
         Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
@@ -129,7 +130,7 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 
         local Part = Instance.new("Part")
         Part.Size = PartSize
-        Part.CFrame = TriggerObject:GetPivot() * Offset
+        Part.CFrame = (TriggerObject:GetPivot() * BaseOffset) * Offset
         Part.Transparency = 1
         Part.Color = Color3.new(0.403922, 0.133333, 0.992157)
         Part.Name = TriggerObject.Name .. 'ColliderPart'

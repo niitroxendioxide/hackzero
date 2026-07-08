@@ -126,10 +126,26 @@ function Service:End(Won: boolean)
     local RankTier = table.find(List, Rank)
     
     for Tier, LetterRank in List do
-        if Tier <= RankTier and RawRewards[LetterRank] then
-            for _, Object in RawRewards[LetterRank] do
-                table.insert(CompletionRewards, {Object.Type, Object.Amount, Object.Extra})
+        if Tier > RankTier or RawRewards[LetterRank] == nil then
+            continue
+        end
+
+        for _, Object in RawRewards[LetterRank] do
+            if ((Object.Type == 'Money' or Object.Type == 'Gold') or Object.Type == 'Gems') then
+                local Edited = false
+                for _, Item in CompletionRewards do
+                    if Item.Type ~= Object.Type then continue end
+
+                    Edited = true
+                    Item.Amount += Object.Amount;
+                end
+
+                if Edited then
+                    continue
+                end  
             end
+
+            table.insert(CompletionRewards, {Type = Object.Type, Amount = Object.Amount, Extra = Object.Extra})
         end
     end
     
@@ -255,8 +271,17 @@ function Service:Begin(Stage: string, Act: string)
     CompanionService:CreateCompanion(Companions[1], FirstAgent)
 
     --
+    DestructibleService.StructureSetValuesEvent:Connect(function(Values: {[string]: any})
+        for Key, Value in Values do
+            local IsAddition = typeof(Value) == 'number' and (string.sub(Key, #Key, #Key) == "+")
+            local CorrectedKey = IsAddition and string.sub(Key, 1, #Key - 1) or Key
+            local CorrectedValue = IsAddition and (MissionClass:GetProgressValue(CorrectedKey) or 0) + Value or Value
+
+            MissionClass:SetProgressValue(CorrectedKey, CorrectedValue)
+        end
+    end)
+
     MissionClass.Finished:Once(function(State: boolean)
-        print('Hello?')
         Service:End(State)
     end)
 

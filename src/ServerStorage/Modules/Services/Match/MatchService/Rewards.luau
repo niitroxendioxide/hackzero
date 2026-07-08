@@ -27,7 +27,7 @@ local Rewards = {}
 function Rewards:Give(Player: Player, List: {Types.LootItem})
 
     for _, Object in List do
-        print(Object)
+        print('[SERVER] Loot:', Object.Type, Object.Amount, 'Given.', Object)
         local ObjectName = Object.Extra and Object.Extra.Name
 
         if Object.Type == 'Gold' or Object.Type == 'Money' then
@@ -60,11 +60,17 @@ end
 
 function Rewards:CleanupRewards(Player: Types.StagePlayer, Items: {})
     for _, Item in Player:GetObtainedLoot() do
-        if Item.Type == "Gold" or Item.Type == "Gems" then
+        if Item.Type == 'Gold' then
+            Item.Type = 'Money'
+        end
+    end
+
+    for _, Item in Player:GetObtainedLoot() do
+        if (Item.Type == "Money") or Item.Type == "Gems" then
             local Found = false
             for _, ExistingItem in Items do
-                if ExistingItem.Type == Item.Type then
-                    ExistingItem.Type += Item.Amount
+                if (ExistingItem.Type == Item.Type) then
+                    ExistingItem.Amount += Item.Amount
                     Found = true
                 end
             end
@@ -82,7 +88,6 @@ end
 
 function Rewards:SpreadRewards(Players: { Types.StagePlayer }, MatchRewards: {}, MatchData: { read Rank: any, read TotalDamage: any, read WinStatus: any, read Experience: number } )
     for _, StagePlayer in Players do
-
         local Items = table.clone(MatchRewards)
         Rewards:CleanupRewards(StagePlayer, Items);
         Rewards:Give(StagePlayer:GetBase(), Items);

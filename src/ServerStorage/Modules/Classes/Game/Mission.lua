@@ -86,6 +86,14 @@ function MissionClass.IsFinished(self: Types.MissionClass): boolean
     return self.__Is_Finished
 end
 
+function MissionClass.GetProgressValue(self: Types.MissionClass, Key: string)
+    return self.__Current_State[Key] 
+end
+
+function MissionClass.SetProgressValue(self: Types.MissionClass, Key: string, Value: number | boolean | any)
+    self.__Current_State[Key] = Value
+end
+
 function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Players: {Types.StagePlayer}, Replay_Event, Trigger: BasePart?)
     ---
     
@@ -191,8 +199,8 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
         })
     end
 
-    local Success = EventObject:Start(Trigger)
-    if Success == false then
+    local Success, IsGoallessEvent = EventObject:Start(Trigger)
+    if Success == false and not IsGoallessEvent then
         warn('Error on event: ', Event)
     end
 end

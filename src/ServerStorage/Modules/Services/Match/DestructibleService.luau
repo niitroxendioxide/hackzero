@@ -10,7 +10,9 @@ local AgentTypes = require(Shared.Types.Agents)
 local GameEnum = require(Shared.GameEnum)
 local Heap = require(Shared.Utility.Heap)
 local Network = require(Shared.Network)
+local Signal = require(Shared.Utility.Signal)
 local Destructible = require(Modules.Classes.Game.Destructible)
+local LootService = require(Modules.Services.Match.LootService)
 local StructureDatabase = require(Shared.Database.Destructibles)
 
 --
@@ -59,11 +61,13 @@ end
 --
 local Service = {
     __Total_Destructibles = nil :: Heap.Heap?,
+    StructureSetValuesEvent = nil :: Types.Signal<{[string]: boolean}>,
 }
 
 function Service:Init()
     --
     Service.__Total_Destructibles = Heap.new(255)
+    Service.StructureSetValuesEvent = Signal.new() :: Types.Signal<{[string]: boolean}>
 end
 
 function Service:SetupStage(Structure_Map_Data: {}, Mission_Structure_Data: {})
@@ -72,16 +76,17 @@ function Service:SetupStage(Structure_Map_Data: {}, Mission_Structure_Data: {})
     end
 
     for Key, StructureObj in Structure_Map_Data do
-        local Id = StructureObj.Id 
-        if not Id then
-            warn("No given ID for destructible:", StructureObj)
+        local Type = StructureObj.Type
+        if not Type then
+            warn("No given Type for destructible:", StructureObj)
 
             continue
         end
 
-        local Structure_Data = StructureDatabase:GetData(Id)
+        local Id = StructureObj.Id
+        local Structure_Data = StructureDatabase:GetData(Type)
         if not Structure_Data then
-            warn(`[{Id}] is not a valeid structure type.`)
+            warn(`[{Type}] is not a valeid structure type.`)
             continue
         end
 
@@ -89,7 +94,7 @@ function Service:SetupStage(Structure_Map_Data: {}, Mission_Structure_Data: {})
 
         for _, Part in StructureObj.Parts do
             local At = (Part.CFrame * CFrame.new(0, -Part.Size.Y/2, 0))
-            Service:Create(Id, At,  Custom_Data or Structure_Data.Default_Structure_Data)
+            Service:Create(Type, At,  Custom_Data or Structure_Data.Default_Structure_Data)
         end
     end
 
@@ -128,14 +133,21 @@ function Service:GiveRewards(Data: StructureData, Caster: Types.ServerEnemyClass
         end
     end
 
-    print(Data.Drops)
-
     -- do other stuff here !
     if Data.Effects and Caster.AddEffect then
         for _, Effect in Data.Effects do
             Caster:AddEffect(Effect)
         end
     end
+
+    if Data.SetValues then
+        Service.StructureSetValuesEvent:Fire(Data.SetValues)
+    end
+
+    if Data.Drops then
+        LootService:GiveLootToPlayer(Caster.__Player_Assigned, Data.Drops, true)
+    end
+
 end
 
 function Service:Sync()

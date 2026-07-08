@@ -10,12 +10,22 @@ return {
         Destructibles = {
             ['CrateLoot'] = {
                 Drops = {
+                    {Type = "Gold", Amount = 3000},
                     {Type = 'Artifact', Amount = 1, Extra = {
                         Name = "Scroll",
                     }}
                 },
                 SetValues = {
                     ['Recover_Lost_Relic'] = true
+                },
+            },
+
+            ['CrateGold'] = {
+                Drops = {
+                    {Type = "Gold", Amount = 750},
+                },
+                SetValues = {
+                    ['Crates_Broken+'] = 1
                 },
             },
         },
@@ -104,7 +114,7 @@ return {
             Experience = 1250,
             Rewards = {
                 ['S'] = {
-                    {Type = 'Gold', Amount = 7500},
+                    {Type = 'Money', Amount = 7500},
                     {Type = 'Gems', Amount = 45},
                     {Type = 'Artifact', Amount = 1, Extra = {
                         Name = 'CorpCapsule', 
@@ -112,16 +122,20 @@ return {
                 },
 
                 ['A'] = {
-                    {Type = 'Gold', Amount = 5000},
+                    {Type = 'Money', Amount = 5000},
                     {Type = 'Gems', Amount = 15},
                 },
 
                 ['B'] = {
-                    {Type = 'Gold', Amount = 2500},
+                    {Type = 'Money', Amount = 2500},
                 }
             },
 
             Handler = function(State: {})
+                if State.Recover_Lost_Relic == true then
+                    return 'S'
+                end
+
                 return 'B'
             end,
         },

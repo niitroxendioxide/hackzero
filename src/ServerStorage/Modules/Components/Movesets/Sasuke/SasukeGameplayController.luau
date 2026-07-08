@@ -70,6 +70,7 @@ function Sasuke:HasConnectedThreads(Caster: Types.ServerAgentClass): boolean
             continue
         end
 
+        print(Enemy:GetHealth())
         return true
     end
 

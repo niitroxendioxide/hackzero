@@ -1,6 +1,6 @@
 return {
-	Display_Name = 'Monk-E D. Roofie',
-	Nickname = 'Roofie',
+	Display_Name = 'Monk. The Rookie',
+	Nickname = 'Rookie',
 	Element = 'Physical',
 	Role = 'Stun',
 	Tier = "Legendary",

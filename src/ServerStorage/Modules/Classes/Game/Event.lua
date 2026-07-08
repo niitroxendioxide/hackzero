@@ -61,7 +61,7 @@ EventClass.new = function(Stage: string, Act: string, Event: string)
     return self
 end
 
-function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): boolean
+function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): (boolean, boolean)
     if self.__Finish_Status then
         return false;
     end
@@ -116,7 +116,7 @@ function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): boolean
     if TotalGoals <= 0 then
         self:Destroy()
 
-        return false
+        return false, true
     end
 
     self.__Current_Goals = EventData.Goal
@@ -174,6 +174,7 @@ function EventClass.CreateEventAreaModel(self: Types.EventClass, Trigger: BasePa
 
     local SIZE_K = workspace.World.Map.Design:GetAttribute("Generated") and 1.1 or 1.25
     local Size = (Trigger:GetAttribute("AreaSize") or (Trigger.Size * SIZE_K)) :: Vector3
+    local BaseOffset = CFrame.new(Trigger:GetAttribute("AreaOffset") or Vector3.new()) :: CFrame
     local Sizes = {
         Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
         Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, Size.Z/2 - 1),
@@ -191,7 +192,7 @@ function EventClass.CreateEventAreaModel(self: Types.EventClass, Trigger: BasePa
 
         local Part = Instance.new("Part")
         Part.Size = PartSize
-        Part.CFrame = Trigger:GetPivot() * Offset
+        Part.CFrame = (Trigger:GetPivot() * BaseOffset) * Offset
         Part.Transparency = 0.8
         Part.Color = Color3.new(0.403922, 0.133333, 0.992157)
         Part.Name = Trigger.Name .. 'ColliderPart'
