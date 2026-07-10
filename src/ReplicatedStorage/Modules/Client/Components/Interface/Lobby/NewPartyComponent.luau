@@ -39,6 +39,11 @@ local DockPositions = {
         Closed = UDim2.fromScale(0.5, 0.5)
     },
 
+    Companions = {
+        Open = UDim2.fromScale(0.644, 0.469),
+        Closed = UDim2.fromScale(0.51, 0.469)
+    },
+
     Acts = {
         Open = UDim2.fromScale(0.905, 0.397),
         Closed = UDim2.fromScale(1.2, 0.397),
@@ -98,6 +103,10 @@ local function RequestMissionChange(): ()
 end
 
 local function HandlePlayButton()
+    if States['Companions'] == true then
+        return;
+    end
+
     if States.Thread then
         task.cancel(States.Thread)
     end
@@ -195,14 +204,16 @@ end
 --- Helpers
 function AnimatePlateHover(Frame: Frame)
 
+    local OSThick = Frame.OuterStroke.Thickness
+
     Frame.Button.MouseEnter:Connect(function()
         Effects:Tween(Frame.UIScale, {.2, 'Quad'}, {Scale = 1.05})
-        Effects:Tween(Frame.OuterStroke, {.2, 'Quad'}, {Color = Color3.new(1, 1, 1), Thickness = 0.02})
+        Effects:Tween(Frame.OuterStroke, {.2, 'Quad'}, {Color = Color3.new(1, 1, 1), Thickness = OSThick * 0.74})
     end)
 
     Frame.Button.MouseLeave:Connect(function()
         Effects:Tween(Frame.UIScale, {.2, 'Quad'}, {Scale = 1})
-        Effects:Tween(Frame.OuterStroke, {.2, 'Quad'}, {Color = Color3.new(), Thickness = 0.027})
+        Effects:Tween(Frame.OuterStroke, {.2, 'Quad'}, {Color = Color3.new(), Thickness = OSThick})
     end)
 
 end
@@ -211,6 +222,10 @@ end
 function SetDockState(DockName: string, State: boolean)
     if States[DockName] == State then
         return;
+    end
+
+    if (States['Companions'] == true and DockName ~= 'Companions') then
+        return; 
     end
 
     States[DockName] = State
@@ -230,7 +245,7 @@ function SetDockState(DockName: string, State: boolean)
         Effects:Tween(DockFrame.UIScale, { 0.2, 'Cubic' }, { Scale = 1 })
         Effects:Tween(DockFrame, { 0.2, 'Cubic' }, { Position = Positions.Open })
 
-        if DockName == 'Mission' or DockName == 'Info' then
+        if DockName == 'Mission' or DockName == 'Info' or DockName == 'Companions' then
             DockFrame.Parent = MainFrame.Transition
             MainFrame.Transition.GroupTransparency = 1
 
@@ -246,7 +261,7 @@ function SetDockState(DockName: string, State: boolean)
         if DockName == 'Maps' then
             SetDockState('Acts', false)
             SetDockState('Info', false)
-        elseif DockName == 'Mission' or DockName == 'Info' then
+        elseif DockName == 'Mission' or DockName == 'Info' or DockName == 'Companions' then
             MainFrame.Transition.GroupTransparency = 0
             DockFrame.Parent = MainFrame.Transition
 
@@ -276,8 +291,6 @@ function SetupCloseButton(DockName: string, button_fn: () -> ())
     if Dock == nil and DockName == 'Mission' then
         Dock = States.MissionDock
     end
-
-    print(Dock, DockName)
 
     local CloseFrame = Dock:FindFirstChild("CloseButton")
     if not CloseFrame then
@@ -791,6 +804,10 @@ function Component:Init()
         SetDockState('Agents', not States.Agents)
     end)
 
+    MissionDock.CompanionPlate.Button.MouseButton1Click:Connect(function()
+        SetDockState('Companions', not States.Companions)
+    end)
+
     MissionDock.MapPlate.Button.MouseButton1Click:Connect(function()
         if Component:Peek(States.CurrentPartyOwner) ~= Players.LocalPlayer.UserId then
             SetDockState('Maps', false)
@@ -804,6 +821,7 @@ function Component:Init()
 
     AnimatePlateHover(MissionDock.MapPlate)
     AnimatePlateHover(MissionDock.TeamPlate)
+    AnimatePlateHover(MissionDock.CompanionPlate)
 
     --
     MissionDock.Play.Button.MouseButton1Click:Connect(HandlePlayButton)

@@ -9,7 +9,7 @@ local Effects = require(Shared.Utility.Effects)
 
 
 ---
-return function(Character: Model, LevelUp: boolean): ()
+return function(Character: Model, LevelUp: boolean, IsCompanion: boolean): ()
 
     local Highlight = Instance.new("Highlight")
     Highlight.DepthMode = Enum.HighlightDepthMode.Occluded
@@ -22,7 +22,9 @@ return function(Character: Model, LevelUp: boolean): ()
     Effects:CleanUp(Highlight, 0.25)
 
     ---
-    local ParticleVFX = Effects:Create(Assets.Effects.General.Lobby[LevelUp and 'LevelUpEffect' or 'CharacterLoadEffect'], 2)
-    ParticleVFX:PivotTo(Character:GetPivot())
+    local EffectName = LevelUp and 'LevelUpEffect' or (IsCompanion and 'CompanionLoadEffect' or 'CharacterLoadEffect')
+    local Offset = IsCompanion and CFrame.new(0, -0.75, 0)
+    local ParticleVFX = Effects:Create(Assets.Effects.General.Lobby[EffectName], 2)
+    ParticleVFX:PivotTo(Character:GetPivot() * Offset)
     Effects:Emit(ParticleVFX)
 end

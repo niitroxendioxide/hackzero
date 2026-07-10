@@ -9,11 +9,12 @@ local PlayerCompanionData = require(Classes.Data.PlayerCompanionData)
 
 return function(Caster: TextSource, Params: {})
 
-    local Amount = tonumber(Params[1], 10) or 1
+    local Type = Params[1] or 'Default'
+    local Amount = tonumber(Params[2], 10) or 1
     local Player = Players:GetPlayerByUserId(Caster.UserId)
 
     for i = 1, Amount do
-        local Class = PlayerCompanionData.randomize("Default")
+        local Class = PlayerCompanionData.randomize(Type)
 
         DataService:SaveCompanion(Player, Class)
     end

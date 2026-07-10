@@ -8,25 +8,28 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Assets = ReplicatedStorage.Assets
 local Companions = Assets.Interface:FindFirstChild('Companions')
 
-local LocalData = require(ReplicatedStorage.Modules.Client.Libraries.LocalData)
-local UIEffects = require(ReplicatedStorage.Modules.Client.Utility.UIEffects)
-local CompanionsDatabase = require(ReplicatedStorage.Modules.Shared.Database.Companions)
-local Icons = require(ReplicatedStorage.Modules.Shared.Database.Icons)
-local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
-local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
-local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
+local LocalData = require(Client.Libraries.LocalData)
+local UIEffects = require(Client.Utility.UIEffects)
+local CompanionsDatabase = require(Shared.Database.Companions)
+local Icons = require(Shared.Database.Icons)
+local GameEnum = require(Shared.GameEnum)
+local Effects = require(Shared.Utility.Effects)
+local EffectsLib = require(Client.Libraries.Effects)
+local ScreenUtil = require(Shared.Utility.ScreenUtil)
 local Types = require(Shared.Types)
 local Camera = require(Client.Libraries.Camera)
 local Fetcher = require(Client.Libraries.Fetcher)
 local UIGroups = require(Client.Libraries.UIGroups)
 local RandomNameGen = require(Client.Utility.RandomNameGen)
 local ComponentClass = require(Client.Classes.Interface)
+local AnimationLib = require(Client.Libraries.Animation)
 
 local Component = ComponentClass.new("Companions", "Lobby")
 local States = {
     IdSelected = '',
     Model = nil,
     LastSelectedFrame = nil,
+    Threads = {},
 }
 
 local function SplitTitleCaps(str)
@@ -50,7 +53,9 @@ local function ShowAllCompanions()
 
     local Selected = Data[1]
     for _, CompData in Data do
+        
         local Name = RandomNameGen(CompData.Id)
+        local Model = Assets.Characters.Companions:FindFirstChild(CompData.Name) or Assets.Characters.Companions:FindFirstChild('Default')
         local NewObject = Companions.CompanionObject:Clone()
         NewObject.Name = CompData.Id
         NewObject.Id.Text = Name
@@ -60,6 +65,18 @@ local function ShowAllCompanions()
 
         if CompData.Level > Selected.Level then
             Selected = CompData
+        end
+        
+        if Model then
+            local Cloned = Model:Clone()
+            Cloned.PrimaryPart.Anchored = true
+            Cloned:PivotTo(CFrame.new() * CFrame.Angles(0, math.pi, 0))
+            Cloned.Parent = NewObject.Viewport.World;
+
+            local Cam = Instance.new("Camera")
+            Cam.CFrame = CFrame.new(0, -0.25, 175)
+            Cam.FieldOfView = 1
+            Cam.Parent = NewObject.Viewport;
         end
 
         NewObject.Btn.MouseButton1Click:Connect(function()
@@ -86,8 +103,8 @@ function SelectCompanion(Id: string)
     end
 
     if States.LastSelectedFrame then
-        Effects:Tween(States.LastSelectedFrame.UIScale, {.3, 'Sine'}, {Scale = 1})
-        States.LastSelectedFrame.UIStroke.Color = Color3.new()
+        Effects:Tween(States.LastSelectedFrame.UIScale, {.25, 'Sine'}, {Scale = 1})
+        States.LastSelectedFrame.Outer.Color = Color3.new()
         States.LastSelectedFrame.Background.ImageColor3 = Color3.new()
     end
 
@@ -98,31 +115,83 @@ function SelectCompanion(Id: string)
     States.IdSelected = Id
 
     local FrameObject = Frame.List:FindFirstChild(Id)
-    Effects:Tween(FrameObject.UIScale, {.25, 'Back'}, {Scale = 1.15})
-    FrameObject.UIStroke.Color = Color3.new(1, 1, 1)
-    FrameObject.Background.ImageColor3 = Color3.new(1, 1, 1)
+    Effects:Tween(FrameObject.UIScale, {.15, 'Back'}, {Scale = 1.1})
+    FrameObject.Outer.Color = Color3.new(1, 1, 1)
     States.LastSelectedFrame = FrameObject
 
     Camera:TweenTo(Room.Used.CameraCF.CFrame)
+
+    for _, k in States.Threads do
+        task.cancel(k)
+    end
+
+    States.Threads = {}
 
     --
     local Name = CompanionData.Name
     local Model = Assets.Characters.Companions:FindFirstChild(Name)
     local CompanionInformation = CompanionsDatabase:GetCompanionData(Name)
 
+    local StatsTab = Frame.Stats
     local Cloned = Model:Clone()
     Cloned.PrimaryPart.Anchored = true
     Cloned:PivotTo(Room.Used.CharPlace.CFrame)
     Cloned.Parent = workspace.World.Effects
+    States.Model = Cloned
+
+    EffectsLib:Play("CharSwitch", Cloned, nil, true)
+
+    AnimationLib:Play(Cloned, Assets.Animations.Companions.Default.Idle, 0)
 
     --
-    Frame.Stats.Id.Text = RandomNameGen(CompanionData.Id)
-    Frame.Stats.Level.Text = 'Level: '..CompanionData.Level
-    Frame.Stats.Attack.Text = CompanionInformation.Attack.Description
-    Frame.Stats.Passive.Text = CompanionInformation.Passive.Description
+    StatsTab.Id.Text = RandomNameGen(CompanionData.Id)
+    StatsTab.Level.Text = 'Level: '..CompanionData.Level
+    
+    local PrimaryPlate = StatsTab.PrimaryPlate
+    PrimaryPlate.Description.TextSize = ScreenUtil:GetTextSize(16)
 
-    Frame.Stats.Attack.TextSize = ScreenUtil:GetTextSize(16)
-    Frame.Stats.Passive.TextSize = ScreenUtil:GetTextSize(16)
+    if CompanionInformation.PrimaryAttack ~= nil then
+        table.insert(States.Threads, task.delay(0.05, function()
+            PrimaryPlate.Description.Text = CompanionInformation.PrimaryAttack.Description
+            PrimaryPlate.UIScale.Scale = 0.9
+            PrimaryPlate.Outer.Color = Color3.new(1,1,1)
+            Effects:Tween(PrimaryPlate.Outer, { 0.25, 'Sine' }, {Color = Color3.new()})
+            Effects:Tween(PrimaryPlate.UIScale, { 0.25, 'Sine' }, {Scale = 1})
+        end))
+    else
+        PrimaryPlate.Description.Text = "Companion does not posses an active primary skill."
+    end
+
+    local SecondaryPlate = StatsTab.SecondaryPlate
+    SecondaryPlate.Description.TextSize = ScreenUtil:GetTextSize(16)
+
+    if CompanionInformation.SecondaryAttack ~= nil then
+        table.insert(States.Threads, task.delay(0.1, function()
+            SecondaryPlate.Description.Text = CompanionInformation.SecondaryAttack.Description
+            SecondaryPlate.UIScale.Scale = 0.9
+            SecondaryPlate.Outer.Color = Color3.new(1,1,1)
+
+            Effects:Tween(SecondaryPlate.Outer, { 0.25, 'Sine' }, {Color = Color3.new()})
+            Effects:Tween(SecondaryPlate.UIScale, { 0.25, 'Sine' }, {Scale = 1})
+        end))
+    else
+        SecondaryPlate.Description.Text = "Companion does not posses an active secondary skill."
+    end
+
+    local PassivePlate = StatsTab.PassivePlate
+    PassivePlate.Description.TextSize = ScreenUtil:GetTextSize(16)
+
+    if CompanionInformation.Passive ~= nil then
+        PassivePlate.Description.Text = CompanionInformation.Passive.Description
+        PassivePlate.UIScale.Scale = 0.9
+        PassivePlate.Outer.Color = Color3.new(1,1,1)
+
+        Effects:Tween(PassivePlate.Outer, { 0.25, 'Sine' }, {Color = Color3.new()})
+        Effects:Tween(PassivePlate.UIScale, { 0.25, 'Sine' }, {Scale = 1})
+    else
+        PassivePlate.Description.Text = "Companion does not posses a passive skill."
+    end
+
 
     --
     ShowCompanionData(CompanionData)
@@ -130,6 +199,7 @@ end
 
 function ShowCompanionData(CompanionData)
     local Frame = Component:GetFrame()
+    local StatsTab = Frame.Stats
 
     for _, obj in Frame.Stats.List:GetChildren() do
         if not obj:IsA("Frame") then
@@ -139,8 +209,9 @@ function ShowCompanionData(CompanionData)
         obj:Destroy()
     end
 
-    Frame.Stats.Level.Text = `Level: {CompanionData.Level}`
+    StatsTab.Level.Text = `Level: {CompanionData.Level}`
 
+    local Order = {'Attack', 'AttackSpeed', 'AttackRate', 'Defense', 'Speed'}
     local Rarities = CompanionData.Rarities
     for StatName, StatValue in CompanionData.Stats do
         local Rarity = Rarities.Base[StatName]
@@ -152,10 +223,15 @@ function ShowCompanionData(CompanionData)
         local Value = string.format("%.2f", StatValue :: unknown)
         local Object = Assets.Interface.Companions.StatObject:Clone()
         Object.Stat.Text = `{SplitTitleCaps(StatName)}: {Value}`
-        Object.LayoutOrder = Rarity or 25
+        Object.LayoutOrder = table.find(Order, StatName) or 6
+        Object.UIScale.Scale = 0
+
+        task.delay((Object.LayoutOrder - 1) * 0.05, function()
+            Effects:Tween(Object.UIScale, {.2, 'Back'}, {Scale = 1})
+        end)
 
         local TierData = Icons.Rarities[TierName]
-        if TierName then
+        if TierData then
             Object.Stat.UIGradient.Color = TierData.TextColorSequence
             Object.RarityIcon.Image = TierData.Id
             Object.RarityIcon.Visible = true
@@ -199,6 +275,8 @@ end
 
 function Component:Init()
     local MainFrame = Component:GetFrame()
+    self:Set(false)
+
 
     --
     Component:BindToStateChange(function(State: boolean, Raw)

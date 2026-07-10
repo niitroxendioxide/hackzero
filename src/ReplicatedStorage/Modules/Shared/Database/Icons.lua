@@ -67,6 +67,11 @@ return {
 
 			TextColorSequence = Sequence { Key(0, RGB(152, 152, 152)), Key(1, White) }
 		},
+		['Rare'] = {
+			Id = PREFIX .. 126340402420755,
+
+			TextColorSequence = Sequence { Key(0, RGB(135, 179, 231)), Key(1, White) }
+		},
 		['Epic'] = {
 			Id = PREFIX .. 140502637235592,
 

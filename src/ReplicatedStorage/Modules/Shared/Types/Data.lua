@@ -30,7 +30,8 @@ export type CompanionData = {
     MaxLevel: number,
 
     Passive: CompanionPassive?,
-    Attack: CompanionAttack?,
+    PrimaryAttack: CompanionAttack?,
+    SecondaryAttack: CompanionAttack?,
 
     Stats: CompanionStats,
     LevelStats: CompanionStats,

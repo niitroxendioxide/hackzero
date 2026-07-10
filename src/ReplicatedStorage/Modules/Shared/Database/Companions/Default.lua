@@ -6,7 +6,11 @@ return {
         Description = "Does something",
     },
 
-    Attack = {
+    PrimaryAttack = {
+        Description = "Does something",
+    },
+
+    SecondaryAttack = {
         Description = "Does something",
     },
 

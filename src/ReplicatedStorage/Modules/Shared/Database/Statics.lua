@@ -187,10 +187,11 @@ return {
 	Assist_Counter_Invulnerability_Time = 0.75,
 
 	Stat_Tier_Mults = {
-		Common = {0.1, 0.3},
-		Epic = {0.31, 0.55},
-		Legendary = {0.57, 0.82},
-		Mythical = {0.85, 0.99},
+		Common = {0.08, 0.25},
+		Rare = {0.3, 0.5},
+		Epic = {0.5, 0.67},
+		Legendary = {0.67, 0.84},
+		Mythical = {0.9, 0.99},
 	},
 
 	Agent_Tags = {

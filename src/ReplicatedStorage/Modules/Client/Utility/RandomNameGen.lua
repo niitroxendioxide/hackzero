@@ -62,7 +62,7 @@ local SecondNames = {
     "Blob", "Specter", "Wizard", "Raptor", "Penguin", "Lizard", "Crow", "Owl", "Bear", "Panther",
     "Fang", "Claw", "Bolt", "Storm", "Wave", "Fire", "Frost", "Leaf", "Root", "Moon", "Sun", "Star", "Comet", "Stone", "Rock", "Dust", "Echo", "Howler", "Screamer", "Baker", "Miner",
     "Tinker", "Smith", "Rider", "Walker", "Runner", "Seeker", "Keeper", "Watcher", "Maker", "Breaker", "Crusher", "Hopper", "Striker", "Slayer", "Jumper", "Fisher", "Diver", "Glider", "Spinner",
-    "Tea", "Freddy",
+    "Tea", "Freddy", "Niitroxen"
 }
 
 return function(Seed: string)
