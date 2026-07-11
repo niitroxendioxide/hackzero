@@ -4,7 +4,8 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
-local Companions = require(ReplicatedStorage.Modules.Shared.Types.Companions)
+local Companions = require(Shared.Types.Companions)
+local CompanionsDatabase = require(Shared.Database.Companions)
 local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
@@ -580,12 +581,13 @@ end
 
 function Replicator:CreateCompanion(CompanionObject: Companions.CompanionClass)
 	local OwnerId = CompanionObject.__Owner.__Player_Assigned:GetAttribute("ReplicationId")
-
-	local Object = buffer.create(15)
+	local CompanionNameId = CompanionsDatabase:GetIdFor(CompanionObject.__Name)
+	local Object = buffer.create(16)
 	buffer.writeu8(Object, 0, GameEnum.Replication.CreateCompanion)
 	buffer.writeu8(Object, 1, CompanionObject.__Key)
 	buffer.writeu8(Object, 2,  OwnerId:: number)
-	Math:EncodeCFrame(CompanionObject:GetPivot(), Object, 3)
+	buffer.writeu8(Object, 3, CompanionNameId :: number)
+	Math:EncodeCFrame(CompanionObject:GetPivot(), Object, 4)
 
 	Network:FireForAll("ReliableReplication", Object, CompanionObject.__UUID)
 end

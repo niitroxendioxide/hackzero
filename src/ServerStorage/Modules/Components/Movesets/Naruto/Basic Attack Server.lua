@@ -17,14 +17,18 @@ function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: numbe
 		return
 	end
 
+	local Hit_Data = Ability:FromData("Hit")
+	Hit_Data.Damage = Ability:FromData("Damage_Mult", M1_Count, Caster:GetSkillLevel(Ability.__Name))
+
 	Ability:Begin(Caster, {
 		{0, function()
-
+			Caster:SwitchState('Attacking', Ability:FromData("Attack_State_Time"))
 		end},
 
 		{0.2, function()
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -5), vector.create(9, 9, 10), function(Enemy)  
-				Ability:Hit(Caster, Enemy, Ability:FromData("Hit", nil, Caster:GetSkillLevel(Ability.__Name)))
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -5), vector.create(9, 9, 10), function(Enemy)
+				print(Hit_Data)  
+				Ability:Hit(Caster, Enemy, Hit_Data)
 			end)
 		end}
 	})

@@ -628,6 +628,7 @@ export type PartyClass = {
 	__Ready: {PartyPlayer},
 	__Player_Count: number,
 	__Teams: {},
+	__Companions: {},
 	__Data: {
 		EnemyBuffs: {
 			{string | number}
@@ -660,6 +661,10 @@ export type PartyClass = {
 
 	GetPlayerTeam: (self: PartyClass, Player: PartyPlayer) -> (PartyPlayerTeam),
 	SetPlayerTeam: (self: PartyClass, Player: PartyPlayer, Team: PartyPlayerTeam?) -> (),
+
+	GetPlayerCompanion: (self: PartyClass, Player: PartyPlayer) -> (string),
+	SetPlayerCompanion: (self: PartyClass, Player: PartyPlayer, CompanionId: string) -> (),
+	
 	GetSimplifiedTeam: (self: PartyClass, Player: PartyPlayer) -> (),
 	GetPlayerCompressedTeam: (self: PartyClass, Player: PartyPlayer) -> (),
 

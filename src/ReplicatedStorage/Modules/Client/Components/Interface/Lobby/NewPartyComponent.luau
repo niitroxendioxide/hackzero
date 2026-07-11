@@ -797,6 +797,9 @@ function SelectCompanion(Id: string)
         Cam.Parent = CompanionPlate.Companion.Viewport;
         CompanionPlate.Companion.Viewport.CurrentCamera = Cam;
     end
+
+    --
+    Network:Fire("Party", GameEnum.PartyManaging.SelectCompanion, States.Companion)
 end
 
 function LoadCompanionList(State: boolean)

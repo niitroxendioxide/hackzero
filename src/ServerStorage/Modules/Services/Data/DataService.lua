@@ -782,7 +782,7 @@ function Service:SaveCompanion(Player: Player, Object: CompTypes.PlayerCompanion
     Data.Companions[Object.__Id] = Object:ToData()
 end
 
-function Service:GetCompanions(Player: Player, Filter: ((Companion: CompTypes.PlayerCompanionDataClass) -> (boolean))?)
+function Service:GetCompanions(Player: Player, Filter: ((Companion: CompTypes.PlayerCompanionDataClass) -> (boolean))?, First: boolean?)
     local CompanionList = Service.__Companions[Player]
 
     if not Filter then
@@ -794,6 +794,10 @@ function Service:GetCompanions(Player: Player, Filter: ((Companion: CompTypes.Pl
     local List = {}
     for _, Companion in CompanionList do
         if Filter(Companion) then
+            if First then
+                return Companion
+            end
+
             table.insert(List, Companion)
         end
     end

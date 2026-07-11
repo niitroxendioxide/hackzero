@@ -44,6 +44,7 @@ function ClientCompanionClass.new(Name: string, At: CFrame, UUID: string): Types
     self.__Moving = false
     self.__Owner_Id = -1
     self.__UUID = UUID
+    self.__Thread = nil;
 
     return self
 end
@@ -81,6 +82,10 @@ end
 
 function ClientCompanionClass.Move(self: Types.ClientCompanionClass, At: CFrame): ()
     local CorrectedCFrame = At
+
+    if self.__Thread then
+        task.cancel(self.__Thread)
+    end
 
     local Cast = workspace:Raycast(At.Position, At.UpVector * -10, World:GetMapParams())
     if Cast then

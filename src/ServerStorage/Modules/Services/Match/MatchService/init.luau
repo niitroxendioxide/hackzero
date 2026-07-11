@@ -264,11 +264,17 @@ function Service:Begin(Stage: string, Act: string)
     MissionClass:Begin()
 
     --
-    local RandomPlayer = AllPlayers[math.random(1, #AllPlayers)]
-    local Companions = DataService:GetCompanions(RandomPlayer)
-    local FirstAgent = AgentService:GetCurrentCharacter(RandomPlayer)
+    for _, Player in AllPlayers do
+        local FirstAgent = AgentService:GetCurrentCharacter(Player)
+        local CompanionId = TeleportService:GetPlayerCompanionFromData(Player)
+        local CompData = DataService:GetCompanions(Player, function(Companion): boolean 
+            return Companion.__Id == CompanionId  
+        end, true)
 
-    CompanionService:CreateCompanion(Companions[1], FirstAgent)
+        if CompData ~= nil then
+            CompanionService:CreateCompanion(CompData, FirstAgent)
+        end
+    end
 
     --
     DestructibleService.StructureSetValuesEvent:Connect(function(Values: {[string]: any})

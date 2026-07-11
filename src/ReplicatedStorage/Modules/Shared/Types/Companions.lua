@@ -149,6 +149,7 @@ export type CompanionMovementClass = {
 }
 
 export type PlayerCompanionDataClass = {
+    __Name: string,
     __Id: string,
     __Level: number,
     __Base_Stats: {},

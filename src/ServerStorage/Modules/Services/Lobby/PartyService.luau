@@ -218,6 +218,10 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
 
             Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.ChangeTeam, {Player.UserId, Team})
         end
+    elseif Type == GameEnum.PartyManaging.SelectCompanion then
+        local Data = {...}
+
+        Service:SelectCompanion(Player, Data[1])
     elseif Type == GameEnum.FetchRequests.Parties then
         Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Parties, Service:FetchParties())
     elseif Type == GameEnum.PartyManaging.Invite then
@@ -455,8 +459,25 @@ function Service:ChangeTeam(Player: Player, Names: {string}): ()
 
     if not Party then return; end
 
-    print("hi :3")
     Party:SetPlayerTeam(PlayerClass, Agents)
+end
+
+function Service:SelectCompanion(Player: Player, CompanionId: string): ()
+    local PlayerClass = Service:GetClass(Player)
+    local Party = Service:GetParty(Service:GetCode(Player))
+    if not PlayerClass or not Party then
+        return
+    end
+
+    local CompanionData = DataService:GetCompanions(Player, function(CompanionObjData): boolean  
+        return CompanionObjData.__Id == CompanionId
+    end, true)
+
+    if CompanionData == nil then
+        return;
+    end
+
+    Party:SetPlayerCompanion(PlayerClass, CompanionId)
 end
 
 return Service

@@ -26,6 +26,7 @@ function Party.new(Code: number, Owner: Types.PartyPlayer, MissionData: {}?): Ty
     self.__Ready = {}
     self.__State_Name = "Idle"
     self.__Teams = {}
+    self.__Companions = {}
     self.__Data = MissionData or {}
 
     return self
@@ -165,6 +166,14 @@ end
 
 function Party.SetPlayerTeam(self: Types.PartyClass, Player: Types.PartyPlayer, Team: Types.PartyPlayerTeam): ()
     self.__Teams[Player:GetId()] = Team;
+end
+
+function Party.GetPlayerCompanion(self: Types.PartyClass, Player: Types.PartyPlayer)
+    return self.__Companions[Player:GetId()]
+end
+
+function Party.SetPlayerCompanion(self: Types.PartyClass, Player: Types.PartyPlayer, CompanionId: string)
+    self.__Companions[Player:GetId()] = CompanionId
 end
 
 function Party.GetSimplifiedTeam(self: Types.PartyClass, Player: Types.PartyPlayer): (string)

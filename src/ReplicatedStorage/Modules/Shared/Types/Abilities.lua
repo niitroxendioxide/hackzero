@@ -24,7 +24,9 @@ export type Sequence = {
 export type HitboxAttackData = {Size: Vector3, Offset: Vector3, Hit_Function: (Target: any) -> ()}
 
 
-export type Caster = (Agents.ServerAgentClass | Agents.AgentClass | Agents.Enemy | Agents.ClientEnemy)
+export type Caster = (Agents.ServerAgentClass | Agents.AgentClass | Agents.Enemy | Agents.ClientEnemy) & {
+	SwitchState: (self: Caster, State: Default.State, Time: number, Unaffected: boolean?) -> (),
+}
 export type Target = Caster
 export type TargetFinderFunction = (Caster: Agents.AgentClass) -> (number, Agents.ClientEnemy)
 

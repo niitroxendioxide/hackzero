@@ -57,8 +57,68 @@ return {
 			},
 		},]]
 		['Basic Attack'] = {
-			
-		}
+			Base = {
+				Cooldown = 0.05,
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.2,
+
+				Hit = {
+					HitType = 'Blunt',
+					Stun = 0.3,
+					Daze = 85,
+					Affliction_Buildup = 15,
+					Affliction = 'Physical',
+					Knockback = {
+						vector.create(0, 0, 1),
+						12,
+						0.1,
+					},
+				},
+
+				Damage_Mult = {
+					[1] = 25,
+					[2] = 95,
+					[3] = 125,
+					[4] = 75,
+					[5] = 120,
+				},
+			},
+
+			Upgrade = {
+				Damage_Mult = {
+					[1] = 2,
+					[2] = 3,
+					[3] = 4,
+					[4] = 2,
+					[5] = 1,
+				},
+			},
+		},
+
+		['Special'] = {
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 1,
+
+				Required_Energy = 45,
+			},
+			Upgrade = {
+
+			},
+		},
+
+		['EX Special'] = {
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 1,
+			},
+			Upgrade = {
+
+			},
+		},
 	},
 
 	Ascension_Data = {

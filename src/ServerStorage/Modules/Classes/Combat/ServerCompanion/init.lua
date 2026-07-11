@@ -123,6 +123,9 @@ end
 function CompanionClass.Attack(self: Types.CompanionClass)
     local _, Target = Enemies:GetNearestEnemy(self:GetPivot().Position, 70)
     local Attack = CompanionAttacks:GetAttack(self.__Name)
+    if not Attack then
+        return
+    end
 
     Attack:Run(self, Target)
 end

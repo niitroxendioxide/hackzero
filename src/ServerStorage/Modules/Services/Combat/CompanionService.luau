@@ -25,7 +25,7 @@ function Service:CreateCompanion(CompanionDataClass: Companions.PlayerCompanionD
     end
 
     local UUID = CompanionDataClass.__Id
-    local New = ServerCompanion.new("Default", CompanionDataClass:GetStats(), UUID, CompanionDataClass.__Level)
+    local New = ServerCompanion.new(CompanionDataClass.__Name, CompanionDataClass:GetStats(), UUID, CompanionDataClass.__Level)
     local AgentList = Agents:GetActiveAgents()
 
     local OwnerAgent = AgentList[1]

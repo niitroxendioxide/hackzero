@@ -232,6 +232,7 @@ return {
 		CancelReady = 15,
 		Queue = 16,
 		RemoveReady = 17,
+		SelectCompanion = 18,
 	},
 
 	FetchRequests = {

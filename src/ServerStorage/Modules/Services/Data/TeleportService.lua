@@ -198,6 +198,7 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
 
         TeleportData.Players[Player:GetId()] = {
             Team = Team,
+            Companion = Party:GetPlayerCompanion(Player),
         }
     end
 
@@ -272,6 +273,25 @@ function Service:RepeatStage(): (boolean, string?)
     return true
 end
 
+function Service:GetPlayerCompanionFromData(Player: Player): string
+    local JoinData = Player:GetJoinData()
+
+    if not JoinData.TeleportData then
+        if not RunService:IsStudio() then
+            return
+        end
+
+        local NewId = settings.TEST_COMPANION;
+        print(NewId)
+
+        return NewId
+    end
+
+    local PlayersTeleportData = JoinData.TeleportData.Players
+    local PlayerData = PlayersTeleportData[tostring(Player.UserId)]
+
+    return PlayerData.Companion;
+end
 
 function Service:GetPlayerTeamFromData(Player: Player): {{Name: string, Level: number, IsBorrowed: boolean?}}
     local JoinData = Player:GetJoinData()

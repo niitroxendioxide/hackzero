@@ -5,8 +5,9 @@ local Players = game:GetService("Players")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local Companion = require(ReplicatedStorage.Modules.Client.Classes.Companion)
-local Companions = require(ReplicatedStorage.Modules.Client.Libraries.Companions)
+local Companion = require(Client.Classes.Companion)
+local Companions = require(Client.Libraries.Companions)
+local CompanionsDatabase = require(Shared.Database.Companions)
 local Math = require(Shared.Utility.Math)
 local CharacterLibrary = require(Client.Libraries.Characters)
 local AgentClass = require(Client.Classes.Agent)
@@ -221,9 +222,13 @@ end
 function Controller:CreateCompanion(Buffer: buffer, UUID: string)
 	local Id = buffer.readu8(Buffer, 1)
 	local OwnerId = buffer.readu8(Buffer, 2)
-	local At = Math:DecodeCFrame(Buffer, 3)
+	local CompanionNameId = buffer.readu8(Buffer, 3)
+	local At = Math:DecodeCFrame(Buffer, 4)
 
-	local CompanionClass = Companion.new("Default", At, UUID)
+	print(CompanionNameId)
+	local CompanionName = CompanionsDatabase:GetFromId(CompanionNameId)
+
+	local CompanionClass = Companion.new(CompanionName, At, UUID)
 	CompanionClass:Init(Id, OwnerId)
 	Companions:Add(CompanionClass, Id)
 end
