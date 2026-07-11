@@ -8,9 +8,11 @@ local Shared = ReplicatedStorage.Modules.Shared
 local AgentModels = ReplicatedStorage.Assets.Characters.Agents
 local Assets = ReplicatedStorage.Assets.Interface
 
+local LocalData = require(ReplicatedStorage.Modules.Client.Libraries.LocalData)
 local UIGroups = require(ReplicatedStorage.Modules.Client.Libraries.UIGroups)
 local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
 local Navigation = require(ReplicatedStorage.Modules.Client.States.Navigation)
+local RandomNameGen = require(ReplicatedStorage.Modules.Client.Utility.RandomNameGen)
 local Network = require(Shared.Network)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
@@ -66,6 +68,8 @@ local States = {
     Queueing = Component:GetScope():Value(false),
 
     TotalReady = Component:GetScope():Value(0),
+
+    Companion = nil,
 
     Stage = Component:GetScope():Value(''),
     CurrentPartyOwner = Component:GetScope():Value(0),
@@ -202,16 +206,17 @@ local function HandleInvite()
 end
 
 --- Helpers
-function AnimatePlateHover(Frame: Frame)
+function AnimatePlateHover(Frame: Frame, Button: TextButton)
 
     local OSThick = Frame.OuterStroke.Thickness
+    local Pressed = Button or Frame.Button
 
-    Frame.Button.MouseEnter:Connect(function()
+    Pressed.MouseEnter:Connect(function()
         Effects:Tween(Frame.UIScale, {.2, 'Quad'}, {Scale = 1.05})
         Effects:Tween(Frame.OuterStroke, {.2, 'Quad'}, {Color = Color3.new(1, 1, 1), Thickness = OSThick * 0.74})
     end)
 
-    Frame.Button.MouseLeave:Connect(function()
+    Pressed.MouseLeave:Connect(function()
         Effects:Tween(Frame.UIScale, {.2, 'Quad'}, {Scale = 1})
         Effects:Tween(Frame.OuterStroke, {.2, 'Quad'}, {Color = Color3.new(), Thickness = OSThick})
     end)
@@ -759,6 +764,85 @@ function HandleMissionSelect()
     end)
 end
 
+function SelectCompanion(Id: string)
+    local Dock = GetDock("Mission")
+    local CompanionPlate = Dock.CompanionPlate;
+
+    if string.len(Id) <= 1 then
+        CompanionPlate.Companion.Viewport.World:ClearAllChildren();
+        CompanionPlate.Companion.Plus.Visible = true
+
+        return;
+    end
+
+    local CompanionsFolder = ReplicatedStorage.Assets.Characters.Companions
+    local Data = LocalData:GetCompanion(Id);
+    local Model = CompanionsFolder:FindFirstChild(Data.Name) 
+        or Assets.Characters.Companions:FindFirstChild('Default')
+    SetDockState('Companions', false)
+
+    CompanionPlate.CompanionName.Text = RandomNameGen(Data.Id);
+    States.Companion = Id;
+    CompanionPlate.Companion.Plus.Visible = false
+
+    if Model then
+        local Cloned = Model:Clone()
+        Cloned.PrimaryPart.Anchored = true
+        Cloned:PivotTo(CFrame.new() * CFrame.Angles(0, math.pi, 0))
+        Cloned.Parent = CompanionPlate.Companion.Viewport.World;
+
+        local Cam = Instance.new("Camera")
+        Cam.CFrame = CFrame.new(0, -0.25, 175)
+        Cam.FieldOfView = 1
+        Cam.Parent = CompanionPlate.Companion.Viewport;
+        CompanionPlate.Companion.Viewport.CurrentCamera = Cam;
+    end
+end
+
+function LoadCompanionList(State: boolean)
+    if LocalData:GetAllCompanions() == nil then
+        Fetcher:FetchCompanions()
+    end
+
+    local Dock = GetDock("Companions")
+    local CompanionsFolder = ReplicatedStorage.Assets.Characters.Companions
+
+    for _, Object in Dock.List:GetChildren() do
+        if Object:IsA('Frame') then
+            Object:Destroy();
+        end
+    end
+
+    if State then
+        return;
+    end
+
+    for _, Companion in LocalData:GetAllCompanions() do
+        local Model = CompanionsFolder:FindFirstChild(Companion.Name) or Assets.Characters.Companions:FindFirstChild('Default')
+        local CompanionObject = Assets.Companions.CompSelect:Clone();
+        CompanionObject.Level.Text = 'Level: ' .. Companion.Level;
+        CompanionObject.Id.Text = RandomNameGen(Companion.Id);
+        CompanionObject.Parent = Dock.List;
+        CompanionObject.LayoutOrder = -Companion.Level;
+
+        if Model then
+            local Cloned = Model:Clone()
+            Cloned.PrimaryPart.Anchored = true
+            Cloned:PivotTo(CFrame.new() * CFrame.Angles(0, math.pi, 0))
+            Cloned.Parent = CompanionObject.Viewport.World;
+
+            local Cam = Instance.new("Camera")
+            Cam.CFrame = CFrame.new(0, -0.25, 175)
+            Cam.FieldOfView = 1
+            Cam.Parent = CompanionObject.Viewport;
+        end
+
+        CompanionObject.Btn.MouseButton1Click:Connect(function()
+            SelectCompanion(Companion.Id)
+        end)
+    end
+end
+
 --- Publics
 function Component:Link()
     local PlayerGui = Player.PlayerGui
@@ -805,6 +889,7 @@ function Component:Init()
     end)
 
     MissionDock.CompanionPlate.Button.MouseButton1Click:Connect(function()
+        LoadCompanionList(States.Companions)
         SetDockState('Companions', not States.Companions)
     end)
 
@@ -821,7 +906,7 @@ function Component:Init()
 
     AnimatePlateHover(MissionDock.MapPlate)
     AnimatePlateHover(MissionDock.TeamPlate)
-    AnimatePlateHover(MissionDock.CompanionPlate)
+    AnimatePlateHover(MissionDock.CompanionPlate.Companion, MissionDock.CompanionPlate.Button)
 
     --
     MissionDock.Play.Button.MouseButton1Click:Connect(HandlePlayButton)
