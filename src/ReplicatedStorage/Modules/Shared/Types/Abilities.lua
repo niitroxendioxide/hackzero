@@ -237,6 +237,15 @@ export type ServerAbilityClass = {
 	}?),
 
 	--[[
+		Knock back Character-specific target types, does not affect structures or Agents
+
+		@param Caster The one dealing the knockback
+		@param Enemy The one receiving knockback
+		@param Hit Data conforming the knockback, [1]: Vector(X, Y, Z) relative to Target, [2]: Strength, [3]: Time
+	]]
+	KnockBack: (self: ServerAbilityClass, Agent: Caster, Enemy: Agents.Enemy, KnockbackData: {[number]: vector | number}) -> (),
+
+	--[[
 		Useful for projectile-like moves, creates a hitbox that moves on its own, for a set amount of time, and at a specific speed.
 
 		@param Caster Exclusively Agents can create hitboxes as of now, as non-agent hitboxes will hit enemies

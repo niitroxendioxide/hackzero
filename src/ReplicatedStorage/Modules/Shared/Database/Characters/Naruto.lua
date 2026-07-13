@@ -67,10 +67,17 @@ return {
 				Attack_Data = {
 					-- The "?" symbol means it can be there or not.
 					-- Movement Moment, Hit time, Endlag, Movement Time?, Movement Strength?, Movement Linear?
-					[1]   = {0.33, .43, .61},
-					[2]   = {.05, .35, .6},
+					[1]   = {0.35, .43, .61, 0.25, 1.35},
+					[2]   = {.12, .35, .6, 0.27, 1.1},
 					[3]   = {0,.45, .9},
 					[4]   = {0.03, .9, 1.45}
+				},
+
+				StunTimes = {
+					[1] = 0.65,
+					[2] = 1.35,
+					[3] = 1.65,
+					[4] = 1.7,
 				},
 
 				Hit = {
@@ -82,7 +89,7 @@ return {
 					Knockback = {
 						vector.create(0, 0, 1),
 						12,
-						0.1,
+						0.2,
 					},
 				},
 

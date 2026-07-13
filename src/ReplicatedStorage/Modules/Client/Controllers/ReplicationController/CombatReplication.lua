@@ -250,11 +250,10 @@ function Controller:KillAgent(Buffer: buffer)
 	end
 end
 
-function Controller:Knockback(Buffer: buffer)
+function Controller:Knockback(Buffer: buffer, Direction: Vector3)
 	local EnemyId = buffer.readu8(Buffer, 1)
-	local Direction = GameEnum.KeyLookup(GameEnum.Knockback_Directions, buffer.readu8(Buffer, 2))
-	local Strength = buffer.readu8(Buffer, 3)
-	local Time = buffer.readu8(Buffer, 4) / 10
+	local Strength = buffer.readu8(Buffer, 2)
+	local Time = buffer.readu8(Buffer, 3) / 10
 
 	local EnemyObject = Enemies:GetEnemy(EnemyId)
 

@@ -9,7 +9,9 @@ local DIFFERENT_ATTACKER = 1
 
 --
 local Hits = {}
-local Targets = {}
+local Targets = {
+    __Current_Difficulty = 'EASY',
+}
 
 function Targets:SetDifficulty(Difficulty: string)
     local DifficultyVariables = Statics.Difficulty_Targetting_Priorities[Difficulty]
@@ -17,6 +19,7 @@ function Targets:SetDifficulty(Difficulty: string)
         return
     end
 
+    Targets.__Current_Difficulty = Difficulty
     SAME_ATTACKER = DifficultyVariables.SAME_ATTACKER
     DIFFERENT_ATTACKER = DifficultyVariables.DIFFERENT_ATTACKER
 end
@@ -34,6 +37,10 @@ function Targets:RefreshLastAttackedTime(Target: any, Attacker: any)
 end
 
 function Targets:CanAttackTarget(Target: any, Attacker: any)
+    if (string.lower(Targets.__Current_Difficulty) == 'passive') then
+        return false
+    end
+
     if not Hits[Target] then
         return true
     end

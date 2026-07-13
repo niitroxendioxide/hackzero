@@ -164,7 +164,7 @@ return {
 					Stun = 0.3,
 				},
 			},
-			Upgrade = {
+			Upgrades = {
 				Burst = {
 					Damage = 3.25,
 					Daze = 1,
@@ -201,7 +201,7 @@ return {
 					}
 				},
 			},
-			Upgrade = {
+			Upgrades = {
 				Hit = {
 					Damage = 1,
 					Daze = 0.5,
@@ -216,6 +216,7 @@ return {
 				Speed = 1,
 				Animation_Speed = 1,
 				Hit_Frequency = 0.03,
+				ExplosionRadius = 19,
 
 				Hit = {
 					Damage = 75,
@@ -230,8 +231,34 @@ return {
 						.1
 					}
 				},
+
+				Explosion = {
+					Damage = 495,
+					Affliction = "Fire",
+					HitType = "Slash",
+					Daze = 75,
+					Affliction_Buildup = 111,
+					Stun = 0.6,
+					Knockback = {
+						vector.create(0, 0, -1),
+						12,
+						.2
+					}
+				},
 			},
-			Upgrade = {},
+			Upgrades = {
+				Hit = {
+					Damage = 4,
+					Daze = 1,
+					Affliction_Buildup = 1,
+				},
+
+				Explosion = {
+					Damage = 8,
+					Daze = 2,
+					Affliction_Buildup = 2,
+				}
+			},
 		}
 	},
 

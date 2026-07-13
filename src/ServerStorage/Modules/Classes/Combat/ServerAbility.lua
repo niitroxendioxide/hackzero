@@ -291,9 +291,10 @@ function ServerAbilityClass:CreateMovingHitbox(
 			return;
 		end
 
-		local Difference = Delta * ClassObject.Speed * WorldSpeed
+		local Depth = ClassObject.Size.Z or 1
+		local Difference = (Delta * ClassObject.Speed * WorldSpeed)
 
-		local Res = self:CreateHitbox(ClassObject.CFrame, vector.zero, vector.create(ClassObject.Size.X, ClassObject.Size.Y, Difference), Hit_Function, nil, nil, Caster)
+		local Res = self:CreateHitbox(ClassObject.CFrame, vector.zero, vector.create(ClassObject.Size.X, ClassObject.Size.Y, Difference * Depth), Hit_Function, nil, nil, Caster)
 		if ClassObject.DebugVariable then
 			Res.Debug(Delta * 2)
 		end
@@ -326,8 +327,20 @@ function ServerAbilityClass:CreateMovingHitbox(
 	return ClassObject :: Types.MovingHitboxObject
 end
 
-
 -- Hit functions
+local function KnockEnemy(_: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, KnockbackData: {})
+	if tostring(Enemy) ~= 'EnemyClass' or not Enemy.Knockback then
+		return;
+	end
+
+	local Direction = KnockbackData[1]
+	local Power = KnockbackData[2]
+	local Time = KnockbackData[3]
+
+	Enemy:Knockback(Direction, Power, Time)
+	Replicator:Knockback(Enemy, Direction, Power, Time)
+end
+
 local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Data: Types.HitEnemyData)
 	local AgentPivot = Agent:GetPivot()
 	-- local EnemyPivot = Enemy:GetPivot()
@@ -384,12 +397,7 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 	end
 
 	if Data.Knockback then
-		local Direction = Data.Knockback[1]
-		local Power = Data.Knockback[2]
-		local Time = Data.Knockback[3]
-
-		Enemy:Knockback(Direction, Power, Time)
-		Replicator:Knockback(Enemy, Direction, Power, Time)
+		KnockEnemy(Agent, Enemy, Data.Knockback)
 	end
 
 	if Is_Dazed then
@@ -456,6 +464,10 @@ function ServerAbilityClass.Effect(self: Types.ServerAbilityClass, Name: string,
 	end
 
 	Replicator:Effect(Name, Params, Targets)
+end
+
+function ServerAbilityClass:KnockBack(Agent: Types.Caster, Enemy: Types.Target, Data: {})
+	return KnockEnemy(Agent, Enemy, Data)
 end
 
 function ServerAbilityClass:Hit(Agent: any, Enemy: any, Data: Types.HitEnemyData)
@@ -544,7 +556,7 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 	end
 
 	local Base = self.__Ability_Data.Base
-	local Upgrade = self.__Ability_Data.Upgrades or {}
+	local Upgrade = self.__Ability_Data.Upgrades or self.__Ability_Data.Upgrade or {}
 
 	local Level = math.max((GivenLevel or 1) - 1, 0)
 	local Value = Base[Key] or 0
@@ -560,10 +572,14 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 		end
 	elseif typeof(Value) == 'table' and Sub_Key == nil and Upgraded_Value ~= nil then
 		-- support for new architecture;
-		local clonedTable = table.clone(Value);
+		local clonedTable = {};
 		
-		for key, val in Upgraded_Value do
-			clonedTable[key] += (val * Level)
+		for key, val in Value do
+			clonedTable[key] = val;
+
+			if Upgraded_Value[key] then
+				clonedTable[key] += (Upgraded_Value[key] * Level)
+			end
 		end
 		
 		return clonedTable;

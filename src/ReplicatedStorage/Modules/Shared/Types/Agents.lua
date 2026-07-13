@@ -358,7 +358,7 @@ export type ServerAgentClass = {
 	GetStat: (self: ServerAgentClass, Stat: Stat) -> number,
 	GetState: (self: ServerAgentClass) -> (),
 	GetMultBonus: (self: ServerAgentClass, Type: Element | AgentMovesetAbility) -> (number),
-	GetSkillLevel: (self: ServerAgentClass, Name: AgentMovesetAbility) -> (),
+	GetSkillLevel: (self: ServerAgentClass, Name: AgentMovesetAbility) -> (number),
 
 	--[[
 		Change the state of the agent to the specified one, this limits/allows specific methods

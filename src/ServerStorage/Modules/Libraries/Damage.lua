@@ -99,7 +99,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 
 	local AfflictionTriggered = false;
 
-	if Enemy:GetAffliction(Data.Affliction) >= 100 then
+	if (Enemy:GetAffliction(Data.Affliction) or 0) >= 100 then
 		AgentGear:RunHook(GameEnum.GearHookType.OnAfflictionBurst, {Caster = Agent, Target = Enemy, HitData = Data})
 		-- TODO: Fix the res mult to change based on enemy stuff idk
 		AfflictionTriggered = true;

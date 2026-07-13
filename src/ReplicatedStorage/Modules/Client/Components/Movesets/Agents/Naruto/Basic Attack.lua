@@ -6,7 +6,7 @@ local Client = ReplicatedStorage.Modules.Client
 
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local GameEnum = require(Shared.GameEnum) 
-local Types = require(Shared.Types)
+local Types = require(Shared.Types.Agents)
 local AbilityClass = require(Client.Classes.Ability)
 
 --
@@ -16,7 +16,7 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 4})
 end)
 
-function Ability:Play(Caster: Types.GenericClass)
+function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 	local M1_Count = Ability:Get(Caster, 'Count')
 
 	if Ability:Get(Caster, 'M1_Track') then
@@ -37,18 +37,22 @@ function Ability:Play(Caster: Types.GenericClass)
 			Ability:Save(Caster, 'M1_Track', Track)
 		end},
 
+		{0, .1, function()
+			Caster:LookAtTarget(Context.Target)
+		end},
+
 		{0.1, function()
 			if M1_Count >= 3 then
 				local Object = Animation:GetAnim('Characters.Naruto.Abilities.M1.Clone_'..M1_Count-2)
 				local AnimSpeed = Ability:FromData("Speed") * Ability:FromData("Animation_Speed")
 
 				local Extra = M1_Count == 4 and 0.3 or 0
-				Ability:Effect('Naruto_Clone', Caster, .75 + Extra, CFrame.new(0, 0, -7), {Object = Object, Speed = AnimSpeed, CFrameTween = {0.35, 'Quad'}, OriginOffset = CFrame.new(0, 6, 0)})
+				Ability:Effect('Naruto_Clone', Caster, .75 + Extra, CFrame.new(-1, 0, -5.5), {Object = Object, Speed = AnimSpeed, CFrameTween = {0.35, 'Quad'}, OriginOffset = CFrame.new(-1, -1, 3)})
 			end
 		end}
 	}, true)
 
-	local Offset = M1_Count >= 3 and Vector3.new(0, 0, -8) or Vector3.new(0, 0, -2.5)
+	local Offset = M1_Count >= 3 and Vector3.new(0, 0, -8) or Vector3.new(0, 0, -5)
 	local Size = M1_Count >= 3 and Vector3.new(8, 8, 14) or Vector3.new(8, 8, 8)
 
 	local TrackToBeUsed = if M1_Count == 1 then nil else  'Characters.Naruto.Abilities.M1.Victim_'..(M1_Count - 1)
@@ -61,6 +65,10 @@ function Ability:Play(Caster: Types.GenericClass)
 			Ability:Hit(Caster, Target, {Track = TrackToBeUsed, EffectData = {
 				Offset = M1_Count >= 2 and CFrame.new(0, 2.784, 3.064) or CFrame.new()
 			}})
+
+			if M1_Count == 4 then
+				Ability:Effect("GroundRocksTrail", Target, 0.5, true)
+			end
 
 			--Target:Hit()
 			--Ability:Effect('Hit', Target)

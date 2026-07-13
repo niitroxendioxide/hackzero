@@ -67,12 +67,24 @@ local function ShootDragon(BaseCFrame)
         Effects:Tween(FireballVFX.PrimaryPart, { 0.1, 'Quad' }, {Transparency = 1})
     end
 
-    local Object; Object = Effects:MoveProjectile(FireballVFX, vector.create(12, 12), 75, 3, function(Target): boolean
-        Object:SetSpeed(20);
-        Target:Hit()
+    local Hits = {}
+    local Lifetime = 1.5
+    local Object; Object = Effects:MoveProjectile(FireballVFX, vector.create(12, 12, 4), 75, Lifetime, function(Target): boolean
+        Object:SetSpeed(12);
+        
+        if Hits[Target] then
+            return
+        end
+
+        Hits[Target] = true
+        Target:Hit({});
+
+        task.delay(0.12, function()
+            Hits[Target] = false
+        end)
     end)
 
-    task.delay(3, CleanUp)
+    task.delay(Lifetime, CleanUp)
     task.spawn(function()
         local Last = os.clock()
         while not Cleaned do

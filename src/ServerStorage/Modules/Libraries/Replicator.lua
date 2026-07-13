@@ -443,14 +443,13 @@ end
 
 function Replicator:Knockback(Enemy: Types.ServerEnemyClass, Direction: Vector3, Power: number, Time: number)
 
-	local Object = buffer.create(5)
+	local Object = buffer.create(4)
 	buffer.writeu8(Object, 0, GameEnum.Replication.Knockback)
 	buffer.writeu8(Object, 1, Enemy.__EnemyId)
-	buffer.writeu8(Object, 2, GameEnum.Knockback_Directions[Direction])
-	buffer.writeu8(Object, 3, Power)
-	buffer.writeu8(Object, 4, math.floor(Time * 10))
+	buffer.writeu8(Object, 2, Power)
+	buffer.writeu8(Object, 3, math.floor(Time * 10))
 
-	Network:FireForAll('Replicate', Object)
+	Network:FireForAll('Replicate', Object, Direction)
 end
 
 function Replicator:DamageAgent(Agent: AgentTypes.ServerAgentClass, Damage: number)
