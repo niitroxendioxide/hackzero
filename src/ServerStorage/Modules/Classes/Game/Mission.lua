@@ -60,7 +60,7 @@ MissionClass.new = function(Type: string, Stage: string, Extra: string | {}): Ty
     self.__Current_State = {};
     self.__Hooks = StageHandlers:Get(Stage, Extra) or Mock
 
-    if Type == 'ChaosControl' or Type == 'Mission' then
+    if (Type == 'ChaosControl' or Type == 'Mission') then
         self.__Is_Custom_Data = true
         self.__Custom_Data = Extra
     end

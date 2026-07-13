@@ -23,8 +23,8 @@ return function(Enemy: Types.EnemyClass)
 	local Billboard = Indicator.Billboard
 	local Gui = Billboard.BillboardGui
 
-	Billboard.Parent = Enemy:GetHitbox()
-	Billboard.Position = Vector3.xAxis * 5
+	Billboard.Parent = Enemy:GetModel().Head
+	Billboard.Position = Vector3.yAxis * 2.5
 
 	--
 	local Affliction_Spring = Scope:Spring(Enemy.__Affliction, 25, 0.65)
@@ -61,7 +61,7 @@ return function(Enemy: Types.EnemyClass)
 
 		local IsDazed = Enemy.__Status:IsKnocked()
 
-		Billboard.Position = Vector3.xAxis * (5 + Height)
+		--Billboard.Position = Vector3.xAxis * 0 --(5 + Height)
 		Gui.Meters.Health.Main.UIGradient.Offset = Vector2.new(-0.81 + HealthValue, 0)
 		Effects:Tween(Gui.Meters.Stun.Main.UIGradient, {.3, 'Quad'}, {Offset = Vector2.new(-0.81 + DazeValue, 0)})
 

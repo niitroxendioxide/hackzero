@@ -55,6 +55,7 @@ export type AppearanceController = {
 	GetAddedHeight: (self: AppearanceController) -> (number),
 
 	GetModel: (self: AppearanceController) -> (Model),
+	CloneModel: (self: AppearanceController) -> (Model),
 
 	BindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),
 	UnbindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),

@@ -57,12 +57,13 @@ function AnimatorClass:Play(Track: string, Data: Types.AnimationDataOptions)
 	return AnimTrack
 end
 
-function AnimatorClass:Hit()
+function AnimatorClass:Hit(Data: {})
 	if self.__Tracks['Hit'] then
 		self.__Tracks['Hit']:Stop(.15)
 	end
 
-	local TrackObject = AnimLibrary:GetAnim('Enemies.Hit.'..math.random(1, 8))
+	local GivenTrack = Data.Track or 'Enemies.Hit.'..math.random(1, 8)
+	local TrackObject = AnimLibrary:GetAnim(GivenTrack)
 	local AnimTrack = AnimLibrary:Play(self.__Character:GetModel(), TrackObject, .05, 1, 1)
 
 	self.__Tracks['Hit'] = AnimTrack

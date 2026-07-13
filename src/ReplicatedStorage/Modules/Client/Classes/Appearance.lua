@@ -179,6 +179,7 @@ function AppearanceClass:JoinTo(BasePart: BasePart, Responsiveness: number?)
 	local AlignOrientation = Instance.new('AlignOrientation')
 	local Att0 = Instance.new('Attachment')
 	local Att1 = Instance.new('Attachment')
+	Att0.Name = 'AlignmentAttachment'
 
 	Att0.Parent = Root
 	Att1.Parent = BasePart
@@ -204,6 +205,27 @@ function AppearanceClass:JoinTo(BasePart: BasePart, Responsiveness: number?)
 
 	self.__Trove:Add(Att0)
 	self.__Trove:Add(Att1)
+end
+
+function AppearanceClass:CloneModel()
+	local BaseModel = self:GetModel()
+
+	local Clone = BaseModel:Clone()
+	local Root = Clone:FindFirstChild("HumanoidRootPart")
+
+	if not Root then
+		return;
+	end
+
+	local ClearList = {'AlignmentAttachment', 'AlignOrientation', 'AlignPosition'}
+	for _, ListName in ClearList do
+		local Object = Root:FindFirstChild(ListName)
+		if Object then
+			Object:Destroy()
+		end
+	end
+
+	return Clone
 end
 
 function AppearanceClass:SetRotationResponsiveness(n)

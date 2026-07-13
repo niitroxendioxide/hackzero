@@ -510,7 +510,11 @@ function ServerAbilityClass.UseAttackData(self: Types.ServerAbilityClass, Sequen
 
 	if Hit_Event_Time and Hit_Event_Time > 0 and Hitbox_Data then
 		Sequence:Add(Hit_Event_Time, function()
-			self:CreateHitbox(Caster, Hitbox_Data.Offset, Hitbox_Data.Size, Hitbox_Data.Hit_Function)
+			local Hitbox = self:CreateHitbox(Caster, Hitbox_Data.Offset, Hitbox_Data.Size, Hitbox_Data.Hit_Function)
+
+			if Hitbox_Data.Debug == true then
+				Hitbox.Debug(1)
+			end
 		end)
 	end
 end

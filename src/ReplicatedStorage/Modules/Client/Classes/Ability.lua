@@ -404,9 +404,10 @@ end
 function AbilityClass.UseAttackData(self: Types.AbilityClass, Sequence: Types.Sequence, Caster: Types.Caster, Data: {[number]: number}, Hitbox_Data: Types.HitboxAttackData)
 
 	--
+	local Speed = self:FromData("Speed")
 	local Walk_Event_Time = Data[GameEnum.AttackData.Movement_Time]
 
-	if Walk_Event_Time and Walk_Event_Time > 0 then
+	if Walk_Event_Time ~= nil and Walk_Event_Time > 0 then
 		local Movement_Length = Data[GameEnum.AttackData.Movement_Length]
 		local Movement_Strength = Data[GameEnum.AttackData.Movement_Strength]
 
@@ -427,7 +428,7 @@ function AbilityClass.UseAttackData(self: Types.AbilityClass, Sequence: Types.Se
 
 	local End_Lag = Data[GameEnum.AttackData.End_Lag]
 	if End_Lag and End_Lag > 0 then
-		Caster:SwitchState("Attacking", End_Lag)
+		Caster:SwitchState("Attacking", End_Lag / Speed)
 	end
 
 	--
@@ -458,7 +459,7 @@ function AbilityClass.Hit(self: Types.AbilityClass, Caster: any, Target: any, Da
 	end
 
 	if Target and Target.Hit then
-        local _Anim = Target:Hit(Caster, Data)
+        local _Anim = Target:Hit(Data)
 
 		self:Effect("Hit", Target, Data.EffectData)
     end

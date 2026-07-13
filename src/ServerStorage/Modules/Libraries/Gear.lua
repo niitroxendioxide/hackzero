@@ -10,12 +10,12 @@ local Gear = {
 }
 
 function Gear:Init()
-    for _, Gear in ServerStorage.Modules.Classes.Items.Gear:GetDescendants() do
-        if not Gear:IsA('ModuleScript') then
+    for _, GearModule in ServerStorage.Modules.Classes.Items.Gear:GetDescendants() do
+        if not GearModule:IsA('ModuleScript') then
             continue
         end
 
-        local Success, Class = pcall(require, Gear)
+        local Success, Class = pcall(require, GearModule)
 
         if Success then
             Gear.__Cache[Class.__Name] = Class

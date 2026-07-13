@@ -36,6 +36,21 @@ export type ClientAgent = Agents.AgentClass
 
 export type ClientSkillContext = {IsSignal: boolean, Target: Target};
 
+export type HitVFXData = {
+	Emitter: string?, 
+	Offset: CFrame?, 
+	HueShift: number?, 
+	HueShiftFilter: ((any) -> (number))?, HitstopTime: number?,
+	Highlight: boolean?,
+	HighlightColor: Color3,
+
+	Audio: {
+		Id: string, 
+		Volume: number?, 
+		Priority: string?,
+	}?,
+}
+
 export type AbilityClass = {
 	__Cache: {},
 	__Hooks: {[number]: {(...any) -> ()}},
@@ -116,7 +131,7 @@ export type AbilityClass = {
 		@param Target represents whoever is hit by the caster
 		@param Data Can include 'EffectData' for modifying the effect, or a Custom HitStopDuration `{ NoHitStop: boolean, StopEffect: boolean, EffectData: {any} }`
 	]]
-	Hit: (self: AbilityClass, Caster: Caster, Target: Target, Data: {HitstopDuration: number, EffectData: {any}}) -> (),
+	Hit: (self: AbilityClass, Caster: Caster, Target: Target, Data: {HitstopDuration: number, EffectData: HitVFXData}) -> (),
 }
 
 export type DamageHitType = 'Blunt' | 'Slash' | 'None'

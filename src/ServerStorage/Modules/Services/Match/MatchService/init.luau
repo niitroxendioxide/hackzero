@@ -61,10 +61,11 @@ function Service:Init()
     local LoadedPlayers = 0
 
     local Success_Loading;
-    if MissionData.Type == 'Mission' then
+    if MissionData.Type == 'Mission' or MissionData.Type == 'Expedition' then
         Success_Loading = Service:CreateMap(MissionData.Stage, MissionData.Act)
     elseif MissionData.Type == 'ChaosControl' then
         Success_Loading = Service:CreateMap(MissionData.Stage)
+        
     end
 
     if not Success_Loading then
@@ -206,10 +207,12 @@ function Service:Begin(Stage: string, Act: string)
     elseif MissionData.Type == 'ChaosControl' then
         Data = MissionData.Data
         Service.__Mission_Data = MissionData.Data
+    elseif MissionData.Type == 'Expedition' then
+        Data = StageDatabase:GetAct(Stage, Act)
     end
 
     if not Data and MissionData.Type == 'Mission' then
-        warn('Could not fetch stage data.')
+        warn('[MATCHSERVICE] Could not fetch stage data.')
 
         TeleportService:ReturnToLobby(Players:GetPlayers())
 
@@ -219,6 +222,7 @@ function Service:Begin(Stage: string, Act: string)
     if Service.__Active_Match then
         return
     end
+    print('[SERVER] LOADING MATCH WITH DATA')
 
     local Difficulty = RunService:IsStudio() and settings.DIFFICULTY or GameEnum.Difficulties.Easy
     Targets:SetDifficulty(Difficulty)
@@ -233,7 +237,7 @@ function Service:Begin(Stage: string, Act: string)
 
     local Extra = MissionData.Type == 'Mission' and Data or Act
     local Marker_Data = Map:SetupMarkers(Data.Markers)
-    local MissionClass = MissionClass.new(MissionData.Type, Stage,Extra)
+    local MissionClass = MissionClass.new(MissionData.Type, Stage, Extra)
     Map:AssignCurrentMission(MissionClass)
 
     NPCService.__Stage = Stage

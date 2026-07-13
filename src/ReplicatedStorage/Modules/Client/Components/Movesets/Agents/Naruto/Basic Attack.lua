@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local GameEnum = require(Shared.GameEnum) 
 local Types = require(Shared.Types)
 local AbilityClass = require(Client.Classes.Ability)
@@ -12,7 +13,7 @@ local AbilityClass = require(Client.Classes.Ability)
 local Ability = AbilityClass.new(true)
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
-	Ability:Increase(Agent, 'Count', {Limit = 5})
+	Ability:Increase(Agent, 'Count', {Limit = 4})
 end)
 
 function Ability:Play(Caster: Types.GenericClass)
@@ -24,25 +25,49 @@ function Ability:Play(Caster: Types.GenericClass)
 
 	--
 	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
-	Ability:Begin(Caster, {
+	local Sequence = Ability:Begin(Caster, {
 		{0, function()
-			Caster:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
+			--Caster:SwitchState('Attacking', Attack_Time / (Ability:FromData('Speed') or 1))
 
-			local Track = Ability:PlayAnimation(Caster, 'Template.Abilities.M1.'.. math.clamp(1 + M1_Count % 2, 1, 2) , {
+			local Track = Ability:PlayAnimation(Caster, 'Naruto.Abilities.M1.'.. M1_Count , {
 				Fade = .1,
-				Active_Time = Attack_Time + .25,
+				Active_Time = Attack_Time + .45,
 			})
 
 			Ability:Save(Caster, 'M1_Track', Track)
-		end,},
+		end},
 
-		{.18, function()
-			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.EnemyClass)
-				Ability:Hit(Caster, Target, {})
-			end)
-		end,},
+		{0.1, function()
+			if M1_Count >= 3 then
+				local Object = Animation:GetAnim('Characters.Naruto.Abilities.M1.Clone_'..M1_Count-2)
+				local AnimSpeed = Ability:FromData("Speed") * Ability:FromData("Animation_Speed")
+
+				local Extra = M1_Count == 4 and 0.3 or 0
+				Ability:Effect('Naruto_Clone', Caster, .75 + Extra, CFrame.new(0, 0, -7), {Object = Object, Speed = AnimSpeed, CFrameTween = {0.35, 'Quad'}, OriginOffset = CFrame.new(0, 6, 0)})
+			end
+		end}
+	}, true)
+
+	local Offset = M1_Count >= 3 and Vector3.new(0, 0, -8) or Vector3.new(0, 0, -2.5)
+	local Size = M1_Count >= 3 and Vector3.new(8, 8, 14) or Vector3.new(8, 8, 8)
+
+	local TrackToBeUsed = if M1_Count == 1 then nil else  'Characters.Naruto.Abilities.M1.Victim_'..(M1_Count - 1)
+	local AttackData = Ability:FromData("Attack_Data", M1_Count)
+	Ability:UseAttackData(Sequence, Caster, AttackData, {
+		Size = Size,
+		Offset = Offset,
+		Hit_Function = function(Target)
+			
+			Ability:Hit(Caster, Target, {Track = TrackToBeUsed, EffectData = {
+				Offset = M1_Count >= 2 and CFrame.new(0, 2.784, 3.064) or CFrame.new()
+			}})
+
+			--Target:Hit()
+			--Ability:Effect('Hit', Target)
+		end
 	})
 
+	Sequence:Start()
 end
 
 return Ability

@@ -181,8 +181,8 @@ function EnemyClass:Rotate(Target)
 	return self.__Movement:Rotate(Target)
 end
 
-function EnemyClass:Hit()
-	return self.__Animator:Hit()
+function EnemyClass:Hit(Data: {})
+	return self.__Animator:Hit(Data)
 end
 
 function EnemyClass:GetAnimator(): Types.AnimatorController

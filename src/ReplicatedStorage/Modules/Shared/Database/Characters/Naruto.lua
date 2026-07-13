@@ -26,7 +26,7 @@ return {
 		Critical_Damage = 20,
 		Penetration = 0,
 		Pen_Ratio = 0,
-		Daze = 90,
+		Daze = 100,
 		Speed = 1,
 		Energy_Regeneration = 1.2,
 		Affliction_Aptitude = 90,
@@ -42,6 +42,7 @@ return {
 		Health = 122.75,
 		Attack = 6.51,
 		Defense = 9.12,
+		Daze = 0.75,
 	},
 
 	Moveset_Data = {
@@ -59,14 +60,23 @@ return {
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = 0.05,
-				Speed = 1,
+				Speed = 1.3,
 				Animation_Speed = 1,
-				Attack_State_Time = 0.2,
+				Attack_State_Time = 0.65,
+
+				Attack_Data = {
+					-- The "?" symbol means it can be there or not.
+					-- Movement Moment, Hit time, Endlag, Movement Time?, Movement Strength?, Movement Linear?
+					[1]   = {0.33, .43, .61},
+					[2]   = {.05, .35, .6},
+					[3]   = {0,.45, .9},
+					[4]   = {0.03, .9, 1.45}
+				},
 
 				Hit = {
 					HitType = 'Blunt',
-					Stun = 0.3,
-					Daze = 85,
+					Stun = 1.75,
+					Daze = 135,
 					Affliction_Buildup = 15,
 					Affliction = 'Physical',
 					Knockback = {
