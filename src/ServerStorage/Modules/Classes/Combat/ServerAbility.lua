@@ -466,6 +466,14 @@ function ServerAbilityClass.Effect(self: Types.ServerAbilityClass, Name: string,
 	Replicator:Effect(Name, Params, Targets)
 end
 
+function ServerAbilityClass:Stun(Enemy: Types.Target, Time: number, Airborne: boolean?)
+	if not (typeof(Enemy) == 'table') or not Enemy.Stun then
+		return
+	end
+
+	Enemy:Stun(Time, Airborne)
+end
+
 function ServerAbilityClass:KnockBack(Agent: Types.Caster, Enemy: Types.Target, Data: {})
 	return KnockEnemy(Agent, Enemy, Data)
 end

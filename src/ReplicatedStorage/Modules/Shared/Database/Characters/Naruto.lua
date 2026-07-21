@@ -67,8 +67,8 @@ return {
 				Attack_Data = {
 					-- The "?" symbol means it can be there or not.
 					-- Movement Moment, Hit time, Endlag, Movement Time?, Movement Strength?, Movement Linear?
-					[1]   = {0.35, .43, .61, 0.25, 1.35},
-					[2]   = {.12, .35, .6, 0.27, 1.1},
+					[1]   = {0.35, .46, .61, 0.25, 1.35},
+					[2]   = {.12, .38, .6, 0.27, 1.1},
 					[3]   = {0,.45, .9},
 					[4]   = {0.03, .9, 1.45}
 				},
@@ -117,9 +117,24 @@ return {
 			Base = {
 				Speed = 1,
 				Animation_Speed = 1,
-				Attack_State_Time = 1,
+				Attack_State_Time = .55,
+				Clone_Range = 20,
+				Range = 23, 
+				Required_Energy = 101,
 
-				Required_Energy = 45,
+				Hit = {
+					HitType = 'Blunt',
+					Stun = 1,
+					Daze = 220,
+					Damage = 164,
+					Affliction_Buildup = 15,
+					Affliction = 'Physical',
+					Knockback = {
+						vector.create(0, 0, -1),
+						22,
+						0.3,
+					},
+				},
 			},
 			Upgrade = {
 

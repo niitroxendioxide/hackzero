@@ -95,7 +95,7 @@ end
 function AnimationLibrary:StopTracksWithTag(Character: Model, Type: string)
 
 	for _, Track in AnimationLibrary:GetAnimator(Character):GetPlayingAnimationTracks() do
-		if Track:HasTag(Type) then
+		if (Type ~= nil and Track:HasTag(Type)) or Type == nil then
 			Track:Stop(0.25)
 		end
 	end
