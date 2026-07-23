@@ -101,10 +101,12 @@ export type AgentClass =  {
 		Walk forward for the specified time
 		@param Time the time to walk for
 	]]
-	Walk: (self: AgentClass, Time: number, Power: number?) -> (),
+	Walk: (self: AgentClass, Time: number, Power: number?, Linear: boolean?) -> (),
 	--[[
 		Walk backwards for the specified time
 		@param Time the time to walk backwards for
+		@param Power the walk-speed multiplier
+		@param Linear whether to decelerate after time or not
 	]]
 	WalkBack: (self: AgentClass, Time: number, Power: number?) -> (),
 	ApplyImpulse: (self: AgentClass, Impulse: Vector3) -> (),

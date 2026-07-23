@@ -177,8 +177,8 @@ function AgentClass:SetEnergy(Amount: number)
 	self.__Status:SetEnergy(Amount)
 end
 
-function AgentClass:ImpulseForward(Power: number, Time: number)
-	return self.__Character.__Controller:ApplyForwardImpulse(Power, Time)
+function AgentClass:ImpulseForward(Power: number, Time: number, Linear: boolean)
+	return self.__Character.__Controller:ApplyForwardImpulse(Power, Time, Linear)
 end
 
 function AgentClass:BlockRotation(Time: number)
@@ -296,7 +296,7 @@ function AgentClass:IsMoving()
 	return self.__Character:IsMoving()
 end
 
-function AgentClass:Walk(Time: number, Mod: number?)
+function AgentClass:Walk(Time: number, Mod: number?, Linear: boolean?)
 	Mod = Mod or 1
 	local Speed = self.__Character.__States:GetSpeed(true)
 
@@ -304,13 +304,13 @@ function AgentClass:Walk(Time: number, Mod: number?)
 		self.__Character.__Controller:RemoveForwardImpulse(self.__current_walking_object)
 	end
 
-	local Object = self:ImpulseForward(Speed * 1.5 * Mod, Time)
+	local Object = self:ImpulseForward(Speed * 1.5 * Mod, Time, Linear)
 	self.__current_walking_object = Object
 
 	return Object--self.__Character.__Controller:AddLinearMovement(Direction, Time)
 end
 
-function AgentClass:WalkBack(Time: number, Mod: number?)
+function AgentClass:WalkBack(Time: number, Mod: number?, Linear: boolean)
 	Mod = Mod or 1
 
 	if self.__current_walking_object then
@@ -319,7 +319,7 @@ function AgentClass:WalkBack(Time: number, Mod: number?)
 
 	local Speed = self.__Character.__States:GetSpeed(true)
 
-	local Object = self:ImpulseForward(Speed * -1 * Mod, Time)
+	local Object = self:ImpulseForward(Speed * -1 * Mod, Time, Linear)
 	self.__current_walking_object = Object
 
 	return Object

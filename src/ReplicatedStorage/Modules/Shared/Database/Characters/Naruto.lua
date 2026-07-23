@@ -120,7 +120,7 @@ return {
 				Attack_State_Time = .55,
 				Clone_Range = 20,
 				Range = 23, 
-				Required_Energy = 101,
+				Required_Energy = 45,
 
 				Hit = {
 					HitType = 'Blunt',
@@ -145,7 +145,23 @@ return {
 			Base = {
 				Speed = 1,
 				Animation_Speed = 1,
-				Attack_State_Time = 1,
+				Attack_State_Time = 2.5,
+				Range = 100,
+				Required_Energy = 45,
+
+				Hit = {
+					HitType = 'Blunt',
+					Stun = 1,
+					Daze = 910,
+					Damage = 181,
+					Affliction_Buildup = 45,
+					Affliction = 'Wind',
+					Knockback = {
+						vector.create(0, 0, -1),
+						22,
+						0.3,
+					},
+				},
 			},
 			Upgrade = {
 

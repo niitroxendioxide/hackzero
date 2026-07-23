@@ -94,8 +94,8 @@ function ServerAgentClass:GetTotalVelocity()
 	return self.__Character:GetTotalVelocity()
 end
 
-function ServerAgentClass:ImpulseForward(Power: number, Time: number)
-	return self.__Character:ApplyForwardImpulse(Power, Time)
+function ServerAgentClass:ImpulseForward(Power: number, Time: number, Linear: boolean?)
+	return self.__Character:ApplyForwardImpulse(Power, Time, Linear)
 end
 
 function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.Enemy, Time: number, AnimId: number?)
@@ -311,7 +311,7 @@ function ServerAgentClass:LookAtTarget(obj: any)
 	return self:Look(LookAt, true, true)
 end
 
-function ServerAgentClass.Walk(self: Types.ServerAgentClass, Time: number, Mod: number?)
+function ServerAgentClass.Walk(self: Types.ServerAgentClass, Time: number, Mod: number?, Linear: boolean?)
 	Mod = Mod or 1
 	local Speed = self.__Character.States:GetSpeed(true)
 
@@ -319,13 +319,13 @@ function ServerAgentClass.Walk(self: Types.ServerAgentClass, Time: number, Mod: 
 		self.__Character:RemoveForwardImpulse(self.__current_walking_object)
 	end
 
-	local Object = self:ImpulseForward(Speed * 1.5 * Mod, Time)
+	local Object = self:ImpulseForward(Speed * 1.5 * Mod, Time, Linear)
 	self.__current_walking_object = Object
 
 	return Object--self.__Character.__Controller:AddLinearMovement(Direction, Time)
 end
 
-function ServerAgentClass.WalkBack(self: Types.ServerAgentClass, Time: number, Mod: number?)
+function ServerAgentClass.WalkBack(self: Types.ServerAgentClass, Time: number, Mod: number?, Linear: boolean)
 	Mod = Mod or 1
 
 	if self.__current_walking_object then
@@ -334,7 +334,7 @@ function ServerAgentClass.WalkBack(self: Types.ServerAgentClass, Time: number, M
 
 	local Speed = self.__Character.States:GetSpeed(true)
 
-	local Object = self:ImpulseForward(Speed * -1 * Mod, Time)
+	local Object = self:ImpulseForward(Speed * -1 * Mod, Time, Linear)
 	self.__current_walking_object = Object
 
 	return Object

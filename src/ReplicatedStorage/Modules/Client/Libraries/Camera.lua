@@ -28,6 +28,7 @@ local Camera = {
 	__Rotation = Vector2.zero,
 	__Position = Vector3.zero,
 	__Zoom = 22,
+	__Current_Zoom = 22,
 	__Track_Type = 1,
 	__Subject = nil,
 	__Inited = false,
@@ -37,8 +38,31 @@ local Camera = {
 	__Using_fov = false,
 	__Delta = 24,
 	__Delta_thread = nil,
+	
+	__ZoomThread = nil,
 	__Moving_Delta = Vector2.new(),
 }
+
+function Camera:ResetZoom()
+	if Camera.__ZoomThread ~= coroutine.running() then
+		task.cancel(Camera.__ZoomThread)
+	end
+
+	Camera.__Zoom = 22
+	Camera.__ZoomThread = nil
+end
+
+function Camera:UseZoom(Time: number, Value: number)
+	Camera.__Zoom = Value;
+
+	if Camera.__ZoomThread then
+		task.cancel(Camera.__ZoomThread)
+	end
+
+	Camera.__ZoomThread = task.delay(Time, function()
+		Camera:ResetZoom()
+	end)
+end
 
 function Camera:RotateTo(GivenCFrame: CFrame)
 	local Yaw, Pitch = GivenCFrame:ToOrientation()
@@ -118,12 +142,13 @@ function Camera:SetTargetPart(TargetPart: string)
 	self.__Target_Part = TargetPart
 end
 
-function Camera:UseFov(p_Usage_Time: number)
+function Camera:UseFov(p_Usage_Time: number, p_Value: number, p_Tween_Time: number?)
 	if Camera.__Using_fov then
 		return
 	end
 
 	Camera.__Using_fov = true;
+	Effects:Tween(workspace.CurrentCamera, {p_Tween_Time or 0.25, 'Quad'}, {FieldOfView = p_Value})
 
 	task.delay(p_Usage_Time, function()
 		Camera.__Using_fov = false;
@@ -150,7 +175,9 @@ function Camera:Update(delta: number)
 		return
 	end
 
+	Camera.__Current_Zoom = math.lerp(Camera.__Current_Zoom, Camera.__Zoom, delta * 12)
 
+	local ZoomValue = Camera.__Current_Zoom
 	local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
 	local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
 	local Goal = Vector3.new(Torso.X, Torso:Lerp(Root, 0).Y, Torso.Z)
@@ -167,10 +194,10 @@ function Camera:Update(delta: number)
 
 	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * Camera.__Delta)
 
-	local CameraCFrame = CFrame.lookAlong(Camera.__Position, CameraRotation.LookVector) * CFrame.new(0, 0, Camera.__Zoom)
+	local CameraCFrame = CFrame.lookAlong(Camera.__Position, CameraRotation.LookVector) * CFrame.new(0, 0, ZoomValue)
 	--print(CameraCFrame.LookVector)
 
-	local Cast = workspace:Raycast(Camera.__Position, CameraRotation.LookVector * -Camera.__Zoom, World:GetMapParams(false, {}) :: RaycastParams)
+	local Cast = workspace:Raycast(Camera.__Position, CameraRotation.LookVector * -ZoomValue, World:GetMapParams(false, {}) :: RaycastParams)
 	if Cast then
 		CameraCFrame = CFrame.lookAlong(Cast.Position, CameraRotation.LookVector)
 	end
@@ -196,6 +223,15 @@ end
 function Camera:GetCurrentUser(): string?
 	return self.__UsedBy
 end
+
+function Camera:GetPivot(): CFrame
+	return workspace.CurrentCamera.CFrame
+end
+
+function Camera:HorizontalVector(): vector
+	return workspace.CurrentCamera.CFrame.LookVector * vector.create(1, 0, 1)
+end
+
 
 function Camera:MarkUsage(Key: string)
 	if Camera.__UsedBy then

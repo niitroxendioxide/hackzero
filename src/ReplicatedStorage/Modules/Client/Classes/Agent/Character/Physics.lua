@@ -95,8 +95,8 @@ function PhysicsClass:Rotate(Angle: Vector3, Instant: boolean?)
 	self.__RotationGoal = Angle
 end
 
-function PhysicsClass:ApplyForwardImpulse(Power: number, FadeOutTime: number, Tag: string?)
-	local Object = {self.__Rotation * Power, Power, FadeOutTime, os.clock()}
+function PhysicsClass:ApplyForwardImpulse(Power: number, FadeOutTime: number, Linear: boolean?)
+	local Object = {self.__Rotation * Power, Power, FadeOutTime, os.clock(), Linear}
 	table.insert(self.__Forward_Velocities, Object)
 
 	return Object
@@ -202,6 +202,9 @@ function PhysicsClass:Update(Delta: number)
 		end
 
 		local NewValue = Object[2] - Object[2] * (Timepassed / Object[3])
+		if Object[5] == true then
+			NewValue = Object[2]
+		end
 
 		Object[1] = self.__Rotation.Unit * NewValue
 	end

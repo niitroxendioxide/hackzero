@@ -139,8 +139,8 @@ function ServerCharacterClass:GetAdditionalVelocities()
 	return Total
 end
 
-function ServerCharacterClass:ApplyForwardImpulse(Power: number, FadeOutTime: number, Tag: string?)
-	local Object = {self.__Rotation * Power, Power, FadeOutTime, os.clock()}
+function ServerCharacterClass:ApplyForwardImpulse(Power: number, FadeOutTime: number, Linear: boolean?)
+	local Object = {self.__Rotation * Power, Power, FadeOutTime, os.clock(), Linear}
 	table.insert(self.__Forward_Velocities, Object)
 
 	return Object
@@ -183,7 +183,7 @@ function ServerCharacterClass:Update(Delta: number)
 		self.__MovementVelocity = self.States:GetSpeed()
 	end
 
-	-- 1 dir, 2 power, 3 lifetime, 4 time, too lazy to make this an enum :v
+	-- 1 dir, 2 power, 3 lifetime, 4 time, 5 linear?
 	for _, Object in self.__Forward_Velocities do
 		local Timepassed = (os.clock() - Object[4])
 		if Timepassed > Object[3] then
@@ -192,6 +192,9 @@ function ServerCharacterClass:Update(Delta: number)
 		end
 
 		local NewValue = Object[2] - Object[2] * (Timepassed / Object[3])
+		if Object[5] == true then
+			NewValue = Object[2]
+		end
 
 		Object[1] = self.__Rotation.Unit * NewValue
 	end
