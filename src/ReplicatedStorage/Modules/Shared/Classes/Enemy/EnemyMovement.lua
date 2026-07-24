@@ -28,6 +28,8 @@ function EnemyMovement.new(At: Vector3, Speed: number?, Height: number?)
 	self.__Velocities = {}
 	self.__Speed_Change_Thread = nil
 	self.__Walk_Speed_Thread = nil
+	self.__Grab_Origin = nil
+	self.__Grab_Offset = CFrame.new();
 
 	self:CreateCollider()
 
@@ -58,6 +60,17 @@ function EnemyMovement:SetWorldSpeed(Speed: number, Time: number?)
 	self.__Speed_Change_Thread = task.delay(Time, function()
 		self.__World_Speed = 1
 	end)
+end
+
+function EnemyMovement:SetFollowPart(BasePart: BasePart, Offset: CFrame?)
+	self.__Grab_Origin = BasePart;
+	self.__Grab_Offset = Offset or CFrame.new();
+
+	---
+	local CollisionState = (BasePart == nil)
+
+	self.__Enemy_Collider.CanQuery = CollisionState
+	self.__Enemy_Collider.CanTouch = CollisionState
 end
 
 function EnemyMovement:CreateCollider()
@@ -151,30 +164,34 @@ function EnemyMovement:Update(Delta: number)
 	local Movement = (ConvertedDirection * self.__Speed + Velocity) * Delta * World:GetSpeed() * self.__World_Speed
 
 	--local Map = World:GetEntityMapParams(false)
-	local Colliders = World:GetEnemyColliderParams()
+	if self.__Grab_Origin == nil then
+		local Colliders = World:GetEnemyColliderParams()
 
-	local Collision = PhysicsHelper:CalculateEnemyCollisions(self:GetPivot(), Movement, Delta)
-	if Collision then
-		local ProjectedMovement = Movement - Movement:Dot(Collision.Normal) * Collision.Normal
+		local Collision = PhysicsHelper:CalculateEnemyCollisions(self:GetPivot(), Movement, Delta)
+		if Collision then
+			local ProjectedMovement = Movement - Movement:Dot(Collision.Normal) * Collision.Normal
 
-		Movement = ProjectedMovement * (self.__Speed * self.__World_Speed) * Delta * World:GetSpeed()
-	end
+			Movement = ProjectedMovement * (self.__Speed * self.__World_Speed) * Delta * World:GetSpeed()
+		end
 
-	local EntitiesHit = workspace:Spherecast(self.__Position, 1.5, ConvertedDirection * 2, Colliders)
-	if EntitiesHit then
-		local ProjectedMovement = Movement - Movement:Dot(EntitiesHit.Normal) * EntitiesHit.Normal
+		local EntitiesHit = workspace:Spherecast(self.__Position, 1.5, ConvertedDirection * 2, Colliders)
+		if EntitiesHit then
+			local ProjectedMovement = Movement - Movement:Dot(EntitiesHit.Normal) * EntitiesHit.Normal
 
-		Movement = ProjectedMovement * (self.__Speed * self.__World_Speed) * Delta * World:GetSpeed()
-	end
+			Movement = ProjectedMovement * (self.__Speed * self.__World_Speed) * Delta * World:GetSpeed()
+		end
 
-	self.__Moved_in_last_step = EntitiesHit == nil
+		self.__Moved_in_last_step = EntitiesHit == nil
 
-	--
-	self.__Position += Movement
+		self.__Position += Movement
 
-	local Cast = workspace:Raycast(self.__Position, Vector3.yAxis * -100, World:GetEntityMapParams(false) :: RaycastParams)
-	if Cast then
-		self.__Position = Cast.Position + Vector3.yAxis * self.__Height
+		local Cast = workspace:Raycast(self.__Position, Vector3.yAxis * -100, World:GetEntityMapParams(false) :: RaycastParams)
+		if Cast then
+			self.__Position = Cast.Position + Vector3.yAxis * self.__Height
+		end
+	else
+		self.__Looking = (self.__Grab_Origin.CFrame * CFrame.Angles(0, math.pi, 0) * self.__Grab_Offset).LookVector;
+		self.__Position = (self.__Grab_Origin.CFrame * self.__Grab_Offset).Position;
 	end
 
 	if self.__Collider then

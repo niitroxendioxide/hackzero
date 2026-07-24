@@ -179,6 +179,12 @@ return {
 				Gradient = Sequence{Key(0, RGB(0, 34, 255)), Key(0.337, RGB(24, 93, 255)), Key(0.628, RGB(5, 183, 255)), Key(1, White)}
 			},
 
+			Wind = {
+				Main = White,
+				Meter = Color3.fromRGB(128, 250, 114),
+				Gradient = Sequence{Key(0, RGB(90, 210, 75)), Key(1, White)}
+			},
+
 			Fire = {
 				Main = RGB(255, 255, 255), -- the icon
 				Meter = RGB(255, 81, 0), -- the circle

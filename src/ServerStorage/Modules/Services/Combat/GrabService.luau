@@ -21,7 +21,7 @@ local Service = {
 }
 
 
-function Connect(Enemy: Types.Enemy, Caster: Types.ServerAgentClass)
+function Connect(Enemy: Types.Enemy, Caster: Types.ServerAgentClass, Offset: CFrame)
     local PlayerReplicationId = (Caster.__Player_Assigned:GetAttribute("ReplicationId") or 0)
     local AgentRelativeId = Agents:GetIdForPlayer(PlayerReplicationId, Caster)
 
@@ -33,7 +33,7 @@ function Connect(Enemy: Types.Enemy, Caster: Types.ServerAgentClass)
     buffer.writeu8(BufferObj, 2, PlayerReplicationId :: number)
     buffer.writeu8(BufferObj, 3, AgentRelativeId)
     
-    Network:Fire("Replicate", BufferObj)
+    Network:FireForAll("Replicate", BufferObj, Offset)
 end
 
 function Disconnect(Enemy: Types.Enemy, Caster: Types.ServerAgentClass)
@@ -49,27 +49,35 @@ function Disconnect(Enemy: Types.Enemy, Caster: Types.ServerAgentClass)
     buffer.writeu8(BufferObj, 2, PlayerReplicationId :: number)
     buffer.writeu8(BufferObj, 3, AgentRelativeId)
     
-    Network:Fire("Replicate", BufferObj)
+    Network:FireForAll("Replicate", BufferObj)
 end
 
-function Service:GrabEnemy(Caster: Types.ServerAgentClass, Enemy: Types.Enemy, Time: number?)
+function Service:GrabEnemy(Caster: Types.ServerAgentClass, Enemy: Types.Enemy, Time: number?, Offset: CFrame?)
     local EnemyId = Enemy:GetId()
 
     if table.find(Service.__Enemies, EnemyId) then
         return
     end
 
+    if Service.__Grabs[Caster] == nil then
+        Service.__Grabs[Caster] = {}
+    end
+
     table.insert(Service.__Enemies, EnemyId);
 
-    Connect(Enemy, Caster)
+    Connect(Enemy, Caster, Offset)
+    Enemy:SetGrabbedBy(Caster, Offset)
 
     --
     Service.__Grabs[Caster][EnemyId] = task.delay(Time, function()
         local Index = table.find(Service.__Enemies, EnemyId)
         if Index then
-            table.insert(Service.__Enemies, Index);
+            table.remove(Service.__Enemies, Index);
         end
 
+        Service.__Grabs[Caster][EnemyId] = nil
+
+        Enemy:SetGrabbedBy(nil, nil)
         Disconnect(Enemy, Caster)
     end)
 end
@@ -77,10 +85,12 @@ end
 function Service:GetGrabbedEnemies(Caster: Types.ServerAgentClass, Enemy: Types.Enemy): { Types.Enemy }
     local List = {};
 
-    for _, PlayerGrabList in Service.__Grabs do
-        for EnemyId in PlayerGrabList do
-            table.insert(List, Enemies:GetEnemy(EnemyId))
-        end
+    if not Service.__Grabs[Caster] then
+        return List
+    end
+
+    for EnemyId in Service.__Grabs[Caster] do
+        table.insert(List, Enemies:GetEnemy(EnemyId))
     end
 
     return List
@@ -98,8 +108,11 @@ function Service:ForceStopGrab(Enemy: Types.Enemy)
 
                 local Index = table.find(Service.__Enemies, EnemyId)
                 if Index then
-                    table.insert(Service.__Enemies, Index);
+                    table.remove(Service.__Enemies, Index);
                 end
+
+                Service.__Grabs[Caster][KeyId] = nil
+                Enemy:SetGrabbedBy(nil, nil)
 
                 Disconnect(Enemy, Caster)
             end

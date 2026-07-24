@@ -44,7 +44,7 @@ local Camera = {
 }
 
 function Camera:ResetZoom()
-	if Camera.__ZoomThread ~= coroutine.running() then
+	if Camera.__ZoomThread ~= nil and Camera.__ZoomThread ~= coroutine.running() then
 		task.cancel(Camera.__ZoomThread)
 	end
 

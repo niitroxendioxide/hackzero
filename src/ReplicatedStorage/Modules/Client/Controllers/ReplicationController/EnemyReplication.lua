@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
 local Enemies = require(Shared.Libraries.Enemies)
 local EnemyDatabase = require(Shared.Database.Enemies)
 local EnemyClass = require(Client.Classes.Enemy)
@@ -124,6 +125,36 @@ function Controller:EnterDaze(Buffer: buffer)
 	end
 
 	Enemy:EnterDazedState()
+end
+
+function Controller:BeginGrabEnemy(Buffer: buffer, Offset: CFrame)
+    local EnemyId = buffer.readu8(Buffer, 1) -- EnemyId
+    local PlayerRepId = buffer.readu8(Buffer, 2) -- PlayerReplicationId
+    local AgentId = buffer.readu8(Buffer, 3) -- AgentRelativeId
+
+	local EnemyObject = Enemies:GetEnemy(EnemyId)
+	local BaseAgent = Characters:GetAgent(PlayerRepId, AgentId)
+
+	if not EnemyObject or not BaseAgent then
+		return;
+	end
+
+	EnemyObject:FollowAgentGrab(BaseAgent, Offset or CFrame.new())
+end
+
+function Controller:EndGrabEnemy(Buffer)
+	local EnemyId = buffer.readu8(Buffer, 1) -- EnemyId
+    local PlayerRepId = buffer.readu8(Buffer, 2) -- PlayerReplicationId
+    local AgentId = buffer.readu8(Buffer, 3) -- AgentRelativeId
+
+	local EnemyObject = Enemies:GetEnemy(EnemyId)
+	local BaseAgent = Characters:GetAgent(PlayerRepId, AgentId)
+
+	if not EnemyObject or not BaseAgent then
+		return;
+	end
+	
+	EnemyObject:FollowAgentGrab(nil)
 end
 
 return Controller

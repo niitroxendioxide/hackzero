@@ -261,6 +261,10 @@ function ServerAgentClass.GetMeter(self: Types.ServerAgentClass, Name: string): 
 	return 0, 0
 end
 
+function ServerAgentClass.IsActive(self: Types.ServerAgentClass)
+	return self.__Active
+end
+
 function ServerAgentClass.SetActive(self: Types.ServerAgentClass, State: boolean)
 	self.__Active = State
 	Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self)

@@ -75,6 +75,7 @@ export type AgentClass =  {
 	Move: (self: AgentClass) -> (),
 	Stop: (self: AgentClass) -> (),
 	Look: (self: AgentClass, Direction: Vector3, Instant: boolean?, Bypass: boolean?) -> (),
+	GetHitbox: (self: AgentClass) -> (BasePart),
 
 	CanSwitch: (self: AgentClass) -> (boolean),
 	GetPivot: (self: AgentClass) -> CFrame,
@@ -339,8 +340,10 @@ export type ServerAgentClass = {
 	--[[
 		Walk forward for the specified time
 		@param Time the time to walk for
+		@param Power the power modifier for the speed
+		@param Linear whether the movement should decelerate or not
 	]]
-	Walk: (self: ServerAgentClass, Time: number, Power: number?) -> (),
+	Walk: (self: ServerAgentClass, Time: number, Power: number?, Linear: boolean) -> (),
 
 	--[[
 		Walk backwards for the specified time

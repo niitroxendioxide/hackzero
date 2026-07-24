@@ -30,6 +30,8 @@ export type Caster = (Agents.ServerAgentClass | Agents.AgentClass | Agents.Enemy
 export type Target = Caster
 export type TargetFinderFunction = (Caster: Agents.AgentClass) -> (number, Agents.ClientEnemy)
 
+export type ServerEnemy = Agents.Enemy
+export type ClientEnemy = Agents.ClientEnemy
 export type ServerAgent = Agents.ServerAgentClass
 export type ClientAgent = Agents.AgentClass
 

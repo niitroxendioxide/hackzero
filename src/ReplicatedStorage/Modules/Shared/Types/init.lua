@@ -338,6 +338,9 @@ export type EnemyClass = {
 	Rotate: (self: EnemyClass, Direction: Vector3) -> (),
 	IsAirborne: (self: EnemyClass) -> (boolean),
 	GetAnimator: (self: EnemyClass) -> (AnimatorController),
+	FollowAgentGrab: (self: EnemyClass, Agent: any?, Offset: CFrame?) -> (),
+
+
 
 	SetWorldSpeed: (self: ServerEnemyClass, Speed: number, Time: number) -> (),
 	SwitchState: (self: EnemyClass, State: string, Time: number) -> (),

@@ -6,6 +6,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Enemies = require(ReplicatedStorage.Modules.Shared.Database.Enemies)
+local Agents = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 local ClockUtil = require(Shared.Utility.Clock)
 
 local EnemyStatus = require(Shared.Classes.Enemy.EnemyStatus)
@@ -199,6 +200,18 @@ end
 
 function EnemyClass:GetHitbox()
 	return self.__Movement:GetHitbox()
+end
+
+function EnemyClass.FollowAgentGrab(self: Types.EnemyClass, Agent: Agents.AgentClass, Offset: CFrame)
+	if Agent == nil then
+		self.__Movement:SetFollowPart(nil, nil)
+
+		return;
+	end
+
+	local Hitbox = Agent:GetHitbox()
+
+	self.__Movement:SetFollowPart(Hitbox, Offset)
 end
 
 function EnemyClass:Init(Key: number)

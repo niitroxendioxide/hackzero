@@ -94,6 +94,16 @@ function ServerEnemy:EnterDazedState()
 	return self.__Status:EnterDazedState()
 end
 
+function ServerEnemy:SetGrabbedBy(Caster: AgentTypes.ServerAgentClass, Offset: CFrame)
+	if Caster == nil then
+		self.__Movement:SetFollowPart(nil, nil)
+
+		return
+	end
+
+	self.__Movement:SetFollowPart(Caster:GetHitbox(), Offset)
+end
+
 function ServerEnemy:Attack()
 	local MovesetData = EnemyDatabase:GetMovesetData(self.__Name)
 	local Target = self:GetTarget()
