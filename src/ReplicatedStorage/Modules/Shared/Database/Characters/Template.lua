@@ -62,7 +62,7 @@ return {
 
 		['Dodge'] = {
 			Base = {
-				Cooldown = 1,
+				Cooldown = .3,
 				Speed = 1,
 				Animation_Speed = 1,
 			},

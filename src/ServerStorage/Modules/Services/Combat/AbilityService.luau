@@ -333,9 +333,8 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 		warn(`Error while executing skill: {SpacelessSkill}. Error Message: {ErrorMessage}`)
 	else
 		local IncludePlayer = SkillId == GameEnum.Skills.Quick_Assist or SkillId == GameEnum.Skills.Dodge_Counter
-		Replicator:UseSkill(Player, SkillId, IncludePlayer, EnemyId, StateId, Other)
+		Replicator:UseSkill(Player, SkillId, IncludePlayer, EnemyId, StateId, IsCancel, Other)
 	end
-
 
 	return true;
 end

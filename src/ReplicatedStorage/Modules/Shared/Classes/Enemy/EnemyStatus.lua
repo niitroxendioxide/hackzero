@@ -35,8 +35,9 @@ function EnemyStatus.new(Name: string, Level: number)
 	self.__Dazed = false
 	self.__Stats = EnemyDatabase:GetStatsAtLevel(Name, self.__Level)
 	self.__Health = Statics.Get_Health_By_Level(self.__Level, EnemyData.Stats.Health, EnemyData.Level_Stats.Health)
-
 	self.__Max_Health = self.__Health
+
+	self.__Base_Max_Hp = self.__Health
 	self.__Max_Daze = self.__Stats.Daze
 	self.__Effects = {}
 	self.__Threads = {}
@@ -112,7 +113,7 @@ end
 
 function EnemyStatus:GetStat(Name: string)
 	if Name == 'Max_Health' then
-		return self.__Max_Health + self:GetStatEffects(Name) --self:GetStat('Health')
+		return self.__Base_Max_Hp + self:GetStatEffects(Name) --self:GetStat('Health')
 	elseif Name == 'Max_Daze' then
 		return self.__Max_Daze + self:GetStatEffects(Name)
 	end
@@ -122,6 +123,12 @@ function EnemyStatus:GetStat(Name: string)
 	end
 
 	return self.__Stats[Name] + self:GetStatEffects(Name)
+end
+
+function EnemyStatus:SetHealth(Health: number)
+	assert(typeof(Health) == 'number', 'Cannot set health to anything but a number')
+	
+	self.__Health = math.clamp(Health, 0, math.huge)
 end
 
 function EnemyStatus:Damage(Amount: number)
@@ -229,7 +236,7 @@ function EnemyStatus.AddEffect(self: Types.EnemyStatus, Effect: Types.EnemyEffec
 
 	if typeof(Effect.Value) == 'string' and Effect.Value:find("%%") and Effect.Type then
 		local Number = tonumber(string.sub(Effect.Value, 1, #Effect.Value-1), 10)
-		local Stat = Effect.Type == 'Max_Health' and self.__Max_Health or self.__Stats[Effect.Type]
+		local Stat = Effect.Type == 'Max_Health' and self.__Base_Max_Hp or self.__Stats[Effect.Type]
 
 		Effect.Value = Stat * (Number / 100)
 	end

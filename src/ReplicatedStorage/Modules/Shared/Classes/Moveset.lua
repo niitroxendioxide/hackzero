@@ -5,6 +5,7 @@ local RunService = game:GetService('RunService')
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Types = require(Shared.Types.Abilities)
 local AgentTypes = require(Shared.Types.Agents)
 local Cooldown = require(Shared.Utility.Cooldown)
@@ -121,6 +122,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 		end
 
 		if not(Info.Base.Release) or Info.Base.ForceCooldownOnBegin then
+			-- Debugger:DebugLine("Moveset Cooldown", `Key:{CooldownKey}`, 5, "Client")
 			Cooldown:Add(CooldownKey, Info.Base.Cooldown)
 		end
 
@@ -157,6 +159,22 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 	end
 
 	return false;
+end
+
+function MovesetClass:EmulateHooks(Type: string, State: string?, Agent: Types.Caster, Context: {})
+	Type = Type:gsub('_', ' ')
+	Context = Context or {}
+
+	local AbilityModule = self.__Assigned[Type]
+	if not AbilityModule then
+		return;
+	end
+
+	if State == 'Begin' then
+		AbilityModule:__run_hooks(GameEnum.AbilityHooks.BeforeBeginConnection, Agent)
+	elseif State == 'Release' then
+		AbilityModule:__run_hooks(GameEnum.AbilityHooks.BeforeReleaseConnection, Agent)
+	end
 end
 
 

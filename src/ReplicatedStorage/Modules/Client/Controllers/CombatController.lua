@@ -1,6 +1,7 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService('Players')
+local RunService = game:GetService("RunService")
 
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
@@ -31,7 +32,10 @@ local Controller = {
 		Active = false,
 	},
 	__HoldingOnChainAttack = false,
+	__Max_Dodge_Count = 2,
+	__Time_Per_Dodge = 1,
 
+	CurrentDodgeData = {},
 	ChainAttackActionChosen = Signal.new() :: Signal.ScriptSignal<number>,
 }
 
@@ -46,6 +50,33 @@ function Controller:Init()
 	end
 
 	Movesets:Init()
+
+	Controller.CurrentDodgeData = {
+		LastAttempt = os.clock(),
+		LastAdded = os.clock(),
+		Amount = 0,
+	}
+
+	RunService.Heartbeat:Connect(function(a0: number)
+		local CurrentDodgeData = Controller.CurrentDodgeData
+		local TimeSinceLast = (os.clock() - CurrentDodgeData.LastAdded)
+		local Added = 0
+		if TimeSinceLast > 1.5 then
+			CurrentDodgeData.LastAdded = os.clock()
+			Added += 1
+		end
+
+		local Prev = CurrentDodgeData.Amount
+		CurrentDodgeData.Amount = math.clamp(CurrentDodgeData.Amount + Added, 0, Controller.__Max_Dodge_Count)
+
+		if Prev ~= CurrentDodgeData.Amount then
+			local UIElement = InterfaceController:GetComponent("Moveset")
+			if not UIElement then return end
+
+			UIElement:DisplayDodges(CurrentDodgeData.Amount, Controller.__Max_Dodge_Count)
+		end
+
+	end)
 
 	--
 	Network:On("Cutscene", function(Type: number, CutsceneName: string)
@@ -73,6 +104,30 @@ function Controller:Init()
 			end,
 		})
 	end
+end
+
+function Controller:TryConsumeDodge()
+	local Data = Controller.CurrentDodgeData;
+	if (os.clock() - Data.LastAttempt) < (1 / 3) then
+		return false
+	end
+
+	if Data.Amount > 0 then
+		Data.Amount = math.clamp(Data.Amount - 1, 0, Controller.__Max_Dodge_Count)
+		Data.LastAttempt = os.clock()
+		Data.LastAdded = os.clock()
+
+		local UIElement = InterfaceController:GetComponent("Moveset")
+		if not UIElement then 
+			return true 
+		end
+
+		UIElement:DisplayDodges(Data.Amount, Controller.__Max_Dodge_Count)
+
+		return true
+	end
+
+	return false
 end
 
 function Controller:RequestCutscene()
@@ -181,8 +236,12 @@ function Controller:HandleInput(Key: string, State: string)
 
 	local Is_Cancel = false
 	local CurrentSkill = CurrentAgent:GetCurrentSkill()
-	if CurrentSkill == "Basic_Attack" and Key == "Dodge" then
-		
+	local DodgeConsumed = Key == 'Dodge' and Controller:TryConsumeDodge()
+	if Key == 'Dodge' and not DodgeConsumed then
+		return
+	end
+
+	if CurrentSkill == "Basic_Attack" and Key == 'Dodge' and DodgeConsumed then
 		Is_Cancel = true
 		CharacterMoveset:CancelSkill("Basic Attack", CurrentAgent)
 	end

@@ -11,6 +11,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Trove = require(Shared.Utility.Trove)
@@ -155,6 +156,7 @@ function Controller:Init(): ()
 				CurrentCharacter:Look(Direction.Unit)
 				CurrentCharacter:Move()
 			else
+				--Debugger:DebugLine("Character Stopped", `Character stopped with: CanAction({CanAction}), NotInCutscene({not CutscenesLibrary:IsInCutscene()}), Over0({Direction.Magnitude <= 0})`, 2)
 				CurrentCharacter:Stop()
 			end
 

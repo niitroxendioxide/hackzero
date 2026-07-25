@@ -31,12 +31,14 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | num
 	local NewEnemy = EnemyClass.new(At, Name, Level)
 	NewEnemy:Init(EnemyId)
 
-	for _, Buff in Buffs do
-		NewEnemy:AddEffect({
-			Type = Buff[1], 
-			Value = Buff[2],
-			Time = -1,
-		})
+	if typeof(Buffs) == 'table' then
+		for _, Buff in Buffs do
+			NewEnemy:AddEffect({
+				Type = Buff[1], 
+				Value = Buff[2],
+				Time = -1,
+			})
+		end
 	end
 
 	Effects:Play('EnemyStats', NewEnemy)

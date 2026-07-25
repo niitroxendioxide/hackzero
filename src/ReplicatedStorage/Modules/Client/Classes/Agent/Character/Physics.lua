@@ -231,12 +231,15 @@ function PhysicsClass:Update(Delta: number)
 	if TotalDisplacement.Magnitude > .1 then
 		local Moved = (TotalDisplacement * CurrentWorldSpeed * Delta)
 
+		local AddedColliderParams = World:GetMapParams(false, self.__Added_Colliders):: RaycastParams
 		local Extra = math.atan(self.__Normal:Dot(Vector3.yAxis)) + World.StepHeight
-		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -(self.__Height + Extra), World:GetMapParams(false, self.__Added_Colliders):: RaycastParams)
+		local HeightExtra = self.__Height + Extra
+		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -HeightExtra, AddedColliderParams)
 		local Collision = PhysicsHelper:CalculateCharacterCollisions(Origin, TotalDisplacement, Delta, self.__Added_Colliders)
+		local NoCollide = (not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1)
 
 		if CanReachFloor and (CanReachFloor.Position.Y - (self.__Position.Y - self.__Height)) < World.StepHeight then
-			if not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1 then
+			if NoCollide then
 				self.__Position += Moved
 			elseif Collision then
 				local ProjectedMovement = TotalDisplacement - TotalDisplacement:Dot(Collision.Normal) * Collision.Normal
@@ -245,6 +248,22 @@ function PhysicsClass:Update(Delta: number)
 				local Result = workspace:Raycast(Origin.Position, ProjectedMovement.Unit * 3, Params)--workspace:Spherecast(Origin.Position, 1, Direction, Params)
 				if not Result then
 					self.__Position += ProjectedMovement * CurrentWorldSpeed * Delta
+				end
+			end
+		elseif not CanReachFloor then 
+			local Projected = PhysicsHelper:CalculateDirectionFromVoid(Moved, self.__Position, HeightExtra, AddedColliderParams) * Moved.Magnitude
+			local NewCheck = workspace:Raycast(self.__Position + Projected, Vector3.yAxis * -(HeightExtra), AddedColliderParams)
+			if NewCheck then
+				if NoCollide then
+					self.__Position += Projected
+				else
+					local ProjectedMovement = Projected - Projected:Dot(Collision.Normal) * Collision.Normal
+
+					local Params = World:GetCollisionParams(nil, self.__Added_Colliders) :: RaycastParams
+					local Result = workspace:Raycast(Origin.Position, ProjectedMovement.Unit * 3, Params)
+					if not Result then
+						self.__Position += ProjectedMovement * CurrentWorldSpeed * Delta
+					end
 				end
 			end
 		end

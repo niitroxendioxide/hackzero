@@ -40,7 +40,41 @@ function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir:
 		end
 	end
 
-	return hasResult;
+	return hasResult; 
+end
+
+function PhysicsHelper:GetSquareExitNormal(p_Direction: vector): vector
+    local AbsX, AbsZ = math.abs(p_Direction.x), math.abs(p_Direction.z)
+
+    if AbsX > AbsZ then
+        return vector.create(p_Direction.x >= 0 and 1 or -1, 0, 0)
+    elseif AbsZ > AbsX then
+        return vector.create(0, 0, p_Direction.z >= 0 and 1 or -1)
+    end
+
+    return vector.create(p_Direction.x >= 0 and 1 or -1, 0, 0)
+end
+
+function PhysicsHelper:CalculateDirectionFromVoid(p_Direction: vector, p_At: vector, p_Height: number, p_Params: RaycastParams?): vector
+    local Forward = vector.normalize(p_Direction)
+    local Normal = -Forward
+
+    local Cross = vector.normalize(vector.cross(Normal, vector.create(0, 1, 0)))
+    local Inverse = -Cross
+
+    local Down = vector.create(0, -p_Height, 0)
+    local LHit = workspace:Raycast(p_At + Cross, Down, p_Params)
+    local RHit = workspace:Raycast(p_At + Inverse, Down, p_Params)
+
+    if LHit and not RHit then
+        return Cross
+    elseif RHit and not LHit then
+        return Inverse
+    elseif LHit and RHit then
+        return (LHit.Distance <= RHit.Distance) and Cross or Inverse
+    end
+	
+    return Cross
 end
 
 function PhysicsHelper:CalculateEnemyCollisions(Origin: CFrame, MovementDir: Vector3, Delta: number): RaycastResult?

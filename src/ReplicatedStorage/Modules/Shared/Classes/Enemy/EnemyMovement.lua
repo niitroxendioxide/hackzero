@@ -62,12 +62,34 @@ function EnemyMovement:SetWorldSpeed(Speed: number, Time: number?)
 	end)
 end
 
-function EnemyMovement:SetFollowPart(BasePart: BasePart, Offset: CFrame?)
-	self.__Grab_Origin = BasePart;
-	self.__Grab_Offset = Offset or CFrame.new();
+function EnemyMovement:SetFollowPart(p_BasePart: BasePart, p_Offset: CFrame?)
+	if p_BasePart == nil and self.__Grab_Origin ~= nil then
+		local Origin, Offset = self.__Grab_Origin :: BasePart, self.__Grab_Offset :: CFrame
+
+		local MapParams = World:GetMapParams(false)
+		local IsGrounded = workspace:Raycast(self.__Position, vector.create(0, -(self.__Height + 2.5), 0), MapParams)
+		if IsGrounded then
+			local Front = CFrame.lookAt(Origin.Position, (Origin.CFrame * Offset).Position).LookVector
+			local Distance = Offset.Position.Magnitude
+			local InsideWallCast = workspace:Raycast(Origin.Position, Front * Distance, MapParams)
+			if InsideWallCast then
+				self.__Position = InsideWallCast.Position + InsideWallCast.Normal * 2.5
+			end
+		else
+			local NewOffset = CFrame.new(-Offset.X, Offset.Y, -Offset.Z) * CFrame.Angles(0, math.pi, 0)
+			local CurrentPosition = workspace:Raycast((Origin.CFrame * NewOffset).Position, vector.create(0, -(self.__Height + 2.5)), MapParams)
+			if CurrentPosition then
+				self.__Position = CurrentPosition.Position + (self.__Height * CurrentPosition.Normal)
+			end
+		end
+
+	end
+
+	self.__Grab_Origin = p_BasePart;
+	self.__Grab_Offset = p_Offset or CFrame.new();
 
 	---
-	local CollisionState = (BasePart == nil)
+	local CollisionState = (p_BasePart == nil)
 
 	self.__Enemy_Collider.CanQuery = CollisionState
 	self.__Enemy_Collider.CanTouch = CollisionState
@@ -183,11 +205,18 @@ function EnemyMovement:Update(Delta: number)
 
 		self.__Moved_in_last_step = EntitiesHit == nil
 
-		self.__Position += Movement
-
-		local Cast = workspace:Raycast(self.__Position, Vector3.yAxis * -(self.__Height + 2.5), World:GetEntityMapParams(false) :: RaycastParams)
+		local Cast = workspace:Raycast(self.__Position + Movement, Vector3.yAxis * -(self.__Height + 2.5), World:GetEntityMapParams(false) :: RaycastParams)
 		if Cast then
 			self.__Position = Cast.Position + Vector3.yAxis * self.__Height
+		else
+			local Redirected = Movement:Cross(vector.create(0, 1, 0))
+
+			local RedirectCast = workspace:Raycast(self.__Position + Redirected, Vector3.yAxis * -(self.__Height + 2.5), World:GetEntityMapParams(false) :: RaycastParams)
+			or workspace:Raycast(self.__Position - Redirected, Vector3.yAxis * -(self.__Height + 2.5), World:GetEntityMapParams(false) :: RaycastParams)
+			
+			if RedirectCast then
+				self.__Position = RedirectCast.Position + Vector3.yAxis * self.__Height
+			end
 		end
 	else
 		self.__Looking = (self.__Grab_Origin.CFrame * CFrame.Angles(0, math.pi, 0) * self.__Grab_Offset).LookVector;

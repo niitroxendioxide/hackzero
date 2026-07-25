@@ -111,7 +111,7 @@ function Controller:Rotate(Buffer: buffer)
 	local UserId = buffer.readu8(Buffer, 3)
 	local Character = CharacterLibrary:GetCurrent(UserId)
 
-	Character:Look(Rebuilt, true)
+	Character:Look(Rebuilt, true, true)
 end
 
 function Controller:PivotTo(Buffer: buffer)
@@ -224,8 +224,7 @@ function Controller:CreateCompanion(Buffer: buffer, UUID: string)
 	local OwnerId = buffer.readu8(Buffer, 2)
 	local CompanionNameId = buffer.readu8(Buffer, 3)
 	local At = Math:DecodeCFrame(Buffer, 4)
-
-	print(CompanionNameId)
+	
 	local CompanionName = CompanionsDatabase:GetFromId(CompanionNameId)
 
 	local CompanionClass = Companion.new(CompanionName, At, UUID)

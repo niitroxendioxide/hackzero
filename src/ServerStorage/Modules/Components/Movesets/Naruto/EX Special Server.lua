@@ -73,6 +73,7 @@ function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
 		end},
 
 		{1.2, function()
+			Caster:ImpulseForward(75, 0.2)
 			Caster:Walk(2, 1.15, true)
 		end},
 

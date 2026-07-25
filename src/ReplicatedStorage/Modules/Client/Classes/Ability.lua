@@ -61,6 +61,7 @@ function AbilityClass.ConnectHook(self: Types.AbilityClass, type: number, fn: ()
 	table.insert(self.__Hooks[type], fn)
 end
 
+
 function AbilityClass:__run_hooks(type: number, ...)
 	for Type, List in self.__Hooks do
 		if Type ~= type then
@@ -196,7 +197,9 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 			CharactersLib.__Current_Hitting_Target = EnemyId
 		end
 
-		Agent:AddTag('Movlock', 0.15)
+		if self.__Name ~= 'Dodge' then
+			Agent:AddTag('Movlock', 0.15)
+		end
 
 		if Enemy and (self.__Name ~= 'Dodge') then
 			Agent:Look(CFrame.lookAt(Agent:GetPivot().Position * Vector3.new(1, 0, 1), Enemy:GetPivot().Position * Vector3.new(1, 0 ,1)).LookVector, false, true)

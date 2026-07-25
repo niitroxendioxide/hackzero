@@ -171,6 +171,7 @@ export type MovesetClass = {
 		OnPassiveFilled: (self: any, Id: number, Caster: Caster) -> (),
 	}),
 
+	EmulateHooks: (self: MovesetClass, Type: string, State: string, Agent: Caster, Context: {any}) -> (),
 	Begin: (self: MovesetClass, Key: Default.AgentMovesetAbility, Agent: Caster) -> (),
 	Release: (self: MovesetClass, Key: Default.AgentMovesetAbility, Agent: Caster) -> (),
 	CancelSkill: (self: MovesetClass, Key: Default.AgentMovesetAbility, Agent: Caster, Context: {ClientInstruction: boolean?}?) -> (),

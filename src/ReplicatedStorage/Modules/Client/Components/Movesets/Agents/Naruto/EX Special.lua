@@ -44,6 +44,7 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, ctx)
 			Camera:ResetZoom()
 		end
 
+		Caster:SwitchState('Attacking', 0.45)
 		Ability:PlayAnimation(Caster, 'Naruto.Abilities.Special.RasenganRelease', {
 			Active_Time = 0.5
 		})

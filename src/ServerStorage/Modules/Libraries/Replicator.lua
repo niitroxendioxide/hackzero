@@ -259,7 +259,7 @@ function Replicator:AddEnemy(Id: number, Enemy: Types.ServerEnemyClass, Buffs: {
 	buffer.writeu8(Object, 2, Enemies:GetIdForEnemy(Enemy.__Name))
 	buffer.writeu8(Object, 3, Enemy.__Status.__Level)
 
-	if not Target then
+	if Target == nil then
 		Network:FireForAll('Replicate', Object, Enemy:GetPivot().Position, Buffs)
 	else
 		Network:Fire('Replicate', Target, Object, Enemy:GetPivot().Position, Buffs)
@@ -361,13 +361,14 @@ function Replicator:ProcessDodge(Agent: AgentTypes.ServerAgentClass)
 	Network:FireForAll('Replicate', Object)
 end
 
-function Replicator:UseSkill(Player: Player, SkillId: number, IncludePlayer: boolean, EnemyNumber: number, StateId: number, Extra: {any}?)
+function Replicator:UseSkill(Player: Player, SkillId: number, IncludePlayer: boolean, EnemyNumber: number, StateId: number, IsCancel: boolean, Extra: {any}?)
 	local Object = buffer.create(8)
 	buffer.writeu8(Object, 0, GameEnum.Replication.UseSkill)
 	buffer.writeu8(Object, 1, SkillId)
 	buffer.writeu8(Object, 2, EnemyNumber or 255)
 	buffer.writeu8(Object, 3, StateId)
 	buffer.writeu8(Object, 4,  Player:GetAttribute("ReplicationId") :: number)
+	buffer.writeu8(Object, 5, IsCancel == true and 1 or 0)
 
 	if IncludePlayer then
 		Network:FireForAll('ReliableReplication', Object, Extra)
@@ -415,13 +416,14 @@ function Replicator:UpdateUltBar(Player: Player, Agent: AgentTypes.ServerAgentCl
 end
 
 function Replicator:DisplayDamage(Enemy: Types.ServerEnemyClass, Damage: number, Critical: boolean?, Affliction: string, Burst: boolean?)
-	local Object = buffer.create(9)
+	local Object = buffer.create(14)
 	buffer.writeu8(Object, 0, GameEnum.Replication.DisplayDamage)
 	buffer.writeu8(Object, 1, Enemy.__EnemyId)
 	buffer.writeu8(Object, 2, GameEnum.Afflictions[Affliction] or GameEnum.Afflictions.Default)
 	buffer.writeu8(Object, 3, Critical and 1 or 0)
 	buffer.writeu8(Object, 4, Burst and 1 or 0)
 	buffer.writef32(Object, 5, Damage)
+	buffer.writef32(Object, 9, Enemy.__Status:GetHealth())
 
 	Network:FireForAll('Replicate', Object)
 end

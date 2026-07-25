@@ -282,7 +282,6 @@ function Service:GetPlayerCompanionFromData(Player: Player): string
         end
 
         local NewId = settings.TEST_COMPANION;
-        print(NewId)
 
         return NewId
     end

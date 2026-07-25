@@ -33,6 +33,9 @@ function Controller:UseSkill(Buffer: buffer, Extra: {})
 	local EnemyId = buffer.readu8(Buffer, 2)
 	local StateId = buffer.readu8(Buffer, 3)
 	local UserId = buffer.readu8(Buffer,4)
+	local IsCancel = buffer.readu8(Buffer, 5) == 1
+
+	print(buffer.readu8(Buffer, 5))
 
 	local State = GameEnum.KeyLookup(GameEnum.AbilityStates, StateId)
 	local ActiveAgent = Characters:GetCurrent(UserId)
@@ -65,16 +68,19 @@ function Controller:UseSkill(Buffer: buffer, Extra: {})
 		end
 	end
 
+	local Context = {IsSignal = true, Buffer = Extra, Target = AgentEnemy, Enemy = AgentEnemy, IsCancel = IsCancel}
 	if State == 'Begin' then
 		if not CharacterMoveset:HasSkill(Key) and Key == "Dodge" then
-			Movesets:RunFromTemplate(Key, ActiveAgent, {IsSignal = true})
+			Movesets:RunFromTemplate(Key, ActiveAgent, {IsSignal = true, IsCancel = IsCancel})
 
 			return
 		end
 
-		CharacterMoveset:Begin(Key, ActiveAgent, {IsSignal = true, Buffer = Extra, Enemy = AgentEnemy})
+		CharacterMoveset:EmulateHooks(Key, State, ActiveAgent, Context)
+		CharacterMoveset:Begin(Key, ActiveAgent, Context)
 	elseif State == "End" then
-		CharacterMoveset:Release(Key, ActiveAgent, {IsSignal = true, Buffer = Extra, Enemy = AgentEnemy})
+		CharacterMoveset:EmulateHooks(Key, 'Release', ActiveAgent, Context)
+		CharacterMoveset:Release(Key, ActiveAgent, Context)
 	elseif State == "Cancel" then
 		CharacterMoveset:CancelSkill(Key, ActiveAgent)
 	end
@@ -190,6 +196,7 @@ function Controller:DisplayDamage(Buffer: buffer)
 	local Critical = buffer.readu8(Buffer, 3) == 1
 	local Burst = buffer.readu8(Buffer, 4) == 1
 	local Amount = buffer.readf32(Buffer, 5)
+	local EnemyHealth = buffer.readf32(Buffer, 9)
 
 	local EnemyObject = Enemies:GetEnemy(EnemyId)
 
@@ -197,7 +204,7 @@ function Controller:DisplayDamage(Buffer: buffer)
 		Type = 'Shatter'
 		EnemyObject = Enemies.__Last_Enemy_Pos[EnemyId]
 	else
-		EnemyObject:TakeDamage(Amount)
+		EnemyObject:SetHealth(EnemyHealth)
 	end
 
 	Effects:Play('Indicator', EnemyObject, {Affliction = Type, Critical = Critical, Number = math.floor(Amount), Burst = Burst})

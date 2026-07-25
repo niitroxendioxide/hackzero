@@ -51,7 +51,7 @@ function Service:LoadEnemies(Player: Player)
 			table.insert(Buffs, {Effect.Type, Effect.Value})
 		end
 
-		Replicator:AddEnemy(Id, Enemy, Player)
+		Replicator:AddEnemy(Id, Enemy, Buffs, Player)
 
 		Enemy:FindRandomAggro()
 		Replicator:PivotEnemy(Id, Enemy.__Movement.__Position, Player)
@@ -74,7 +74,6 @@ function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string
 
 	local Spawn = workspace.World.Map.Triggers:FindFirstChild(Tag)
 	if not Spawn then
-		print('no trigger found going for enemyspawn')
 		local RandomSpawn = Service:GetSpawns()
 
 		Spawn = RandomSpawn[math.random(1, #RandomSpawn)]

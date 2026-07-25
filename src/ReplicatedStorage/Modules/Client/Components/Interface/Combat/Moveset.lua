@@ -265,6 +265,61 @@ local function PopUpAgentIcon(Name: string)
     NewCamera.FieldOfView = 1
 end
 
+function DisplayDodgeCount(MainFrame, Dodges: number, Max: number)
+    local SkillList = MainFrame.Buttons
+    local DodgeSkill = SkillList:FindFirstChild("Dodge")
+    local SkillAssets = Assets.Interface.Combat.Skill
+
+    if DodgeSkill then
+        local Charges = DodgeSkill.Charges;
+        local Count = #Charges:GetChildren() - 1;
+        
+        if Count ~= Max then
+            for _, Item in Charges:GetChildren() do
+                if Item:IsA('Frame') then
+                    Item:Destroy()
+                end
+            end
+
+            for n = 1, Max do
+                local NewCharge = SkillAssets.DodgeCharge:Clone()
+                NewCharge.Name = tostring(n)
+                NewCharge:SetAttribute('On', true)
+                NewCharge.Parent = Charges;
+            end
+
+            if Dodges == Max then return end
+        end
+
+        for _, Item in Charges:GetChildren() do
+            if not Item:IsA('Frame') then continue end
+
+            local Scaler = Item.UIScale
+            local Id = tonumber(Item.Name, 10)
+            local IsOn = Item:GetAttribute('On')
+            if IsOn and Dodges < Id then
+                Item:SetAttribute('On', false)
+
+                Item.BackgroundColor3 = Color3.new()
+            elseif not IsOn and Dodges >= Id then
+                Item:SetAttribute('On', true)
+
+                Item.BackgroundColor3 = Color3.new(1, 1, 1)
+                Scaler.Scale = 0.8
+                EffectUtil:Tween(Scaler, {0.25, 'Back'}, {Scale = 1})
+
+
+                ---
+                local EffectCircle = SkillAssets.EffectCircle:Clone()
+                EffectCircle.Parent = Item;
+                EffectUtil:Tween(EffectCircle, { .2, 'Sine' }, {Transparency = 1})
+                EffectUtil:Tween(EffectCircle.UIScale, { .25, 'Quad' }, {Scale = 2})
+                EffectUtil:CleanUp(EffectCircle, .25)
+            end
+        end
+    end
+end
+
 -- Publics
 -- Link the frame
 function Component:Link()
@@ -344,6 +399,11 @@ function Component:Init()
     end
 end
 
+function Component:DisplayDodges(Current: number, Max: number)
+    local MainFrame = Component:GetFrame()
+
+    DisplayDodgeCount(MainFrame, Current, Max)
+end
 
 function Component:PlayCooldown(Skill: string, Time: number)
     local MainFrame = Component:GetFrame()

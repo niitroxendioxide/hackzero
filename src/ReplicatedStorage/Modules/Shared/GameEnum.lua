@@ -398,7 +398,8 @@ return {
 		Easy = "EASY",
 		Medium = "MEDIUM",
 		Hard = "HARD",
-		Challenge = "EXTREME"
+		Challenge = "EXTREME",
+		Passive = "PASSIVE",
 	},
 
 	Interactables = {

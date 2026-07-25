@@ -1231,6 +1231,13 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
     AgentDataFrame.Level.AgentLevel.Text = `Lvl. {AgentData.Level}`
 end
 
+function Component:DisplayDodges(Current: number, Max: number)
+    local MainFrame = self:GetFrame()
+    local SkillsFrame = MainFrame.Skills
+
+    SkillsSubModule:DisplayDodgeCount(SkillsFrame, Current, Max)
+end
+
 function Component:ShowSkills()
     local MainFrame = self:GetFrame()
     local SkillsFrame = MainFrame.Skills

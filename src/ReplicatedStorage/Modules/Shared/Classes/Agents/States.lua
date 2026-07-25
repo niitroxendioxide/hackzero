@@ -1,11 +1,13 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService("RunService")
 
 --
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local World = require(ReplicatedStorage.Modules.Shared.World)
 local Types = require(Shared.Types)
 local Characters = require(Database.Characters)
@@ -122,7 +124,6 @@ function StatesClass:GetSpeed(Ignore_States: boolean, debug: boolean?)
 	local CharStats = self.__Base_Stats
 
 	--
-
 	if (self.__State ~= 'Idle' and self.__State ~= 'Dashing') and not Ignore_States then
 		local Max = self:GetKey("Sprint") and CharStats.Sprint_Speed or self:GetKey("Jog") and CharStats.Jog_Speed or CharStats.Walk_Speed
 		local Time = 1 - math.min((os.clock() - self.__Last_Change) / self.__Current_State_Max_Time, 1) * 0.9
@@ -135,9 +136,13 @@ function StatesClass:GetSpeed(Ignore_States: boolean, debug: boolean?)
 	local DashSpeedBoost = Statics.Dash_Speed_Buff
 	local DashBoostEffect = self.__State == "Dashing" and DashSpeedBoost or (1 - math.min(TimePassed, Statics.Dash_Speed_Buff_Vanish_Time)) * DashSpeedBoost
 
+	if DashBoostEffect > 0 then
+		--Debugger:DebugLine("statespeed", `Status Speed Added: {DashBoostEffect}`, 5)
+	end
 
 	if self:GetKey('Sprint') or Ignore_States then
-		return CharStats.Sprint_Speed + (CharStats.Sprint_Speed * DashBoostEffect * (Ignore_States and 0 or 1))
+		local SprintSpeed = CharStats.Sprint_Speed + (CharStats.Sprint_Speed * DashBoostEffect)
+		return SprintSpeed
 	elseif self:GetKey('Jog') then
 		return CharStats.Jog_Speed + (CharStats.Jog_Speed * DashBoostEffect)
 	end

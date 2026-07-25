@@ -101,10 +101,16 @@ function Service:Move(Player: Player, Buffer: buffer?)
 		end
 	end
 
-	CurrentCharacter:Move()
+	local CanMove = CurrentCharacter:GetState() ~= 'Attacking'
+	if CanMove then
+		CurrentCharacter:Move()
+		Replicator:Move(Player)
+	else
+		CurrentCharacter:Stop()
+		Replicator:Stop(Player)
+	end
 
 	--
-	Replicator:Move(Player)
 end
 
 function Service:PivotTo(Player: Player, Buffer: buffer, Force: boolean?)

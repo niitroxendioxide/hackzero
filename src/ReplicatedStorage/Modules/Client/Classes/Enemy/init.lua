@@ -72,6 +72,11 @@ function EnemyClass:TakeDamage(number: number)
 	self.__Health:set(Health)
 end
 
+function EnemyClass:SetHealth(Health: number)
+	self.__Status:SetHealth(Health)
+	self.__Health:set(Health)
+end
+
 function EnemyClass:GetEnergy(): number
 	return 0
 end
@@ -168,7 +173,10 @@ function EnemyClass:AddEffect(Data)
 	local Obj = self.__Status:AddEffect(Data)
 
 	if Data.Type == 'Max_Health' then
-		self.__Health:set(self.__Status:GetHealth())
+		local Health = self.__Status:GetHealth()
+		print(Health)
+
+		self.__Health:set(Health)
 	end
 
 	return Obj

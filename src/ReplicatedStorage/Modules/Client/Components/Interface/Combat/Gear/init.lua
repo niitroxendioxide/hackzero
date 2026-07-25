@@ -29,9 +29,13 @@ function Hover(Holder)
         States.CurrentThread = nil
 
         local Card = States.CurrentHoverCard
-        Card.ActualCard.Stroke.Enabled = false
         Effects:Tween(Card.ActualCard, {.2, 'Quad'}, {Position = UDim2.fromScale(.5, .5)})
-        Card.Button.Stroke.Thickness = ScreenUtil:GetStrokeSize(4)
+
+        local Main = Card.ActualCard.Frontdesign.Main
+        Main.UIStroke.Color = Color3.new()
+        Main.UIStroke.Thickness = 0.024
+
+        Card.Button.Stroke.Thickness = 0.06
         Card.Button.Stroke.Color = Color3.new()
     end
 
@@ -45,11 +49,10 @@ function Hover(Holder)
 
     States.CurrentThread = task.spawn(function()
         local BigOne, SmallOne, Pos = 0, 0, 0
-        Holder.ActualCard.Stroke.Enabled = true
         Holder.Button.Stroke.Color = Color3.new(1, 1, 1)
 
-        local Default = ScreenUtil:GetStrokeSize(2)
-        local Extra = ScreenUtil:GetStrokeSize(1)
+        local Main = Holder.ActualCard.Frontdesign.Main
+        Main.UIStroke.Color = Color3.new(1, 1, 1)
 
         while true do
             local Delta = task.wait()
@@ -57,9 +60,9 @@ function Hover(Holder)
             Pos += Delta * math.pi * 1.25
             BigOne += Delta * math.pi
             SmallOne += Delta * math.pi * 0.4
-            Holder.ActualCard.Stroke.Thickness = Default + Extra * math.sin(BigOne)
+            Main.UIStroke.Thickness = 0.024 + 0.004 * math.sin(BigOne)
             Holder.ActualCard.Position = UDim2.fromScale(0.5, 0.4 + math.sin(Pos) * 0.05)
-            Holder.Button.Stroke.Thickness = ScreenUtil:GetStrokeSize(4) + ScreenUtil:GetStrokeSize(2) * math.sin(BigOne)
+            Holder.Button.Stroke.Thickness = 0.06 + 0.025 * math.sin(BigOne)
         end
 
     end)
@@ -71,17 +74,59 @@ function SelectSingularCard(Name: string, Order: number, Holder: Frame)
     Hover(Holder)
 
     --
+    local BaseFrame = Component:GetFrame()
+    local EffectsFolder = BaseFrame.Effects
+
     for _, OtherCard in States.AllCards do
         local Button = OtherCard.Button
 
         Button.Btn:Destroy()
 
         if OtherCard == Holder then
-            Effects:Tween(Holder, {.4, 'Cubic', 'InOut'}, {Position = UDim2.fromScale(0.5, .5)})
+            Effects:Tween(Holder, {.35, 'Cubic', 'InOut'}, {Position = UDim2.fromScale(0.5, .5)})
+
+            task.delay(0.25, function()
+                Effects:Tween(Button.UIScale, {.3, 'Back', 'In'}, {Scale = 0})
+
+                Effects:CleanUp(Button, .3)
+            end)
+
+            Effects:CleanUp(Holder, 2)
+
+            task.delay(0.4, function()
+                Effects:Tween(Holder.ActualCard.Frontdesign.Glow, { 0.35, 'Quad' }, {BackgroundTransparency = 0})
+                Effects:Tween(Holder.ActualCard.Frontdesign.Glow.UIScale, { 0.5, 'Quad' }, {Scale = 1.1})
+
+                task.wait(0.35)
+                Effects:Tween(Holder.ActualCard.UIScale, {0.3, 'Back', 'In'}, {Scale = 0})
+
+                --
+                task.wait(0.3)
+
+                local TextEffect = EffectsFolder.BaseText:Clone()
+                TextEffect.Visible = true
+                TextEffect.Parent = EffectsFolder
+                TextEffect.UIScale.Scale = 0
+
+                local CircleEffect = EffectsFolder.Circle:Clone()
+                CircleEffect.Visible = true
+                CircleEffect.Size = UDim2.fromScale(0, 0)
+                CircleEffect.Parent = EffectsFolder
+
+                Effects:Tween(TextEffect.UIScale, { 0.32, 'Quad', 'Out' }, {Scale = 0.5})
+                Effects:Tween(CircleEffect, { 0.4, 'Quad', 'Out' }, {Size = UDim2.fromScale(0.22, 0.22), Transparency = 1})
+                task.wait(0.15)
+                Effects:Tween(TextEffect, { 0.2, 'Quad', 'Out' }, {TextTransparency = 1})
+                Effects:Tween(TextEffect.UIStroke, { 0.2, 'Quad', 'Out' }, {Transparency = 1})
+
+                Effects:CleanUp(CircleEffect, 0.4)
+                Effects:CleanUp(TextEffect, 0.4)
+            end)
         else
             Effects:Tween(OtherCard.ActualCard, {.3, 'Back', 'In'}, {Position = UDim2.fromScale(0.5, -4)})
-            Effects:Tween(Button.UIScale, {.25, 'Back', 'In'}, {Scale = 0})
+            Effects:Tween(Button.UIScale, {.25, 'Quad', 'Out'}, {Scale = 0})
 
+            Effects:CleanUp(OtherCard, 3)
             Effects:CleanUp(Button, .25)
         end
     end
