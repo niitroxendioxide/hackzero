@@ -250,6 +250,10 @@ function Controller:SetupLobbyNPCS()
             NPC:SetAttribute("UIElement", "Interactions")
 
             Prompts:CreatePromptOnPart(NPC.PrimaryPart, GameEnum.InteractionType.UIInteraction, "Interact", "Check Mission Desk", 18)
+        elseif Id == 'TrainingNPCRig' then
+            NPC:SetAttribute("UIElement", "Training")
+
+            Prompts:CreatePromptOnPart(NPC.PrimaryPart, GameEnum.InteractionType.UIInteraction, "Interact", "Enlist for training", 18)
         elseif Id == 'SummonNPC' then
             NPC:SetAttribute("UIElement", "Summon")
 

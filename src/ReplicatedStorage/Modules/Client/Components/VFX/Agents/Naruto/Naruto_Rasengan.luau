@@ -22,36 +22,63 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
     local RightArm = Model:FindFirstChild("Right Arm");
     
     if State == 'Charge' then
-        local RasenganVFX = Effects:Create(NarutoVfx.Rasengan, 5);
+        ---
+        local RasenganVFX = Effects:Create(NarutoVfx.Rasengan, 25);
         RasenganVFX:PivotTo(RightArm.CFrame * ChargeOffset);
+        RasenganVFX:ScaleTo(0.001)
+
+        Effects:Weld(RasenganVFX.PrimaryPart, RightArm)
+        Effects:TweenModel(RasenganVFX, 1, 0.75, 'Quad')
         
-        Effects:Weld(RasenganVFX.PrimaryPart, RightArm);
-
-        Cache[Caster] = RasenganVFX
-    elseif State == 'Running' then
-        local RasenganBall = Cache[Caster]
-
-        if RasenganBall then
-            RasenganBall:Destroy()
-        end
+        Cache[Caster] = {RasenganVFX}
 
         ---
-        local Time = Args[1]
-
-        local RasenganVFX = Effects:Create(NarutoVfx.Rasengan, Time + 2);
-        RasenganVFX:PivotTo(RightArm.CFrame * RunOffset);
+        local RasenganCharge = Effects:Create(NarutoVfx.RasenganCharge, 3);
+        RasenganCharge:PivotTo(RightArm.CFrame * ChargeOffset)
+        Effects:Weld(RasenganCharge, RightArm);
+        Effects:Tween(RasenganCharge.Charge.PointLight, {0.6, 'Sine', 'In'}, {Range = 6})
         
-        local Weld = Effects:Weld(RasenganVFX.PrimaryPart, RightArm);
-        Weld.Name = 'rasenganweld'
+        local LineParticle = RasenganCharge.Charge.IntoBall :: ParticleEmitter
+        LineParticle.Rate = 50
+        Effects:Tween(LineParticle, { 0.65, 'Sine', 'In' }, {Rate = 0})
 
-        Cache[Caster] = RasenganVFX
-        Effects:Toggle(RasenganVFX.Orb.Aura, true)
+        task.delay(0.6, function()
+            Effects:Tween(RasenganCharge.Charge.PointLight, {0.25, 'Quad'}, {Brightness = 0})
+            Effects:Toggle(RasenganCharge, false)
+        end)
+    elseif State == 'Running' then
+        local Time = Args[1]
+        local Data = Cache[Caster]
+        if not Data then
+            return
+        end
+
+        local OldRasengan = Data[1]
+        OldRasengan:Destroy()
+
+        local NewRasengan = Effects:Create(NarutoVfx.Rasengan, 25);
+        NewRasengan:PivotTo(RightArm.CFrame * RunOffset);
+
+        Effects:Weld(NewRasengan.PrimaryPart, RightArm)
+
+        Effects:Toggle(NewRasengan.Orb.Aura, true)
+        Cache[Caster] = {NewRasengan}
 
         task.delay(Time, function()
             Cache[Caster] = nil
 
-            Effects:Toggle(RasenganVFX, false)
-            Effects:Tween(RasenganVFX.Orb, {0.2}, {Transparency = 1})
+            NewRasengan:Destroy()
         end)
+    elseif State == 'Release' then
+        local Data = Cache[Caster]
+        if not Data then
+            return
+        end
+
+        local Rasengan = Data[1]
+
+        if Rasengan then
+            Rasengan:Destroy()
+        end
     end
 end

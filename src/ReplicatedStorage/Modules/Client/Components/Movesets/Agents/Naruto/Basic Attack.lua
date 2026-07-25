@@ -1,5 +1,6 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Http = game:GetService("HttpService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
@@ -45,9 +46,11 @@ function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 			if M1_Count >= 3 then
 				local Object = Animation:GetAnim('Characters.Naruto.Abilities.M1.Clone_'..M1_Count-2)
 				local AnimSpeed = Ability:FromData("Speed") * Ability:FromData("Animation_Speed")
+				local Id = Http:GenerateGUID()
+				Ability:Save(Caster, "LastCloneId", Id)
 
 				local Extra = M1_Count == 4 and 0.3 or 0
-				Ability:Effect('Naruto_Clone', Caster, .75 + Extra, CFrame.new(-1, 0, -5.5), {Object = Object, Speed = AnimSpeed, CFrameTween = {0.35, 'Quad'}, OriginOffset = CFrame.new(-1, -1, 3)})
+				Ability:Effect('Naruto_Clone', Caster, .75 + Extra, CFrame.new(-1, 0, -5.5), {Id = Id, Object = Object, Speed = AnimSpeed, CFrameTween = {0.35, 'Quad'}, OriginOffset = CFrame.new(-1, -1, 3)})
 			end
 		end}
 	}, true)
@@ -77,5 +80,11 @@ function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 
 	Sequence:Start()
 end
+
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeCancel, function(Agent)
+	local LastCloneId = Ability:Get(Agent, "LastCloneId")
+
+	Ability:Effect("Naruto_Clone", true, nil, nil, {Id = LastCloneId})
+end)
 
 return Ability

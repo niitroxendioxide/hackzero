@@ -122,6 +122,13 @@ export type AgentClass =  {
 	GetState: (self: AgentClass) -> State,
 	GetEnergy: (self: AgentClass) -> (number),
 	GetSkillLevel: (self: AgentClass, Name: AgentMovesetAbility) -> (),
+	
+	
+	--[[
+		Sets the current active skill, not recommended to change, used internally.
+		@param Time if not specified, infinite.
+	]]
+	SetCurrentSkill: (self: AgentClass, Skill: string, Time: number?) -> (string),
 
 	GiveEnergy: (self: AgentClass, Amount: number) -> (),
 	SetVisible: (self: AgentClass, State: boolean?) -> (),
@@ -318,6 +325,12 @@ export type ServerAgentClass = {
 	GetAllMeters: (self: ServerAgentClass) -> ({Id: number?, [string]: any}),
 
 	GetCurrentSkill: (self: ServerAgentClass) -> (string?),
+
+	--[[
+		Not recommended to change, it's used internally to set the skill.
+		@param Time if not given, infinite
+	]]
+	SetCurrentSkill: (self: ServerAgentClass, Skill: string, Time: number?) -> (),
 
 	--[[
 		Set to nil for no target

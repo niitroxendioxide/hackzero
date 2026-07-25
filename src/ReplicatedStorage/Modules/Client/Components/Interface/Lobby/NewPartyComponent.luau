@@ -62,6 +62,7 @@ local States = {
     Agents = true,
     Maps = true,
     MissionId = '',
+    PartyMode = 'Mission',
     SelectedMission = nil,
 
     IsReady = false,
@@ -206,12 +207,16 @@ local function HandleInvite()
 end
 
 --- Helpers
-function AnimatePlateHover(Frame: Frame, Button: TextButton)
+function AnimatePlateHover(Frame: Frame, Button: TextButton, Check: () -> ())
 
     local OSThick = Frame.OuterStroke.Thickness
     local Pressed = Button or Frame.Button
 
     Pressed.MouseEnter:Connect(function()
+        if Check ~= nil and not Check() then
+            return
+        end
+
         Effects:Tween(Frame.UIScale, {.2, 'Quad'}, {Scale = 1.05})
         Effects:Tween(Frame.OuterStroke, {.2, 'Quad'}, {Color = Color3.new(1, 1, 1), Thickness = OSThick * 0.74})
     end)
@@ -234,6 +239,7 @@ function SetDockState(DockName: string, State: boolean)
     end
 
     States[DockName] = State
+    print(`Set Dock [{DockName}] to: {State}`)
 
     if Threads[DockName] then
         task.cancel(Threads[DockName])
@@ -652,8 +658,8 @@ function ShowStageInfo(CodeStage: string, Id: string)
     local Stage = Split[2]
     local Act = Split[3]
 
-    if Id ~= nil and Type == 'Mission' then
-        
+    if Stage == 'Training' and Type == 'Expedition' then
+        Act = 'Practice your skills'
     end
 
     local StageData = StagesDatabase:GetStage(Stage)
@@ -708,6 +714,8 @@ function SetMode(State: string, ServerData: {})
     local MainFrame = Component:GetFrame()
     local MissionFrame = MainFrame.Mission
 
+    States.PartyMode = State
+
     if State == 'ChaosControl' then
         local ChaosData = ServerData.ChaosControlData
         MissionFrame.MapPlate.Visible = false
@@ -724,6 +732,9 @@ function SetMode(State: string, ServerData: {})
             
             MissionFrame.ChaosPlate.Banner.Image = 'rbxassetid://' .. Stage.Icon;
         end
+    elseif State == 'Expedition' then
+        MissionFrame.ChaosPlate.Visible = false
+        MissionFrame.MapPlate.Visible = true
     elseif State == 'Mission' then
         MissionFrame.MapPlate.Visible = true
         MissionFrame.ChaosPlate.Visible = false
@@ -897,7 +908,7 @@ function Component:Init()
     end)
 
     MissionDock.MapPlate.Button.MouseButton1Click:Connect(function()
-        if Component:Peek(States.CurrentPartyOwner) ~= Players.LocalPlayer.UserId then
+        if Component:Peek(States.CurrentPartyOwner) ~= Players.LocalPlayer.UserId or (States.PartyMode == 'Expedition') then
             SetDockState('Maps', false)
 
             return
@@ -907,7 +918,9 @@ function Component:Init()
     end)
 
 
-    AnimatePlateHover(MissionDock.MapPlate)
+    AnimatePlateHover(MissionDock.MapPlate, nil, function()
+        return States.PartyMode == 'Mission'
+    end)
     AnimatePlateHover(MissionDock.TeamPlate)
     AnimatePlateHover(MissionDock.CompanionPlate.Companion, MissionDock.CompanionPlate.Button)
 

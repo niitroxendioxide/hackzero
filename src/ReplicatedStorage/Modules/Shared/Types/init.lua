@@ -673,7 +673,6 @@ export type PartyClass = {
 	GetPlayerCompressedTeam: (self: PartyClass, Player: PartyPlayer) -> (),
 
 	SetState: (self: PartyClass, State: number) -> (),
-	SetStage: (self: PartyClass, Stage: string) -> (),
 
 	SetReady: (self: PartyClass, Player: PartyPlayer) -> (),
 

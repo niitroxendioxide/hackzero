@@ -234,12 +234,15 @@ function ServerAbilityClass:Begin(Agent: AgentTypes.ServerAgentClass, Frames: Se
 	AbilitySequence:SetSpeed(Sequence_Speed * Agent_Speed)
 
 	AbilitySequence:After(function()
+		if tostring(Agent):match('ServerAgentClass') and Agent:GetCurrentSkill() == self.__Name then
+			Agent:SetCurrentSkill(nil)
+		end
+
 		self.__Signal:Fire()
 	end)
 
 	if tostring(Agent):match('ServerAgentClass') then
-		local SequenceLength = AbilitySequence:GetLength()
-		Agent.__Character.States:SetCurrentSkill(self.__Name, SequenceLength + 0.1)
+		Agent:SetCurrentSkill(self.__Name)
 	end
 
 	self:Save(Agent, 'CurrentPlayerSequence', AbilitySequence)
@@ -614,6 +617,10 @@ function ServerAbilityClass.Cancel(self: Types.ServerAbilityClass, Caster: Agent
 	local CurrentPlayerSequence = self:Get(Caster, 'CurrentPlayerSequence') :: Types.Sequence
 	if CurrentPlayerSequence then
 		CurrentPlayerSequence:Destroy()
+	end
+
+	if tostring(Caster):match('ServerAgentClass') and Caster:GetCurrentSkill() == self.__Name then
+		Caster:SetCurrentSkill(nil)
 	end
 
 	Caster:SwitchState("Idle", 0)

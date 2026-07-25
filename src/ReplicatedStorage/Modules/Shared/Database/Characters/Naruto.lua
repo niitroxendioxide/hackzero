@@ -145,17 +145,19 @@ return {
 			Base = {
 				Speed = 1,
 				Animation_Speed = 1,
-				Attack_State_Time = 3.3,
+				Attack_State_Time = 3.7,
 				Range = 100,
 				Required_Energy = 45,
+				Length = 2,
+				Limit = 1,
 				Hitbox_Offset = vector.create(0, 0, -2.5),
 				Hitbox_Size = vector.create(5, 5, 5),
 				Hit_Count = 5,
 				
 				Hit = {
 					HitType = 'Blunt',
-					Stun = 1,
-					Daze = 182,
+					Stun = .3,
+					Daze = 24,
 					Damage = 36,
 					Affliction_Buildup = 9,
 					Affliction = 'Wind',
@@ -163,6 +165,20 @@ return {
 						vector.create(0, 0, 1),
 						7,
 						0.2,
+					},
+				},
+
+				Final = {
+					HitType = 'Blunt',
+					Stun = 1,
+					Daze = 45,
+					Damage = 102,
+					Affliction_Buildup = 25,
+					Affliction = 'Wind',
+					Knockback = {
+						vector.create(0, 0, 1),
+						45,
+						0.3,
 					},
 				},
 			},

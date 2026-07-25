@@ -45,7 +45,9 @@ function StatesClass:SetCurrentSkill(Name: string, Time: number)
 		self.__Current_Skill_Thread = nil;
 	end
 
-	if Name == nil then
+	if typeof(Name) ~= 'string' or (typeof(Name) == 'string' and #Name <= 0) then
+		self.__Current_Skill = '';
+
 		return;
 	end
 

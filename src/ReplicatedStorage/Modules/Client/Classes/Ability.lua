@@ -140,14 +140,19 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 			Animation:AdjustSpeed(BaseSpeed * WorldSpeed)
 		end
 	end)
+
 	AbilitySequence:After(function()
+		if tostring(Agent):match("AgentClass") and Agent:GetCurrentSkill() == self.__Name then
+			Agent:SetCurrentSkill(nil)
+		end
+
 		self:Save(Agent, "CurrentSkillSavedObjects", nil)
 		self.__Signal:Fire()
 	end)
 
 	if tostring(Agent):match("AgentClass") then
-		local SequenceLength = AbilitySequence:GetLength()
-		Agent.__Character.__States:SetCurrentSkill(self.__Name, SequenceLength + 0.1)
+		--local SequenceLength = AbilitySequence:GetLength()
+		Agent:SetCurrentSkill(self.__Name)
 	end
 
 	self:Save(Agent, 'CurrentPlayerSequence', AbilitySequence)
@@ -458,11 +463,13 @@ function AbilityClass.Hit(self: Types.AbilityClass, Caster: any, Target: any, Da
 		EffectsLibrary:ShakeCamera("SoftHit")
 	end
 
-	if Target and Target.Hit then
-        local _Anim = Target:Hit(Data)
-
-		self:Effect("Hit", Target, Data.EffectData)
+	if Target and Target.Hit and not Data.NoAnim then
+        Target:Hit(Data)
     end
+
+	if not Data.NoVFX then
+		self:Effect("Hit", Target, Data.EffectData)
+	end
 
 	if (Animations and #Animations > 0) and not Data.NoHitStop then
 		for _, Anim in Animations do
@@ -479,8 +486,14 @@ end
 function AbilityClass.Cancel(self: Types.AbilityClass, Agent: any, Context: {Hit: boolean?})
 	Context = Context or {}
 
+	self:__run_hooks(GameEnum.AbilityHooks.BeforeCancel, Agent)
+
 	if not Context.Hit then
 		Agent:SwitchState("Idle", 0)
+	end
+
+	if tostring(Agent):match("AgentClass") and Agent:GetCurrentSkill() == self.__Name then
+		Agent:SetCurrentSkill(nil)
 	end
 
 	--

@@ -18,6 +18,11 @@ export type Sequence = {
 
 	--
 	Update: (self: Sequence) -> (),
+
+	--[[
+		Runs immediately after the last frame of the sequence, regardless of its length, if the sequence is modified mid-run, this function will then run after the new last frame.
+		@param function The handler that runs the post-sequence function
+	]]
 	After: (self: Sequence, fn: (self: Sequence) -> ()) -> Sequence,
 }
 

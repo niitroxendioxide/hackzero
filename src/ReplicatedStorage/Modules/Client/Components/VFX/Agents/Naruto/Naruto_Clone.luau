@@ -11,6 +11,8 @@ local Types = require(Shared.Types.Agents)
 local AnimLib = require(Client.Libraries.Animation)
 local Effects = require(Shared.Utility.Effects)
 
+local Cache = {}
+
 local function TweenCFrame(BaseModel: Model, From: CFrame, To: CFrame, Time: number, Style: string?, Direction: string?)
     local Start = os.clock()
     while (os.clock() - Start) <= Time do
@@ -25,7 +27,15 @@ local function TweenCFrame(BaseModel: Model, From: CFrame, To: CFrame, Time: num
 end
 
 ---
-return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, AnimationData: {Object: Animation, Speed: number, Weight: number, CFrameTween: {any}}?): ()
+return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, AnimationData: {Id: string, Object: Animation, Speed: number, Weight: number, CFrameTween: {any}}?): ()
+    if Caster == true then
+        if AnimationData.Id and Cache[AnimationData.Id] then
+            Cache[AnimationData.Id]()
+        end
+
+        return
+    end
+    
     Time = Time or 0.75
     Offset = Offset or CFrame.new()
     AnimationData = AnimationData or {}
@@ -65,8 +75,9 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
         end
     end
 
-    task.delay(.05, function()
-        local SmokeEffect = Effects:Create(NarutoVfx.SmokeBomb, Time + 1.5)
+    local SmokeEffect = Effects:Create(NarutoVfx.SmokeBomb, Time + 1.5)
+
+    local Thread = task.delay(.05, function()
         SmokeEffect:PivotTo(ModelClone.Torso.CFrame)
         Effects:Emit(SmokeEffect, true)
 
@@ -76,4 +87,22 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
         Effects:Emit(SmokeEffect, true)
         ModelClone:Destroy()
     end)
+
+    if AnimationData.Id == nil then
+        return
+    end
+
+    Cache[AnimationData.Id] = function()
+        if Thread ~= coroutine.running() then
+            task.cancel(Thread)
+        end
+
+        local Torso = ModelClone:FindFirstChild("Torso")
+        if Torso then
+            SmokeEffect:PivotTo(Torso.CFrame)
+        end
+
+        Effects:Emit(SmokeEffect, true)
+        ModelClone:Destroy()
+    end
 end

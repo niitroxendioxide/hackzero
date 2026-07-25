@@ -402,6 +402,12 @@ function AgentClass:SwitchState(State: string, Time: number, Iframes: boolean?, 
 	end
 end
 
+function AgentClass:SetCurrentSkill(Skill: string, Time: number?)
+	Time = Time or 9e12
+
+	return self.__Character.__States:SetCurrentSkill(Skill, Time)
+end
+
 function AgentClass:GetCurrentSkill(): string
 	return self.__Character.__States:GetCurrentSkill()
 end

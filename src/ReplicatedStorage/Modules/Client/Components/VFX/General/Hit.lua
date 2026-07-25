@@ -53,7 +53,7 @@ return function(
 	if Data.Highlight then
 		local BaseColor = Data.HighlightColor or Color3.new(1, 0.870588, 0.709804)
 		local H, S, V = BaseColor:ToHSV()
-		H += Data.HueShift or 0
+		H += (Data.HueShift or 0) / 360
 		if (H > 1) then H -= 1 elseif (H < -1) then H += 1 end
 
 		local Highlight = Instance.new("Highlight")

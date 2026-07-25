@@ -8,6 +8,7 @@ local Types = require("../../Types/Stages")
 return {
     Name = "Training",
     Map = "General/Training", --"Dragon Ball/Namek",
+    Icon = 111390689929706,
 
     Acts = {
         Intro = {
@@ -90,7 +91,7 @@ return {
                     },
                     Enemies = {
                         [1] = {
-                            {Name = "Sorcerer", Amount = 1, Level = 60,}
+                            {Name = "Sorcerer", Amount = 2, Level = 60, Affected_Aura = true}
                         }
                     },
                     Dialogue = {

@@ -296,6 +296,12 @@ function ServerAgentClass:Rotate(...)
 	return self.__Character:Rotate(...)
 end
 
+function ServerAgentClass:SetCurrentSkill(Skill: string, Time: number?)
+	Time = Time or 9e12
+
+	self.__Character.States:SetCurrentSkill(Skill, Time)
+end
+
 function ServerAgentClass:GetCurrentSkill()
 	return self.__Character.States:GetCurrentSkill()
 end

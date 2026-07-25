@@ -204,7 +204,7 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
 
 
     -- Requests
-    local Id = Places:GetId(Stage)
+    local Id = Places:GetId('Mission')
     local Reserved = ReserveServerForPlace(Id)
     local Success = TeleportPlayerGroupAttempt(Id, Reserved, Party:GetRawPlayers(), TeleportData)
 

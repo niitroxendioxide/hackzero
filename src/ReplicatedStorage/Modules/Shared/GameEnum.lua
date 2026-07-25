@@ -155,6 +155,7 @@ return {
 	AbilityHooks = {
 		BeforeBeginConnection = 1,
 		BeforeReleaseConnection = 2,
+		BeforeCancel = 2,
 	},
 
 	Afflictions = {

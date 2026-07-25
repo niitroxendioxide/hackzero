@@ -221,6 +221,7 @@ function EnemyClass:Init(Key: number)
 	self.__Appearance:JoinTo(self.__Movement.__Collider)
 	self.__Animator:Init()
 
+	self.__Movement:SnapToFirstGround()
 	self.__Appearance:SetRotationResponsiveness(30)
 
 	self.__Thread = ClockUtil:Heartbeat(function(delta: number)

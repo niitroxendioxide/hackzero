@@ -5,13 +5,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
+local World = require(ReplicatedStorage.Modules.Shared.World)
 local Animation = require(Client.Libraries.Animation)
 local Camera = require(Client.Libraries.Camera)
 local Types = require(Shared.Types.Abilities)
-local Statics = require(Shared.Database.Statics)
 local AbilityClass = require(Client.Classes.Ability)
-local Effects = require(Client.Libraries.Effects)
 
 
 --
@@ -27,28 +27,53 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, ctx)
 	
 	local HitList = {};
 	local Released = false;
-	local Limit = 1
-	local Time = 2;
+	local Limit = Ability:FromData("Limit");
+	local Time = Ability:FromData("Length");
+	local Frequency = 1 / 8
 	local HitCount = Ability:FromData("Hit_Count")
+	local Tracks = {}
 
 	local function ReleaseRasengan(Enemy: Types.ServerEnemy)
 		if Released then
 			return;
 		end
 
+
 		if Caster.__Player_Assigned == Players.LocalPlayer then
 			Camera:UseFov(0.25, 70, 0.25)
 			Camera:ResetZoom()
 		end
 
+		Ability:PlayAnimation(Caster, 'Naruto.Abilities.Special.RasenganRelease', {
+			Active_Time = 0.5
+		})
+
+		if hasHit then
+			Ability:Effect("Naruto_Rasengan", Caster, "Release")
+		end
+
+		task.delay(0.13 / (Ability:FromData("Speed") * Ability:FromData("Animation_Speed") * World:GetSpeed()), function()
+			Caster:ImpulseForward(-45, 0.2)
+		end)
+
+		for _, Track in Tracks do
+			Track:Stop()
+		end
+
 		Released = true
 
 		for GrabbedEnemy in HitList do
+			Ability:Effect("Naruto_RasenganHit", GrabbedEnemy, HitCount, Frequency)
+
 			task.spawn(function()
 				for i = 1, HitCount do
-					Ability:Hit(Caster, GrabbedEnemy, {EffectData = {HueShift = 50}})
+					Ability:Hit(Caster, GrabbedEnemy, {EffectData = {HueShift = 170}, NoHitStop = true})
 
-					task.wait(1 / 8)
+					if HitCount == i then
+						Ability:Effect("GroundRocksTrail", GrabbedEnemy, 0.25, false)
+					end
+
+					task.wait(Frequency)
 				end
 			end)
 		end
@@ -57,12 +82,18 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, ctx)
 			return
 		end
 
+		Ability:Effect("Naruto_RasenganHit", Enemy, HitCount, Frequency)
 		for i = 1, HitCount do
-			Ability:Hit(Caster, Enemy, {EffectData = {HueShift = 50}})
+			Ability:Hit(Caster, Enemy, {EffectData = {HueShift = 170}, NoHitStop = true})
+
+			if HitCount == i then
+				Ability:Effect("GroundRocksTrail", Enemy, 0.25, false)
+			end
 
 			task.wait(1 / 8)
 		end
 	end
+
 
 	Ability:Begin(Caster, {
 		{0, function(self: Types.Sequence)
@@ -106,7 +137,11 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, ctx)
 			end
 
 			Ability:CreateHitbox(Caster, Offset, Size, function(Enemy)
-				if Table:GetDictLength(HitList) > Limit then
+				if HitList[Enemy] then
+					return
+				end
+
+				if Table:GetDictLength(HitList) >= Limit then
 					ReleaseRasengan(Enemy)
 					Caster:Walk(0.001, 1, true)
 					if Track and Track.IsPlaying then
@@ -130,7 +165,11 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, ctx)
 
 				if not HitList[Enemy] then
 					HitList[Enemy] = true
-					Ability:Hit(Caster, Enemy, {})
+					Ability:Hit(Caster, Enemy, {NoAnim = true, EffectData = {HueShift = 170, Highlight = true, HighlightColor = Color3.fromRGB(255, 189, 57)},})
+
+					local Grab = Animation:GetAnim("Characters.Naruto.Abilities.Special.EnemyGrab")
+					local AnimTrack = Animation:Play(Enemy:GetModel(), Grab, 0, 1, 1)
+					table.insert(Tracks, AnimTrack)
 				end
 			end)
 		end},
@@ -145,5 +184,10 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, ctx)
 		end}
 	})
 end
+
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeCancel, function(Caster: Types.ClientAgent)
+	Caster:Walk(0.001, 1, true)
+	Ability:Effect("Naruto_Rasengan", Caster, "Release")
+end)
 
 return Ability

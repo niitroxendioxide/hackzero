@@ -185,7 +185,7 @@ function EnemyMovement:Update(Delta: number)
 
 		self.__Position += Movement
 
-		local Cast = workspace:Raycast(self.__Position, Vector3.yAxis * -100, World:GetEntityMapParams(false) :: RaycastParams)
+		local Cast = workspace:Raycast(self.__Position, Vector3.yAxis * -(self.__Height + 2.5), World:GetEntityMapParams(false) :: RaycastParams)
 		if Cast then
 			self.__Position = Cast.Position + Vector3.yAxis * self.__Height
 		end
@@ -200,6 +200,13 @@ function EnemyMovement:Update(Delta: number)
 
 	if self.__Collider and self.__debug_collider then
 		self.__debug_collider.CFrame = self.__Collider.CFrame
+	end
+end
+
+function EnemyMovement:SnapToFirstGround()
+	local Cast = workspace:Raycast(self.__Position, Vector3.yAxis * -500, World:GetEntityMapParams(false) :: RaycastParams)
+	if Cast then
+		self.__Position = Cast.Position + Vector3.yAxis * self.__Height
 	end
 end
 

@@ -192,6 +192,7 @@ function ServerEnemy:Init(Key: number)
 	local NextAttack = os.clock()
 	local Clock = os.clock()
 	self.__Snapfix = os.clock()
+	self.__Movement:SnapToFirstGround()
 	self.__Thread = ClockUtil:Heartbeat(function(delta: number)
 		--
 		if self:GetState() == 'Attacking' and os.clock() - Clock > 1/30 then

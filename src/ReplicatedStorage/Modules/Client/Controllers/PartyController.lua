@@ -45,6 +45,9 @@ function Controller:Init()
             elseif StageData.MapAnalysisData then
                 NewComponent:SetMode('Mission')
                 NewComponent:UpdateStages(StageData)
+            elseif StageData.Training then
+                NewComponent:SetMode('Expedition')
+                NewComponent:UpdateStageInfo('Expedition/Training/Intro')
             else
                 NewComponent:SetMode('Mission')
                 NewComponent:UpdateMissions(StageData)
@@ -52,6 +55,7 @@ function Controller:Init()
 
             StageData.Rewards = StageData.Rewards or {}
             NewComponent:ShowRewards(StageData.Rewards)
+
         elseif Type == GameEnum.PartyManaging.Join then
             NewComponent:Set(true)
             local List, Owner = Controller:GetPlayerListForParty(ServerResponse :: CompressedParty)
@@ -60,34 +64,43 @@ function Controller:Init()
             for Name, Data in List do
                 NewComponent:AddPlayerToList(Name, Data, Name == Owner)
             end
+
         elseif Type == GameEnum.PartyManaging.PlayerJoined then
             local Data = ServerResponse :: CompressedParty
             NewComponent:AddPlayerToList(Data[1], Controller:BufferToTeamString(Data[2]), false)
+
         elseif Type == GameEnum.PartyManaging.PlayerLeft then
             local Data = ServerResponse :: CompressedParty
             NewComponent:RemovePlayerFromlist(Data[1])
+
         elseif Type == GameEnum.PartyManaging.Leave then
             NewComponent:Set(false)
             NewComponent:Clear()
+
         elseif Type == GameEnum.PartyManaging.Queue then
             --local Data = (ServerResponse :: {string})
             NewComponent:SetQueueing(true)
+
         elseif Type == GameEnum.PartyManaging.Failed then
             local ErrorMessage = ServerResponse :: string
 
             warn("Server received error:", ErrorMessage)
             NewComponent:SetQueueing(false)
+
         elseif Type == GameEnum.PartyManaging.SetReady then
             local ReadyCount = (ServerResponse :: {})[1]
             local PlayerIdReady = (ServerResponse :: {})[2]
 
             NewComponent:SetPlayerReady(ReadyCount, PlayerIdReady)
+
         elseif Type == GameEnum.PartyManaging.RemoveReady then
             NewComponent:RemoveReady()
+
         elseif Type == GameEnum.PartyManaging.ChangeTeam then
             local PlayerTeamData = ServerResponse :: CompressedParty
 
             --PartyComponent:UpdateTeam(PlayerTeamData[1], Controller:BufferToTeamString(PlayerTeamData[2] :: buffer))
+
         elseif Type == GameEnum.PartyManaging.ChangeStage then
             local PartyStageData = ServerResponse :: {string}
 
