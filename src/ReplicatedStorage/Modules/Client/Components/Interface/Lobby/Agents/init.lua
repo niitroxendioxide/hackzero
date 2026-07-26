@@ -386,6 +386,10 @@ function Component:Init()
             return
         end
 
+        if States.__Current_Agent.Level >= Statics.Max_Character_Level then
+            return
+        end
+
         Element:ShowAgentFeeding(States.__Current_Agent.Name)
     end)
 
@@ -442,9 +446,9 @@ function Component:CheckAvailable(): boolean
 end
 
 function Component:RefreshInformation(LevelUp: boolean)
-    Component:SelectAgent(States.__Current_Agent)
-
     if States.__Last_Tab == 'Stats' then
+        Component:ShowStats(States.__Current_Agent)
+
         local Element = UIGroups:GetElementClass("Feeding", "Feeding")
 
         if LevelUp then
@@ -1147,7 +1151,7 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
     local StatBuffs = CalculateAgentStatBuffs(AgentData)
 
     local AddPercent = {"Critical_Damage", "Critical_Rate", "Pen_Ratio"}
-    local Ignored = {"Penetration", "Jog_Speed", "Walk_Speed", "Sprint_Speed"}
+    local Ignored = {"Penetration", "Jog_Speed", "Walk_Speed", "Sprint_Speed", "Speed"}
     local RenamedStat = {
         ['Health'] = "HP",
         ['Defense'] = "DEF",
@@ -1206,6 +1210,8 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
     local Nickname = AgentInfo.Nickname
     local NewText = ""
 
+    AgentDataFrame.Level.AgentLevel.Text = `Lvl. {AgentData.Level}`
+
     for i = 1, #Nickname do
         local TextChar = string.sub(Nickname, i, i)
         if TextChar == " " then
@@ -1228,7 +1234,6 @@ function Component:ShowStats(AgentData: Types.ClientAgentData)
     EffectUtil:Tween(AgentDataFrame.Level.FillHolder.Fill, { .25, 'Quad' }, { Size = UDim2.fromScale(math.clamp(Percent * 0.9, 0, 0.9), 1) })
     EffectUtil:Tween(AgentDataFrame.Level.FillHolder.Strokes, { .25, 'Quad' }, { Size = UDim2.fromScale(math.clamp(Percent * 0.9, 0, 0.9), 1) })
 
-    AgentDataFrame.Level.AgentLevel.Text = `Lvl. {AgentData.Level}`
 end
 
 function Component:DisplayDodges(Current: number, Max: number)

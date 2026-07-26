@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 
 local Companions = require(ReplicatedStorage.Modules.Shared.Types.Companions)
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Statics = require(Shared.Database.Statics)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
@@ -109,6 +110,8 @@ function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
     local Agent = DataService:GetAgent(Player, AgentName)
 
     if Agent.Level >= Statics.Max_Character_Level then
+        Debugger:DebugLine("Agent Level", `Character maxxed out: {AgentName}`, 1)
+
         return
     end
 
@@ -128,6 +131,7 @@ function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
         return (BItem.Other.FeedExp < AItem.Other.FeedExp) 
     end)
 
+
     for _, Item in Keys do
         local Count = Items[Item]
         local ItemInfo = ItemDatabase:GetItemData(Item)
@@ -141,6 +145,11 @@ function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
         local UsedCount = 1
         for CurCount = Count, 1, -1 do
             if (TotalExperience + ItemInfo.Other.FeedExp * CurCount) <= MaxExperience then
+                if (Count >= CurCount + 1) and (TotalExperience + ItemInfo.Other.FeedExp * (CurCount + 1) >= MaxExperience) then
+                    UsedCount = CurCount + 1
+                    break
+                end
+
                 UsedCount = CurCount
                 break
             end
@@ -160,7 +169,6 @@ function Service:LevelAgent(Player: Player, AgentName: string, Items: {})
         Agent.Level += 1
         Next = Statics.Experience_For_Level(Agent.Level + 1)
 
-        print('Hello!')
         if Next == nil then
             break;
         end

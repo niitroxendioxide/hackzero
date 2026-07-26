@@ -29,7 +29,7 @@ local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 local PlayerCompanionDataClass = require(Classes.Data.PlayerCompanionData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("ArtifactSubstatRework", ProfileTemplate)
+local DataStore = ProfileStore.New("_resetlevels", ProfileTemplate)
 
 --
 local ReplicatedKeys = {"Gems", "Money"}

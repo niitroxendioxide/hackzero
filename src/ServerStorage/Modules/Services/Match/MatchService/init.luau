@@ -50,8 +50,6 @@ function Service:Init()
     Network.new("Match", "Event")
 
     if not Places:CanFight() then
-        print('Cannot fight.')
-
         return;
     end
 

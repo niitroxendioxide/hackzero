@@ -91,7 +91,6 @@ function ComponentClass:Set(Visible: boolean?, Raw: boolean)
 
 	if self.__UI_State ~= self.__Main_Frame.Visible then
 		for _, Event in self.__Next_Events do
-			print('fired event!')
 			task.spawn(Event)
 		end
 	end

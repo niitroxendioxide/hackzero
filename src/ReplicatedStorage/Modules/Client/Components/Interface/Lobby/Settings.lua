@@ -33,23 +33,28 @@ function HighlightOption(Holder, SelectedOption)
 
         if Option == SelectedOption then
             EffectUtil:Tween(Option.Design.UIScale, {.3, 'Back'}, {Scale = 1})
-            EffectUtil:Tween(Option.Design, Info, {BackgroundTransparency = 0.85})
-            EffectUtil:Tween(Option.Design.UIStroke, Info, {Transparency = 0.5})
+            EffectUtil:Tween(Option.Design.Outer, Info, {Color = Color3.new(1, 1, 1)})
+            EffectUtil:Tween(Option.Design.UIShadow, Info, {Color = Color3.new(0.666667, 0.666667, 0.666667)})
         else
             EffectUtil:Tween(Option.Design.UIScale, {.3, 'Back'}, {Scale = 0.9})
-            EffectUtil:Tween(Option.Design, Info, {BackgroundTransparency = 0.95})
-            EffectUtil:Tween(Option.Design.UIStroke, Info, {Transparency = 0.85})
+            EffectUtil:Tween(Option.Design.Outer, Info, {Color = Color3.new()})
+            EffectUtil:Tween(Option.Design.UIShadow, Info, {Color = Color3.new()})
         end
     end
 end
 
-function ToggleSetting(Category: string, Key: string, Holder: Instance)
+function ToggleSetting(Category: string, Key: string, Holder: Instance, Id: number)
     local SettingObj = Assets.Interface.Lobby.Settings.Setting:Clone()
     local Toggle = Assets.Interface.Lobby.Settings.ToggleButton:Clone()
+
+    if (Id % 2 == 0) then
+        SettingObj.SettingName.BackgroundColor3 = Color3.fromRGB(38, 38, 38)
+    end
 
     local SettingCorrectedName = string.gsub(Key, "_", " ")
     SettingObj.SettingName.Label.Text = StringUtil:SplitTitleCaps(SettingCorrectedName)
     SettingObj.Name = Key;
+    SettingObj.LayoutOrder = Id;
     SettingObj.Parent = Holder
     Toggle.Parent = SettingObj;    
     Toggle.Button.MouseButton1Click:Connect(function()
@@ -66,16 +71,26 @@ function DisplayValue(Category: string, Key: string, State: any)
     local SettingObj = Opts:FindFirstChild(Category) and Opts[Category].List:FindFirstChild(Key)
     
     if typeof(State) == 'boolean' and SettingObj then
-        local Icon = SettingObj.ToggleButton.Toggle.Icon;
+        local Toggle = SettingObj.ToggleButton.Toggle
+        local Icon = Toggle.Icon;
+
+        EffectUtil:Tween(Icon.UIScale, {.1, 'Sine', 'InOut', 0, true}, {Scale = 0.75})
 
         if State then
-            EffectUtil:Tween(Icon.UIStroke, {1 / 3, 'Cubic'}, {Color = Color3.fromRGB(130, 255, 47)})
-            EffectUtil:Tween(Icon, {1 / 3, 'Cubic'}, {BackgroundColor3 = Color3.fromRGB(79, 182, 0)})
-            EffectUtil:Tween(Icon, {.2, 'Sine'}, {Position = UDim2.fromScale(0.775, .5)})
+            Toggle.Color.OffText.Visible = false
+            Toggle.Color.OnText.Visible = true
+            EffectUtil:Tween(Toggle.Color, { 0.175 }, {BackgroundColor3 = Color3.fromRGB(65, 179, 4)})
+            EffectUtil:Tween(Icon.UIStroke, { 0.25, 'Cubic'}, {Color = Color3.fromRGB(130, 255, 47)})
+            EffectUtil:Tween(Icon, {0.25, 'Cubic'}, {BackgroundColor3 = Color3.fromRGB(79, 182, 0)})
+            EffectUtil:Tween(Icon, {.2, 'Quad', 'InOut'}, {Position = UDim2.fromScale(0.818, .5)})
         else
-            EffectUtil:Tween(Icon.UIStroke, {1 / 3, 'Cubic'}, {Color = Color3.fromRGB(255, 47, 47)})
-            EffectUtil:Tween(Icon, {1 / 3, 'Cubic'}, {BackgroundColor3 = Color3.fromRGB(182, 0, 0)})
-            EffectUtil:Tween(Icon, {.2, 'Sine'}, {Position = UDim2.fromScale(0.33, .5)})
+            Toggle.Color.OffText.Visible = true
+            Toggle.Color.OnText.Visible = false
+            EffectUtil:Tween(Toggle.Color, { 0.175 }, {BackgroundColor3 = Color3.fromRGB(226, 37, 37)})
+            EffectUtil:Tween(Icon.UIStroke, {0.25, 'Cubic'}, {Color = Color3.fromRGB(255, 47, 47)})
+            EffectUtil:Tween(Icon, { 0.25, 'Cubic'}, {BackgroundColor3 = Color3.fromRGB(182, 0, 0)})
+            EffectUtil:Tween(Icon, {.2, 'Quad', 'InOut'}, {Position = UDim2.fromScale(0.33, .5)})
+            
         end
     end
 end
@@ -133,11 +148,14 @@ function Component:Init()
             HighlightOption(MainFrame.Settings.TabList, TabSideButton)
         end)
 
+        local Counter = 1;
         for _, SettingName in Settings:ListOptions(Key) do
             local SettingValue = Settings:Get(SettingName, Key)
             if typeof(SettingValue) == 'boolean' then
-                ToggleSetting(Key, SettingName, TabHolder.List)
+                ToggleSetting(Key, SettingName, TabHolder.List, Counter)
             end
+
+            Counter += 1;
         end
     end
 

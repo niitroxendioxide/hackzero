@@ -10,6 +10,33 @@ local EffectsUtil = require(Shared.Utility.Effects)
 
 local Util = {}
 
+function Util:DisplayErrorMessage(Text: string, Time: number?)
+    local EffectsHUD = LocalPlayer.PlayerGui:FindFirstChild("EffectsHUD")
+    if not EffectsHUD then
+        return
+    end
+
+    local List = EffectsHUD:FindFirstChild("Errors"):FindFirstChild("List")
+    if not List then
+        return
+    end
+
+    ---
+    local Assets = ReplicatedStorage.Assets.Interface.Lobby
+    local ErrorMessage = Assets.ErrorMsg:Clone();
+    ErrorMessage.TextLabel.Text = Text;
+    ErrorMessage.Parent = List;
+
+    EffectsUtil:Tween(ErrorMessage.TextLabel, { .2, 'Quad' }, {Position = UDim2.fromScale(0, 0)})
+
+    task.delay(Time, function()
+        EffectsUtil:Tween(ErrorMessage.TextLabel, { .4, 'Quad' }, {TextTransparency = 1})
+        EffectsUtil:Tween(ErrorMessage.TextLabel.UIStroke, { .25, 'Quad' }, {Transparency = 1})
+
+        EffectsUtil:CleanUp(ErrorMessage, 0.4)
+    end)
+end
+
 function Util:Transition(Label: string, Time: number)
     local EffectsHUD = LocalPlayer.PlayerGui:FindFirstChild("EffectsHUD")
     if not EffectsHUD then
@@ -76,9 +103,9 @@ function Util:AnimateReturnButton(Button: Frame, Callback: (...any) -> ()): ()
             while true do
                 local Delta = task.wait()
 
-                Angle += Delta * 360
+                ReturnHolder.UIStroke.Thickness = 0.11 - math.cos(math.rad(Angle)) * 0.03
 
-                ReturnHolder.UIStroke.Thickness = 0.12 - math.cos(math.rad(Angle)) * 0.02
+                Angle += Delta * 360
             end
         end)
 

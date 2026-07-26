@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local Assets = ReplicatedStorage.Assets
 
+local UIEffects = require(ReplicatedStorage.Modules.Client.Utility.UIEffects)
 local Statics = require(Shared.Database.Statics)
 local GameEnum = require(Shared.GameEnum)
 local Network = require(Shared.Network)
@@ -36,6 +37,7 @@ local function Feed()
         return
     end
 
+    local MaxxesOut = HasEnoughExp()
     local UpgradeType = States.Type == "Agent" and GameEnum.BuildEvent.LevelAgent or GameEnum.BuildEvent.LevelCompanion
 
     Network:Fire("UpdateAgent", UpgradeType, {States.SelectedAgent, States.SelectedFeedItems})
@@ -45,6 +47,8 @@ local function Feed()
     end
 
     UpdatePreview()
+
+    return MaxxesOut
 end
 
 local function ToggleItemMenu(State: boolean)
@@ -78,6 +82,18 @@ local function ToggleItemMenu(State: boolean)
         if Exists then continue end
 
         Object.Button.MouseButton1Click:Connect(function()
+            Object.Design.UIScale.Scale = 0.8
+            Object.Used.UIScale.Scale = 1.1
+            EffectUtil:Tween(Object.Design.UIScale, { 0.5, 'Back', 'Out' }, {Scale = 1})
+            EffectUtil:Tween(Object.Used.UIScale, { 0.4, 'Back', 'Out' }, {Scale = 1})
+
+            --- Logic
+            if HasEnoughExp() then
+                UIEffects:DisplayErrorMessage("Enough items to max out character.", 1.5)
+
+                return
+            end
+
             local ItemDataUpd = LocalData:GetItemById(Name)
             local UpdatedOwnedAmount = ItemDataUpd and ItemDataUpd.Amount or 0
             local Amount = States.SelectedFeedItems[Name]
@@ -89,12 +105,7 @@ local function ToggleItemMenu(State: boolean)
             Object.Used.Visible = true
             Object.Used.Amount.Text = `{States.SelectedFeedItems[Name]}`
             Object.Amount.Text = `{UpdatedOwnedAmount - States.SelectedFeedItems[Name]}`
-
-            Object.Design.UIScale.Scale = 0.8
-            Object.Used.UIScale.Scale = 1.1
-            EffectUtil:Tween(Object.Design.UIScale, { 0.5, 'Back', 'Out' }, {Scale = 1})
-            EffectUtil:Tween(Object.Used.UIScale, { 0.4, 'Back', 'Out' }, {Scale = 1})
-
+            
             AddItemToFeed(Name, UpdatedOwnedAmount)
         end)
 
@@ -186,6 +197,35 @@ function RemoveItemToFeed(Name: string, RemoveAll: boolean?)
     end
 end
 
+function HasEnoughExp()
+    if States.SelectedAgent == nil or #States.SelectedAgent <= 1 then
+        return
+    end
+
+    local IsAgent = States.Type == 'Agent'
+    local CharacterData = IsAgent and LocalData:GetAgent(States.SelectedAgent) or LocalData:GetCompanion(States.SelectedAgent)
+    
+    local NeededTotal = 0
+    for i = CharacterData.Level + 1, 60 do
+        local NeededExpForLevel = IsAgent and Statics.Experience_For_Level(i) or Statics.Companion_Experience_For_Level(i)
+        NeededTotal += NeededExpForLevel
+    end
+
+    local Total = CharacterData.Experience
+    for Item, Count in States.SelectedFeedItems do
+        local ValidItemData = ItemDatabase:GetItemData(Item)
+        if not ValidItemData or not ValidItemData.Other or not ValidItemData.Other.FeedExp then continue end
+
+        Total += ValidItemData.Other.FeedExp * Count
+    end
+
+    if Total >= NeededTotal then
+        return true 
+    end
+
+    return false
+end
+
 local LastLevelPreview = 0;
 function UpdatePreview()
     local MainFrame = Component:GetFrame()
@@ -226,8 +266,6 @@ function UpdatePreview()
 
         Total += ValidItemData.Other.FeedExp * Count
     end
-
-    --local TotalAddedExperience = Total
 
     while Total > ExpForLevel do
         AddedLevels += 1
@@ -297,15 +335,24 @@ function Component:Init()
     local TransitionTime = {0.3, 'Back'}
     local CloseButtonMain = MainFrame.Agent.Close
 
+    local function CloseAndClean()
+        self:Set(false)
+
+        for Item in States.SelectedFeedItems do
+            RemoveItemToFeed(Item, true)
+        end
+        States.SelectedFeedItems = {}
+        ToggleItemMenu(false)
+    end
+
     CloseButtonMain.Button.MouseButton1Click:Connect(function()
         if self.__UI_State == false then
             return
         end
 
-        self:Set(false)
+        CloseAndClean()
         CloseButtonMain.UIScale.Scale = 0.75
         EffectUtil:Tween(CloseButtonMain.UIScale, {0.3, 'Back'}, {Scale = 1})
-        ToggleItemMenu(false)
     end)
 
     CloseButtonMain.Button.MouseEnter:Connect(function()
@@ -344,7 +391,11 @@ function Component:Init()
 
     local UpgradeButton = MainFrame.Agent.Upgrade
     UpgradeButton.Btn.MouseButton1Click:Connect(function()
-        Feed()
+        local Maxxed = Feed()
+
+        if Maxxed then
+            CloseAndClean()
+        end
 
         UpgradeButton.UIScale.Scale = 0.9
         EffectUtil:Tween(UpgradeButton.UIScale, { 0.4, 'Back', 'Out' }, {Scale = 1})
@@ -396,7 +447,6 @@ function Component:Init()
     local CloseButtonList = MainFrame.Agent.ItemList.Close
     CloseButtonList.Button.MouseButton1Click:Connect(function()
         CloseButtonList.UIScale.Scale = 0.75
-        States.SelectedFeedItems = {}
         EffectUtil:Tween(CloseButtonList.UIScale, {0.3, 'Back'}, {Scale = 1})
         ToggleItemMenu(false)
     end)

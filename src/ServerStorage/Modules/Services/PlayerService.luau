@@ -147,6 +147,7 @@ function Service:Init(): ()
 	Players.PlayerRemoving:Connect(Service.PlayerRemoving)
 end
 
+
 function Service:SetupStarterPlayer(): ()
 	if not Places:CanFight() then return end;
 

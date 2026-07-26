@@ -657,6 +657,7 @@ export type PartyClass = {
 	GetPlayers: (self: PartyClass) -> {PartyPlayer},
 	GetRawPlayers: (self: PartyClass) -> ({Player}),
 	GetMaxPlayers: (self: PartyClass) -> (number),
+	GetPlayerCount: (self: PartyClass) -> (number),
 	GetDifficulty: (self: PartyClass) -> (string),
 	SwitchStage: (self: PartyClass, Type: string, Stage: string, Act: string) -> (),
 

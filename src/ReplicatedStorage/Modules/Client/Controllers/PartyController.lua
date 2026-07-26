@@ -13,6 +13,7 @@ local Characters = require(Database.Characters)
 
 --
 local InterfaceController = require(ReplicatedStorage.Modules.Client.Controllers.InterfaceController)
+local UIEffects = require(ReplicatedStorage.Modules.Client.Utility.UIEffects)
 
 
 type CompressedParty = {number | buffer}
@@ -38,44 +39,37 @@ function Controller:Init()
 
             NewComponent:Set(true)
             NewComponent:SetPartyOwner(Player.UserId)
-            NewComponent:AddPlayerToList((ServerResponse :: CompressedParty)[1])
-            
-            if StageData.ChaosControlData then
-                NewComponent:SetMode('ChaosControl', StageData)
-            elseif StageData.MapAnalysisData then
-                NewComponent:SetMode('Mission')
-                NewComponent:UpdateStages(StageData)
-            elseif StageData.Training then
-                NewComponent:SetMode('Expedition')
-                NewComponent:UpdateStageInfo('Expedition/Training/Intro')
-            else
-                NewComponent:SetMode('Mission')
-                NewComponent:UpdateMissions(StageData)
-            end
+            NewComponent:AddPlayerToList(Player.UserId, 1)
+        
+            Controller:FilterWithStageData(StageData)
 
             StageData.Rewards = StageData.Rewards or {}
             NewComponent:ShowRewards(StageData.Rewards)
 
         elseif Type == GameEnum.PartyManaging.Join then
             NewComponent:Set(true)
-            local List, Owner = Controller:GetPlayerListForParty(ServerResponse :: CompressedParty)
 
+            local PlayerBuffers = ServerResponse :: CompressedParty
+            local List, Owner = Controller:GetPlayerListForParty(PlayerBuffers)
+
+            Controller:FilterWithStageData(StageData)
             NewComponent:SetPartyOwner(Owner)
-            for Name, Data in List do
-                NewComponent:AddPlayerToList(Name, Data, Name == Owner)
+            for PlayerId in List do
+                NewComponent:AddPlayerToList(PlayerId, StageData[3])
             end
 
         elseif Type == GameEnum.PartyManaging.PlayerJoined then
-            local Data = ServerResponse :: CompressedParty
-            NewComponent:AddPlayerToList(Data[1], Controller:BufferToTeamString(Data[2]), false)
+            local Data = ServerResponse
+
+            NewComponent:AddPlayerToList(Data[1], Data[2])
 
         elseif Type == GameEnum.PartyManaging.PlayerLeft then
-            local Data = ServerResponse :: CompressedParty
-            NewComponent:RemovePlayerFromlist(Data[1])
+            local Data = ServerResponse
+            NewComponent:RemovePlayerFromList(Data[1], Data[2])
 
         elseif Type == GameEnum.PartyManaging.Leave then
-            NewComponent:Set(false)
             NewComponent:Clear()
+            NewComponent:Set(false)
 
         elseif Type == GameEnum.PartyManaging.Queue then
             --local Data = (ServerResponse :: {string})
@@ -84,7 +78,8 @@ function Controller:Init()
         elseif Type == GameEnum.PartyManaging.Failed then
             local ErrorMessage = ServerResponse :: string
 
-            warn("Server received error:", ErrorMessage)
+            UIEffects:DisplayErrorMessage("Server error:" .. ErrorMessage, 3)
+
             NewComponent:SetQueueing(false)
 
         elseif Type == GameEnum.PartyManaging.SetReady then
@@ -97,7 +92,7 @@ function Controller:Init()
             NewComponent:RemoveReady()
 
         elseif Type == GameEnum.PartyManaging.ChangeTeam then
-            local PlayerTeamData = ServerResponse :: CompressedParty
+            --local PlayerTeamData = ServerResponse :: CompressedParty
 
             --PartyComponent:UpdateTeam(PlayerTeamData[1], Controller:BufferToTeamString(PlayerTeamData[2] :: buffer))
 
@@ -109,10 +104,28 @@ function Controller:Init()
     end)
 end
 
+function Controller:FilterWithStageData(ServerPartyData: { [string]: any })
+    local Stage = ServerPartyData[1]
+    local Data = ServerPartyData[2]
+    local NewComponent = InterfaceController:GetComponent("NewPartyComponent")
+
+    if Data.ChaosControlData then
+        NewComponent:SetMode('ChaosControl', Data)
+    elseif Data.Training then
+        NewComponent:SetMode('Expedition')
+        NewComponent:UpdateStageInfo('Expedition/Training/Intro')
+    elseif Data.MissionId then
+        NewComponent:SetMode('Mission')
+        NewComponent:UpdateStageInfo(Stage)
+    else
+        NewComponent:SetMode('Mission')
+        NewComponent:UpdateStageInfo(Stage)
+        NewComponent:UpdateMissions(Data or {})
+    end
+end
+
 function Controller:GetPlayerListForParty(Compressed: CompressedParty)
     local List = {}
-
-    print("Full list:", Compressed)
 
     for i = 1, #Compressed, 2 do
         if i == #Compressed then

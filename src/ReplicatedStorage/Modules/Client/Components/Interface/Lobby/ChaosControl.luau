@@ -230,6 +230,7 @@ function CreateNodes(StageType: string, NodeCount: number)
     end
 
     States.CurrentTab = StageType
+    print(States.CurrentTab)
 
     local MainFrame = Component:GetFrame()
     local NodeList = Assets.Lobby.Nodes
@@ -474,6 +475,8 @@ function Component:Init()
         end
 
         self:Set(false)
+        print('Current tab: ', GameEnum.ChaosControlTab[States.CurrentTab], States.CurrentTab)
+
         Network:Fire("ChaosControl", GameEnum.ChaosControlAction.Begin, GameEnum.ChaosControlTab[States.CurrentTab], States.SelectedNode)
     end)
 
@@ -543,6 +546,8 @@ function Component:Init()
 
 
             ---
+            States.CurrentTab = ""
+
             if not States.Pulled then
                 local RetrievedData = Fetcher:FetchChaosControl(GameEnum.ChaosControlAction.Amount, GameEnum.ChaosControlTab.DailyImprovement)[1]
                 
@@ -565,7 +570,6 @@ function Component:Init()
 
             ClearNodes()
             ShowInformation(nil)
-            States.CurrentTab = ""
 
             local LobbyMain = UIGroups:GetElementClass('Lobby', 'MainMenu')
             LobbyMain:Set(true, true)

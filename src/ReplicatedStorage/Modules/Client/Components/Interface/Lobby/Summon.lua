@@ -88,6 +88,7 @@ function Component:Init()
 		end
 
 		if not State then
+			BaseFrame.Visible = true
 			Canvas.GroupTransparency = 0;
 			BaseFrame.Parent = Canvas;
 			Effects:Tween(BaseFrame.UIScale, {0.275, 'Quad'}, {Scale = 0.8})
@@ -104,6 +105,7 @@ function Component:Init()
 
 			CancelThread = task.delay(0.25, function()
 				BaseFrame.Parent = Main;
+				BaseFrame.Visible = false
 			end)
 		end
 	end)

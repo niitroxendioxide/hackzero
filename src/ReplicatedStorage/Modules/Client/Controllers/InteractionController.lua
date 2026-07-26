@@ -240,7 +240,7 @@ function Controller:SetupLobbyNPCS()
     --- Mission NPCS
     for _, NPC in NPCFolder:GetChildren() do
         local Id = NPC.Name;
-        print(Id)
+        --print(Id)
 
         if Id == 'ChaosControlRig' then
             NPC:SetAttribute("UIElement", "ChaosControl")

@@ -20,7 +20,7 @@ local function HandleEvent(Player: Player, Type: string, ...)
         PlayerParty:SwitchStage("Expedition", "Training", "Intro")
         PlayerParty:SetData({Training = true})
 
-        Network:Fire("Party", Player, GameEnum.PartyManaging.Create, PlayerParty:Compress(), PlayerParty:GetData())
+        Network:Fire("Party", Player, GameEnum.PartyManaging.Create, PlayerParty:Compress(), {PlayerParty:GetStage(), PlayerParty:GetData()})
     end
 end
 

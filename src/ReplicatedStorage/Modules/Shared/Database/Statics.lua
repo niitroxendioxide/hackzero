@@ -25,7 +25,7 @@ local GetExpForLevel; GetExpForLevel = function(level)
 			exp = exp + 900 + 300 * (l - 41)
 		end
 		return exp
-	else
+	elseif level <= 60 then
 		if level == 50 then return 450000 end
 		local exp = 450000
 		for l = 51, level do
@@ -33,6 +33,17 @@ local GetExpForLevel; GetExpForLevel = function(level)
 		end
 
 		return exp
+	else
+		local exp = 600000
+		if level == 61 then
+			return exp
+		end
+
+		for i = 61, level do
+			exp += 3000 + (3000 + 100 * (i-61)) * (i - 61)
+		end
+
+		return
 	end
 end
 

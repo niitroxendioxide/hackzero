@@ -44,7 +44,7 @@ function EffectUtil:Tween(Object: Instance, Info: {number | string | boolean | n
 		Time,
 		Enum.EasingStyle[Ease] :: Enum.EasingStyle,
 		Enum.EasingDirection[Direction] :: Enum.EasingDirection,
-		0,
+		Info[4] or 0,
 		Reverse,
 		Delay
 	)

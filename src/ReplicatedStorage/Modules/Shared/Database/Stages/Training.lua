@@ -137,20 +137,6 @@ return {
                         return "NextStage"
                     end
                 },
-
-                CutsceneTest = {
-                    Cutscene = "TrainingAreaTest",
-                    Objective = "Cutscene test!",
-                    Global = true,
-                    Goal = {},
-                    Enemies = {
-                        [1] = {"Immortal", 1, 60},
-                    },
-
-                    Finished = function()
-                        return "End"
-                    end
-                }
             },
         },
     },

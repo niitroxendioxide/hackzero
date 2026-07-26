@@ -31,12 +31,10 @@ local Service = {
 
 local function NotifyJoinForParty(Party: string, Joined: Player): ()
     local PartyClass = Service:GetParty(Party)
-    local PlayerClass = Service:GetClass(Joined)
+    local Sent = {Joined.UserId, PartyClass:GetPlayerCount()}
 
     for _, PartyUser in PartyClass:GetRawPlayers() do
         if PartyUser == Joined then continue end
-
-        local Sent = {Joined.UserId, PartyClass:GetPlayerCompressedTeam(PlayerClass)}
 
         Network:Fire("Party", PartyUser, GameEnum.PartyManaging.PlayerJoined, Sent)
     end
@@ -49,6 +47,31 @@ function Service:Init()
 end
 
 function Service:ClearPlayer(Player: Player)
+    local Code = Service:GetCode(Player)
+    if Code then
+        local Party = Service:GetParty(Code)
+        local Class = Service:GetClass(Player)
+
+        if Party then
+            if Party:IsOwner(Class) then
+                Service:DeleteParty(Code)
+            else
+                Party:RemovePlayer(Class)
+
+                local Sent = {Player.UserId, Party:GetPlayerCount()}
+                for _, PartyUser in Party:GetRawPlayers() do
+                    if PartyUser == Player then continue end
+
+                    Network:Fire("Party", PartyUser, GameEnum.PartyManaging.PlayerLeft, Sent)
+                end
+
+                if Sent[2] <= 0 then
+                    Service:DeleteParty(Code)
+                end
+            end
+        end
+    end
+
     if Service.__Player_Classes[Player] then
         Service.__Player_Classes[Player] = nil
     end
@@ -80,16 +103,15 @@ function Service:SumUpTotalRewards(Player: Player, RewardList: { [string]: { {Ty
     return List
 end
 
-
 function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
     --print("Server received party request:", GameEnum.KeyLookup(GameEnum.PartyManaging, Type))
 
     if Type == GameEnum.PartyManaging.Create then
         local NewParty = Service:CreateParty(Player)
-        local StageData = DataService:Get(Player, "StagesUnlocked")
+        --local StageData = DataService:Get(Player, "StagesUnlocked")
 
         --
-        Network:Fire("Party", Player, GameEnum.PartyManaging.Create, NewParty:Compress(), StageData)
+        Network:Fire("Party", Player, GameEnum.PartyManaging.Create, NewParty:Compress(), {NewParty:GetStage(), NewParty:GetData()})
     elseif Type == GameEnum.PartyManaging.Join then
         local Request = {...}
         local Party = Service:GetParty(Request[1])
@@ -103,7 +125,7 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         NotifyJoinForParty(Request[1], Player)
 
         --
-        Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress())
+        Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress(), {Party:GetStage(), Party:GetData()})
     elseif Type == GameEnum.PartyManaging.ChangeStage then
         local Request = ({...})[1]
         local Party = Service:GetParty(Service:GetCode(Player)) :: Types.PartyClass
@@ -139,16 +161,20 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
     elseif Type == GameEnum.PartyManaging.Leave then
         local Code = Service:GetCode(Player)
         local Party = Service:GetParty(Code)
+
+        if Party:GetState() == GameEnum.PartyStates.Teleporting then
+            return
+        end
+
         Service:LeaveParty(Player)
-
         Network:Fire("Party", Player, GameEnum.PartyManaging.Leave)
-
+        
+        local Sent = {Player.UserId, Party:GetPlayerCount()}
         local Count = 0;
         for _, PartyUser in Party:GetRawPlayers() do
             if PartyUser == Player then continue end
 
             Count+=1;
-            local Sent = {Player.UserId}
 
             Network:Fire("Party", PartyUser, GameEnum.PartyManaging.PlayerLeft, Sent)
         end
@@ -165,6 +191,14 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         local ReadiedUp = Service:CanReadyUp(PlayerClass, Party)
         if not ReadiedUp or not IsValidated then
             Network:Fire("Party", PlayerClass.PlayerObject, GameEnum.PartyManaging.RemoveReady)
+            local ErrorMessage = "Bs error idk"
+            if not ReadiedUp then
+                ErrorMessage = "Must select a team with at least 1 character"
+            elseif not IsValidated then
+                ErrorMessage = "Invalid stage/mission set."
+            end
+
+            Network:Fire("Party", PlayerClass.PlayerObject, GameEnum.PartyManaging.Failed, ErrorMessage)
 
             return
         end
@@ -187,7 +221,15 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         local Result, Message = Service:Start(Player)
 
         if not Result then
-            Network:Fire("Party", Player, GameEnum.PartyManaging.Failed, Message)
+            if Party:GetState() ~= GameEnum.PartyStates.Teleporting then
+                return
+            end
+
+            Party:SetState(GameEnum.PartyStates.Idle)
+
+            for _, PartyPlayer in Party:GetRawPlayers() do
+                Network:Fire("Party", PartyPlayer, GameEnum.PartyManaging.Failed,  "Error on mission teleport: " .. Message)
+            end
         end
     elseif Type == GameEnum.PartyManaging.CancelReady then
         local Code = Service:GetCode(Player)
@@ -249,10 +291,9 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         local Party = Service:GetParty(Code)
 
         Service:JoinParty(Player, Code)
-
         NotifyJoinForParty(Code, Player)
 
-        Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress())
+        Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress(), {Party:GetStage(), Party:GetData(), Party:GetPlayerCount()})
 
 
         --- Moving
@@ -387,15 +428,23 @@ function Service:LeaveParty(Player: Player): ()
 end
 
 function Service:DeleteParty(Code: string): ()
-    Service.__Parties[Code]:Destroy()
+    local Party = Service.__Parties[Code]
 
+    for _, NetPlayer in Party:GetRawPlayers() do
+        Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.Leave)
+    end
+
+    Party:Destroy()
     Service.__Parties[Code] = nil
 end
 
 function Service:ValidateStage(Party: Types.PartyClass)
     local Split = string.split(Party:GetStage(), '/')
     if Split[1] == 'ChaosControl' then
+        print(Party:GetStage(), "it doesn't exist?")
         local StageExists = StagesDatabase:GetStage(Split[2])
+
+        print('Does it exist?', StageExists)
         if StageExists then
             return true
         end
@@ -411,20 +460,23 @@ function Service:ValidateStage(Party: Types.PartyClass)
     return true
 end
 
-function Service:Start(Player: Player): boolean
+function Service:Start(Player: Player, ForceStart: boolean): boolean
     local PlayerClass = Service:GetClass(Player)
     local Party = Service:GetParty(Service:GetCode(Player))
 
-    if not Party:IsOwner(PlayerClass) then
-        return false
+    if Party:GetState() ~= GameEnum.PartyStates.Idle then
+        return false, "Party is already teleporting"
+    end
+
+    if ForceStart and not Party:IsOwner(PlayerClass) then
+        return false, "Party owner did not start the mission"
+    end
+
+    if not Service:ValidateStage(Party) then
+        return false, "Invalid stage";
     end
 
     Party:SetState(GameEnum.PartyStates.Teleporting)
-
-    --
-    if not Service:ValidateStage(Party) then
-        return false;
-    end
 
     return TeleportService:TeleportGroup(Party:GetStagePlace(), Party, {})
 end

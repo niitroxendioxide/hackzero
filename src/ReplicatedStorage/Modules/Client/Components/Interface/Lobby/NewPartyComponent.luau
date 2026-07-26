@@ -13,6 +13,7 @@ local UIGroups = require(ReplicatedStorage.Modules.Client.Libraries.UIGroups)
 local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
 local Navigation = require(ReplicatedStorage.Modules.Client.States.Navigation)
 local RandomNameGen = require(ReplicatedStorage.Modules.Client.Utility.RandomNameGen)
+local UIEffects = require(ReplicatedStorage.Modules.Client.Utility.UIEffects)
 local Network = require(Shared.Network)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
@@ -134,6 +135,8 @@ local function HandlePlayButton()
         ChangePlayButtonState()
     else
         if #Component:Peek(States.Team) < 1 then
+            UIEffects:DisplayErrorMessage("Must select at least 1 Agent.", 3)
+
             return;
         end
 
@@ -145,7 +148,7 @@ local function HandlePlayButton()
 end
 
 function ChangePlayButtonState()
-    local MissionDock = Component:GetFrame():FindFirstChild("Mission")
+    local MissionDock = GetDock('Mission')
     local Play = MissionDock:FindFirstChild("Play")
     local Queueing = MissionDock:FindFirstChild("Queueing")
     local TotalReady = Component:Peek(States.TotalReady)
@@ -239,7 +242,7 @@ function SetDockState(DockName: string, State: boolean)
     end
 
     States[DockName] = State
-    print(`Set Dock [{DockName}] to: {State}`)
+    --print(`Set Dock [{DockName}] to: {State}`)
 
     if Threads[DockName] then
         task.cancel(Threads[DockName])
@@ -411,6 +414,10 @@ local function ClearParty()
     local MissionDock = States.MissionDock
     local PlayerList = MissionDock.UsersPlate.List :: ScrollingFrame
 
+    States.Queueing:set(false)
+    States.IsReady = false
+    ChangePlayButtonState()
+
     for _, Object in PlayerList:GetChildren() do
         if Object:IsA("Frame") then
             Object:Destroy()
@@ -520,7 +527,7 @@ function UpdateTeamPreviews()
     end
 end
 
-local function GetDock(DockName: string)
+function GetDock(DockName: string)
     return Component:GetFrame():FindFirstChild(DockName) or Component:GetFrame().Transition:FindFirstChild(DockName)
 end
 
@@ -660,9 +667,11 @@ function ShowStageInfo(CodeStage: string, Id: string)
 
     if Stage == 'Training' and Type == 'Expedition' then
         Act = 'Practice your skills'
+    elseif Act == 'None' then
+        Act = 'No mission selected'
     end
 
-    local StageData = StagesDatabase:GetStage(Stage)
+    local StageData = StagesDatabase:GetStage(Stage) or {}
 
     MapPlate.MapName.Text = String:SplitTitleCaps(Stage)
     MapPlate.ActName.Text = Act
@@ -888,14 +897,7 @@ function Component:Init()
 
     SetupCloseButton('Mission', function()  
         Network:Fire('Party', GameEnum.PartyManaging.Leave)
-        self:Set(false)
-
-
-        ---
-        local MainMenuUI = UIGroups:GetElementClass("Lobby", "MainMenu")
-        if MainMenuUI then
-            MainMenuUI:Set(true, true)
-        end
+        --self:Set(false)
     end)
 
     MissionDock.TeamPlate.Button.MouseButton1Click:Connect(function()
@@ -959,6 +961,11 @@ function Component:Init()
             Navigation:Set("CanInteract", true)
             SetDockState('Agents', false)
             SetDockState('Maps', false)
+
+            local MainMenuUI = UIGroups:GetElementClass("Lobby", "MainMenu")
+            if MainMenuUI then
+                MainMenuUI:Set(true, true)
+            end
         end
 
         --
@@ -990,11 +997,18 @@ function Component:RemoveReady()
     ChangePlayButtonState()
 end
 
-function Component:AddPlayerToList(ID: number)
-    States.PlayerCount:set(Component:Peek(States.PlayerCount) + 1)
+function Component:AddPlayerToList(ID: number, PlayerCount: number)
+    States.PlayerCount:set(PlayerCount)
     ChangePlayButtonState()
     
     return AddPlayerToList(ID)
+end
+
+function Component:RemovePlayerFromList(ID: number, PlayerCount: number)
+    States.PlayerCount:set(PlayerCount)
+    ChangePlayButtonState()
+
+    return RemovePlayer(ID)
 end
 
 function Component:UpdateStageInfo(CodeStage: string)
@@ -1003,13 +1017,6 @@ end
 
 function Component:ShowRewards(List: {})
     ShowRewards(List)
-end
-
-function Component:RemovePlayerFromlist(ID: number)
-    States.PlayerCount:set(Component:Peek(States.PlayerCount) - 1)
-    ChangePlayButtonState()
-
-    return RemovePlayer(ID)
 end
 
 function Component:UpdateStages(Table: {})

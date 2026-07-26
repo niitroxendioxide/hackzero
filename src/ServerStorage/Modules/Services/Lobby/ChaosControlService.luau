@@ -168,6 +168,7 @@ function CreatePartyForPlayer(Player: Player, Type: number, Args: { number })
         Completion = Table.CopyDeep(CompletionTemplate),
     }
 
+    print(Type, GameEnum.ChaosControlTab.DailyImprovement)
     if Type == GameEnum.ChaosControlTab.DailyImprovement then
         local SelectedReward = Service.__Nodes[Player] and Service.__Nodes[Player][NodeId]
         if not SelectedReward then
@@ -192,7 +193,7 @@ function CreatePartyForPlayer(Player: Player, Type: number, Args: { number })
     Party:SwitchStage('ChaosControl', PartyData.Stage.Stage, PartyData.Stage.Act)
     Party:SetData(PartyData)
 
-    Network:Fire("Party", Player, GameEnum.PartyManaging.Create, Party:Compress(), PartyData)
+    Network:Fire("Party", Player, GameEnum.PartyManaging.Create, Party:Compress(), {Party:GetStage(), PartyData})
 end
 
 ----- Private

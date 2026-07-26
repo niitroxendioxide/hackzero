@@ -2,8 +2,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
-local PartyPlayer = require(script.Parent.PartyPlayer)
-local Play = require(ReplicatedStorage.Modules.Client.Components.Areas.Play)
 local Types = require(Shared.Types)
 local GameEnum = require(Shared.GameEnum)
 local Characters = require(Shared.Database.Characters)
@@ -128,6 +126,14 @@ function Party.GetRawPlayers(self: Types.PartyClass)
     return List;
 end
 
+function Party.GetPlayerCount(self: Types.PartyClass): number
+    return #self.__Players
+end
+
+function Party.GetState(self: Types.PartyClass): number
+    return self.__State
+end
+
 function Party.GetMaxPlayers(self: Types.PartyClass): number
     return self.__Max_Players
 end
@@ -201,7 +207,7 @@ end
 
 function Party.GetPlayerCompressedTeam(self: Types.PartyClass, Player: Types.PartyPlayer)
     local Team = self:GetSimplifiedTeam(Player)
-    local Split = string.split(Team, ", ")
+    local Split = string.split(Team :: string, ", ")
 
     local bufferTeam = buffer.create(3)
     for index, Name in Split do
