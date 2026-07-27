@@ -320,6 +320,10 @@ function ServerEnemy.IsAbilityMoving(self: Types.ServerEnemyClass): boolean
 	return false;
 end
 
+function ServerEnemy.IsFrozen(self: Types.ServerEnemyClass)
+	return self.__Status:IsFrozen()
+end
+
 function ServerEnemy.Move(self: Types.ServerEnemyClass, Direction: Vector3 | vector, LockFor: number?, Speed: number?)
 	if self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5 and (Direction :: Vector3).Z < 0 then
 		return
@@ -330,6 +334,12 @@ function ServerEnemy.Move(self: Types.ServerEnemyClass, Direction: Vector3 | vec
 	end
 
 	if self.__Status:IsKnocked() then
+		return
+	end
+
+	if self:IsFrozen() then
+		self.__Movement:Move(vector.zero)
+
 		return
 	end
 

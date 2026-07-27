@@ -150,7 +150,10 @@ local function SetUltBarFill(Coefficient: number)
     end
 
     if not(HasData) then
-        return
+        HasData = {
+            Id = 139304669014108,
+			Color = Color3.fromRGB(255, 255, 255),
+        }
     end
 
     local Color = HasData.Color

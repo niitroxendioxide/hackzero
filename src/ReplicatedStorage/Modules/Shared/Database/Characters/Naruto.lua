@@ -186,6 +186,20 @@ return {
 
 			},
 		},
+
+		['Ultimate'] = {
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.65,
+				
+				Clone_Grab_Time = 3,
+				Range = 30,
+
+				Hit = {},
+			},
+			Upgrade = {},
+		}
 	},
 
 	Ascension_Data = {

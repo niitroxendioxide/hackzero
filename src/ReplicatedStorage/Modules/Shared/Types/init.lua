@@ -371,6 +371,7 @@ export type ServerEnemyClass = {
 
 	SetWorldSpeed: (self: ServerEnemyClass, Speed: number, Time: number) -> (),
 
+	IsFrozen: (self: ServerEnemyClass) -> (boolean),
 	IsAbilityMoving: (self: ServerEnemyClass) -> (boolean),
 	GetId: (self: ServerEnemyClass) -> (number),
 	Init: (self: ServerEnemyClass, Key: number) -> (),
@@ -437,6 +438,7 @@ export type EnemyStatus = {
 
 	GetHealth: (self: EnemyStatus) -> number,
 	IsAlive: (self: EnemyStatus) -> (boolean),
+	IsFrozen: (self: EnemyStatus) -> (boolean),
 	IsKnocked: (self: EnemyStatus) -> (boolean),
 	IsAirborne: (self: EnemyStatus) -> (boolean),
 	SwitchState: (self: EnemyStatus, State: State) -> (),

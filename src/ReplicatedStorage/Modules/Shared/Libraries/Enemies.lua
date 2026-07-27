@@ -52,7 +52,7 @@ function EnemyLibrary:GetFromCollider(BasePart: BasePart): Types.EnemyClass?
 	return nil;
 end
 
-function EnemyLibrary:GetAll()
+function EnemyLibrary:GetAll<T>(): T
 	return EnemyLibrary.__Enemies
 end
 

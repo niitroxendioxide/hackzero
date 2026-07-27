@@ -225,6 +225,10 @@ function EnemyStatus:EnterDazedState(fn: (DazeValue: number) -> ())
 	end)
 end
 
+function EnemyStatus.IsFrozen(self: Types.EnemyStatus)
+	return self.__State == 'Frozen'
+end
+
 function EnemyStatus.AddEffect(self: Types.EnemyStatus, Effect: Types.EnemyEffectParameters)
 	if Effect.Tag and Effect.Unique then
 		for _, Other in self.__Effects do
