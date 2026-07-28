@@ -222,6 +222,12 @@ function EnemyClass.FollowAgentGrab(self: Types.EnemyClass, Agent: Agents.AgentC
 	self.__Movement:SetFollowPart(Hitbox, Offset)
 end
 
+function EnemyClass.IsGrabbed(self: Types.EnemyClass)
+	local GrabPart = self.__Movement:GetFollowPart()
+
+	return (GrabPart ~= nil)
+end
+
 function EnemyClass:Init(Key: number)
 	self.__EnemyId = Key
 	--

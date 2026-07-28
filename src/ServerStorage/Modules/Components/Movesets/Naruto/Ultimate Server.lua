@@ -22,14 +22,14 @@ function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: numbe
 			Caster:SwitchState('Attacking', Attack_Time, true)
 		end},
 
-		{0.3, function()
+		{0.75, function()
 
 			for _, Enemy: Types.ServerEnemy in Enemies:GetAll() do
 				local InRange = (Enemy:GetPivot().Position - Caster:GetPivot().Position).Magnitude <= Range;
 				if InRange then
-					Enemy:SwitchState("Frozen", CloneStunRange)
+					Enemy:SwitchState("Frozen", CloneStunRange + 0.25)
 
-					Ability:Effect("Naruto_GrabClone", {Caster, Enemy:GetId()}, true)
+					Ability:Effect("Naruto_GrabClone", {Caster, Enemy:GetId(), CloneStunRange + 0.25}, true)
 				end
 
 			end

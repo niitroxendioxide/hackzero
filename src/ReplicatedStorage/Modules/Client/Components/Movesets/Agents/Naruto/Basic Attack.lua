@@ -64,9 +64,15 @@ function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 		Size = Size,
 		Offset = Offset,
 		Hit_Function = function(Target)
+
+			local Offset = M1_Count >= 2 and CFrame.new(0, 2.784, 3.064) or CFrame.new()
+			if Target:GetState() == 'Frozen' then
+				TrackToBeUsed = nil
+				Offset = CFrame.new(0, 0.75, 0)
+			end
 			
 			Ability:Hit(Caster, Target, {Track = TrackToBeUsed, EffectData = {
-				Offset = M1_Count >= 2 and CFrame.new(0, 2.784, 3.064) or CFrame.new()
+				Offset = Offset
 			}})
 
 			if M1_Count == 4 then

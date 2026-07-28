@@ -95,6 +95,10 @@ function EnemyMovement:SetFollowPart(p_BasePart: BasePart, p_Offset: CFrame?)
 	self.__Enemy_Collider.CanTouch = CollisionState
 end
 
+function EnemyMovement:GetFollowPart()
+	return self.__Grab_Origin
+end
+
 function EnemyMovement:CreateCollider()
 	self.__Collider = Instance.new('Part')
 	self.__Collider.CFrame = CFrame.new(self.__Position)

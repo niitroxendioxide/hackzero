@@ -46,17 +46,6 @@ return {
 	},
 
 	Moveset_Data = {
-		--[[['Passive'] = {
-			Description = '',
-			Meters = {
-				SaiyanSurge = {
-					Ascension = 2,
-					Description = 'When completing a full basic attack string obtain one charge of Saiyan Surge, when hitting an enemy with an EX-Special, get two charges, up to 3. Hold basic attack with two charges to use Super God Fist',
-					Id = 1,
-					Max = 4,
-				},
-			},
-		},]]
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = 0.05,
@@ -185,6 +174,78 @@ return {
 			Upgrade = {
 
 			},
+		},
+
+		['Chain Attack'] = {
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.75,
+				
+				Range = 45,
+				Size = vector.create(4, 4, 7),
+				Offset = vector.create(0, 0, -4.75),
+				HitCount = 8,
+				HitFrequency = 0.125,
+
+				Hit = {
+					HitType = 'Blunt',
+					Stun = 1,
+					Daze = 12,
+					Damage = 18,
+					Affliction_Buildup = 6,
+					Affliction = 'Wind',
+					Knockback = {
+						vector.create(0, 0, 1),
+						24,
+						0.2,
+					},
+				},
+
+				Final = {
+					HitType = 'Blunt',
+					Stun = 1,
+					Daze = 100,
+					Damage = 140,
+					Affliction_Buildup = 12,
+					Affliction = 'Wind',
+					Knockback = {
+						vector.create(0, 0, 1),
+						60,
+						0.2,
+					},
+				},
+			},
+			Upgrade = {},
+		},
+
+		['Dodge Counter'] = {
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.65,
+				
+				Range = 30,
+				HitboxOffset = vector.create(0, 0, -8),
+				HitboxSize = vector.create(8, 8, 11),
+
+				Hit = {
+					HitType = 'Blunt',
+					Stun = .85,
+					HitsAirborne = true,
+					Airborne = true,
+					Daze = 120,
+					Damage = 45,
+					Affliction_Buildup = 55,
+					Affliction = 'Wind',
+					Knockback = {
+						vector.create(0, 0, 1),
+						7,
+						0.2,
+					},
+				},
+			},
+			Upgrade = {},
 		},
 
 		['Ultimate'] = {

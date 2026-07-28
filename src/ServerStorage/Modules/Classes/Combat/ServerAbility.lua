@@ -336,6 +336,10 @@ local function KnockEnemy(_: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enem
 		return;
 	end
 
+	if Enemy:IsFrozen() then
+		return
+	end
+
 	local Direction = KnockbackData[1]
 	local Power = KnockbackData[2]
 	local Time = KnockbackData[3]

@@ -49,12 +49,11 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
     elseif State == 'Running' then
         local Time = Args[1]
         local Data = Cache[Caster]
-        if not Data then
-            return
-        end
 
-        local OldRasengan = Data[1]
-        OldRasengan:Destroy()
+        if Data then
+            local OldRasengan = Data[1]
+            OldRasengan:Destroy()
+        end
 
         local NewRasengan = Effects:Create(NarutoVfx.Rasengan, 25);
         NewRasengan:PivotTo(RightArm.CFrame * RunOffset);

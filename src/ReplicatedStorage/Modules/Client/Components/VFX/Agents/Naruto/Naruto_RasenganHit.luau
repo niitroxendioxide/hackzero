@@ -21,8 +21,9 @@ return function(Target: Types.ClientEnemy, HitCount: number, HitFreq: number): (
     local BigRasengan = Effects:Create(NarutoVfx.HitRasengan, TotalTimeWaited)
     BigRasengan:PivotTo(TargetModel.PrimaryPart.CFrame * Offset)
 
+    local MaxTime = HitFreq * HitCount--math.min(HitFreq * HitCount, 0.75)
     Effects:Weld(BigRasengan.PrimaryPart, TargetModel.PrimaryPart)
-    Effects:TweenModel(BigRasengan, 1.3, HitFreq * HitCount, 'Sine', 'In')
+    Effects:TweenModel(BigRasengan, 1.3, MaxTime, 'Sine', 'In')
     
 
     task.wait(TotalTimeWaited)

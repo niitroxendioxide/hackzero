@@ -192,7 +192,7 @@ export type GenericClass = {
 	GetUltBar: (self: GenericClass) -> number,
 	GetSkillLevel: (self: GenericClass, Name: string) -> (number),
 
-	Walk: (self: GenericClass, Time: number) -> (),
+	Walk: (self: GenericClass, Time: number, Power: number, Linear: boolean) -> (),
 	SwitchState: (self: GenericClass, State: State, Time: number) -> (),
 
 	GetEffect: (self: GenericClass, ...any) -> (),
@@ -335,8 +335,9 @@ export type EnemyClass = {
 	GetPivot: (self: EnemyClass) -> CFrame,
 	GetHitbox: (self: EnemyClass) -> BasePart,
 	IsMoving: (self: EnemyClass) -> EnemyClass,
-	Rotate: (self: EnemyClass, Direction: Vector3) -> (),
+	IsGrabbed: (self: EnemyClass) -> (boolean),
 	IsAirborne: (self: EnemyClass) -> (boolean),
+	Rotate: (self: EnemyClass, Direction: Vector3) -> (),
 	GetAnimator: (self: EnemyClass) -> (AnimatorController),
 	FollowAgentGrab: (self: EnemyClass, Agent: any?, Offset: CFrame?) -> (),
 

@@ -237,7 +237,10 @@ function ServerEnemy:GetId(): number
 end
 
 function ServerEnemy.Stun(self: Types.ServerEnemyClass, Time: number, is_airborne: boolean): ()
-	
+	if self:IsFrozen() then
+		return
+	end
+
 	self.__Next = Time + 0.15
 	self.__LastMovement = os.clock()
 	

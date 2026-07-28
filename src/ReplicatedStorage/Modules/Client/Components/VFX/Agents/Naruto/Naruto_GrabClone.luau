@@ -14,6 +14,8 @@ local Enemies = require(Shared.Libraries.Enemies)
 local EffectLibrary = require(Client.Libraries.Effects)
 
 ---
+local Cache = {}
+
 return function(Caster: Types.AgentClass, EnemyId: number, Time: number): ()
     local EnemyObject = Enemies:GetEnemy(EnemyId)
     if not EnemyObject then
@@ -26,11 +28,16 @@ return function(Caster: Types.AgentClass, EnemyId: number, Time: number): ()
         return
     end
 
+    if Cache[EnemyObject] then
+        Cache[EnemyObject]()
+        Cache[EnemyObject] = nil
+    end
+
     Time = Time or 3
 
     ---
     local CloneId = HttpService:GenerateGUID()
-    local NewLocation = BaseModel:GetPivot():ToObjectSpace(EnemyModel:GetPivot() * CFrame.new(0, 0, 1.639))
+    local NewLocation = BaseModel:GetPivot():ToObjectSpace(EnemyModel:GetPivot() * CFrame.new(0, 0.325, 1.3))
     local CloneAnimation = AnimLib:GetAnim("Characters.Naruto.Abilities.Ultimate.Clone")
     local TargetAnimation = AnimLib:GetAnim("Characters.Naruto.Abilities.Ultimate.Enemy")
 
@@ -41,4 +48,26 @@ return function(Caster: Types.AgentClass, EnemyId: number, Time: number): ()
         Speed = 1,
         Weight = 1,
     })
+
+    local Clock = os.clock()
+    local Thread = task.spawn(function()
+        while (os.clock() - Clock) < Time do
+            if EnemyObject:IsGrabbed() then
+                Cache[EnemyObject]()
+                return
+            end
+
+            task.wait()
+        end
+
+        Cache[EnemyObject] = nil
+    end)
+
+    Cache[EnemyObject] = function()
+        if Thread and Thread ~= coroutine.running() then
+            task.cancel(Thread)
+        end
+
+        EffectLibrary:Play("Naruto_CloneControl", CloneId, true)
+    end
 end

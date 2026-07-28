@@ -1,4 +1,5 @@
 --
+local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local ServerStorage = game:GetService('ServerStorage')
 
@@ -21,8 +22,9 @@ local AgentService = require(ServerStorage.Modules.Services.Combat.AgentService)
 local QuestService = require(ServerStorage.Modules.Services.Data.QuestService)
 
 --
-local HELP_ASSIST_PROMPT_TIME = 1.25
-local CHAIN_ATTACKS_ENABLED = true
+const HELP_ASSIST_PROMPT_TIME = 1.25
+const CHAIN_ATTACKS_ENABLED = true
+const CHAIN_ATTACK_REQUIRE_STUN = false
 
 --
 local Service = {
@@ -77,7 +79,7 @@ function HandleSkillHit(Data: AbilityTypes.AbilityHitInfo, SkillId: number)
 	if SkillId == GameEnum.Skills.EX_Special and CHAIN_ATTACKS_ENABLED and #AgentLibrary:GetAlive(RepId) > 1 then
 		local is_enemy_stunned = Data.Enemy.__Status:IsKnocked()
 		
-		if is_enemy_stunned then
+		if (CHAIN_ATTACK_REQUIRE_STUN and is_enemy_stunned) or (not CHAIN_ATTACK_REQUIRE_STUN) then
 			for _, SubAgent in AgentLibrary:GetAlive() do
 				SubAgent:GiveUltimate(Statics.Chain_Attack_Ult_Bar_Fill)
 			end
@@ -192,11 +194,20 @@ function Service:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Enemy: Ag
 		return;
 	end
 	
+	local Id = HttpService:GenerateGUID()
 	Service.__Chain_Attack_Prompts[Agent.__Player_Assigned] = {
+		Id = Id,
 		CasterAgent = Agent,
 		PromptedAt = os.clock(),
 		EnemyId = Enemy:GetId(),
 	}
+
+	task.delay(Statics.Chain_Attack_Invulnerability_Time, function()
+		local Prompt = Service.__Chain_Attack_Prompts[Agent.__Player_Assigned];
+		if Prompt and Prompt.Id == Id then
+			Service.__Chain_Attack_Prompts[Agent.__Player_Assigned] = nil;
+		end
+	end)
 
 	Agent:AddTag('Invulnerability', Statics.Chain_Attack_Invulnerability_Time)
 

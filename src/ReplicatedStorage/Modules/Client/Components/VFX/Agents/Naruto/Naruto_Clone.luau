@@ -27,7 +27,7 @@ local function TweenCFrame(BaseModel: Model, From: CFrame, To: CFrame, Time: num
 end
 
 ---
-return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, AnimationData: {Id: string, Object: Animation, Speed: number, Weight: number, CFrameTween: {any}}?): ()
+return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, AnimationData: {Id: string, Object: Animation, Speed: number, Weight: number, CFrameTween: {any}, NoSmokeOut: boolean}?): ()
     if Caster == true then
         if AnimationData.Id and Cache[AnimationData.Id] then
             Cache[AnimationData.Id]()
@@ -44,16 +44,32 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
     local NarutoVfx = Assets.Effects.Agents.Naruto
     local CasterAppearance = Caster:GetAppearance()
     local ModelClone = CasterAppearance:CloneModel()
+    if ModelClone:FindFirstAncestorOfClass("Highlight") then
+        while ModelClone:FindFirstAncestorOfClass("Highlight") do
+            ModelClone:FindFirstAncestorOfClass("Highlight"):Destroy()
+        end
+    end
 
     ModelClone.PrimaryPart.Anchored = true
     ModelClone.Parent = Effects:GetParent(script.Name)
 
+    local FollowThread: thread = nil;
     if AnimationData.CFrameTween then
         local OriginOffset = AnimationData.OriginOffset or CFrame.new()
         local BaseCFrame = CasterAppearance:GetModel():GetPivot()
         task.spawn(TweenCFrame, ModelClone, BaseCFrame * OriginOffset, BaseCFrame * Offset, AnimationData.CFrameTween[1], AnimationData.CFrameTween[2], AnimationData.CFrameTween[3])
     else 
         ModelClone:PivotTo(CasterAppearance:GetModel():GetPivot() * Offset)
+
+        if AnimationData.Follow then
+            FollowThread = task.spawn(function()
+                while true do
+                    ModelClone:PivotTo(CasterAppearance:GetModel():GetPivot() * Offset)
+
+                    task.wait()
+                end
+            end)
+        end
     end
 
     if typeof(AnimationData.Object) == 'Instance' and AnimationData.Object:IsA('Animation') then
@@ -83,8 +99,14 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
 
         task.wait(Time)
 
-        SmokeEffect:PivotTo(ModelClone.Torso.CFrame)
-        Effects:Emit(SmokeEffect, true)
+        if FollowThread then
+            task.cancel(FollowThread)
+        end
+
+        if not AnimationData.NoSmokeOut then
+            SmokeEffect:PivotTo(ModelClone.Torso.CFrame)
+            Effects:Emit(SmokeEffect, true)
+        end
         ModelClone:Destroy()
     end)
 
@@ -95,6 +117,10 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
     Cache[AnimationData.Id] = function()
         if Thread ~= coroutine.running() then
             task.cancel(Thread)
+        end
+
+        if FollowThread then
+            task.cancel(FollowThread)
         end
 
         local Torso = ModelClone:FindFirstChild("Torso")

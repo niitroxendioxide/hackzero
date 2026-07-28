@@ -223,7 +223,7 @@ function Service:Begin(Stage: string, Act: string)
     print('[SERVER] LOADING MATCH WITH DATA')
 
     local Difficulty = RunService:IsStudio() and settings.DIFFICULTY or GameEnum.Difficulties.Easy
-    if Stage == 'Training' then
+    if Stage == 'Training' and not RunService:IsStudio() then
         Difficulty = GameEnum.Difficulties.Passive
     end
 

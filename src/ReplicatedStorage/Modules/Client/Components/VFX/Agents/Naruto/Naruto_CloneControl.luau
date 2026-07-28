@@ -122,21 +122,20 @@ return function(Id: string, Caster: Types.AgentClass, Time: number?, Offsets: {}
             task.delay(0.05, function()
                 Effects:Tween(BodyPart, {.1}, {Transparency = Transparency})
             end)
-
         end
     end
 
     ---
-    local SmokeEffect = Effects:Create(NarutoVfx.SmokeBomb)
     task.delay(0.05, function()
+        local SmokeEffect = Effects:Create(NarutoVfx.SmokeBomb, 2)
         SmokeEffect:PivotTo(ModelClone.Torso.CFrame)
         Effects:Emit(SmokeEffect, true)
-        Effects:CleanUp(SmokeEffect, 2)
     end)
 
     Clones[Id] = {
         Model = ModelClone,
         Cleanup = function()
+            local SmokeEffect = Effects:Create(NarutoVfx.SmokeBomb, 2)
             SmokeEffect:PivotTo(ModelClone.Torso.CFrame)
             Effects:Emit(SmokeEffect, true)
             ModelClone:Destroy()
