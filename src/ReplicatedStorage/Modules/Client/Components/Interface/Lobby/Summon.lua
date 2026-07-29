@@ -97,7 +97,11 @@ function Component:Init()
 			local LobbyMain = UIGroups:GetElementClass("Lobby", "MainMenu")
 
 			LobbyMain:Set(true, true)
+			CancelThread = task.delay(0.175, function()
+				BaseFrame.Visible = false
+			end)
 		else
+			BaseFrame.Visible = true
 			Canvas.GroupTransparency = 1;
 			BaseFrame.Parent = Canvas;
 			Effects:Tween(BaseFrame.UIScale, {0.3, 'Back'}, {Scale = 1})
@@ -105,7 +109,6 @@ function Component:Init()
 
 			CancelThread = task.delay(0.25, function()
 				BaseFrame.Parent = Main;
-				BaseFrame.Visible = false
 			end)
 		end
 	end)

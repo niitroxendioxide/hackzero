@@ -167,26 +167,29 @@ local function SetUltBarFill(Coefficient: number)
     EffectUtil:Tween(FillStroke.UIGradient, {.2, 'Sine'}, {Offset = Offset})
     EffectUtil:Tween(UltBar.Meter.Fill, {.2, 'Sine'}, {Size = UDim2.fromScale(1.25, 0.1 + Coefficient)})
     EffectUtil:Tween(UltBar.Meter.Fill, {.2}, {BackgroundColor3 = Color})
-    UltBar.Meter.Fill.UIStroke.Color = Color
-    FillStroke.UIGradient.Color = ColorSequence.new{
+    local NewSequence = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
         ColorSequenceKeypoint.new(0.499, Color3.new(1, 1, 1)),
         ColorSequenceKeypoint.new(0.5, Color),
         ColorSequenceKeypoint.new(1,Color),
     }
 
-    if LastCoefficient ~= Coefficient and Coefficient == 1 then
+    UltBar.Meter.Fill.UIStroke.Color = Color
+    FillStroke.UIGradient.Color = NewSequence
+    if Coefficient >= 1 then
         local H = Color:ToHSV()
         local Rotated = H - 25
         if Rotated < 0 then Rotated += 360 end
 
-        UltBar.Meter.Fill.UIStroke.Enabled = false
         EffectUtil:Tween(UltBar.UIStroke, {.3}, {Color = Color})
         UltBar.UIStroke.UIGradient.Color = ColorSequence.new{
             ColorSequenceKeypoint.new(0, Color3.fromHSV(Rotated/360, 50/255, 200/255)),
             ColorSequenceKeypoint.new(1, Color3.new(1, 1, 1))
         }
+    end
 
+    if LastCoefficient ~= Coefficient and Coefficient == 1 then
+        UltBar.Meter.Fill.UIStroke.Enabled = false
         UltBar.UIScale.Scale = .8
         EffectUtil:Tween(UltBar.UIScale, {.25, 'Back'}, {Scale = FrameScales.Ultimate})
         UltBar.UICorner.CornerRadius = UDim.new(.3, 0)
