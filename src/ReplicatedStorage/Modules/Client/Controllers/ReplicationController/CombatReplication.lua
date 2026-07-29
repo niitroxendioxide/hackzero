@@ -469,6 +469,10 @@ function Controller:CreateMeter(Buffer: buffer, Name: string, MeterCreationData:
 	local AgentId = buffer.readu8(Buffer, 2)
 
 	local AgentObject = Characters:GetAgent(PlayerId, AgentId)
+	if not AgentObject then
+		return;
+	end
+
 	AgentObject:CreateMeter(Name, MeterCreationData)
 
 	if PlayerId == ReplicationId then
@@ -516,23 +520,33 @@ function Controller:ChainAttack(Buffer: buffer)
 
 	---
 	local CharactersToPrompt = Characters:GetCharacters()
-	local AgentNames = {};
+	local Options = {};
+	local AllNames = {};
 
 	for idx, Agent in CharactersToPrompt do
+		table.insert(AllNames, Agent.Name)
 		if idx == AgentId or not Agent:IsAlive() then
 			continue
 		end
 
-		table.insert(AgentNames, Agent.Name)
+		table.insert(Options, Agent.Name)
 	end
 
-	if #AgentNames < 2 then
-		AgentNames[2] = AgentNames[1]
+	if #Options < 2 then
+		Options[2] = Options[1]
 	end
+
+	local CentreAgent = Characters:GetAgent(Players.LocalPlayer:GetAttribute("ReplicationId"), AgentId)
+	local Position = table.find(AllNames, CentreAgent.Name);
+
+	if Position == 1 then
+		Options = {Options[2], Options[1]}
+	end
+
 
 	Effects:Play("Chain")
 
-	ChainAttackComponent:Show(AgentNames)
+	ChainAttackComponent:Show(Options)
 
 	---
 	CombatController.ChainAttackActionChosen:Once(function(OptionChosen: number)

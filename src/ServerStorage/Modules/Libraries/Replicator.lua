@@ -88,6 +88,7 @@ function Replicator:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentC
 	buffer.writeu8(Object, 0, GameEnum.Replication.AddAgent)
 	buffer.writeu8(Object, 1, Characters:GetIdForCharacter(AgentClass.Name))
 	buffer.writeu8(Object, 2, Player:GetAttribute("ReplicationId") :: number)
+	buffer.writeu8(Object, 3, AgentClass.__Level or 1)
 
 	if Target then
 		Network:Fire('Replicate', Target, Object, At)
@@ -209,7 +210,7 @@ end
 function Replicator:CharacterSwitch(Player: Player, Index: number, Direction: number, TargetId: number)
 	local Object = buffer.create(4)
 	buffer.writeu8(Object, 0, GameEnum.Replication.CharacterSwitch)
-	Math:Encodeu2u6(Index, Direction, Object, 1)
+	buffer.writeu8(Object, 1, Index)
 	buffer.writeu8(Object, 2,  Player:GetAttribute("ReplicationId") :: number)
 	buffer.writeu8(Object, 3, TargetId or 0)
 

@@ -45,6 +45,7 @@ function AppearanceClass.new(ModelName: string, Directory: string?, BeginTranspa
 	self.__Bound_Objects = {}
 	self.__TransparencyValues = {}
 	self.__Trove = Trove.new()
+	self.__Visible_Thread = nil
 
 	-- Saving values
 	self.__Model.Parent = World.Entities.Appearances
@@ -122,13 +123,23 @@ function AppearanceClass:IsRaised()
 	return self.__Extra_Height > 0;
 end
 
-function AppearanceClass:SetVisible(State: boolean)
-	self.__Visible = State
+function AppearanceClass:SetVisible(State: boolean, ForceQuick: boolean?)
+	if self.__Visible_Thread then
+		task.cancel(self.__Visible_Thread)
+	end
+
+	self.__Visible_Thread = task.delay(ForceQuick and 0 or 0.4, function()
+		self.__Visible = State
+	end)
 
 	for BodyPart, Value in self.__TransparencyValues do
 		local TransparencyValue = State and Value or 1
 
-		self.__Trove:Add(EffectsUtil:Tween(BodyPart, {.4}, {Transparency = TransparencyValue}))
+		if ForceQuick then
+			BodyPart.Transparency = TransparencyValue
+		else
+			self.__Trove:Add(EffectsUtil:Tween(BodyPart, {.4}, {Transparency = TransparencyValue}))
+		end
 	end
 
 	for _, Particle in self.__Particles do
@@ -209,6 +220,11 @@ end
 
 function AppearanceClass:CloneModel()
 	local BaseModel = self:GetModel()
+
+	local CurrentState =  self.__Visible
+	if CurrentState == false then
+		self:SetVisible(true, true)
+	end
 
 	local Clone = BaseModel:Clone()
 	local Root = Clone:FindFirstChild("HumanoidRootPart")

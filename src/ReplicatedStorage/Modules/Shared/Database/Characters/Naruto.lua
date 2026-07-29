@@ -248,6 +248,49 @@ return {
 			Upgrade = {},
 		},
 
+		['Quick Assist'] = {
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 1.65,
+				
+				Range = 45,
+				HitboxOffset = vector.create(0, 0, -10),
+				HitboxSize = vector.create(8, 8, 14),
+
+				Hit = {
+					HitType = 'Blunt',
+					Stun = .45,
+					HitsAirborne = true,
+					Daze = 60,
+					Damage = 61,
+					Affliction_Buildup = 32,
+					Affliction = 'Wind',
+					Knockback = {
+						vector.create(0, 0, 1),
+						5,
+						0.1,
+					},
+				},
+
+				FinalHit = {
+					HitType = 'Blunt',
+					Stun = .75,
+					HitsAirborne = true,
+					Daze = 90,
+					Damage = 120,
+					Affliction_Buildup = 32,
+					Affliction = 'Wind',
+					Knockback = {
+						vector.create(0, 0, 1),
+						30,
+						0.5,
+					},
+				},
+			},
+			Upgrade = {},
+		},
+
 		['Ultimate'] = {
 			Base = {
 				Speed = 1,

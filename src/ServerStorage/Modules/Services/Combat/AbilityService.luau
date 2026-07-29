@@ -24,7 +24,7 @@ local QuestService = require(ServerStorage.Modules.Services.Data.QuestService)
 --
 const HELP_ASSIST_PROMPT_TIME = 1.25
 const CHAIN_ATTACKS_ENABLED = true
-const CHAIN_ATTACK_REQUIRE_STUN = false
+const CHAIN_ATTACK_REQUIRE_STUN = true
 
 --
 local Service = {
@@ -229,6 +229,7 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	local AllAgents = AgentLibrary:GetAlive(ReplicationId)
 	local CurId = table.find(AllAgents, CasterAgent)
 	local AgentToSwitch = CurId + 1 > 3 and AllAgents[1] or AllAgents[CurId + 1]
+	local AgentIdToSwitch = CurId + 1 > 3 and 1 or CurId + 1
 	local AgentPerpetratorId = Target or CasterAgent.__Last_Hit_Caster
 
 	if AgentPerpetratorId == nil then
@@ -246,7 +247,7 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	end
 
 	local Player = CasterAgent.__Player_Assigned
-	local Prompt = CasterAgent:MarkTarget(AgentPerpetratorId, Time)
+	local Prompt = CasterAgent:MarkTarget(AgentPerpetratorId, Time, AgentIdToSwitch)
 	Replicator:PromptAssist(Player, AgentToSwitch, Time, AgentPerpetratorId)
 
 	Prompt.Accepted:Once(function()
@@ -344,6 +345,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 		warn(`Error while executing skill: {SpacelessSkill}. Error Message: {ErrorMessage}`)
 	else
 		local IncludePlayer = SkillId == GameEnum.Skills.Quick_Assist or SkillId == GameEnum.Skills.Dodge_Counter
+
 		Replicator:UseSkill(Player, SkillId, IncludePlayer, EnemyId, StateId, IsCancel, Other)
 	end
 

@@ -6,16 +6,16 @@ return table.freeze({
 
     MISSION = {
         --- Types: ChaosControl, Mission, Expedition
-        TYPE = 'Expedition',
+        TYPE = 'ChaosControl',
         STAGE = {
             --- LeafVillage, Training, Testing, DailyImprovement, DungeonEx, HuecoMundo
-            Stage = 'Training',
+            Stage = 'DailyImprovement',
             Act = 'Intro',
         },
         DATA = {
-            MissionId = 'LeafVillage_P01',
-            Difficulty = 'EASY',
-            --[[ChaosControlData = {
+            --[[MissionId = 'LeafVillage_P01',
+            Difficulty = 'EASY',]]
+            ChaosControlData = {
                 Type = 'DailyImprovement',
                 Node = 1,
             },
@@ -36,7 +36,7 @@ return table.freeze({
                 [1] = {
                     {Amount = 6, Level = 50, Name = 'Sorcerer'}
                 },
-            },]]
+            },
         }--]]
     },
 

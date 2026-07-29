@@ -51,11 +51,6 @@ return {
 		MatchAirborne = 62,
 
 		--
-		ClearPlayerData = 150,
-		SetColliderArea = 152,
-		PlayVisualEffect = 250,
-
-		--
 		CreateDestructible = 80,
 		DestroyDestructible = 81,
 		HitDestructible = 82,
@@ -69,6 +64,12 @@ return {
 
 		BeginGrabEnemy = 89,
 		EndGrabEnemy = 90,
+		NewSwitch = 91,
+
+		-- 
+		ClearPlayerData = 150,
+		SetColliderArea = 152,
+		PlayVisualEffect = 250,
 	},
 
 	ChaosControlAction = {

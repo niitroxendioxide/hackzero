@@ -106,6 +106,12 @@ function Controller:SetupStage(StageName: string, ActName: string)
 end
 
 function Controller:BeginMatch(Payload: {})
+    while select(1, Characters:GetCurrent()) == nil do
+        task.wait()
+    end
+
+    print('current data:', Characters:GetCurrent())
+
     Cutscenes:Start("Entrance")
     Cutscenes:WaitCurrent()
 

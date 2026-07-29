@@ -49,7 +49,7 @@ function CutsceneClass.WillUseCamera(self: Types.CutsceneClass, ...): boolean
 end
 
 function CutsceneClass.GetPlayerEnvironment(self: Types.CutsceneClass): {}
-    local Current = CharactersLib:GetCurrent(Players.LocalPlayer:GetAttribute("ReplicationId"))
+    local Current = CharactersLib:GetCurrent()
 
     return {
         Model = Current:GetModel(),

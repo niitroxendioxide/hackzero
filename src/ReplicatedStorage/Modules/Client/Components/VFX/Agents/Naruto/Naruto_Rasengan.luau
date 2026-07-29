@@ -18,7 +18,7 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
     local Args = {...}
     
     local NarutoVfx = Assets.Effects.Agents.Naruto
-    local Model = Caster:GetModel()
+    local Model = typeof(Caster) == 'Instance' and Caster:IsA("Model") and Caster or Caster:GetModel()
     local RightArm = Model:FindFirstChild("Right Arm");
     
     if State == 'Charge' then

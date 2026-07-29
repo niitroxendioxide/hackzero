@@ -213,7 +213,7 @@ function Controller:InteractWithNPC(Prompt: ProximityPrompt)
 
         Prompts:DisableAll()
 
-        DialogueComponent:PlaySequence(NpcData.Markers[NpcName].Dialogue, true, NpcName)
+        DialogueComponent:PlaySequence(NpcData.Dialogue, true, NpcName)
 
         DialogueComponent.EventTriggered:Connect(function(Id: number, NpcName: string)
             Network:Fire("NPCInteraction", GameEnum.NPCInteractions.Event, {Id = Id, Name = NpcName})

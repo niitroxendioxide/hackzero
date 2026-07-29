@@ -177,7 +177,70 @@ function Service:KeySwitch(Player: Player, bufferObj, Value: boolean)
 	Replicator:KeySwitch(Player, Key, Data.Characters[1]:GetKey(Key))
 end
 
-function Service:CharacterSwitch(Player: Player, Buffer: buffer, ParameterTarget: number, ForceRotateVector: boolean)
+function Service:CharacterSwitch(Player: Player, Buffer: buffer, p_Target: number, p_ForceRotate: boolean)
+	local Data = Service:Get(Player)
+	local NewAgentIndex = buffer.readu8(Buffer, 1)
+	local PrevIndex = Data.Active
+	
+	local PreviousAgent = Data.Characters[PrevIndex]
+	local NewAgent = Data.Characters[NewAgentIndex]
+
+	if not NewAgent:IsAlive() then
+		return
+	end
+
+	--- rotation vector math
+	local Angle = math.rad(buffer.readi16(Buffer, 2) / 180)
+	local rX, rZ = math.sin(Angle), math.cos(Angle)
+	local RebuiltRotationVector = vector.create(rX, 0, rZ)
+
+	--- switching & other
+	Data.Active = NewAgentIndex
+
+	local WasMoving = PreviousAgent:IsMoving()
+	local MarkedAgentStruct = PreviousAgent:GetMarkedTarget()
+	local Target = p_Target
+	if MarkedAgentStruct ~= nil then
+		Target = Enemies:GetEnemy(MarkedAgentStruct.TargetId)
+	end
+
+	local SwitchCFrame = AssistUtil:CalculateSwitchCFrame(PreviousAgent, 1, Target, p_ForceRotate)
+	for _, PlayerAgent in Service:GetCharacters(Player) do
+		PlayerAgent:SetActive(PlayerAgent == NewAgent)
+	end
+
+	if not NewAgent:HasTag("CharacterStatic") then
+		NewAgent:PivotTo(SwitchCFrame)
+		NewAgent:Rotate(RebuiltRotationVector)
+
+		if not Target then
+			NewAgent:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, Statics.Dodge_Active_Time)
+			NewAgent:ImpulseForward(Statics.Switch_Character_Dash_Strength, 0.75)
+		end
+
+		if WasMoving then
+			Service:Move(Player)
+		end
+	end
+
+	Replicator:CharacterSwitch(Player, NewAgentIndex, 1, Target and Target:GetId())
+	Replicator:Rotate(Player, RebuiltRotationVector)
+
+	---
+	if MarkedAgentStruct then
+		--print('Id: ', MarkedAgentStruct.AssistCharacterId, "New IndeX:", NewAgentIndex)
+
+		if MarkedAgentStruct.AssistCharacterId == NewAgentIndex then
+			MarkedAgentStruct.Accepted:Fire()
+		end
+
+		MarkedAgentStruct.Accepted:DisconnectAll()
+
+		MarkedAgentStruct.TargetId = nil
+	end
+end
+
+function Service:oldswitch(Player: Player, Buffer: buffer, ParameterTarget: number, ForceRotateVector: boolean)
 	local AgentIndex, Direction = Math:Decodeu2u6(Buffer, 1)
 	local IsNext = Direction == 1
 

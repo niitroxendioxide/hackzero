@@ -40,6 +40,7 @@ local Controller = {}
 function Controller:AddAgent(Buffer: buffer, At: CFrame)
 	local CharacterId = buffer.readu8(Buffer, 1)
 	local UserId = buffer.readu8(Buffer, 2)
+	local Level = buffer.readu8(Buffer, 3)
 	local CharacterName = CharacterDatabase:GetCharacterFromId(CharacterId)
 
 	if CharacterLibrary:HasCharacter(UserId, CharacterName) then
@@ -52,6 +53,14 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 	local AgentData = SharedData:GetAgentData(AgentOwner, CharacterName) -- or {Level = 1, Name = CharacterName, Artifacts = {}, Drive = nil}
 	if AgentData == nil and (IsOwnId(UserId)) then
 		AgentData = LocalData:GetAgent(CharacterName)
+	end
+
+	if not AgentData then
+		AgentData = {
+			Artifacts = {},
+			Level = 60,
+			Drive = nil,
+		}
 	end
 
 	local CharacterInstance = AgentClass.new(CharacterName, AgentData.Level)
@@ -69,7 +78,7 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 	do
 		CharacterInstance:SetLevel(AgentData.Level)
 
-		for _, ArtifactId in AgentData.Artifacts do
+		for _, ArtifactId in (AgentData.Artifacts or {}) do
 			local ArtifactData = SharedData:GetArtifactById(AgentOwner, ArtifactId)
 
 			if ArtifactData ~= nil then
@@ -121,6 +130,10 @@ function Controller:PivotTo(Buffer: buffer)
 	local Vector = Vector3.new(X, Y, Z)
 
 	local Character = CharacterLibrary:GetCurrent(UserId)
+	if not Character then
+		return
+	end
+
 	if IsOwnId(UserId) then
 		Character:MarkServerAction(GameEnum.Replication.PivotTo)
 	end
@@ -171,23 +184,22 @@ function Controller:SyncVelocities(Buffer: buffer, V, LM, SV, MV)
 	local UserId = buffer.readu8(Buffer, 1)
 
 	local CurrentCharacter = CharacterLibrary:GetCurrent(UserId)
-	CurrentCharacter.__Controller.__Velocity = LM
-	CurrentCharacter.__Controller.__SurfaceVelocity = SV
-	CurrentCharacter.__Controller.__MovementVelocity = MV
-	CurrentCharacter.__Controller.__LastMovementVelocity = V
+	if not CurrentCharacter then
+		return;
+	end
+
+	CurrentCharacter:SyncVelocities(LM, SV, MV, V)
 end
 
 function Controller:CharacterSwitch(Buffer: buffer)
-	local Index, Direction = Math:Decodeu2u6(Buffer, 1)
+	local Index = buffer.readu8(Buffer, 1)
 	local UserId = buffer.readu8(Buffer, 2)
 	local EnemyTargetId = buffer.readu8(Buffer, 3)
 
 	local Previous = CharacterLibrary:GetCurrent(UserId)
 	local Moving = Previous:IsMoving()
 
-	--local CFrameClient = Previous:GetPivot()
-
-	CharacterLibrary:SwitchToIndex(UserId, Index, Direction, EnemyTargetId)
+	CharacterLibrary:SwitchToIndex(UserId, Index, EnemyTargetId)
 
 	if Moving then
 		local Current = CharacterLibrary:GetCurrent(UserId)

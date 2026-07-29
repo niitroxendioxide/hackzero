@@ -93,7 +93,7 @@ function Characters:Switch(ReplicationId: number, Direction: number, EnemyTarget
 	return Result, CurrentAgentDataId
 end
 
-function Characters:SwitchToIndex(RepId: number, Idx: number, Direction: number, EnemyTargetId: number?): boolean
+function Characters:SwitchToIndex(RepId: number, Idx: number, EnemyTargetId: number?): boolean
 	local Data = Characters.__Player_Data[RepId]
 
 	local Previous = Characters:GetCurrent(RepId)
@@ -158,7 +158,6 @@ function Characters:HandleSwitchFor(RepId: number, Previous: Types.AgentClass, A
 			NewCharacter:ImpulseForward(Statics.Switch_Character_Dash_Strength, 0.75)
 		end
 	end
-	
 
 	return true
 end

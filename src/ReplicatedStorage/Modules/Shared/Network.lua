@@ -48,7 +48,9 @@ function Network:Get(Name: string, MaximumWaitTime: number?)
 			until  RemoteExists ~= nil or  os.clock() - Clock > (MaximumWaitTime or 15)
 			if RemoteExists == nil then return warn("Couldn\'t find remote", Name) end
 		else
-			return warn("Couldn\'t find remote", Name)
+			local Origin = debug.info(3, 'sl')
+
+			return warn("Couldn\'t find remote", Name, "[SOURCE: ", Origin .. "]")
 		end
 	end
 

@@ -43,7 +43,7 @@ function Ability:Play(Agent: Types.AgentClass, Key: string)
 		NewAgent:AddTag('Switching', QuickAssist.Base.Attack_State_Time or 1)
 	end
 
-	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, NewIndex, Direction, NewAgent:GetRotation())
+	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, NewIndex, nil, NewAgent:GetRotation())
 end
 
 return Ability

@@ -22,7 +22,7 @@ function EncodeRotation(Args): buffer
 	local Angle = math.deg(math.atan2(Vec.X, Vec.Z))
 
 	local Buffer = buffer.create(4)
-	Math:Encodeu2u6(Args[1], Args[2], Buffer, 1)
+	buffer.writeu8(Buffer, 1, Args[1])
 	buffer.writei16(Buffer, 2, Angle * 180)
 
 	table.clear(Args)

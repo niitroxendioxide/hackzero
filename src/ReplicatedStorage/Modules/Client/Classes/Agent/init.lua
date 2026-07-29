@@ -272,6 +272,16 @@ function AgentClass:GetRotation(): any
 	return self.__Character.__Controller.__Rotation
 end
 
+function AgentClass:SyncVelocities(LM, SV, MV, V)
+	local Character = self.__Character;
+	local Controller = Character.__Controller;
+
+	Controller.__Velocity = LM or Controller.__Velocity
+	Controller.__SurfaceVelocity = SV or Controller.__SurfaceVelocity
+	Controller.__MovementVelocity = MV or Controller.__MovementVelocity
+	Controller.__LastMovementVelocity = V or Controller.__LastMovementVelocity
+end
+
 function AgentClass:GetPivot(Server: boolean)
 	if Server and self.__ServerLocation then
 		return self.__ServerLocation

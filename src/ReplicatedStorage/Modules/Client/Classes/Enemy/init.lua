@@ -174,8 +174,6 @@ function EnemyClass:AddEffect(Data)
 
 	if Data.Type == 'Max_Health' then
 		local Health = self.__Status:GetHealth()
-		print(Health)
-
 		self.__Health:set(Health)
 	end
 

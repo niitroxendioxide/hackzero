@@ -58,13 +58,18 @@ end
 
 function Component:CreateEvent(Event: string)
     if State.Stage == "" or State.Act == "" then
+        print('returned!', State.Stage, State.Act)
+
         return
     end
 
     if State.Mode ~= 'Mission' then
+        print(State.Mode)
+
         return;
     end
 
+    print(State.Stage, State.Act, Event)
     local EventData;
     if State.MissionId ~= nil then
         local MissionData = Missions:Get(State.MissionId)
@@ -95,6 +100,7 @@ function Component:CreateEvent(Event: string)
     local Values = EventStates:New(Event, EventData.Goal)
     local Object = Assets.Combat.Objective.GoalObject:Clone()
     Object.Label.Text = EventData.Objective
+    Object.Visible = true
     Object.Parent = Frame.Mission.Goals
 
     Object:SetAttribute("Event", Event)

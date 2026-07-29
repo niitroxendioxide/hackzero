@@ -395,7 +395,7 @@ function ServerAgentClass:SwitchState(State: string, Time: number, Iframes: bool
 	end
 end
 
-function ServerAgentClass.MarkTarget(self: Types.ServerAgentClass, TargetId: number, Time: number): Types.AssistStruct?
+function ServerAgentClass.MarkTarget(self: Types.ServerAgentClass, TargetId: number, Time: number, AssistCharacterId: number): Types.AssistStruct?
 	if self.__Current_Target then
 		task.cancel(self.__Current_Target.Thread)
 	end
@@ -407,6 +407,7 @@ function ServerAgentClass.MarkTarget(self: Types.ServerAgentClass, TargetId: num
 	end
 
 	local Struct = {
+		AssistCharacterId = AssistCharacterId,
 		TargetId = TargetId,
 		Accepted = Signal.new(),
 		Time = Time,

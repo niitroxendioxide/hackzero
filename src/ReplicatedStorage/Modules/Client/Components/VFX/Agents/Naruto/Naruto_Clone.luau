@@ -11,6 +11,8 @@ local Types = require(Shared.Types.Agents)
 local AnimLib = require(Client.Libraries.Animation)
 local Effects = require(Shared.Utility.Effects)
 
+local EffectsLib = require(Client.Libraries.Effects)
+
 local Cache = {}
 
 local function TweenCFrame(BaseModel: Model, From: CFrame, To: CFrame, Time: number, Style: string?, Direction: string?)
@@ -27,7 +29,10 @@ local function TweenCFrame(BaseModel: Model, From: CFrame, To: CFrame, Time: num
 end
 
 ---
-return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, AnimationData: {Id: string, Object: Animation, Speed: number, Weight: number, CFrameTween: {any}, NoSmokeOut: boolean}?): ()
+return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, AnimationData: {
+    Id: string, Object: Animation, Speed: number, Weight: number, CFrameTween: {any}, NoSmokeOut: boolean,
+    Rasengan: {number},
+}?): ()
     if Caster == true then
         if AnimationData.Id and Cache[AnimationData.Id] then
             Cache[AnimationData.Id]()
@@ -44,9 +49,9 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
     local NarutoVfx = Assets.Effects.Agents.Naruto
     local CasterAppearance = Caster:GetAppearance()
     local ModelClone = CasterAppearance:CloneModel()
-    if ModelClone:FindFirstAncestorOfClass("Highlight") then
-        while ModelClone:FindFirstAncestorOfClass("Highlight") do
-            ModelClone:FindFirstAncestorOfClass("Highlight"):Destroy()
+    if ModelClone:FindFirstChildOfClass("Highlight") then
+        while ModelClone:FindFirstChildOfClass("Highlight") do
+            ModelClone:FindFirstChildOfClass("Highlight"):Destroy()
         end
     end
 
@@ -56,15 +61,15 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
     local FollowThread: thread = nil;
     if AnimationData.CFrameTween then
         local OriginOffset = AnimationData.OriginOffset or CFrame.new()
-        local BaseCFrame = CasterAppearance:GetModel():GetPivot()
+        local BaseCFrame = Caster:GetPivot()
         task.spawn(TweenCFrame, ModelClone, BaseCFrame * OriginOffset, BaseCFrame * Offset, AnimationData.CFrameTween[1], AnimationData.CFrameTween[2], AnimationData.CFrameTween[3])
     else 
-        ModelClone:PivotTo(CasterAppearance:GetModel():GetPivot() * Offset)
+        ModelClone:PivotTo(Caster:GetPivot() * Offset)
 
         if AnimationData.Follow then
             FollowThread = task.spawn(function()
                 while true do
-                    ModelClone:PivotTo(CasterAppearance:GetModel():GetPivot() * Offset)
+                    ModelClone:PivotTo(Caster:GetPivot() * Offset)
 
                     task.wait()
                 end
@@ -78,6 +83,12 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
         AnimLib:Play(ModelClone, AnimationData.Object, 0, AnimationData.Weight, AnimationData.Speed)
     end
     
+    if AnimationData.Rasengan then
+        task.delay(0.05, function()
+            EffectsLib:Play("Naruto_Rasengan", ModelClone, 'Running', AnimationData.Rasengan[1])
+        end)
+    end
+
     for _, BodyPart in ModelClone:GetDescendants() do
         if BodyPart:IsA('Decal') or BodyPart:IsA('BasePart') then
             local Transparency = BodyPart.Transparency;
