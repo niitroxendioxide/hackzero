@@ -68,8 +68,7 @@ function Component:CreateEvent(Event: string)
 
         return;
     end
-
-    print(State.Stage, State.Act, Event)
+    
     local EventData;
     if State.MissionId ~= nil then
         local MissionData = Missions:Get(State.MissionId)

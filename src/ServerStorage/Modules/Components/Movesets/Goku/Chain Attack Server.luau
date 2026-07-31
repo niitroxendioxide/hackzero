@@ -12,7 +12,8 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.GenericClass, _, _, Context)
 
-    local GodFistHitData = Ability:FromData("Hit_Data", nil, Caster:GetSkillLevel(Ability.__Name))
+	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
+    local GodFistHitData = Ability:FromData("Hit_Data", nil, SkillLevel)
 	local function HitEnemy()
 		
 		Ability:CreateHitbox(Caster, vector.create(0, 0, -5), vector.create(9.5, 7, 14.5), function(Target)  

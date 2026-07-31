@@ -64,17 +64,69 @@ return {
 				Attack_State_Time = 0.25,
 				Speed = 1,
 				Animation_Speed = 1,
+				Range = 75,
+
+				Attack_Data = {
+					-- The "?" symbol means it can be there or not.
+					-- Movement Moment, Hit time, Endlag, Movement Time?, Movement Strength?, Movement Linear?
+					[1]   = {0.217, .267, .7, 0.2, 1.35},
+					[1.1] = {0.55, 0.633, 0, 0.2,},
+					[2]   = {0.267, .33, 1.1, 0.15, 1.35},
+					[2.1] = {0.7, 0.767, 0, .233, 1.25},
+					[3]   = {0.217, .267, 1.5, 0.175, 1.15},
+					[3.1] = {0.567, 0, 0, .35, -1.5},
+				},
+
+				HitboxSize = vector.create(5, 5, 7),
+				HitboxOffset = vector.create(0, 0, -4),
 
 				Hit = {
-					Damage = 100,
 					Affliction = "Physical",
 					HitType = "Blunt",
-					Daze = 15,
 					Affliction_Buildup = 15,
 					Stun = 0.4,
+					Knockback = {
+						vector.create(0, 0, 1),
+						8,
+						0.1,
+					}
 				},
+
+				Damage = {
+					[1] = 70,
+					[1.1] = 90,
+					[2] = 130,
+					[2.1] = 180,
+					[3] = 110,
+					[3.1] = 61,
+				},
+				Daze = {
+					[1] = 15,
+					[1.1] = 22,
+					[2] = 6,
+					[2.1] = 23,
+					[3] = 45,
+					[3.1] = 6,
+				}
 			},
-			Upgrade = {},
+			Upgrade = {
+				Damage = {
+					[1] = 1.5,
+					[1.1] = 2,
+					[2] = 2.5,
+					[2.1] = 3.5,
+					[3] = 2,
+					[3.1] = 0.75,
+				},
+				Daze = {
+					[1] = 0.75,
+					[1.1] = 1,
+					[2] = 0.2,
+					[2.1] = 0.35,
+					[3] = 0.5,
+					[3.1] = 0.2,
+				}
+			},
 		},
 
 		['Special'] = {

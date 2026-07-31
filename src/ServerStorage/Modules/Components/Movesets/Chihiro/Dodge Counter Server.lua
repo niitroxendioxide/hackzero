@@ -21,7 +21,8 @@ function Ability:Play(Caster, _, _, Context)
     }, true);
 
     ---
-    local HitData = Ability:FromData("Hit", nil, Caster:GetSkillLevel(Ability.__Name))
+    local SkillLevel = Caster:GetSkillLevel(self.__Name)
+    local HitData = Ability:FromData("Hit", nil, SkillLevel)
 
     for i = 1, Ability:FromData("Hit_Count") do
         local Delay = (i - 1) * Ability:FromData("Hit_Frequency");

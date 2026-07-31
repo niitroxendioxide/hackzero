@@ -18,6 +18,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context): ()
 	---
 	local Sign = Context.IsCancel and -1 or 1;
 	local IsOffCooldown = os.clock() - (Ability:Get(Caster, "LastSlashTime") or 0) > 1.5;
+	local SkillLevel = Caster:GetSkillLevel(self.__Name)
 	Ability:Save(Caster, "LastSlashTime", os.clock())
 
 	Ability:Begin(Caster, {
@@ -32,7 +33,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context): ()
 			end
 
 			Ability:CreateHitbox(Caster, vector.create(0, 0, -6.5), vector.create(12, 4, 14), function(Enemy)  
-				Ability:Hit(Caster, Enemy, Ability:FromData("Hit"))
+				Ability:Hit(Caster, Enemy, Ability:FromData("Hit", nil, SkillLevel))
 			end)
 		end},
 	})

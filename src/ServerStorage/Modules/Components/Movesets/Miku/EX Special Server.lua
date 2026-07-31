@@ -4,10 +4,13 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
+local Modules = ServerStorage.Modules
 
-local Agents = require(ServerStorage.Modules.Libraries.Agents)
-local AbilityService = require(ServerStorage.Modules.Services.Combat.AbilityService)
-local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
+local MikuGameplayController = require(script.Parent.MikuGameplayController)
+local AbilityService = require(Modules.Services.Combat.AbilityService)
+local Agents = require(Modules.Libraries.Agents)
+
+--local Enemies = require(Shared.Libraries.Enemies)
 local Types = require(Shared.Types.Agents)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 
@@ -35,7 +38,15 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 	--
 	local TargetId = Context.Target and Context.Target:GetId()
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name);
-	local Buffs = Ability:FromData("Buffs", nil, SkillLevel)
+	local AttackerStrength = Caster:GetStat("Attack")
+	local StrengthBuffMax = Ability:FromData("MaxAttackValue")
+	local DefenseBuffMax = Ability:FromData("MaxDefenseValue")
+
+	local StrengthBuffValue = math.min(Ability:FromData("StrengthBuffValue", nil, SkillLevel) * (AttackerStrength * 0.25), StrengthBuffMax);
+	local DefenseBuffValue = math.min(Ability:FromData("DefenseBuffValue", nil, SkillLevel) * (AttackerStrength * 0.1), DefenseBuffMax);
+
+	local StrengthBuff = MikuGameplayController:PackBuff(Caster, 'Attack', 30, StrengthBuffValue, Ability:FromData("StrengthBuffId"))
+	local DefenseBuff = MikuGameplayController:PackBuff(Caster, 'Defense', 30, DefenseBuffValue, Ability:FromData("DefenseBuffId"))
 
 	local OrbBuffs = Ability:FromData("OrbBuffs")
 	local Hitboxes = {}
@@ -118,7 +129,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 					AbilityService:PromptAssist(Caster, 1.5, TargetId)
 				end
 
-				for _, Buff in Buffs do
+				for _, Buff in {StrengthBuff, DefenseBuff} do
 					if Agent:GetEffect(Buff.Tag) then
 						continue
 					end

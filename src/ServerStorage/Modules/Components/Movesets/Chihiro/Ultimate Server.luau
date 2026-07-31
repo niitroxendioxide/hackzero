@@ -13,7 +13,8 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.ServerAgentClass)
     local AttackStateTime = Ability:FromData("Attack_State_Time")
-    local HitData = Ability:FromData("Hit", nil, Caster:GetSkillLevel(Ability.__Name))
+    local SkillLevel = Caster:GetSkillLevel(self.__Name)
+	local HitData = Ability:FromData("Hit", nil, SkillLevel)
 
     local function HitEnemy()
         Ability:CreateHitbox(Caster, vector.zero, vector.create(52, 12, 52), function(Enemy)  

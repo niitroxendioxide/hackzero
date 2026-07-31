@@ -220,7 +220,6 @@ function Service:Begin(Stage: string, Act: string)
     if Service.__Active_Match then
         return
     end
-    print('[SERVER] LOADING MATCH WITH DATA')
 
     local Difficulty = RunService:IsStudio() and settings.DIFFICULTY or GameEnum.Difficulties.Easy
     if Stage == 'Training' and not RunService:IsStudio() then

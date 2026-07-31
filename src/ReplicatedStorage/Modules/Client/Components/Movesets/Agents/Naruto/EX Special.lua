@@ -123,7 +123,7 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, ctx)
 			Ability:Effect("Naruto_Rasengan", Caster, 'Running', Time)
 		end},
 
-		{1.2, 1.15 + Time, function()
+		{1.2, 1.15 + Time, function(seq)
 			if Released then
 				return
 			end
@@ -171,6 +171,11 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, ctx)
 					local Grab = Animation:GetAnim("Characters.Naruto.Abilities.Special.EnemyGrab")
 					local AnimTrack = Animation:Play(Enemy:GetModel(), Grab, 0, 1, 1)
 					table.insert(Tracks, AnimTrack)
+
+					task.delay((1.3 + Time) - seq.__currentTime, function()
+						AnimTrack:Stop(0)
+						AnimTrack:Destroy()
+					end)
 				end
 			end)
 		end},

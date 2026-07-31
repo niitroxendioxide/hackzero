@@ -2,7 +2,7 @@ return {
 	Display_Name = 'Natsuro Uzaki',
 	Nickname = 'Naru-kage',
 	Element = 'Wind',
-	Role = 'Support',
+	Role = 'Stun',
 	Tier = "Legendary",
 	Faction = "Team 7",
 	

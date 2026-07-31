@@ -544,7 +544,7 @@ export type ClientProjectile = {
 	SetSpeed: (self: ClientProjectile, Speed: number) -> (),
 }
 
-function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: () -> (boolean), PassedParams: OverlapParams): {}
+function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: () -> (boolean), PassedParams: OverlapParams, Step_fn: () -> ()): {}
 	local Loop do
 		local Class = {
 			Speed = Speed,
@@ -566,6 +566,9 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 			end
 
 			Model:PivotTo(Model:GetPivot() * CFrame.new(0, 0, -DeltaTime * Class.Speed))
+			if Step_fn then
+				Step_fn(Delta)
+			end
 
 			--
 			local PartBounds = workspace:GetPartBoundsInBox(Model:GetPivot(), Size, Params)

@@ -13,7 +13,9 @@ local Ability = AbilityClass.new()
 
 function UseGodFist(Caster: Types.Caster)
 	local Data = Ability:FromData("SuperGodFist")
-	local HitData = Ability:FromData('SuperGodFistHit')
+
+	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
+	local HitData = Ability:FromData('SuperGodFistHit', nil, SkillLevel)
 
 	local function HitEnemy()
 		

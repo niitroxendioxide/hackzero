@@ -20,7 +20,7 @@ function Service:Init()
 end
 
 function Service:CreateCompanion(CompanionDataClass: Companions.PlayerCompanionDataClass, Owner: number)
-    if not CompanionDataClass or (Service.Count:isEmpty()) then
+    if not CompanionDataClass or (Service.Count:isEmpty()) or not CompanionDataClass.GetStats then
         return;
     end
 

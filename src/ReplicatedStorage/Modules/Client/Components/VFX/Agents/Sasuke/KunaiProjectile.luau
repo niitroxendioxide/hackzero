@@ -34,40 +34,53 @@ local MeshTweens = {
 return function(
     Caster: Types.Caster,
     Speed: number,
-    Time: number
+    Time: number,
+    Size: vector,
+    UseShuriken: boolean
 ): ()
     --
     local KunaiVFX = Assets.Sasuke.Kunai
     local Model = Caster:GetModel()
 
-    local Kunai = Effects:Create(KunaiVFX.Kunai, 3)
-    Kunai:PivotTo(Model:GetPivot() * CFrame.new(0, 0, -1))
+    local BaseModel = KunaiVFX.Kunai
+    if UseShuriken then
+        BaseModel = Assets.Sasuke.Shuriken
+    end
+    
+    local Projectile = Effects:Create(BaseModel, Time + 0.1)
+    Projectile:PivotTo(Model:GetPivot() * CFrame.new(0, 0, -1))
 
     local Hit = false
 
-    Effects:MoveProjectile(Kunai, vector.create(4, 4), Speed, Time, function(Target): boolean  
+    Effects:MoveProjectile(Projectile, Size or vector.create(4, 4), Speed, Time, function(Target): boolean  
         Library:Play("Hit", Target, {})
         Hit = true
         ---
         Target:Hit()
+        Projectile:Destroy()
 
         return true
+    end, nil, function(Delta: number)
+        if UseShuriken then
+            Projectile.Handle.CFrame *= CFrame.Angles(0, math.pi * Delta * 2, 0)
+        end
     end)
 
     task.spawn(function()
         local Length = os.clock()
         local Last = os.clock()
-        while (not Hit) and (os.clock() - Length) < 2 do
+        while (not Hit) and (os.clock() - Length) < Time do
             local _ = task.wait();
 
             if os.clock() - Last < 1 / 18 then
                 continue
             end
 
+            if Hit then return end
             Last = os.clock()
             
             local Hit_Effect = Effects:Create(Assets.Goku.BasicAttack.DashVFX, 3)
-            Hit_Effect:PivotTo(Kunai:GetPivot() * CFrame.new(0, 0, -2.25) * CFrame.Angles(0, 0, Effects:Random(-math.pi, math.pi)))
+            Hit_Effect:PivotTo(Projectile:GetPivot() * CFrame.new(0, 0, -2.25) * CFrame.Angles(0, 0, Effects:Random(-math.pi, math.pi)))
 
             Effects:ForModelParts(Hit_Effect, MeshTweens)
         end

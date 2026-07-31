@@ -14,6 +14,8 @@ local Ability = AbilityClass.new()
 function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: number }): ()
 
 	local Attack_State_Time = Ability:FromData("Attack_State_Time")
+	local SkillLevel = Caster:GetSkillLevel(self.__Name)
+	local HitData = Ability:FromData("Hit", nil, SkillLevel)
 
 	Ability:Begin(Caster, {
 		{0, function()
@@ -42,7 +44,7 @@ function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: numbe
 						--- Apply debuff here
 					end
 
-					Ability:Hit(Caster, Target, Ability:FromData("Hit"))
+					Ability:Hit(Caster, Target, HitData)
 				end)
 			end
 

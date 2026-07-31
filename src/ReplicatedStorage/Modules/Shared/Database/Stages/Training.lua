@@ -91,7 +91,7 @@ return {
                     },
                     Enemies = {
                         [1] = {
-                            {Name = "Sorcerer", Amount = 2, Level = 60, Affected_Aura = true}
+                            {Name = "Sorcerer", Amount = 1, Level = 60, Affected_Aura = true}
                         }
                     },
                     Dialogue = {

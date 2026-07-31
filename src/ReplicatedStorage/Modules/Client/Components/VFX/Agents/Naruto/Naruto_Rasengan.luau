@@ -23,7 +23,7 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
     
     if State == 'Charge' then
         ---
-        local RasenganVFX = Effects:Create(NarutoVfx.Rasengan, 25);
+        local RasenganVFX = Effects:Create(NarutoVfx.Rasengan, 2.5);
         RasenganVFX:PivotTo(RightArm.CFrame * ChargeOffset);
         RasenganVFX:ScaleTo(0.001)
 

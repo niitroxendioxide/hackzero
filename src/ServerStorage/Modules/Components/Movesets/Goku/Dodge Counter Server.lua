@@ -13,7 +13,8 @@ local Ability = AbilityClass.new()
 
 
 local function Default(Caster: Types.Caster, Attack: Types.Sequence)
-    local DefaultHitData = Ability:FromData("Default_Hit_Data", nil, Caster:GetSkillLevel(Ability.__Name))
+    local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
+    local DefaultHitData = Ability:FromData("Default_Hit_Data", nil, SkillLevel)
 
     local function Hit(self: Types.Sequence)
         if self.__currentTime > 0.32 then

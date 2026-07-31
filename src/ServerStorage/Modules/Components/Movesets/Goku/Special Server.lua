@@ -15,10 +15,9 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 	--
-	local SkillLevel = Caster:GetSkillLevel(Ability.__Name);
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
 
-
+	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 	local KiBlastData = Ability:FromData('Ki_Blast_Hit', nil, SkillLevel)
 
 	local function CreateBlast()

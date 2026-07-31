@@ -151,6 +151,7 @@ return {
 		End_Lag = 3,
 		Movement_Length = 4,
 		Movement_Strength = 5,
+		Movement_Linear = 6,
 	},
 
 	AbilityHooks = {

@@ -44,7 +44,11 @@ end
 
 task.spawn(function()
 	for _, Children: Instance in workspace:GetChildren() do
-		if Children:IsA('Terrain') or Children:IsA("Folder") or Children:IsA("Camera") or Children:IsA("SpawnLocation") or Children.Name == 'Baseplate' then
+		if Children:IsA('Terrain') or Children:IsA("Camera") or Children:IsA("SpawnLocation") or Children.Name == 'Baseplate' then
+			continue
+		end
+
+		if Children:IsA("Folder") and Children.Name == 'World' then
 			continue
 		end
 

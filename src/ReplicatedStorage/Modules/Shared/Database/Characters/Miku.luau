@@ -100,34 +100,6 @@ return {
 			}
 		},
 
-        ['Special'] = {
-            Base = {
-                Cooldown = 0.2,
-                Attack_State_Time = 5e12,
-                Speed = 1,
-                Animation_Speed = 1,
-
-                Required_Energy = 60,
-				CustomVerify = true,
-
-                Buffs = {
-                    {
-                        Type = "Attack",
-                        Time = 20,
-                        Value = "25%",
-                        Tag = "MikuStrengthBuff",
-                    },
-
-                    {
-                        Type = "Defense",
-                        Time = 20,
-                        Value = 120,
-                        Tag = "MikuDefenseBuff",
-                    }
-                },
-            },
-        },
-
 		['Ultimate'] = {
             Base = {
                 Cooldown = 2,
@@ -220,6 +192,31 @@ return {
 			}
         },
 
+		['Special'] = {
+            Base = {
+                Cooldown = 0.2,
+                Attack_State_Time = 5e12,
+                Speed = 1,
+                Animation_Speed = 1,
+
+                Required_Energy = 60,
+				CustomVerify = true,
+
+				MaxAttackValue = 500,
+				MaxDefenseValue = 600,
+
+				StrengthBuffId = 'MikuStrengthBuff',
+				DefenseBuffId = 'MikuDefenseBuff',
+				StrengthBuffValue = 0.2,
+				DefenseBuffValue = 70,
+            },
+
+			Upgrade = {
+				StrengthBuffValue = 0.01,
+				DefenseBuffValue = 70,
+			},
+        },
+
 		['EX Special'] = {
 			Base = {
 				Cooldown = 2,
@@ -232,35 +229,32 @@ return {
 				OrbBuffs = {
 					{
 						Type = "Attack",
-						Time = 3,
-						Value = "10%",
+						Time = 4.5,
+						Value = "7%",
 						Tag = "MikuOrbStrBuff",
 					},
 
 					{
 						Type = "Defense",
-						Time = 3,
-						Value = "15%",
+						Time = 4.5,
+						Value = "8%",
 						Tag = "MikuOrbDefBuff",
 					}
 				},
 
-				Buffs = {
-					{
-						Type = "Attack",
-						Time = 30,
-						Value = "35%",
-						Tag = "MikuStrengthBuff",
-					},
+				MaxAttackValue = 750,
+				MaxDefenseValue = 600,
 
-					{
-						Type = "Defense",
-						Time = 30,
-						Value = 140,
-						Tag = "MikuDefenseBuff",
-					}
-				},
+				StrengthBuffId = 'MikuStrengthBuff',
+				DefenseBuffId = 'MikuDefenseBuff',
+				StrengthBuffValue = 0.25,
+				DefenseBuffValue = 70,
 			},
+
+			Upgrade = {
+				StrengthBuffValue = 0.02,
+				DefenseBuffValue = 3,
+			}
 		}
 	},
 

@@ -133,7 +133,7 @@ export type AbilityClass = {
 		@param Target represents whoever is hit by the caster
 		@param Data Can include 'EffectData' for modifying the effect, or a Custom HitStopDuration `{ NoHitStop: boolean, StopEffect: boolean, EffectData: {any} }`
 	]]
-	Hit: (self: AbilityClass, Caster: Caster, Target: Target, Data: {HitstopDuration: number, EffectData: HitVFXData}) -> (),
+	Hit: (self: AbilityClass, Caster: Caster, Target: Target, Data: {HitstopDuration: number, EffectData: HitVFXData, NoHitStop: boolean, NoAnim: boolean, NoVFX: boolean, StopEffect: any}) -> (),
 }
 
 export type DamageHitType = 'Blunt' | 'Slash' | 'None'

@@ -95,6 +95,10 @@ return function(Id: string, Caster: Types.AgentClass, Time: number?, Offsets: {}
     end
 
     local NarutoVfx = Assets.Effects.Agents.Naruto
+    if typeof(Caster) ~= 'table' or Caster.GetAppearance == nil then
+        return
+    end
+
     local CasterAppearance = Caster:GetAppearance()
     local ModelClone = CasterAppearance:CloneModel()
 

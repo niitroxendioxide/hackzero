@@ -75,4 +75,16 @@ function Controller:AddFanStateStack(Target: Types.ServerEnemyClass, Amount: num
     end
 end
 
+function Controller:PackBuff(Type: string, Time: number, BaseValue: number, Id: string)
+    
+    return {
+
+        Time = Time,
+        Type = Type,
+        Value = BaseValue,
+        Tag = Id,
+    }
+    
+end
+
 return Controller;
