@@ -7,7 +7,7 @@ local Types = require("../../Types/Stages")
 --
 return {
     Name = "Training",
-    Map = "General/Training", --"Dragon Ball/Namek",
+    Map = "Naruto/TrainingGroundsMap", --"Dragon Ball/Namek",
     Icon = 111390689929706,
 
     Acts = {
