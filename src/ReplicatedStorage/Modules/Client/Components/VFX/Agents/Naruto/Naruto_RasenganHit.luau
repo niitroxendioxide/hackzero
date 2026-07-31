@@ -19,6 +19,7 @@ return function(Target: Types.ClientEnemy, HitCount: number, HitFreq: number): (
 
     local TotalTimeWaited = HitCount * HitFreq
     local BigRasengan = Effects:Create(NarutoVfx.HitRasengan, TotalTimeWaited)
+    BigRasengan:ScaleTo(0.175)
     BigRasengan:PivotTo(TargetModel.PrimaryPart.CFrame * Offset)
 
     local MaxTime = HitFreq * HitCount--math.min(HitFreq * HitCount, 0.75)

@@ -123,7 +123,7 @@ function ServerEnemy:Attack()
 		return
 	end
 
-	if not Targets:CanAttackTarget(Target, self) or Target:HasTag("Invulnerability") then
+	if not Targets:CanAttackTarget(Target, self) or Target:HasTag("Invulnerability") or self:IsGrabbed() then
 		return
 	end
 
@@ -336,7 +336,7 @@ function ServerEnemy.Move(self: Types.ServerEnemyClass, Direction: Vector3 | vec
 		return
 	end
 
-	if self.__Status:IsKnocked() then
+	if self.__Status:IsKnocked() or self:IsGrabbed() then
 		return
 	end
 
@@ -449,6 +449,10 @@ function ServerEnemy:GetAffliction(Type: string)
 end
 function ServerEnemy:GetAfflictionStackedDamage(Type)
 	return self.__Status:GetAfflictionStackedDamage(Type)
+end
+
+function ServerEnemy.IsGrabbed(self: Types.ServerEnemyClass)
+	return self.__Movement:GetFollowPart() ~= nil
 end
 
 function ServerEnemy:ResetAffliction(Type: Types.Element)

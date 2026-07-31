@@ -47,7 +47,7 @@ return {
                     Name = 'LootChest1',
                     Design = GameEnum.Interactables.Chests.Default,
                     ItemList = {
-                        {Type = "Gold", Amount = 2500},
+                        {Type = "Gold", Amount = 125},
                     },
                 },
 
@@ -73,6 +73,11 @@ return {
                             Text = "You can\'t answer lol!"
                         }
                     },
+                },
+
+                ['Crate'] = {
+                    Type = 'Destructible',
+                    Destructible_Id = 'Crate',
                 },
 
                 ['EndArea'] = {

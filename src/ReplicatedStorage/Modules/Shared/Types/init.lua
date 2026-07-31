@@ -374,6 +374,7 @@ export type ServerEnemyClass = {
 
 	IsFrozen: (self: ServerEnemyClass) -> (boolean),
 	IsAbilityMoving: (self: ServerEnemyClass) -> (boolean),
+	IsGrabbed: (self: ServerEnemyClass)  -> (boolean),
 	GetId: (self: ServerEnemyClass) -> (number),
 	Init: (self: ServerEnemyClass, Key: number) -> (),
 	Move: (self: ServerEnemyClass, Direction: Vector3 | vector) -> (),

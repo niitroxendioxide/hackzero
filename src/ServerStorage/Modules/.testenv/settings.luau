@@ -52,6 +52,5 @@ return table.freeze({
     TEST_AGENTS = {
         'Sasuke',
         'Naruto',
-        'Luffy',
     },
 })

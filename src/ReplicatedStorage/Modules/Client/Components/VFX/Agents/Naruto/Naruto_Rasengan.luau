@@ -25,10 +25,11 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
         ---
         local RasenganVFX = Effects:Create(NarutoVfx.Rasengan, 2.5);
         RasenganVFX:PivotTo(RightArm.CFrame * ChargeOffset);
+        RasenganVFX.Parent = Effects:GetParent('NARUTO_RASENGAN')
         RasenganVFX:ScaleTo(0.001)
 
-        Effects:Weld(RasenganVFX.PrimaryPart, RightArm)
         Effects:TweenModel(RasenganVFX, 1, 0.75, 'Quad')
+        Effects:Weld(RasenganVFX.PrimaryPart, RightArm)
         
         Cache[Caster] = {RasenganVFX}
 

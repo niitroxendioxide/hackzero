@@ -163,7 +163,7 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 			Object.UIStroke.Color = Color3.new()
 		end
 
-		local Scale = Instance.new('UIScale')
+		local Scale = Object:FindFirstChildOfClass('UIScale') or Instance.new('UIScale')
 		Scale.Parent = Object
 
 		Effects:Tween(Scale, {.2, 'Cubic', 'Out'}, {Scale = 1.85 + (Burst and 0.5 or 0)})

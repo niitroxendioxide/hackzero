@@ -143,10 +143,10 @@ end
 
 function EffectUtil:RecolorToGroundColor(At: Vector3, Particles: {})
 	local MapParams = World:GetMapParams()
-	local Cast = workspace:Raycast(At, vector.create(0, -1000), MapParams )
+	local Cast = EffectUtil:CastMapRaycast(At, vector.create(0, -1000), MapParams)
 
 	if Cast then
-		local Seq = ColorSequence.new(Cast.Instance.Color)
+		local Seq = ColorSequence.new(Cast.Color)
 		for _, Particle in Particles do
 			Particle.Color = Seq
 		end
@@ -207,10 +207,12 @@ function EffectUtil:MultiClean(Objects: {any}, Time: number)
 	end
 end
 
-function EffectUtil:CastMapRaycast(from: Vector3 | vector | CFrame, dir: vector | Vector3): RaycastResult & {Color: Color3}
-	local Params = RaycastParams.new()
-	Params.FilterType = Enum.RaycastFilterType.Include
-	Params.FilterDescendantsInstances = {workspace.World.Map}
+function EffectUtil:CastMapRaycast(from: Vector3 | vector | CFrame, dir: vector | Vector3, Params: RaycastParams): RaycastResult & {Color: Color3}
+	if not Params then
+		Params = RaycastParams.new()
+		Params.FilterType = Enum.RaycastFilterType.Include
+		Params.FilterDescendantsInstances = {workspace.World.Map}
+	end
 
 	from = (if typeof(from) == 'CFrame' then from.Position else from) :: Vector3
 
@@ -413,6 +415,10 @@ function EffectUtil:ShootRocks(RaycastResult: RaycastResult, Amount: number | {n
 
 	local RangeError = (360 / RocksToCreate)
 
+	local hasColor = pcall(function(...)
+		return RaycastResult.Color;
+	end)
+
 	for i = 1, RocksToCreate do
 		local SpeedRange = typeof(Speed) == 'table' and Random_Number:NextNumber(Speed[1], Speed[2]) or Speed
 		local Angle = math.rad((360 / RocksToCreate) * i  + Random_Number:NextNumber(-RangeError/1.5, RangeError/1.5));
@@ -423,7 +429,7 @@ function EffectUtil:ShootRocks(RaycastResult: RaycastResult, Amount: number | {n
 		RockCreated.CFrame = CFrame.lookAlong(Center, Normal);
 		RockCreated.CanCollide = true;
 		RockCreated.Material = Base.Material;
-		RockCreated.Color = Base.Color;
+		RockCreated.Color = hasColor and RaycastResult.Color or Base.Color;
 		RockCreated.Parent = Parent or workspace.World.Effects;
 
 		local Bv = Instance.new("BodyVelocity")

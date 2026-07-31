@@ -35,6 +35,26 @@ function Ability:Play(Caster: Types.GenericClass)
 			Ability:Save(Caster, 'M1_Track', Track)
 		end,},
 
+		{0.267, function()
+			if M1_Count == 1 then
+				Ability:Effect("Sasuke_M1", Caster, CFrame.new(-0.536, 0.23, -3.885) * CFrame.Angles(0, math.rad(11.25), 0))
+			end
+
+		end},
+
+		{0.567, function()
+			if M1_Count == 3 then
+				Ability:Effect("Goku_M1_5", Caster, 0.4, true)
+			end
+		end},
+		
+		{0.65, function()
+			if M1_Count == 1 then
+				Ability:Effect("Sasuke_M1", Caster, CFrame.new(0.042, -0.032, -3.885) * CFrame.Angles(0, math.rad(-11.25), 0))
+			end
+
+		end},
+
 		{1, function()
 			if M1_Count == 3 then
 				Ability:Effect("KunaiProjectile", Caster, 75, 1, vector.create(4, 4), true)

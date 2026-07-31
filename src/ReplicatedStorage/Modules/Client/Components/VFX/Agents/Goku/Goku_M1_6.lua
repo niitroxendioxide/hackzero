@@ -33,10 +33,12 @@ local MeshTweens = {
 
 ---
 return function(
-    Caster: Types.Caster
+    Caster: Types.Caster,
+    Time: number
 ): ()
     ---
-    local DashEffect = Effects:Create(Assets.Goku.BasicAttack.DashBack, 2)
+    Time = Time or 0.3
+    local DashEffect = Effects:Create(Assets.Goku.BasicAttack.DashBack, math.max(2, Time + 1))
     DashEffect.Anchored = false
     DashEffect:PivotTo(Caster:GetModel():GetPivot() * CFrame.Angles(0, math.pi, 0))
     Effects:Weld(DashEffect, Caster:GetModel().PrimaryPart)
@@ -44,7 +46,7 @@ return function(
 
     local Active_Time = 0
 
-    while Active_Time < 0.3 do
+    while Active_Time < Time do
         Active_Time += Effects:Wait(1 / 16)
 
         local Hit_Effect = Effects:Create(Assets.Goku.BasicAttack.DashVFX, 3)
