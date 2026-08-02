@@ -34,6 +34,7 @@ local Service = {
 	__Chain_Attack_Prompts = {},
 	__Total_Damage = 0,
 	__Chain_Attack_Cooldown = {},
+	__Agent_Damage_Hooks = {} :: { [number]: { [string]: {Agent: AgentTypes.ServerAgentClass, Handler: () -> ()} } },
 }
 
 
@@ -91,7 +92,56 @@ function HandleSkillHit(Data: AbilityTypes.AbilityHitInfo, SkillId: number)
 	task.spawn(UpdateQuestData, Data, Agent)
 end
 
+function ConnectAbilityDamageHook(Agent: AgentTypes.ServerAgentClass, Id: string, fn: (Perpetrator: AbilityTypes.ServerEnemy, HitData: AbilityTypes.HitEnemyData) -> (AbilityTypes.HitEnemyData))
+	assert(typeof(fn) == 'function', "Must provide a function as 3rd argument.")
+
+	local AgentPlayer = Agent.__Player_Assigned
+	local PlayerId = AgentPlayer:GetAttribute("ReplicationId")
+
+	if Service.__Agent_Damage_Hooks[PlayerId] == nil then
+		Service.__Agent_Damage_Hooks[PlayerId] = {}
+	end
+
+	Service.__Agent_Damage_Hooks[PlayerId][Id] = {
+		Agent = Agent,
+		Handler = fn,
+	}
+end
+
+function DisconnectAbilityDamageHook(Agent: AgentTypes.ServerAgentClass, Id: string)
+	local AgentPlayer = Agent.__Player_Assigned
+	local PlayerId = AgentPlayer:GetAttribute("ReplicationId")
+
+	if Service.__Agent_Damage_Hooks[PlayerId] == nil then
+		return
+	end
+
+	Service.__Agent_Damage_Hooks[PlayerId][Id] = nil
+end
+
 --- Publics
+function Service:RunAbilityDamageHooks(AgentHit: AgentTypes.ServerAgentClass, Perpetrator: AbilityTypes.ServerEnemy, HitData: AbilityTypes.HitEnemyData)
+	if AgentHit == nil or AgentHit.__Player_Assigned == nil then
+		return HitData
+	end
+
+	local AgentPlayer = AgentHit.__Player_Assigned
+	local PlayerId = AgentPlayer:GetAttribute("ReplicationId")
+	if Service.__Agent_Damage_Hooks[PlayerId] == nil then
+		return HitData
+	end
+	
+	for Id, Data in Service.__Agent_Damage_Hooks[PlayerId] do
+		if (Data.Agent ~= AgentHit) then
+			continue
+		end
+
+		return Data.Handler(Perpetrator, HitData)
+	end
+
+	return HitData
+end
+
 function Service:Init()
 	--MovesetLibrary:Init()
 
@@ -122,6 +172,14 @@ function Service:Init()
 	end
 end
 
+function Service:ConnectDamageHook(Agent: AgentTypes.ServerAgentClass, Id: string, fn: (Perpetrator: AbilityTypes.ServerEnemy, HitData: AbilityTypes.HitEnemyData) -> (AbilityTypes.HitEnemyData))
+	return ConnectAbilityDamageHook(Agent, Id, fn)
+end
+
+function Service:DisconnectDamageHook(Agent: AgentTypes.ServerAgentClass, Id: string)
+	return DisconnectAbilityDamageHook(Agent, Id)
+end
+
 function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 	local Type = buffer.readu8(ClientBuffer, 0)
 
@@ -131,6 +189,7 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 		local StateId = buffer.readu8(ClientBuffer, 3)
 		local IsCancel = buffer.readu8(ClientBuffer, 4) == 1
 
+		print('[SERVER] Server received')
 		if SkillId == GameEnum.Skills.Chain_Attack then
 			warn('Cannot run chain attack with UseSkill')
 			

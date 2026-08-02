@@ -23,6 +23,7 @@ local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local DamageLibrary = require(ServerStorage.Modules.Libraries.Damage)
 local AgentsLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local MatchStats = require(ServerStorage.Modules.Libraries.MatchStats)
+local AbilityService = require(ServerStorage.Modules.Services.Combat.AbilityService)
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local WorldCamera = workspace:WaitForChild('Camera')
 
@@ -433,7 +434,8 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 end
 
 local function HitAgent(Caster: AgentTypes.Enemy, Agent: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
-	local DealtDamage = DamageLibrary:DealEnemyToAgent(Caster, Agent, Data)
+	local NewData = AbilityService:RunAbilityDamageHooks(Agent, Caster, Data)
+	local DealtDamage = DamageLibrary:DealEnemyToAgent(Caster, Agent, NewData)
 
 	--
 	return {

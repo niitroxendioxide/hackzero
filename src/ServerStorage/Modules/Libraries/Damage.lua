@@ -132,14 +132,8 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	return true, Final_Damage, EnemyDied, Is_Critical, Affliction_Type, Filled_Affliction, Burst_Damage, AfflictionTriggered
 end
 
-function DamageLibrary:DealEnemyToAgent(Caster: AgentTypes.Enemy, Target: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
-	local AgentStun = Data.Stun
+function DamageLibrary:CalculateRawAttackDamage(Caster: AgentTypes.Enemy, Target: AgentTypes.ServerAgentClass, Mult: number): number
 	local CasterStatus = Caster.__Status
-
-	if Target:HasTag("Airborne") and not(Data.HitsAirborne) then
-		return;
-	end
-
 	local Level_Factor = Defense_Factors[math.clamp(Target.__Level, 0, 60)]
 	local Raw_Defense = Target:GetStat('Defense')
 
@@ -149,11 +143,23 @@ function DamageLibrary:DealEnemyToAgent(Caster: AgentTypes.Enemy, Target: AgentT
 	local Attack = CasterStatus:GetStat('Attack')
 	local Defense_Mult = Level_Factor / (math.max(Raw_Defense * (1 - (Pen_Ratio / 100)) - Penetration, 0) + Level_Factor)
 
-	local Total = (Data.Damage / 100) * Attack * Defense_Mult
+	local Total = (Mult / 100) * Attack * Defense_Mult
+
+	return Total
+end
+
+function DamageLibrary:DealEnemyToAgent(Caster: AgentTypes.Enemy, Target: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
+	local AgentStun = Data.Stun
+
+	if Target:HasTag("Airborne") and not(Data.HitsAirborne) then
+		return;
+	end
+
+	local Total = DamageLibrary:CalculateRawAttackDamage(Caster, Target, Data.Damage)
 
 	Target:TakeDamage(Total)
 
-	if AgentStun then
+	if AgentStun and not Target:HasTag('StunImmunity') then
 		Target:Hit(Caster, AgentStun, Data.AnimId)
 	end
 end

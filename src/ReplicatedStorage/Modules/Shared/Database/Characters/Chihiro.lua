@@ -47,6 +47,18 @@ return {
 	},
 
 	Moveset_Data = {
+		['Passive'] = {
+			Meters = {
+				AkaCharge = {
+					Ascension = 0,
+					Max = 10_000,
+					Id = 1,
+					Description = "Gauge that fills up from receiving damage while holding the \'Aka\' stance"
+				}
+			},
+		},
+
+
 		['Dodge'] = {
 			Base = {
 				Speed = 1,
@@ -70,10 +82,11 @@ return {
 
 		['Basic Attack'] = {
 			Base = {
-				Cooldown = .1,
+				Cooldown = .01,
 				Speed = 1.3,
 				Animation_Speed = 1.1,
-				Range = 35,
+				Range = 75,
+				Release = true,
 
 				Attack_Data = {
 					-- The "?" symbol means it can be there or not.
@@ -264,10 +277,13 @@ return {
 				Animation_Speed = 1,
 				Attack_State_Time = 1.5,
 
+				AccumulatedDamageMultiplier = 4,
+				DamageVariation = 750,
+
 				Hit = {
-					Damage = 190,
+					Damage = 200,
 					Daze = 56,
-					Affliction_Buildup = 79,
+					Affliction_Buildup = 100,
 					HitType = 'Slash',
 					Stun = 0.66,
 					Affliction = 'Water',
@@ -276,10 +292,13 @@ return {
 			},
 
 			Upgrade = {
+				AccumulatedDamageMultiplier = 0.2,
+				DamageVariation = -30,
+				
 				Hit = {
-					Damage = 2,
-					Daze = 1,
-					Affliction_Buildup = 0.5,
+					Damage = 10,
+					Daze = 0.75,
+					Affliction_Buildup = 1,
 				}
 			},
 		}

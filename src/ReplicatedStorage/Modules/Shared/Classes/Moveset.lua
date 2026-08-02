@@ -115,7 +115,9 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 			return false
 		end
 
-		if self:IsOnCooldown(Agent, Type) then return false, 'In Cooldown' end
+		if self:IsOnCooldown(Agent, Type) then 
+			return false, 'In Cooldown'
+		 end
 
 		if not Info.Base then
 			error("Skill data is invalid. Make sure to have both Base{} and Upgrade{}")
@@ -242,6 +244,10 @@ end
 function MovesetClass:IsOnCooldown(Agent: AgentTypes.AgentClass, Type: string, Release: boolean)
 	local CooldownKey = self.Name..Type..Agent.Name..Agent:GetId()
 	if Cooldown:IsOn(CooldownKey) then
+		if RunService:IsServer() then
+			print('SERVER IS ON COOLDOWN!')
+		end
+
 		return true
 	end
 

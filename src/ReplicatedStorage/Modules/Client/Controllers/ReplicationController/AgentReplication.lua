@@ -12,6 +12,7 @@ local Math = require(Shared.Utility.Math)
 local CharacterLibrary = require(Client.Libraries.Characters)
 local AgentClass = require(Client.Classes.Agent)
 local GameEnum = require(Shared.GameEnum)
+local AnimLib = require(Client.Libraries.Animation)
 
 --local BufferUtil = require(Shared.Utility.Buffer)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
@@ -20,6 +21,7 @@ local SharedData = require(Client.Libraries.SharedData)
 local LocalData = require(Client.Libraries.LocalData)
 
 --
+local AnimsLoaded = {}
 local function GetPlayerById(Id: number)
 	for _, Player in Players:GetChildren() do
 		if Player:GetAttribute("ReplicationId") == Id then
@@ -32,6 +34,27 @@ end
 
 local function IsOwnId(Id: number)
 	return Id == (Players.LocalPlayer:GetAttribute("ReplicationId") :: number)
+end
+
+local function LoadAllCharacterAnimations(Name: string)
+	if AnimsLoaded[Name] then
+		return
+	end
+
+	local UserCharacter = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
+	local CharacterAnims = ReplicatedStorage.Assets.Animations.Characters
+	local GivenCharacterDir = CharacterAnims:FindFirstChild(Name)
+	if not GivenCharacterDir then
+		return
+	end
+
+	for _, AnimationObject in GivenCharacterDir:GetDescendants() do
+		if not AnimationObject:IsA('Animation') then
+			continue
+		end
+		
+		AnimLib:Play(UserCharacter, AnimationObject, 1, 1, 1)
+	end
 end
 
 --
@@ -49,6 +72,10 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 		return
 	end
 
+	if IsOwnId(UserId) then
+		task.spawn(LoadAllCharacterAnimations, CharacterName)
+	end
+
 	local AgentOwner = GetPlayerById(UserId)
 	local AgentData = SharedData:GetAgentData(AgentOwner, CharacterName) -- or {Level = 1, Name = CharacterName, Artifacts = {}, Drive = nil}
 	if AgentData == nil and (IsOwnId(UserId)) then
@@ -58,7 +85,7 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 	if not AgentData then
 		AgentData = {
 			Artifacts = {},
-			Level = 60,
+			Level = Level or 60,
 			Drive = nil,
 		}
 	end

@@ -175,13 +175,13 @@ function Replicator:UpdateMeter(Agent: AgentTypes.ServerAgentClass, MeterId: num
 	local PlayerRepId = Player:GetAttribute("ReplicationId") :: number
 	local Id = Agents:GetIdForPlayer(PlayerRepId, Agent) :: number
 
-	local Object = buffer.create(7)
+	local Object = buffer.create(9)
 	buffer.writeu8(Object, 0, GameEnum.Replication.FillMeter)
 	buffer.writeu8(Object, 1, PlayerRepId)
 	buffer.writeu8(Object, 2, Id)
 	buffer.writeu8(Object, 3, MeterId)
 	buffer.writeu8(Object, 4, math.floor(Percent * 255))
-	buffer.writeu16(Object, 5, Amount * 500)
+	buffer.writef32(Object, 5, Amount)
 
 	Network:FireForAll('Replicate', Object)
 end

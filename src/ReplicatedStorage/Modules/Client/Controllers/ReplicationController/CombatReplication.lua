@@ -444,7 +444,7 @@ function Controller:FillMeter(Buffer: buffer)
 	local MeterId = buffer.readu8(Buffer, 3)
 	local MeterName = '';
 	local Percent = buffer.readu8(Buffer, 4) / 255
-	local Value = buffer.readu16(Buffer, 5) / 500
+	local Value = buffer.readf32(Buffer, 5)
 
 	local AgentObject = Characters:GetAgent(PlayerId, AgentId)
 	local MovesetData = AgentsDatabase:GetMovesetData(AgentObject.Name)

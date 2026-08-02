@@ -15,18 +15,73 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 4})
 end)
 
-function Ability:Play(Agent)
+local function HandleParryAbility(Agent, Target)
+	Ability:Save(Agent, "Holding", true)
+
+	local CurrentTrack = Ability:PlayAnimation(Agent, "Chihiro.Abilities.M1.ParryInit", {})
+	Agent:SwitchState("Attacking", 9e12)
+	
+	local Thread = nil
+	local ActivatedParry = false
+	local Started = os.clock()
+	while (Ability:Get(Agent, "Holding") == true) do
+		if not ActivatedParry and (os.clock() - Started) >= 0.2  then
+			ActivatedParry = true
+			Ability:Effect("Chihiro_Stance", Agent)
+
+			Thread = task.delay(0.2, function()
+				CurrentTrack:Stop(0.25)
+				CurrentTrack = Ability:PlayAnimation(Agent, "Chihiro.Abilities.M1.ParryIdle", {})
+			end)
+
+			Agent:AddTag('StunImmunity')
+		end
+
+		if Target ~= nil then
+			Agent:LookAtTarget(Target)
+		end
+
+		task.wait()
+	end
+
+	if ActivatedParry then
+		Ability:Effect("Chihiro_Stance", Agent)
+		
+		if Thread then
+			task.cancel(Thread)
+		end
+
+		if CurrentTrack and CurrentTrack.IsPlaying then
+			CurrentTrack:Stop(0.15)
+		end
+
+		Agent:RemoveTag('StunImmunity')
+		Agent:SwitchState("Attacking", 0.25)
+
+		return false
+	end
+	
+	Agent:SwitchState("Attacking", 0)
+
+	return true
+end
+
+function Ability:Play(Agent, _, State, Ctx)
 	local M1_Count = Ability:Get(Agent, 'Count')
+	if State == 'Begin' then
+		local ShouldContinue = HandleParryAbility(Agent, Ctx.Target)
+		if not ShouldContinue then
+			return
+		end
+	else
+		Ability:Save(Agent, "Holding", false)
+
+		return
+	end
 
 	if Ability:Get(Agent, 'M1_Track') then
 		Ability:Get(Agent, 'M1_Track'):Stop(0.125)
 	end
-
-	--[[if true then
-		Ability:Effect("Chihiro_DodgeCounter", Agent)
-
-		return
-	end]]
 
 	--
 	local EffectObj = {}

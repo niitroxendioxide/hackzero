@@ -1,17 +1,76 @@
 --
+local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
+local Services = ServerStorage.Modules.Services
+local Libraries = ServerStorage.Modules.Libraries
 
 local Types = require(Shared.Types.Abilities)
+local DamageLibrary = require(Libraries.Damage)
 local AbilityClass = require(Classes.Combat.ServerAbility)
+local AbilityService = require(Services.Combat.AbilityService)
+local ChihiroGameplayController = require(script.Parent.ChihiroGameplayController)
 
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: number }): ()
+local function HandleParryAbility(Caster)
+	Ability:Save(Caster, "Holding", true)
+	Caster:SwitchState("Attacking", 9e12)
+
+	local Activated = false
+	local Started = os.clock()
+	local ParryId = HttpService:GenerateGUID(false)
+
+	while (Ability:Get(Caster, "Holding") == true) do
+		if not Activated and (os.clock() - Started) >= 0.2 then
+			Activated = true
+
+			Caster:AddTag('StunImmunity')
+			AbilityService:ConnectDamageHook(Caster, ParryId, function(Perpetrator, HitData: Types.HitEnemyData): Types.HitEnemyData
+				local TotalDamageDealt = DamageLibrary:CalculateRawAttackDamage(Perpetrator, Caster, HitData.Damage)
+				ChihiroGameplayController:AddUltimateCharge(Caster, TotalDamageDealt, 10_000)
+
+				Ability:Effect("Chihiro_Parried", {Caster}, true)
+
+				HitData.Damage *= 0.25
+
+				return HitData
+			end)
+		end
+
+		task.wait()
+	end
+
+	if Activated then
+		Caster:SwitchState("Attacking", 0.25)
+		Caster:RemoveTag('StunImmunity')
+		AbilityService:DisconnectDamageHook(Caster, ParryId)
+
+		return false
+	end
+	
+	Caster:SwitchState("Attacking", 0)
+
+	return true
+end
+
+function Ability:Play(Caster: Types.Caster, _, State, Context:{ read M1_Count: number }): ()
+	if State == 'End' then
+		Ability:Save(Caster, "Holding", false)
+
+		return
+	else
+		local ShouldContinue = HandleParryAbility(Caster)
+
+		if not ShouldContinue then
+			return
+		end
+	end
+	
 	local M1_Count = (Context.M1_Count :: number)
 	if (not M1_Count) then
 		return

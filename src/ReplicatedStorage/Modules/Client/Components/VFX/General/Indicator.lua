@@ -128,7 +128,6 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 		Indicator.Position = typeof(At) == 'Vector3' and At or (At :: CFrame).Position
 	end
 
-	-- for all threads
 	if not Threads[Indicator] then
 		Threads[Indicator] = {}
 	end
@@ -174,7 +173,7 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 		Effects:Tween(Object, {.25, 'Back'}, {Size = UDim2.fromScale(X_Size, .39)})
 
 		table.insert(Threads[Indicator], task.delay((Data.VanishTime or .75) + (Burst and 0.5 or 0), function()
-			Effects:Tween(Object, {.15, 'Back', 'In'}, {Size = UDim2.fromScale(0, .39)})
+			Effects:Tween(Scale, {.15, 'Back', 'In'}, {Scale = 0})
 		end))
 
 		task.wait(1/30)
