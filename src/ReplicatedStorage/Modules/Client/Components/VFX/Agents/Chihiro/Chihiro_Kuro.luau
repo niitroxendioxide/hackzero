@@ -27,7 +27,11 @@ return function(
     local CasterModel = Caster:GetModel()
 
     ---
-    if State == 'Attack' then
+    if State == 'Cleanup' then
+        if Cache[Caster] then
+            Cache[Caster]()
+        end
+    elseif State == 'Attack' then
 
         if Cache[Caster] then
             Cache[Caster]()

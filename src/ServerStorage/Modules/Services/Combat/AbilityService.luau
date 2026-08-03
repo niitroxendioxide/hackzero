@@ -189,7 +189,7 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 		local StateId = buffer.readu8(ClientBuffer, 3)
 		local IsCancel = buffer.readu8(ClientBuffer, 4) == 1
 
-		print('[SERVER] Server received')
+		--print('[SERVER] Server received')
 		if SkillId == GameEnum.Skills.Chain_Attack then
 			warn('Cannot run chain attack with UseSkill')
 			
@@ -287,8 +287,8 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	local ReplicationId = CasterAgent.__Player_Assigned:GetAttribute("ReplicationId")
 	local AllAgents = AgentLibrary:GetAlive(ReplicationId)
 	local CurId = table.find(AllAgents, CasterAgent)
-	local AgentToSwitch = CurId + 1 > 3 and AllAgents[1] or AllAgents[CurId + 1]
-	local AgentIdToSwitch = CurId + 1 > 3 and 1 or CurId + 1
+	local AgentToSwitch = CurId + 1 > #AllAgents and AllAgents[1] or AllAgents[CurId + 1]
+	local AgentIdToSwitch = CurId + 1 > #AllAgents and 1 or CurId + 1
 	local AgentPerpetratorId = Target or CasterAgent.__Last_Hit_Caster
 
 	if AgentPerpetratorId == nil then

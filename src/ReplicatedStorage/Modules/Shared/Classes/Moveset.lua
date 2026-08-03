@@ -244,9 +244,6 @@ end
 function MovesetClass:IsOnCooldown(Agent: AgentTypes.AgentClass, Type: string, Release: boolean)
 	local CooldownKey = self.Name..Type..Agent.Name..Agent:GetId()
 	if Cooldown:IsOn(CooldownKey) then
-		if RunService:IsServer() then
-			print('SERVER IS ON COOLDOWN!')
-		end
 
 		return true
 	end

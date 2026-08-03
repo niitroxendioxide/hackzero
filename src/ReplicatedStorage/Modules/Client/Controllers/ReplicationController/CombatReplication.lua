@@ -35,8 +35,6 @@ function Controller:UseSkill(Buffer: buffer, Extra: {})
 	local UserId = buffer.readu8(Buffer,4)
 	local IsCancel = buffer.readu8(Buffer, 5) == 1
 
-	print(buffer.readu8(Buffer, 5))
-
 	local State = GameEnum.KeyLookup(GameEnum.AbilityStates, StateId)
 	local ActiveAgent = Characters:GetCurrent(UserId)
 	local Key = GameEnum.KeyLookup(GameEnum.Skills, Skill)

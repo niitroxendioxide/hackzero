@@ -203,12 +203,21 @@ function ServerCharacterClass:Update(Delta: number)
 	self.__LastMovementVelocity -= self:CalculateVelocityDeceleration(self.__LastMovementVelocity, 3) * CurrentWorldSpeed *Delta
 	self.__Velocity -= TotalSpeedDeceleration * CurrentWorldSpeed * Delta
 
-	local Velocity = self.__Velocity + self:GetAdditionalVelocities()
+	local AddOns = self:GetAdditionalVelocities()
+	local Velocity = self.__Velocity + AddOns
 
 	local Origin = self:GetPivot() * CFrame.new(0, 0, 1.5)
 	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
 	if EnemyCollisions then
-		Velocity = Vector3.zero
+		local Params = RaycastParams.new()
+		Params.FilterDescendantsInstances = {EnemyCollisions.Instance}
+		Params.FilterType = Enum.RaycastFilterType.Include
+		local IsInDirection = workspace:Raycast(Origin.Position, AddOns * Delta * 3, Params)
+		if IsInDirection then
+			Velocity = Vector3.zero
+		else
+			Velocity = AddOns
+		end
 	end
 
 	-- Movement

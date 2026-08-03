@@ -147,14 +147,24 @@ return {
 
 		['Special'] = {
 			Base = {
-				Cooldown = 1,
+				Cooldown = .25,
 				Speed = 1,
 
-				Required_Energy = 1,
+				Required_Energy = 30,
 				Walk_Time = 0.1,
 
 				Attack_State_Time = 0.5,
 				Animation_Speed = 1,
+
+				Hit = {
+					Damage = 120,
+					HitType = 'Slash',
+					Affliction = 'Physical',
+					Stun = 0.375,
+					Daze = 61,
+					Affliction_Buildup = 12,
+					HitsAirborne = true,
+				},
 			},
 
 			Upgrade = {},
@@ -165,7 +175,7 @@ return {
 				Speed = 1,
 				Animation_Speed = 1,
 				Attack_State_Time = 1,
-				Required_Energy = 1,
+				Required_Energy = 30,
 				Range = 100,
 				Hit = {
 					HitType = 'Slash',
@@ -240,13 +250,16 @@ return {
 					{
 						Type = 'Speed',
 						Value = 0.1,
-						Time = 5,
+						Tag = 'NishikiBuff',
+						Time = 8,
 					},
 
 					{
+						Hide = true,
+						Tag = 'DefNishiki',
 						Type = 'Defense',
 						Value = "25%",
-						Time = 5,
+						Time = 8,
 					}
 				},
 

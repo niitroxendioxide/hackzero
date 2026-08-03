@@ -90,7 +90,6 @@ function Service:SetupStage(Structure_Map_Data: {}, Mission_Structure_Data: {})
             continue
         end
 
-        print(Mission_Structure_Data)
         local Custom_Data = Mission_Structure_Data[Id];
 
         for _, Part in StructureObj.Parts do

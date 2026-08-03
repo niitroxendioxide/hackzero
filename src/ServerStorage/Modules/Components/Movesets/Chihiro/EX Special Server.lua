@@ -27,7 +27,7 @@ function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: numbe
 			local HitCounter = {}
 
 			local Object do
-				Object = Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * CFrame.new(0, 0, -1), vector.create(10, 3), 120, 1, function(Target)  
+				Object = Ability:CreateMovingHitbox(Caster, Caster:GetPivot() * CFrame.new(0, 0, -1), vector.create(10, 3, 12), 120, 1, function(Target)  
 					if TargetsHit[Target:GetId()] or (HitCounter[Target:GetId()] or 0) >= 4 then
 						return;
 					end

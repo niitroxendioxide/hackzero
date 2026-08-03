@@ -100,6 +100,10 @@ function Controller:Init()
 		Inputs:Bind(Key, {
 			Release = true,
 			Callback = function(State: 'Begin' | 'End')
+				--[[if Key == 'Basic_Attack' then
+					Key = 'Quick_Assist'
+				end]]
+
 				Controller:HandleInput(Key, State)
 			end,
 		})

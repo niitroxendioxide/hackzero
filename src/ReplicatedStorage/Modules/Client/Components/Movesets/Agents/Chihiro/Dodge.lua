@@ -34,7 +34,7 @@ function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 	---
 	Ability:Begin(Caster, {
 		{0, function()
-			local Track = Ability:PlayAnimation(Caster, 'Chihiro.Abilities.Dodge.Dash'..Anim, {State = 'Dashing', Active_Time = 0.55})
+			local Track = Ability:PlayAnimation(Caster, 'Chihiro.Abilities.Dodge.Dash'..Anim, {State = 'Dashing', Active_Time = 0.55, Priority = Enum.AnimationPriority.Action, Tag = 'Dodge'})
 			Ability:Save(Caster, 'Track', Track);
 
 			Caster:SwitchState('Dashing', .3);

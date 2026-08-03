@@ -214,7 +214,6 @@ function PhysicsClass:Update(Delta: number)
 	self.__Velocity -= TotalSpeedDeceleration * CurrentWorldSpeed * Delta
 	self.__Rotation = self.__Rotation:Lerp(self.__RotationGoal, 1) --Delta * 24
 
-
 	local AddOns = self:GetAdditionalVelocities()
 	local Velocity = self.__Velocity + AddOns
 
@@ -222,7 +221,15 @@ function PhysicsClass:Update(Delta: number)
 	local Origin = self:GetPivot() * CFrame.new(0, 0, Collider.Size.Z/2)
 	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
 	if EnemyCollisions then
-		Velocity = Vector3.zero
+		local Params = RaycastParams.new()
+		Params.FilterDescendantsInstances = {EnemyCollisions.Instance}
+		Params.FilterType = Enum.RaycastFilterType.Include
+		local IsInDirection = workspace:Raycast(Origin.Position, AddOns * Delta * 3, Params)
+		if IsInDirection then
+			Velocity = Vector3.zero
+		else
+			Velocity = AddOns
+		end
 	end
 
 	-- Movement

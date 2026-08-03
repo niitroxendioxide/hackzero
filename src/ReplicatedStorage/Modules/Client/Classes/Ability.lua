@@ -306,7 +306,7 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 
 	AnimTrack:SetAttribute('BaseSpeed', Data.Speed);
 	AnimTrack:AddTag(Data.State or 'Attacking')
-	AnimTrack.Priority = Enum.AnimationPriority.Action2 or Data.Priority
+	AnimTrack.Priority = Data.Priority or Enum.AnimationPriority.Action2
 
 	if tostring(Agent):match('AgentClass') then
 		Agent:AddTrackToState(Data.State or'Attacking', AnimTrack, Data.Active_Time or 0.35)

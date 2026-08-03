@@ -31,6 +31,7 @@ return {
 			MikuOrbDefBuff = 70731719961060,
 			MikuStrengthBuff = 126683577406553,
 			MikuDefenseBuff = 126683577406553,
+			NishikiBuff = 138936674868049,
 		},
 
 		Values = {

@@ -25,13 +25,18 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context)
 
 			Ability:ForOtherAgents(Caster, function(Agent: { read AddEffect: ({any}) -> () }, Data: { IsNext: boolean })  
 				for _, Buff in Buffs do
+					if Agent:GetEffect(Buff.Tag) then
+						Agent:RefreshEffect(Buff.Tag)
+						continue
+					end
+
 					Agent:AddEffect(Buff)
 				end
 			end)
 		end,},
 
-		{0.3, function()
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -16), vector.create(10, 10, 32), function(Enemy)  
+		{0.417, function()
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -17.5), vector.create(10, 10, 35), function(Enemy)  
 				Ability:Hit(Caster, Enemy, HitData)
 			end);
 		end}

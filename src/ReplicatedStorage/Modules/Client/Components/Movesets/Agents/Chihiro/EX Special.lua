@@ -5,6 +5,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 -- local Types = require(Shared.Types.Abilities)
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local AbilityClass = require(Client.Classes.Ability)
 
 --
@@ -49,5 +50,9 @@ function Ability:Play(Caster)
 		end},
 	})
 end
+
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeCancel, function(Caster)
+	Ability:Effect("Chihiro_Kuro", Caster, "Cleanup")
+end)
 
 return Ability

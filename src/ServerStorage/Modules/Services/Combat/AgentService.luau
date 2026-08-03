@@ -228,6 +228,7 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer, p_Target: numbe
 
 	---
 	if MarkedAgentStruct then
+		print("Needs to switch to:", MarkedAgentStruct.AssistCharacterId, "Switched to:", NewAgentIndex)	
 		--print('Id: ', MarkedAgentStruct.AssistCharacterId, "New IndeX:", NewAgentIndex)
 
 		if MarkedAgentStruct.AssistCharacterId == NewAgentIndex then

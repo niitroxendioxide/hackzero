@@ -522,7 +522,7 @@ function ServerAgentClass.RefreshEffect(self: Types.ServerAgentClass, EffectTag:
 		self:RemoveEffect(EffectFound.Id)
 	end
 
-	self:AddEffect({Type = EffectFound.Type, Time = EffectFound.Time, Value = EffectFound.Value, Tag = EffectTag})
+	self:AddEffect({Type = EffectFound.Type, Time = EffectFound.Time, Value = EffectFound.Value, Tag = EffectTag, Hide = EffectFound.Hide})
 end
 
 function ServerAgentClass.RemoveEffect(self: Types.ServerAgentClass, EffectId: number): Types.EffectObject

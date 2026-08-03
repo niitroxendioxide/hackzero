@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local GameEnum = require(Shared.GameEnum)
 -- local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Client.Classes.Ability)
@@ -20,6 +21,8 @@ local function HandleParryAbility(Agent, Target)
 
 	local CurrentTrack = Ability:PlayAnimation(Agent, "Chihiro.Abilities.M1.ParryInit", {})
 	Agent:SwitchState("Attacking", 9e12)
+	
+	Animation:StopTracksWithTag(Agent:GetModel(), "Dodge")
 	
 	local Thread = nil
 	local ActivatedParry = false
