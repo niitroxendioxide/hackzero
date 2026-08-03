@@ -7,6 +7,7 @@ local Classes = ServerStorage.Modules.Classes
 
 local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Classes.Combat.ServerAbility)
+local ChihiroGameplayController = require(script.Parent.ChihiroGameplayController)
 
 --
 local Ability = AbilityClass.new()
@@ -15,8 +16,10 @@ function Ability:Play(Caster: Types.Caster, _, _, Context): ()
 	local Count = Context.Buffer[1]
 
 	local Attack_State_Time = Ability:FromData("Attack_State_Time")
-	local SkillLevel = Caster:GetSkillLevel(self.__Name)
+	local SkillLevel = 20 --Caster:GetSkillLevel(self.__Name)
+	
 	local HitData = Ability:FromData("Hit", nil, SkillLevel)
+	local FishLimit = math.floor(Ability:FromData("FishMaxLimit", nil, SkillLevel + 1))
 
 	Ability:Begin(Caster, {
 		{0, function(_)
@@ -32,6 +35,7 @@ function Ability:Play(Caster: Types.Caster, _, _, Context): ()
 				Caster:Walk(0.15, 1.15)
 
 				Ability:CreateHitbox(Caster, vector.create(0, 0, -4.5), vector.create(5, 5, 9), function(Enemy)
+					ChihiroGameplayController:MarkSpecialHit(Caster, Enemy, FishLimit)
 					Ability:Hit(Caster, Enemy, HitData)
 				end)
 			end
@@ -46,6 +50,7 @@ function Ability:Play(Caster: Types.Caster, _, _, Context): ()
 		{0.417, function()
 			if Count == 2 then
 				Ability:CreateHitbox(Caster, vector.create(0, 0, -4.5), vector.create(5, 5, 9), function(Enemy)
+					ChihiroGameplayController:MarkSpecialHit(Caster, Enemy, FishLimit)
 					Ability:Hit(Caster, Enemy, HitData)
 				end)
 			end

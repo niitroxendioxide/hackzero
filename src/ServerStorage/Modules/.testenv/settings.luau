@@ -48,6 +48,7 @@ return table.freeze({
     USE_BORROW = true, -- whether to replace agents with lvl 60 max
     BORROWED_AGENT_LEVEL = 60,
     STUDIO_ENERGY_MULT = 1,
+    CHARACTERS_INVINCIBLE = true,
 
     TEST_COMPANION = '8bdc68f8-cb56-4576-a193-689bb87043df',
     TEST_AGENTS = {

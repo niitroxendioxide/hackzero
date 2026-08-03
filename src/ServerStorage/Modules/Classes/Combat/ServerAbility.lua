@@ -588,9 +588,8 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 			return Value[Sub_Key]
 		end
 	elseif typeof(Value) == 'table' and Sub_Key == nil and Upgraded_Value ~= nil then
-		-- support for new architecture;
 		local clonedTable = {};
-		
+
 		for key, val in Value do
 			clonedTable[key] = val;
 
@@ -598,8 +597,15 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 				clonedTable[key] += (Upgraded_Value[key] * Level)
 			end
 		end
+
 		
 		return clonedTable;
+	elseif typeof(Value) == 'number' and Upgraded_Value ~= nil then
+		local Added = Upgraded_Value * Level
+
+		print(Value + Added, ' Added value:', Added)
+		
+		return Value + Added;
 	end
 
 	if Key == "Speed" and Value == nil then

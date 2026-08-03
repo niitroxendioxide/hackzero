@@ -156,6 +156,8 @@ return {
 				Attack_State_Time = 0.5,
 				Animation_Speed = 1,
 
+				FishMaxLimit = 4,
+
 				Hit = {
 					Damage = 120,
 					HitType = 'Slash',
@@ -167,7 +169,9 @@ return {
 				},
 			},
 
-			Upgrade = {},
+			Upgrade = {
+				FishMaxLimit = 0.1,
+			},
 		},
 
 		['EX Special'] = {

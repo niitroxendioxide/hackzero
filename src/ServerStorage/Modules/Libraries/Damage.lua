@@ -1,6 +1,9 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService("RunService")
+local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
+local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Types = require(Shared.Types.Abilities)
 local GameEnum = require(Shared.GameEnum)
 local AgentTypes = require(Shared.Types.Agents)
@@ -156,12 +159,17 @@ function DamageLibrary:DealEnemyToAgent(Caster: AgentTypes.Enemy, Target: AgentT
 	end
 
 	local Total = DamageLibrary:CalculateRawAttackDamage(Caster, Target, Data.Damage)
+	if settings.CHARACTERS_INVINCIBLE and RunService:IsStudio() then
+		Total *= 0;
+	end
 
 	Target:TakeDamage(Total)
 
 	if AgentStun and not Target:HasTag('StunImmunity') then
 		Target:Hit(Caster, AgentStun, Data.AnimId)
 	end
+
+	return Total
 end
 
 

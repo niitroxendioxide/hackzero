@@ -155,7 +155,7 @@ function EffectUtil:RecolorToGroundColor(At: Vector3, Particles: {})
 end
 
 function EffectUtil:CleanUp(Object: any, Time: number)
-	return task.delay(Time / World:GetSpeed(), function()
+	return task.delay((Time or 0) / World:GetSpeed(), function()
 		local typeOf = typeof(Object)
 
 		if typeOf == 'Instance' or (typeOf == 'table' and Object.Destroy) then
