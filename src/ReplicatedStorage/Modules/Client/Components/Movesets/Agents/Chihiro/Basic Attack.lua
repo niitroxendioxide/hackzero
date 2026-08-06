@@ -61,7 +61,7 @@ local function HandleParryAbility(Agent, Target)
 		Agent:RemoveTag('StunImmunity')
 		Agent:SwitchState("Attacking", 0.25)
 
-		return false
+		return true
 	end
 	
 	Agent:SwitchState("Attacking", 0)

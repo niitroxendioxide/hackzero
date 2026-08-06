@@ -5,9 +5,9 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local Statics = require(Shared.Database.Statics)
+local Signal = require(Shared.Utility.Signal)
 local Clock = require(Shared.Utility.Clock)
-local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Network = require(Shared.Network)
 local Enemies = require(Shared.Libraries.Enemies)
@@ -33,8 +33,14 @@ local Service = {
 	__Prompt_Cooldown = {},
 	__Chain_Attack_Prompts = {},
 	__Total_Damage = 0,
+	__Initialized_Passives = {},
 	__Chain_Attack_Cooldown = {},
 	__Agent_Damage_Hooks = {} :: { [number]: { [string]: {Agent: AgentTypes.ServerAgentClass, Handler: () -> ()} } },
+	__Pre_Hit_Hooks = {} :: { [number]: { [string]: {Agent: AgentTypes.ServerAgentClass, Handler: () -> ()} } },
+
+	--- Signals
+	DodgeSuccesful = nil :: Signal.ScriptSignal<AgentTypes.Enemy>,
+	--DodgeSuccesful = nil :: Signal.ScriptSignal<AgentTypes.Enemy>,
 }
 
 
@@ -119,6 +125,33 @@ function DisconnectAbilityDamageHook(Agent: AgentTypes.ServerAgentClass, Id: str
 	Service.__Agent_Damage_Hooks[PlayerId][Id] = nil
 end
 
+function ConnectHitVerificationHook(Agent: AgentTypes.ServerAgentClass, Id: string, fn: (Perpetrator: AbilityTypes.ServerEnemy) -> (boolean))
+	assert(typeof(fn) == 'function', "Must provide a function as 3rd argument.")
+
+	local AgentPlayer = Agent.__Player_Assigned
+	local PlayerId = AgentPlayer:GetAttribute("ReplicationId")
+
+	if Service.__Pre_Hit_Hooks[PlayerId] == nil then
+		Service.__Pre_Hit_Hooks[PlayerId] = {}
+	end
+
+	Service.__Pre_Hit_Hooks[PlayerId][Id] = {
+		Agent = Agent,
+		Handler = fn,
+	}
+end
+
+function DisconnectHitVerificationHook(Agent: AgentTypes.ServerAgentClass, Id: string)
+	local AgentPlayer = Agent.__Player_Assigned
+	local PlayerId = AgentPlayer:GetAttribute("ReplicationId")
+
+	if Service.__Pre_Hit_Hooks[PlayerId] == nil then
+		return
+	end
+
+	Service.__Pre_Hit_Hooks[PlayerId][Id] = nil
+end
+
 --- Publics
 function Service:RunAbilityDamageHooks(AgentHit: AgentTypes.ServerAgentClass, Perpetrator: AbilityTypes.ServerEnemy, HitData: AbilityTypes.HitEnemyData)
 	if AgentHit == nil or AgentHit.__Player_Assigned == nil then
@@ -142,8 +175,40 @@ function Service:RunAbilityDamageHooks(AgentHit: AgentTypes.ServerAgentClass, Pe
 	return HitData
 end
 
+function Service:RunVerificationHooks(AgentHit: AgentTypes.ServerAgentClass, Perpetrator: AbilityTypes.ServerEnemy)
+	if AgentHit == nil or AgentHit.__Player_Assigned == nil then
+		return false
+	end
+
+	local AgentPlayer = AgentHit.__Player_Assigned
+	local PlayerId = AgentPlayer:GetAttribute("ReplicationId")
+	if Service.__Pre_Hit_Hooks[PlayerId] == nil then
+		return true
+	end
+	
+	for Id, Data in Service.__Pre_Hit_Hooks[PlayerId] do
+		if (Data.Agent ~= AgentHit) then
+			continue
+		end
+
+		return Data.Handler(Perpetrator)
+	end
+
+	return true
+end
+
 function Service:Init()
+	Service.DodgeSuccesful = Signal.new();
+
 	--MovesetLibrary:Init()
+	AgentService.AgentAdded:Connect(function(NewAgent: AgentTypes.ServerAgentClass)
+		local Moveset = MovesetLibrary:Get(NewAgent.Name)
+		local PassiveManager = Moveset:GetPassiveManager()
+
+		if PassiveManager ~= nil and PassiveManager.Init then
+			PassiveManager:Init(NewAgent)
+		end
+	end)
 
 	Network.new("Ability", "Event")
 	Network:On('Ability', Service.ReplicateEvent)
@@ -178,6 +243,14 @@ end
 
 function Service:DisconnectDamageHook(Agent: AgentTypes.ServerAgentClass, Id: string)
 	return DisconnectAbilityDamageHook(Agent, Id)
+end
+
+function Service:ConnectVerificationHook(Agent: AgentTypes.ServerAgentClass, Id: string, fn: (Perpetrator: AbilityTypes.ServerEnemy) -> (boolean))
+	return ConnectHitVerificationHook(Agent, Id, fn)
+end
+
+function Service:DisconnectVerificationHook(Agent: AgentTypes.ServerAgentClass, Id: string)
+	return DisconnectHitVerificationHook(Agent, Id)
 end
 
 function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
@@ -274,12 +347,12 @@ function Service:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Enemy: Ag
 	Replicator:PromptChainAttack(Agent, Enemy)
 end
 
-function Service:TriggerMeterFullEvent(Id: number, CasterAgent: AgentTypes.ServerAgentClass)
+function Service:TriggerMeterFullEvent(MeterName: string, CasterAgent: AgentTypes.ServerAgentClass)
 	local name = CasterAgent.Name;
 	local Moveset = MovesetLibrary:Get(name)
 
 	if Moveset and Moveset:GetPassiveManager() ~= nil then
-		Moveset:GetPassiveManager():OnPassiveFilled(Id, CasterAgent)
+		Moveset:GetPassiveManager():OnPassiveFilled(MeterName, CasterAgent)
 	end
 end
 
@@ -379,20 +452,25 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 				return
 			end
 
-			local _, Status = Moveset:Begin(Skill, ActiveAgent, {
+			AgentService:Stop(Player)
+
+			local Status, ErrorMessage = Moveset:Begin(Skill, ActiveAgent, {
 				Target = Enemy, 
 				M1_Count = Other and Other[1] or nil,
 				Buffer = Other or {},
 				IsCancel = IsCancel,
 			})
-			return Status
+
+			return Status, ErrorMessage
 		elseif StateId == GameEnum.AbilityStates.End then
-			Moveset:Release(Skill, ActiveAgent, {
+			local Status, ErrorMessage = Moveset:Release(Skill, ActiveAgent, {
 				Target = Enemy,
 				M1_Count = Other and Other[1] or nil,
 				Buffer = Other or {},
 				IsCancel = IsCancel,
 			})
+
+			return Status, ErrorMessage
 		elseif StateId == GameEnum.AbilityStates.Cancel then
 			Moveset:CancelSkill(Skill, ActiveAgent, {ClientInstruction = true})
 		end

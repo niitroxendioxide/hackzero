@@ -27,7 +27,7 @@ function Ability:Play(Caster: Types.ServerEnemyClass)
 					Object:Destroy()
 
 					Ability:Hit(Caster, Target, HitBlastData)
-				end)
+				end, true)
 			end
 		end,},
 	})

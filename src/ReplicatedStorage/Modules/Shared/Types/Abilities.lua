@@ -158,6 +158,11 @@ export type AbilityHitRequest = HitEnemyData & {
 
 }
 
+export type PassiveManager = {
+	Init: (self: PassiveManager, Caster: Caster) -> (),
+	OnPassiveFilled: (self: PassiveManager, MeterName: string, Caster: Caster) -> (), 
+}
+
 export type MovesetClass = {
 	__Passive_Manager: {},
 	__Assigned: {[Default.AgentMovesetAbility]: AbilityClass & ServerAbilityClass},
@@ -167,9 +172,7 @@ export type MovesetClass = {
 	Assign: (self: MovesetClass, Key: string, Ability: AbilityClass) -> (),
 	Verify: (self: MovesetClass, Agent: Caster, Type: string) -> boolean,
 
-	GetPassiveManager: (self: MovesetClass) -> ({
-		OnPassiveFilled: (self: any, Id: number, Caster: Caster) -> (),
-	}),
+	GetPassiveManager: (self: MovesetClass) -> (PassiveManager),
 
 	EmulateHooks: (self: MovesetClass, Type: string, State: string, Agent: Caster, Context: {any}) -> (),
 	Begin: (self: MovesetClass, Key: Default.AgentMovesetAbility, Agent: Caster) -> (),

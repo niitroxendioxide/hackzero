@@ -74,10 +74,11 @@ export type AnimatorController = {
 	__IsMoving: boolean,
 
 	Init: (self: AnimatorController) -> (),
-	Play: (self: AnimatorController, Track: string) -> (),
+	Play: (self: AnimatorController, Track: string, Opts: AnimationDataOptions) -> (),
 	GetTrack: (self: AnimatorController, Track: string) -> AnimationTrack,
 	AddModelMovingAnimation: (self: AnimatorController, Track: AnimationTrack, Weight: number) -> (),
 	RemoveTrackFromMovement: (self: AnimatorController, Track: AnimationTrack) -> (),
+	AddTrackToState: (self: AnimatorController, Track: AnimationTrack, State: string, Time: number) -> (),
 }
 
 export type PhysicsController = {

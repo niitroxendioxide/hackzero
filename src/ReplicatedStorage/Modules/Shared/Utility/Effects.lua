@@ -16,7 +16,7 @@ local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters
 local Mock = require(Shared.Utility.Mock)
 local World = require(script.Parent.Parent.World)
 local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
-local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+--local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local CameraShaker = require(Client.Utility.Libraries.CameraShaker)
@@ -585,6 +585,10 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 				for _, Part in PartBounds do
 					if not Part:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER) and not Part:HasTag('Invulnerability') then
 						AllInvulnerable = false;
+					end
+
+					if Part:HasTag('SharinganActive') and not Part:HasTag('_sharingan_no_dodge') then
+						continue
 					end
 
 					local Target = Enemies:GetFromCollider(Part) or Characters:GetCharacterFromHitbox(Part)

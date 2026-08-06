@@ -94,7 +94,6 @@ function AnimatorClass:RemoveTrackFromMovement(Track: AnimationTrack)
 	self.__Movement_Tracks[Track] = nil
 end
 
-
 function AnimatorClass:Update(delta: number)
 	local Character = self.__Character
 	local Moving = Character:IsMoving()
@@ -144,7 +143,9 @@ function AnimatorClass:Update(delta: number)
 			if self.__Character:GetState() == State or not Moving then
 				Track_Object:AdjustWeight(1)
 			elseif self.__Character:GetState() ~= State and Passed_Time > Time and Moving then
-				Track_Object:AdjustWeight(NON_ZERO)
+				local lerpedWeight = math.max(1 - 1 * ((Passed_Time - Time) / 0.2), NON_ZERO)
+
+				Track_Object:AdjustWeight(lerpedWeight)
 			end
 		end
 	end

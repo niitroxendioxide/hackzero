@@ -36,7 +36,10 @@ return function(
     Speed: number,
     Time: number,
     Size: vector,
-    UseShuriken: boolean
+    UseShuriken: boolean,
+    LightTrail: boolean,
+    Offset: CFrame?,
+    AreFire: boolean?
 ): ()
     --
     local KunaiVFX = Assets.Sasuke.Kunai
@@ -46,9 +49,17 @@ return function(
     if UseShuriken then
         BaseModel = Assets.Sasuke.Shuriken
     end
+
+    Offset = Offset or CFrame.new()
     
-    local Projectile = Effects:Create(BaseModel, Time + 0.1)
-    Projectile:PivotTo(Model:GetPivot() * CFrame.new(0, 0, -1))
+    local Projectile = Effects:Create(BaseModel, Time + 1)
+    Projectile:PivotTo(Model:GetPivot() * CFrame.new(0, 0, -1) * Offset)
+
+    if AreFire then
+        Effects:Toggle(Projectile.Main, true)
+        Projectile.Main.TrailAtt.Trail.Enabled = false
+        Projectile.Main.TrailAtt.FireTrail.Enabled = true
+    end
 
     local Hit = false
 
@@ -57,7 +68,21 @@ return function(
         Hit = true
         ---
         Target:Hit()
-        Projectile:Destroy()
+        Effects:Toggle(Projectile, false)
+        if not UseShuriken then
+            Projectile.Transparency = 1
+        end
+
+        for _, Trail in Projectile:GetDescendants() do
+            if UseShuriken and Trail:IsA('BasePart') then
+                Trail.Transparency = 1;
+                continue
+            end
+
+            if Trail:IsA('Trail') then
+                Trail.Enabled = false
+            end
+        end
 
         return true
     end, nil, function(Delta: number)
@@ -69,20 +94,36 @@ return function(
     task.spawn(function()
         local Length = os.clock()
         local Last = os.clock()
+        local ref_time = LightTrail and 1/8 or (1 / 18)
+        local base = Assets.Goku.BasicAttack.DashVFX
+        if LightTrail then
+            base = Assets.Goku.BasicAttack.LightDashVFX
+        end
         while (not Hit) and (os.clock() - Length) < Time do
             local _ = task.wait();
 
-            if os.clock() - Last < 1 / 18 then
+            if os.clock() - Last < ref_time then
                 continue
             end
 
             if Hit then return end
             Last = os.clock()
             
-            local Hit_Effect = Effects:Create(Assets.Goku.BasicAttack.DashVFX, 3)
+            local Hit_Effect = Effects:Create(base, 3)
             Hit_Effect:PivotTo(Projectile:GetPivot() * CFrame.new(0, 0, -2.25) * CFrame.Angles(0, 0, Effects:Random(-math.pi, math.pi)))
 
             Effects:ForModelParts(Hit_Effect, MeshTweens)
+        end
+
+        Effects:Toggle(Projectile, false)
+        if not UseShuriken then
+            Projectile.Transparency = 1
+        else
+            for _, Trail in Projectile:GetDescendants() do
+                if Trail:IsA('BasePart') then
+                    Trail.Transparency = 1;
+                end
+            end
         end
     end)
 end

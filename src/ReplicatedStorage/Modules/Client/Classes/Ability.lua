@@ -201,7 +201,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 			Agent:AddTag('Movlock', 0.15)
 		end
 
-		if Enemy and (self.__Name ~= 'Dodge') then
+		if Enemy and (self.__Name ~= 'Dodge') and StateId == 1 then
 			Agent:Look(CFrame.lookAt(Agent:GetPivot().Position * Vector3.new(1, 0, 1), Enemy:GetPivot().Position * Vector3.new(1, 0 ,1)).LookVector, false, true)
 		end
 
@@ -298,6 +298,10 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	local Model = Data.Model or Agent:GetModel()
 	local Type = tostring(Agent):match('AgentClass') and 'Characters.' or 'Enemies.'
 	local TrackObject = AnimLibrary:GetAnim(Type..Track)
+	if TrackObject == nil and Type == 'Characters.' then
+		TrackObject = AnimLibrary:GetMovementAnim(Agent.Name, Type..Track)
+	end
+
 	local AnimTrack = AnimLibrary:Play(Model, TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
 	if not AnimTrack then
 		return

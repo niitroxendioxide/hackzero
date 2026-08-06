@@ -23,6 +23,7 @@ function MovesetClass.new(Name: string)
 	self.__Information = {}
 	self.__Assigned = {}
 	self.__Last_Use = {}
+	self.__Passive_Manager = nil;
 
 	return self
 end
@@ -79,7 +80,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 	if not Info.Base then
 		warn(`Skill info for Agent: "{self.Name} skill "{Type}" does not follow Base&Upgrade scheme (.Base\{}, .Upgrade\{})`)
 
-		return 
+		return  
 	end
 
 	-- Run client checks for correcting skill usage
@@ -112,7 +113,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 		end
 
 		if not Verified then
-			return false
+			return false, "Verification failed"
 		end
 
 		if self:IsOnCooldown(Agent, Type) then 
@@ -153,7 +154,9 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 			Agent:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, Statics.Dodge_Active_Time)
 		end
 
-		AbilityModule:Play(Agent, Type, 'Begin', Context)
+		task.spawn(function()
+			AbilityModule:Play(Agent, Type, 'Begin', Context)
+		end)
 		self.__Last_Use[Agent][Type] = os.clock()
 
 		--
@@ -193,19 +196,18 @@ function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass, Conte
 	end
 
 	if not Info.Base then
-		return
+		return false, "No base info for skill."
 	end
 
 	local CooldownKey = self.Name..Type..Caster.Name..Caster:GetId()
 
 	if typeof(self.__Assigned[Type]) == 'table' then
 		if not(Info.Base.Release) and not(Info.Base.ReleaseVerify) then
-			return false;
+			return false, "Skill is not release-able, nor has a release verification";
 		end
 
 		if Info.Base.ReleaseVerify and not self:Verify(Caster, Type, true) then
-			print('Not verified')
-			return false;
+			return false, "Skill verification failed.";
 		end
 
 		if not(Info.Base.ForceCooldownOnBegin) then
@@ -219,14 +221,16 @@ function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass, Conte
 		end
 
 		self.__Assigned[Type].__Held[Caster] = false
-		self.__Assigned[Type]:Play(Caster, Type, 'End', Context)
+		task.spawn(function()
+			self.__Assigned[Type]:Play(Caster, Type, 'End', Context)
+		end)
 		self.__Last_Use[Caster][Type] = os.clock()
 
 
 		return true;
-	else
-		warn(`Moveset: "{self.Name} does not have a correct skill module assigned for: "{Type}."`)
 	end
+
+	warn(`Moveset: "{self.Name} does not have a correct skill module assigned for: "{Type}."`)
 
 	return false;
 end

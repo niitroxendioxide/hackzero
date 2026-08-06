@@ -39,11 +39,6 @@ local Controller = {
 	ChainAttackActionChosen = Signal.new() :: Signal.ScriptSignal<number>,
 }
 
-local DirectionChoices = {
-	'Swap Back',
-	'Swap Forth'
-}
-
 function Controller:Init()
 	if not Places:CanFight() then
 		return;

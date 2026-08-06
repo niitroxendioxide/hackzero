@@ -4,12 +4,12 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
-local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
-local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
-local AgentTypes = require(Shared.Types.Agents)
+local Signal = require(Shared.Utility.Signal)
 local Network = require(Shared.Network)
+local Statics = require(Shared.Database.Statics)
+local Enemies = require(Shared.Libraries.Enemies)
 local GameEnum = require(Shared.GameEnum)
+local AgentTypes = require(Shared.Types.Agents)
 local AssistUtil = require(Shared.Utility.Assist)
 
 local AgentLibrary = require(ServerStorage.Modules.Libraries.Agents)
@@ -21,6 +21,7 @@ type Player_Data = {Active: number, Characters: {AgentTypes.ServerAgentClass}}
 
 local Service = {
 	__Characters = {} :: {[Player]: Player_Data},
+	AgentAdded = Signal.new() :: Signal.ScriptSignal<AgentTypes.ServerAgentClass>,
 }
 
 function Service:Init()
@@ -69,8 +70,9 @@ function Service:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClas
 	end
 
 	table.insert(Data.Characters, AgentClass)
-	--
+
 	Replicator:AddAgent(Player, AgentClass, Target)
+	Service.AgentAdded:Fire(AgentClass)
 	AgentLibrary:Add(Player:GetAttribute("ReplicationId") :: number, AgentClass)
 end
 
@@ -228,78 +230,11 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer, p_Target: numbe
 
 	---
 	if MarkedAgentStruct then
-		print("Needs to switch to:", MarkedAgentStruct.AssistCharacterId, "Switched to:", NewAgentIndex)	
-		--print('Id: ', MarkedAgentStruct.AssistCharacterId, "New IndeX:", NewAgentIndex)
-
 		if MarkedAgentStruct.AssistCharacterId == NewAgentIndex then
 			MarkedAgentStruct.Accepted:Fire()
 		end
 
 		MarkedAgentStruct.Accepted:DisconnectAll()
-
-		MarkedAgentStruct.TargetId = nil
-	end
-end
-
-function Service:oldswitch(Player: Player, Buffer: buffer, ParameterTarget: number, ForceRotateVector: boolean)
-	local AgentIndex, Direction = Math:Decodeu2u6(Buffer, 1)
-	local IsNext = Direction == 1
-
-	if Direction ~= 1 then
-		Direction = -1
-	end
-
-	local Angle = math.rad(buffer.readi16(Buffer, 2) / 180)
-	local X, Z = math.sin(Angle), math.cos(Angle)
-	local RebuiltRotationVector = Vector3.new(X, 0, Z)
-
-	local Data = Service:Get(Player)
-	local Previous = Data.Characters[Data.Active]
-	local New = Data.Characters[AgentIndex]
-
-	if not New:IsAlive() then
-		return
-	end
-
-	local WasMoving = Previous:IsMoving()
-
-	--
-	local MarkedAgentStruct = Previous:GetMarkedTarget()
-	local Target = if IsNext and MarkedAgentStruct ~= nil then Enemies:GetEnemy(MarkedAgentStruct.TargetId) elseif ParameterTarget ~= nil then ParameterTarget else nil
-
-	local CharacterCFrame = AssistUtil:CalculateSwitchCFrame(Previous, Direction, Target, ForceRotateVector)
-
-	Data.Active = AgentIndex
-
-	--
-	for _, Character in Service:GetCharacters(Player) do
-		Character:SetActive(Character == New)
-	end
-
-	if not New:HasTag("CharacterStatic") then
-		New:PivotTo(CharacterCFrame)
-		New:Rotate(RebuiltRotationVector)
-
-		if not Target then
-			New:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, Statics.Dodge_Active_Time)
-			New:ImpulseForward(Statics.Switch_Character_Dash_Strength, 0.75)
-		end
-
-		if WasMoving then
-			Service:Move(Player)
-		end
-
-		Replicator:CharacterSwitch(Player, AgentIndex, Direction, Target and Target:GetId())
-		Replicator:Rotate(Player, RebuiltRotationVector)
-	end
-
-	--
-	if MarkedAgentStruct then
-		if IsNext then
-			MarkedAgentStruct.Accepted:Fire()
-		else
-			MarkedAgentStruct.Accepted:DisconnectAll()
-		end
 
 		MarkedAgentStruct.TargetId = nil
 	end

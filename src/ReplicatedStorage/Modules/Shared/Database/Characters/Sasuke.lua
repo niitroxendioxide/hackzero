@@ -65,6 +65,14 @@ return {
 				Speed = 1,
 				Animation_Speed = 1,
 				Range = 75,
+				Release = true,
+				
+				ShurikenSize = vector.create(5, 5),
+				ShurikenConfigs = {
+					{3, 4},
+					{3, -4},
+					{6, -4},
+				},
 
 				Attack_Data = {
 					-- The "?" symbol means it can be there or not.
@@ -92,6 +100,15 @@ return {
 					}
 				},
 
+				ShurikenHit = {
+					Affliction = "Physical",
+					HitType = "Slash",
+					Affliction_Buildup = 3,
+					Stun = 0.2,
+					Damage = 91,
+					Daze = 12,
+				},
+
 				Damage = {
 					[1] = 70,
 					[1.1] = 90,
@@ -110,6 +127,10 @@ return {
 				}
 			},
 			Upgrade = {
+				ShurikenHit = {
+					Damage = 1.75,
+					Daze = 0.25
+				},
 				Damage = {
 					[1] = 1.5,
 					[1.1] = 2,

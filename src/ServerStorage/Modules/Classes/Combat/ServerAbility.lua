@@ -56,7 +56,7 @@ function ServerAbilityClass:Play(Agent: AgentTypes.ServerAgentClass)
 	self:Begin(Agent, {})
 end
 
-function ServerAbilityClass:CreateHitbox(Caster: (AgentTypes.ServerAgentClass & AgentTypes.Enemy) | CFrame, Offset, Size, Event, Time: number?, Repeat: boolean?, CasterObjType: any?)
+function ServerAbilityClass:CreateHitbox(Caster: (AgentTypes.ServerAgentClass & AgentTypes.Enemy) | CFrame, Offset, Size, Event, Time: number?, Repeat: boolean?, CasterObjType: any?, Targets: {}?)
 	local At = typeof(Caster) == 'CFrame' and Caster or Caster:GetPivot()
 	ServerHitboxUtil:ForStructuresInZone(Size,  At * CFrame.new(Offset), function(Structure)
 		Event(Structure)
@@ -69,7 +69,7 @@ function ServerAbilityClass:CreateHitbox(Caster: (AgentTypes.ServerAgentClass & 
 	end
 
 	if (StringCaster == 'EnemyClass') then
-		self:CreateAgentHitbox(At, Offset, Size, Event, Time, Repeat)
+		self:CreateAgentHitbox(At, Offset, Size, Event, Time, Repeat, typeof(Caster) == 'table' and Caster or nil, Targets)
 	elseif StringCaster == 'ServerAgentClass' or StringCaster == 'CFrame' then
 		if StringCaster == 'ServerAgentClass' then
 			for _, GrabbedEnemy in GrabService:GetGrabbedEnemies(Caster) do
@@ -143,8 +143,8 @@ function ServerAbilityClass:CreateEnemyHitbox(At: CFrame, Offset: Vector3, Size:
 	end
 end
 
-function ServerAbilityClass:CreateAgentHitbox(At: CFrame, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> (), Time: number?, Repeat: boolean?)
-	local Targets = {}
+function ServerAbilityClass:CreateAgentHitbox(At: CFrame, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> (), Time: number?, Repeat: boolean?, Caster: AgentTypes.Enemy, Targets: {}?)
+	Targets = Targets or {}
 
 	local function Process()
 		ServerHitboxUtil:ForAgentsInZone(Size, At * CFrame.new(Offset), function(Target: AgentTypes.ServerAgentClass, ...)
@@ -161,8 +161,11 @@ function ServerAbilityClass:CreateAgentHitbox(At: CFrame, Offset: Vector3, Size:
 			end
 
 			local Is_Dodge = Target:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
-			if Is_Dodge or Target:HasTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE) then
+			local Switch_Assist_Dodge = Target:HasTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE)
+			if Is_Dodge or Switch_Assist_Dodge then
 				if Is_Dodge then
+					AbilityService.DodgeSuccesful:Fire(Caster)
+
 					Target:GiveUltimate(Statics.Dodge_Ult_Bar_Fill)
 					Replicator:ProcessDodge(Target)
 				else
@@ -175,6 +178,11 @@ function ServerAbilityClass:CreateAgentHitbox(At: CFrame, Offset: Vector3, Size:
 				Target:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
 				Target:RemoveTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE)
 
+				return
+			end
+
+			local CanHitTarget = AbilityService:RunVerificationHooks(Target, Caster)
+			if CanHitTarget == false then
 				return
 			end
 
@@ -261,9 +269,11 @@ function ServerAbilityClass:CreateMovingHitbox(
 	Size: vector, 
 	Speed: number, 
 	Max_Time: number, 
-	Hit_Function: (Target: AgentTypes.Enemy) -> ()
+	Hit_Function: (Target: AgentTypes.Enemy) -> (),
+	NoRepeat: boolean?
 ): Types.MovingHitboxObject
 	
+	local Targets = {}
 	local ClassObject = {
 		CFrame = From,
 		Speed = Speed,
@@ -298,7 +308,8 @@ function ServerAbilityClass:CreateMovingHitbox(
 		local Depth = ClassObject.Size.Z or 1
 		local Difference = (Delta * ClassObject.Speed * WorldSpeed)
 
-		local Res = self:CreateHitbox(ClassObject.CFrame, vector.zero, vector.create(ClassObject.Size.X, ClassObject.Size.Y, Difference * Depth), Hit_Function, nil, nil, Caster)
+		local TargetsTable = NoRepeat and Targets or {}
+		local Res = self:CreateHitbox(ClassObject.CFrame, vector.zero, vector.create(ClassObject.Size.X, ClassObject.Size.Y, Difference * Depth), Hit_Function, nil, nil, Caster, TargetsTable)
 		if ClassObject.DebugVariable then
 			Res.Debug(Delta * 2)
 		end

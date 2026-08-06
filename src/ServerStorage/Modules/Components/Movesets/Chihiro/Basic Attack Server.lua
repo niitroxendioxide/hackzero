@@ -50,7 +50,7 @@ local function HandleParryAbility(Caster)
 		Caster:RemoveTag('StunImmunity')
 		AbilityService:DisconnectDamageHook(Caster, ParryId)
 
-		return false
+		return true
 	end
 	
 	Caster:SwitchState("Attacking", 0)

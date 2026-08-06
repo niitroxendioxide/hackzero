@@ -44,7 +44,7 @@ return table.freeze({
 
 
     --- PASSIVE, EASY, MEDIUM, HARD, EXTREME
-    DIFFICULTY = 'HARD', 
+    DIFFICULTY = 'EXTREME', 
     USE_BORROW = true, -- whether to replace agents with lvl 60 max
     BORROWED_AGENT_LEVEL = 60,
     STUDIO_ENERGY_MULT = 1,

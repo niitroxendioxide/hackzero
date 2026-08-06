@@ -29,8 +29,10 @@ function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 		Ability:Effect("Cancel", Caster)
 	end
 
+	Ability:PlayAnimation(Caster, "Dash" .. Anim, {Active_Time = 0.45, State = 'Dashing'})
+
 	Animator:Play('Dash' .. Anim, {Name = 'Dash'})
-	Caster:SwitchState('Dashing', .15)
+	Caster:SwitchState('Dashing', .275)
 	
 	local Sign = Context.IsCancel and -1 or 1;
 	

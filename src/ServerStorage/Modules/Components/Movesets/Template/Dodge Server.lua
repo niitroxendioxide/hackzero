@@ -16,7 +16,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, _, _, Context): ()
 	--
 	local Sign = Context.IsCancel and -1 or 1;
 
-	Caster:SwitchState('Dashing', .15)
+	Caster:SwitchState('Dashing', .275)
 	Caster:ImpulseForward(Sign * Statics.Dash_Strength, Statics.Dash_Time)
 end
 

@@ -52,12 +52,13 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 	local Parent = Effects:GetParent('Indicator')
 	local Indicator = typeof(At) == 'table' and Parent:FindFirstChild(At:GetId()..'indicatorobj') or nil
 	local ClearThread: thread = nil
-	local NumberToString = tostring(Data.Number)..(Data.Critical and '!' or '')
+	local NumberToString = Data.Text or (tostring(Data.Number)..(Data.Critical and '!' or ''))
 	local Multiple_Indicators_Setting = Settings:Get("MultipleIndicators", "QOL")
+	local IsText = Data.Text ~= nil
 
-	if not Multiple_Indicators_Setting and Indicator and Threads[Indicator] then
+	if not Multiple_Indicators_Setting and Indicator and Threads[Indicator] and not(Data.ForceMultiIndicator) and not IsText then
 		local Previous = Indicator:GetAttribute('Total')
-		local NewTotal = Data.Number + Previous
+		local NewTotal = (Data.Number or 0) + Previous
 		NumberToString = tostring(NewTotal)..(Data.Critical and '!' or '')
 		Indicator:SetAttribute('Total', NewTotal)
 
@@ -142,6 +143,9 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 	for i = 1, #NumberToString do
 		local Number = string.sub(NumberToString, i, i)
 		local X_Size = tonumber(Number) == nil and 0.07 or 0.1
+		if IsText then 
+			X_Size = 0.11
+		end
 
 		local Exists = Indicator.Holder.Main:FindFirstChild(tostring(i))
 		local Object = Exists or Assets.Interface.Combat.DamageNumber:Clone()

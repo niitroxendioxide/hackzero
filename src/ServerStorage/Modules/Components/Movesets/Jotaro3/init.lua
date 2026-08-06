@@ -15,6 +15,7 @@ for _, Ability in script:GetChildren() do
 	
 	if Ability.Name == 'Passives' then
 		TemplateMoveset:SetPassiveManager(Required)
+		 
 		continue
 	end
 

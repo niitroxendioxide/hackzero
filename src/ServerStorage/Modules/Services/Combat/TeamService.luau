@@ -92,7 +92,7 @@ function Service:Create(Player: Player)
                 AgentInstance:CreateMeter(MeterName, Data)
                 AgentInstance:OnMeterUpdated(MeterName, function(Id: number, Value: number, Percent: number)  
                     if Percent == 1 then
-                        AbilityService:TriggerMeterFullEvent(Id, AgentInstance)
+                        AbilityService:TriggerMeterFullEvent(MeterName, AgentInstance)
                     end
                 end)
             end
