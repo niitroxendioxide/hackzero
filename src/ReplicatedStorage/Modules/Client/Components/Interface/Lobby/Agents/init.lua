@@ -73,7 +73,14 @@ local function SwitchModel(Name: string)
         States.__Current_Model:Destroy()
     end
     
+    local AgentData = CharacterDatabase:GetCharacterData(Name, true)
+
     local CharacterModel = Assets.Characters.Agents:FindFirstChild(Name)
+    if AgentData.Model and not CharacterModel then
+        local Dir, Model = table.unpack(string.split(AgentData.Model, '/')) 
+        CharacterModel = Assets.Characters[Dir]:FindFirstChild(Model) or Assets.Characters.Agents.Template;
+    end
+
     if CharacterModel then
         local PivotCFrame = RoomLocations.CharacterPlace.CFrame
         local Params = RaycastParams.new()
@@ -149,6 +156,14 @@ local function CreateAgentIcons(): ()
 
         ---
         local AgentModel = Assets.Characters.Agents:FindFirstChild(AgentName) or Assets.Characters.Agents.Template
+        if AgentData.Model then
+            local Dir, ModelName = table.unpack(string.split(AgentData.Model, "/"))
+            AgentModel = Assets.Characters:FindFirstChild(Dir):FindFirstChild(ModelName)
+            if AgentModel == nil then
+                AgentModel = Assets.Characters.Agents.Template
+            end
+        end
+
         local ClonedAgentModel = AgentModel:Clone();
         ClonedAgentModel:PivotTo(CFrame.new());
         ClonedAgentModel.Parent = AgentObj.Design.Viewport.WorldModel;
@@ -164,7 +179,7 @@ local function CreateAgentIcons(): ()
             AgentObj.Design.Glow.BackgroundColor3 = AgentData.IconGlowColor::Color3 
         end
 
-        AgentObj.Design.AgentName.Text = AgentName
+        AgentObj.Design.AgentName.Text = AgentData.Display_Name
         AgentObj.Parent = Frame.Agents.Holder
 
         LastAgent = Agent;

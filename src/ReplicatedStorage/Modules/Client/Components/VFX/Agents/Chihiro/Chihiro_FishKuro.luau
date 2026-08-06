@@ -1,6 +1,6 @@
 ---
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local RunService = game:GetService("RunService")
+local _RunService = game:GetService("RunService")
 
 local Assets = ReplicatedStorage.Assets.Effects.Agents
 local Shared = ReplicatedStorage.Modules.Shared
@@ -14,7 +14,7 @@ local EffectsLibrary = require(Client.Libraries.Effects)
 
 --- Saved stuff
 local Cache = {}
-local Anim = Animation:GetAnim("Characters.Chihiro.Abilities.Special.Fish.Smallidle")
+local Anim = nil;
 
 ---
 return function(
@@ -23,6 +23,10 @@ return function(
     State: string,
     ...
 ): ()
+    if Anim == nil then
+        Animation:GetAnim("Characters.Chihiro.Abilities.Special.Fish.Smallidle")
+    end
+
     local KuroAssets = Assets.Chihiro.Kuro
     local CasterLook = Caster:GetPivot().LookVector
     local Args = {...}

@@ -27,7 +27,7 @@ return {
 	Level_Stats = {
 		Attack = 8,
 		Health = 863,
-		Defense = 7.76,
+		Defense = 4.5,
 		Daze = 5.8,
 	},
 

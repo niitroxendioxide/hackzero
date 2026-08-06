@@ -6,6 +6,8 @@ return {
 	Tier = "Legendary",
 	Faction = "Strawhat Pirates",
 
+	IconGlowColor = Color3.fromRGB(237, 113, 113),
+
 	Appearance = {
 		Height = 3.15
 	},

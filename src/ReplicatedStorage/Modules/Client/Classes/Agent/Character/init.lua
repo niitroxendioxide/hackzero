@@ -28,8 +28,17 @@ function CharacterClass.new(Character: string)
 		return CharacterClass[key]
 	end,})
 
+
+	local ModelName, Directory = Character, nil;
+	if CharacterData.Model ~= nil then
+		local Split = string.split(CharacterData.Model, "/");
+
+		Directory = Split[1]
+		ModelName = Split[2]
+	end
+
 	self.__Tags = {}
-	self.__Appearance = Appearance.new(Character)
+	self.__Appearance = Appearance.new(ModelName, Directory)
 	self.__States = States.new(Character)
 	self.__Controller = Physics.new(self.__States, CharacterData.Appearance.Height, Character == 'Goku' and true)
 	self.__Animator = Animator.new(self, Character)

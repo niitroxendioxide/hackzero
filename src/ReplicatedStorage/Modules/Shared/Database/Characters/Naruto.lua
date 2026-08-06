@@ -6,7 +6,7 @@ return {
 	Tier = "Legendary",
 	Faction = "Team 7",
 	
-	IconGlowColor = Color3.fromRGB(255, 146, 83),
+	IconGlowColor = Color3.fromRGB(235, 186, 102),
 
 	Appearance = {
 		Height = 2.675

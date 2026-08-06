@@ -5,6 +5,8 @@ return {
 	Role = 'Support',
 	Tier = "Legendary",
 	Faction = "VOCALOID",
+	
+	IconGlowColor = Color3.fromRGB(100, 252, 183),
 
 	Appearance = {
 		Height = 3

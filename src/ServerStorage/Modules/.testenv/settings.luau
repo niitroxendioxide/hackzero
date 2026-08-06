@@ -45,7 +45,7 @@ return table.freeze({
 
     --- PASSIVE, EASY, MEDIUM, HARD, EXTREME
     DIFFICULTY = 'EXTREME', 
-    USE_BORROW = true, -- whether to replace agents with lvl 60 max
+    USE_BORROW = false, -- whether to replace agents with lvl 60 max
     BORROWED_AGENT_LEVEL = 60,
     STUDIO_ENERGY_MULT = 1,
     CHARACTERS_INVINCIBLE = true,
@@ -54,6 +54,6 @@ return table.freeze({
     TEST_AGENTS = {
         'Chihiro',
         'Sasuke',
-        
+        'SojoAgent'
     },
 })

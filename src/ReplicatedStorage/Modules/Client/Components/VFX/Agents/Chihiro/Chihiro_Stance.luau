@@ -1,11 +1,11 @@
 ---
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local RunService = game:GetService("RunService")
+local _RunService = game:GetService("RunService")
 
 local Assets = ReplicatedStorage.Assets.Effects.Agents
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Types = require(Shared.Types.Abilities)
+local Types = require(Shared.Types.Agents)
 local Effects = require(Shared.Utility.Effects)
 
 ---
@@ -13,7 +13,7 @@ local AuraOffset = CFrame.new(0.081, -0.106, 0.05)
 local EffectOffset = CFrame.new(-0.000183105469, -0.0383501053, 0.37184906, 0, 0, -1, 0.00953629613, 0.999954641, 0, 0.999954641, -0.00953629613, 0)
 local Cache = {}
 
-return function(Caster: Types.Caster)
+return function(Caster: Types.AgentClass)
     if typeof(Cache[Caster]) == 'function' then
         Cache[Caster]()
         Cache[Caster] = nil
@@ -23,11 +23,18 @@ return function(Caster: Types.Caster)
 
     local AkaAssets = Assets.Chihiro.Aka
     local CasterModel = Caster:GetModel()
+    local Appearance = Caster:GetAppearance()
 
     local KatanaModel = CasterModel:FindFirstChild("Katana")
     if not KatanaModel then
         return;
     end
+
+    local Sheathe = KatanaModel.Sheathe
+    local BodySheathe = KatanaModel.BodySheathe
+
+    Appearance:EditPartValue(Sheathe, 1)
+    Appearance:EditPartValue(BodySheathe, 0)
 
     local ChargeUpEffects = Effects:Create(AkaAssets.StanceAura)
     ChargeUpEffects:PivotTo(CasterModel:GetPivot() * AuraOffset)
@@ -49,6 +56,8 @@ return function(Caster: Types.Caster)
     end
 
     Cache[Caster] = function()
+        Appearance:EditPartValue(Sheathe, 0)
+        Appearance:EditPartValue(BodySheathe, 1)
 
         Effects:Toggle(KatanaParticleAura, false)
         Effects:Toggle(ChargeUpEffects, false)

@@ -257,6 +257,7 @@ export type CharacterData = {
 	Tier: Tier,
 	Faction: string,
 	NotOnBanner: boolean?,
+	Model: string?,
 
 	Appearance: CharacterAppearanceData,
 

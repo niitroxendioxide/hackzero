@@ -202,11 +202,23 @@ function Component:Init()
 
 			Item.Visible = true
 
+			local Viewport = Item.Main :: ViewportFrame
+			if Viewport.WorldModel:FindFirstChildOfClass('Model') then
+				continue
+			end
+
 			local Assets: Folder = ReplicatedStorage:WaitForChild("Assets") :: Folder & { Characters: Folder }
 			local CharacterFolder = Assets:FindFirstChild("Characters") :: Folder & { Agents: Folder };
 			local Character = Characters[Number].Name
-			local Viewport = Item.Main :: ViewportFrame
+			
 			local BaseModel = CharacterFolder.Agents:FindFirstChild(Character) :: Model
+			local AgentData = CharacterDatabase:GetCharacterData(Character)
+
+			if typeof(AgentData.Model) == 'string' then
+				local Dir, ModelName = table.unpack(string.split(AgentData.Model, "/"))
+				BaseModel = Assets.Characters:FindFirstChild(Dir):FindFirstChild(ModelName)
+			end
+
 			if not BaseModel then continue end
 
 			local Camera = (Viewport:FindFirstChild('Camera') or Instance.new('Camera')) :: Camera
