@@ -20,11 +20,13 @@ function Movesets:Init()
 		end
 
 		if Moveset:IsA('ModuleScript') and Moveset.Parent:IsA('Folder') then
-			local Success, Required = pcall(require, Moveset)
+			local Success, Required: Types.MovesetClass = pcall(require, Moveset)
 
 			if Success then
 				Required:Assign('Swap Back', SwapSkill)
 				Required:Assign('Swap Forth', SwapSkill)
+				Required:SortSkills()
+				
 				Movesets.__Cache[Moveset.Name] = Required
 			end
 		end

@@ -166,11 +166,14 @@ export type PassiveManager = {
 export type MovesetClass = {
 	__Passive_Manager: {},
 	__Assigned: {[Default.AgentMovesetAbility]: AbilityClass & ServerAbilityClass},
+	__Sorted: {},
 
 	--
-	GetAll: (self: MovesetClass) -> ({ServerAbilityClass}?),
+	GetAll: (self: MovesetClass, GetNames: boolean?) -> ({ServerAbilityClass}?),
 	Assign: (self: MovesetClass, Key: string, Ability: AbilityClass) -> (),
 	Verify: (self: MovesetClass, Agent: Caster, Type: string) -> boolean,
+	SortSkills: (self: MovesetClass) -> (),
+	GetSkillById: (self: MovesetClass, Id: number) -> (string),
 
 	GetPassiveManager: (self: MovesetClass) -> (PassiveManager),
 

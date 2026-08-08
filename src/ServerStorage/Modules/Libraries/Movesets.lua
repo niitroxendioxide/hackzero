@@ -16,9 +16,10 @@ local Movesets = {
 function Movesets:Init()
 	for _, Moveset in MovesetFolder:GetDescendants() do
 		if Moveset:IsA('ModuleScript') and Moveset.Parent:IsA('Folder') then
-			local Success, Required = pcall(require, Moveset)
+			local Success, Required: Types.MovesetClass = pcall(require, Moveset)
 
 			if Success then
+				Required:SortSkills()
 				Movesets.__Cache[Moveset.Name] = Required
 			end
 		end

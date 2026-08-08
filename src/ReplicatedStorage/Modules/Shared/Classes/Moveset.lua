@@ -23,6 +23,7 @@ function MovesetClass.new(Name: string)
 	self.__Information = {}
 	self.__Assigned = {}
 	self.__Last_Use = {}
+	self.__Sorted = {};
 	self.__Passive_Manager = nil;
 
 	return self
@@ -43,11 +44,11 @@ function MovesetClass:Assign(Type: string, Ability: Types.AbilityClass)
 	end)
 end
 
-function MovesetClass.GetAll(self: Types.MovesetClass): {Types.ServerAbilityClass}
+function MovesetClass.GetAll(self: Types.MovesetClass, GetNames: boolean?): {Types.ServerAbilityClass}
 	local List = {}
 
 	for _, Ability in self.__Assigned do
-		table.insert(List, Ability)
+		table.insert(List, GetNames and Ability.__Name or Ability)
 	end
 
 	return List
@@ -60,6 +61,20 @@ end
 
 function MovesetClass.SetPassiveManager(self: Types.MovesetClass, Module: {any})
 	self.__Passive_Manager = Module
+end
+
+function MovesetClass.SortSkills(self: Types.MovesetClass)
+	local Abilities = self:GetAll(true);
+
+	table.sort(Abilities, function(Name1, Name2): boolean  
+		return Name1 < Name2;
+	end)
+
+	self.__Sorted = Abilities;
+end
+
+function MovesetClass.GetSkillById(self: Types.MovesetClass, Id: number)
+	return self.__Sorted[Id] :: string
 end
 
 function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSignal: boolean?, [string]: any}): boolean

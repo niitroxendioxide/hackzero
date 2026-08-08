@@ -93,11 +93,11 @@ return {
                     Goal = {KillEnemies = 1},
                     EnemyBuffs = {
                         {'Max_Health', "25000%"},
-                        {'Defense', "200%"},
+                        --{'Defense', "200%"},
                     },
                     Enemies = {
                         [1] = {
-                            {Name = "Sojo", Amount = 1, Level = 60, Affected_Aura = true}
+                            {Name = "Sorcerer", Amount = 1, Level = 60, Affected_Aura = true}
                         }
                     },
                     Dialogue = {
