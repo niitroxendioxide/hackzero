@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 
 local Shared = ReplicatedStorage.Modules.Shared
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Statics = require(Shared.Database.Statics)
 
 local SAME_ATTACKER = 1.25
@@ -11,6 +12,7 @@ local DIFFERENT_ATTACKER = 1
 local Hits = {}
 local Targets = {
     __Current_Difficulty = 'EASY',
+    __Marked_Targets = {},
 }
 
 function Targets:SetDifficulty(Difficulty: string)
@@ -22,6 +24,22 @@ function Targets:SetDifficulty(Difficulty: string)
     Targets.__Current_Difficulty = Difficulty
     SAME_ATTACKER = DifficultyVariables.SAME_ATTACKER
     DIFFERENT_ATTACKER = DifficultyVariables.DIFFERENT_ATTACKER
+end
+
+function Targets:MarkTarget(Target: any, Attacker: any)
+    if Targets.__Marked_Targets[Target] ~= nil then
+        return;
+    end
+
+    Targets.__Marked_Targets[Target] = Attacker:GetId();
+end
+
+function Targets:FreeTarget(Target: any)
+    Targets.__Marked_Targets[Target] = nil
+end
+
+function Targets:IsMarked(Target: any, Attacker: any)
+    return Targets.__Marked_Targets[Target] == Attacker:GetId()
 end
 
 function Targets:RefreshLastAttackedTime(Target: any, Attacker: any)
@@ -46,8 +64,13 @@ function Targets:CanAttackTarget(Target: any, Attacker: any)
     end
 
     local TimeSinceLastHit = os.clock() - Hits[Target].Last
+    local IsSameAttacker = Hits[Target].Attacker == Attacker
 
-    if TimeSinceLastHit < SAME_ATTACKER and Hits[Target].Attacker == Attacker then
+    if IsSameAttacker and Targets:IsMarked(Target, Attacker) then
+        return true
+    end
+
+    if TimeSinceLastHit < SAME_ATTACKER and IsSameAttacker then
         return false
     end
 

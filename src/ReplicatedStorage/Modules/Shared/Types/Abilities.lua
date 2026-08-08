@@ -24,6 +24,21 @@ export type Sequence = {
 export type HitboxAttackData = {Size: Vector3, Offset: Vector3, Hit_Function: (Target: any) -> ()}
 
 
+export type GenericCaster = {
+	Walk: (self: GenericCaster) -> (),
+	GetId: (self: GenericCaster) -> (number),
+	PivotTo: (self: GenericCaster) -> (),
+	SwitchState: (self: GenericCaster, State: Default.State, Time: number, Invulnerable: boolean?) -> (),
+	
+	GetStat: (self: GenericCaster, Stat: Agents.Stat) -> number,
+	GetState: (self: GenericCaster) -> (),
+	GetSkillLevel: (self: GenericCaster, Name: Default.AgentMovesetAbility) -> (number),
+
+	AddTag: (self: GenericCaster, Tag: string, Time: number?, Replicate: boolean?) -> (),
+	HasTag: (self: GenericCaster, Tag: string) -> (boolean),
+	RemoveTag: (self: GenericCaster, Tag: string) -> (),
+}
+
 export type Caster = (Agents.ServerAgentClass | Agents.AgentClass | Agents.Enemy | Agents.ClientEnemy) & {
 	SwitchState: (self: Caster, State: Default.State, Time: number, Unaffected: boolean?) -> (),
 }
@@ -174,6 +189,7 @@ export type MovesetClass = {
 	Verify: (self: MovesetClass, Agent: Caster, Type: string) -> boolean,
 	SortSkills: (self: MovesetClass) -> (),
 	GetSkillById: (self: MovesetClass, Id: number) -> (string),
+	GetSkillId: (self: MovesetClass, Name: string) -> (number),
 
 	GetPassiveManager: (self: MovesetClass) -> (PassiveManager),
 
@@ -213,7 +229,7 @@ export type ServerAbilityClass = {
 	__Signal: RBXScriptSignal,
 	__Hit: Default.Signal<AbilityHitInfo>,
 
-	CreateHitbox: (self: ServerAbilityClass, Agent: Caster & CFrame, Offset: Vector3, Size: Vector3, Event: (Enemy: Agents.Enemy) -> ()) -> ({
+	CreateHitbox: (self: ServerAbilityClass, Agent: GenericCaster & CFrame, Offset: Vector3, Size: Vector3, Event: (Enemy: ServerEnemy | ServerAgent) -> ()) -> ({
 		Debug: () -> (),
 	}),
 

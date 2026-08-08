@@ -339,12 +339,17 @@ function Replicator:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Target
 	Network:Fire('Replicate', Agent.__Player_Assigned, Object)
 end
 
-function Replicator:EnemyUseSkill(EnemyId: number, SkillId: number, State: string)
+function Replicator:EnemyUseSkill(EnemyId: number, SkillId: number, State: string, Target: AgentTypes.ServerAgentClass)
+	local Id: number = (Target.__Player_Assigned :: Player):GetAttribute('ReplicationId') :: number
+	local AgentId = Agents:GetIdForPlayer(Id, Target)
+
 	local Object = buffer.create(8)
 	buffer.writeu8(Object, 0, GameEnum.Replication.EnemyUseSkill)
-	buffer.writeu8(Object, 1, SkillId)
-	buffer.writeu8(Object, 2, EnemyId)
+	buffer.writeu8(Object, 1, SkillId or 0)
+	buffer.writeu8(Object, 2, EnemyId or 0)
 	buffer.writeu8(Object, 3, State == 'Begin' and 1 or 0)
+	Math:Encodeu2u6(Id, AgentId, Object, 4)
+	
 
 	Network:FireForAll('ReliableReplication', Object)
 end

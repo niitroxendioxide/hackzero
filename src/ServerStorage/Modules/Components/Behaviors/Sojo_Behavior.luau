@@ -7,16 +7,17 @@ return function(Behavior: Types.EntityBehavior, State: Types.EntityState)
     
     -- // Patterns
     Behavior.DefinePattern('SwordSwings', {
-        Skills = {'BasicAttack', 'BasicAttack', 'BasicAttack'},
+        Skills = {'Basic Attack', 'Basic Attack', 'Basic Attack'},
     })
 
     Behavior.DefinePattern('SingleMei', {
-        Skills = {'Mei'},
+        Skills = {'Mei Cloak'}, -- replace for Mei later
+        Cooldown_Time = 8,
         Interruptible = true,
     })
 
     Behavior.DefinePattern('MeiDash', {
-        Skills = {'MeiCloak', 'MeiDash'}
+        Skills = {'Mei Cloak', 'MeiDash'}
     })
     
     Behavior.DefinePattern('YuiMeiTrap', {
@@ -32,31 +33,32 @@ return function(Behavior: Types.EntityBehavior, State: Types.EntityState)
     })
 
     --- // Phase changes
-    Behavior.Phase('Enraged', function()
-        return State.HealthPercent < 50;
+    Behavior.Phase('Enraged', 1, function()
+        return State.HealthPercent() < 50;
     end)
 
-    Behavior.Phase('Struggling', function()
-        return State.HealthPercent < 15;
+    Behavior.Phase('Struggling', 2, function()
+        return State.HealthPercent() < 15;
     end)
 
     --- // Patterns
-    Behavior.SetPatterns('Base', {
-        'SwordSwings',
-        'SingleMei',
+    Behavior.SetBasePatterns({
+        { Name = 'SwordSwings', Weight = 1 },
+        { Name = 'SingleMei', Weight = 1 },
+        --'SingleMei',
     })
 
     Behavior.SetPatterns('Enraged', {
-        'SwordSwings',
-        'MeiDash',
-        'YuiSpikesTrap',
-        'YuiMeiTrap',
+        { Name = 'SwordSwings', Weight = 1 },
+        { Name = 'MeiDash', Weight = 1 },
+        { Name = 'YuiSpikesTrap', Weight = 1 },
+        { Name = 'YuiMeiTrap', Weight = 1 },
     })
 
     Behavior.SetPatterns('Struggling', {
-        'SwordSwings',
-        'LastResource',
-        'YuiSpikesTrap',
-        'YuiMeiTrap',
+        { Name = 'SwordSwings', Weight = 1 },
+        { Name = 'LastResource', Weight = 1 },
+        { Name = 'YuiSpikesTrap', Weight = 1 },
+        { Name = 'YuiMeiTrap', Weight = 1 },
     })
 end

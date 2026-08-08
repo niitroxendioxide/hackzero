@@ -37,6 +37,7 @@ function Service:Init()
 
 
 	--
+	Network.new("Quests", 'Event')
 	Network:On("Quests", function(Player: Player, Type: number, Data: {[string | number]: any})  
 		if Type == GameEnum.Quests.Claim then
 			local ToClaimId = Data.Id;

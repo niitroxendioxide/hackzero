@@ -4,6 +4,9 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
+local Classes = ServerStorage.Modules.Classes
+local Libraries = ServerStorage.Modules.Libraries
+local Services = ServerStorage.Modules.Services
 
 local Heap = require(ReplicatedStorage.Modules.Shared.Utility.Heap)
 local Types = require(Shared.Types)
@@ -12,9 +15,10 @@ local Places = require(Shared.Places)
 local Signal = require(Shared.Utility.Signal)
 
 local EnemiesDatabase = require(Database.Enemies)
-local ServerEnemy = require(ServerStorage.Modules.Classes.Combat.ServerEnemy)
 
-local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
+local ServerEnemy = require(Classes.Combat.ServerEnemy)
+local Replicator = require(Libraries.Replicator)
+local EntityBehaviorService = require(Services.Combat.EntityBehaviorService)
 
 --
 local Service = {
@@ -96,9 +100,11 @@ function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string
 		Service.__Tag_Enemies[Tag] = {}
 	end
 
+	
 	table.insert(Service.__Tag_Enemies[Tag], Enemy)
-
 	Enemy:Init(Key)
+	
+	EntityBehaviorService:InitializeBehaviors(Enemy)
 
 	return Enemy
 end

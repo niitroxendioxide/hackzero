@@ -5,6 +5,7 @@ export type PatternData = {
     -- Skill list, in order of usage.
     Skills: { string },
     
+    CooldownTime: number,
     Cooldown: number?,
     MaxChainUsages: number?,
     SkillsRandomized: boolean,
@@ -24,19 +25,64 @@ export type EntityEvent = "";
 export type EntityBehavior = {
     When: (Event: EntityEvent, fn: (Entity: AbilityTypes.ServerEnemy) -> ()) -> (),
 
-    Phase: (Name: string, Condition: () -> ()) -> (),
+    Phase: (Name: string, Priority: number, Condition: () -> ()) -> (),
     DefinePattern: (Name: string, Pattern: PatternData) -> (),
 
     SetBasePatterns: (PatternList: { PatternOption }) -> (),
     SetPatterns: (Phase: string, PatternList: { PatternOption }) -> (),
 
-    OnPatternUsed: () -> (),
+    OnPatternUsed: (PatterName: string, Handler: () -> ()) -> (),
 }
 
 export type EntityState = {
-    Health: number,
-    HealthPercent: number,
+    Health: () -> (number),
+    HealthPercent: () -> (number),
+}
 
+export type EntityBehaviorState = {
+    EntityId: number,
+    PhaseCount: number,
+    LastUpdate: number,
+
+    RanPhases: {
+        [string]: boolean,
+    },
+    
+    Cooldowns: {
+        [string]: { Time: number, Turns: number, }
+    },
+    Skills: {
+        [string]: boolean,
+    },
+    OncePatterns: {[string]: boolean},
+    LastUsedPattern: {
+        Name: string,
+        UseCount: number,
+    },
+    CurrentPattern: string,
+    PatternProgress: number,
+    CurrentPhase: {
+        Name: string,
+        Priority: number,
+    },
+
+
+    Phases: {
+        [string]: {
+            Priority: number,
+            Condition: () -> (boolean)
+        },
+    },
+    Patterns: { [string]: PatternData },
+    PatternRanges: {
+        { string | number }
+    },
+    Events: {
+        {Type: number, Data: { any }}
+    },
+    PhasePatterns: {
+        [string]: { PatternOption }
+    },
 }
 
 return 0

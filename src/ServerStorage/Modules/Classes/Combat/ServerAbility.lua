@@ -6,6 +6,7 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
 local World = require(ReplicatedStorage.Modules.Shared.World)
 local Statics = require(Shared.Database.Statics)
 local Enemies = require(Shared.Libraries.Enemies)
@@ -445,7 +446,7 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 end
 
 local function HitAgent(Caster: AgentTypes.Enemy, Agent: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
-	local NewData = AbilityService:RunAbilityDamageHooks(Agent, Caster, Data)
+	local NewData = AbilityService:RunAbilityDamageHooks(Agent, Caster, Table.CopyDeep(Data))
 	local DealtDamage = DamageLibrary:DealEnemyToAgent(Caster, Agent, NewData)
 
 	--
@@ -613,8 +614,6 @@ function ServerAbilityClass:FromData(Key: string, Sub_Key: number, GivenLevel: n
 		return clonedTable;
 	elseif typeof(Value) == 'number' and Upgraded_Value ~= nil then
 		local Added = Upgraded_Value * Level
-
-		print(Value + Added, ' Added value:', Added)
 		
 		return Value + Added;
 	end

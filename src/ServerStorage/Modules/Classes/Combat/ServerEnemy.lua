@@ -127,6 +127,8 @@ function ServerEnemy:Attack()
 		return
 	end
 
+	local OwnId = self.__EnemyId
+	local TargetPlayer = Target.__Player_Assigned :: Player
 	local Moveset = MovesetLibrary:Get(self.__Name, true)
 
 	local Ranges = {}
@@ -144,7 +146,7 @@ function ServerEnemy:Attack()
 	for SkillName, SkillRange in Ranges do
 		if SkillRange >= DistanceToTarget then
 			if not Moveset:Verify(self, SkillName) then
-				return
+				continue
 			end
 
 			table.insert(SkillPool, {
@@ -164,13 +166,12 @@ function ServerEnemy:Attack()
 	end
 
 	if SkillToUse ~= nil then
-		local PlayerPing = Ping:Get(Target.__Player_Assigned) :: number
+		local PlayerPing = Ping:Get(TargetPlayer) :: number
 
-		local SplitSkillId = string.split(SkillToUse.Name, ' ')
-		local ReplicationSkillId = tonumber(SplitSkillId[2], 10)
+		local ReplicationSkillId = Moveset:GetSkillId(SkillToUse.Name)
 
 		Targets:RefreshLastAttackedTime(Target, self)
-		Replicator:EnemyUseSkill(self.__EnemyId, ReplicationSkillId, 'Begin')
+		Replicator:EnemyUseSkill(OwnId, ReplicationSkillId, 'Begin', Target)
 
 		task.wait(PlayerPing)
 		Moveset:Begin(SkillToUse.Name, self, {
@@ -189,7 +190,7 @@ function ServerEnemy:Init(Key: number)
 	self.Name = `"{self.__Name}"-id:{self.__EnemyId}`
 
 	--
-	local NextAttack = os.clock()
+	--local NextAttack = os.clock()
 	local Clock = os.clock()
 	self.__Snapfix = os.clock()
 	self.__Movement:SnapToFirstGround()
@@ -208,10 +209,10 @@ function ServerEnemy:Init(Key: number)
 			Replicator:PivotEnemy(self.__EnemyId, self:GetPivot())
 		end
 
-		if os.clock() - NextAttack >= 1 then
+		--[[if os.clock() - NextAttack >= 1 then
 			NextAttack = os.clock()
 			self:Attack()
-		end
+		end]]
 
 		if (self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5) or self:GetState() ~= 'Idle' then
 			self:Move(Vector3.zero)
@@ -415,7 +416,7 @@ end
 function ServerEnemy:TakeDamage(number: number): boolean
 	self.__Status:Damage(number)
 
-	if not(self.__Status:IsAlive()) and EnemyLibrary:GetEnemy(self.__EnemyId) == self then
+	if not(self:IsAlive()) and EnemyLibrary:GetEnemy(self.__EnemyId) == self then
 		local Key = EnemyLibrary:RemoveEnemy(self)
 
 		Replicator:RemoveEnemy(Key)
@@ -426,6 +427,10 @@ function ServerEnemy:TakeDamage(number: number): boolean
 	end
 
 	return false;
+end
+
+function ServerEnemy:IsAlive()
+	return self.__Status:IsAlive()
 end
 
 function ServerEnemy:GetHealth()

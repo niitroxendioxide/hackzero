@@ -11,12 +11,12 @@ local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local Structures = require(ReplicatedStorage.Modules.Client.Libraries.Structures)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
+local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
 local GameEnum = require(Shared.GameEnum)
 local Enemies = require(Shared.Libraries.Enemies)
 local Effects = require(Client.Libraries.Effects)
-local CutsceneUtils = require(Client.Libraries.CutsceneEffects)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
 local InterfaceController = require(Client.Controllers.InterfaceController)
 
@@ -154,21 +154,29 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 end
 
 function Controller:EnemyUseSkill(Buffer: buffer)
-	local Skill = buffer.readu8(Buffer, 1)
+	local SkillId = buffer.readu8(Buffer, 1)
 	local EnemyId = buffer.readu8(Buffer, 2)
 	local State = buffer.readu8(Buffer, 3) == 1 and 'Begin' or 'End'
+	local PlayerId, TargetId = Math:Decodeu2u6(Buffer, 4)
 
-	local Key = 'Skill '..Skill
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	local CharacterMoveset = Movesets:Get(Enemy.Name, true)
+
 	if not CharacterMoveset then
 		return;
 	end
 
+	local Target = nil;
+	if TargetId > 0 then
+		Target = Characters:GetAgent(PlayerId, TargetId)
+	end
+
+	local SkillName = CharacterMoveset:GetSkillById(SkillId)
+
 	if State == 'Begin' then
-		CharacterMoveset:Begin(Key, Enemy)
+		CharacterMoveset:Begin(SkillName, Enemy, {Target = Target})
 	else
-		CharacterMoveset:Release(Key, Enemy)
+		CharacterMoveset:Release(SkillName, Enemy, {Target = Target})
 	end
 end
 

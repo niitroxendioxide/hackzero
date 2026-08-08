@@ -33,6 +33,7 @@ function MovesetClass:Assign(Type: string, Ability: Types.AbilityClass)
 	if self.__Assigned[Type] ~= nil then
 		return
 	end
+
 	self.__Assigned[Type] = Ability
 
 	Ability.__Cooldown:Connect(function(Time: number, Agent: AgentTypes.AgentClass)
@@ -47,8 +48,8 @@ end
 function MovesetClass.GetAll(self: Types.MovesetClass, GetNames: boolean?): {Types.ServerAbilityClass}
 	local List = {}
 
-	for _, Ability in self.__Assigned do
-		table.insert(List, GetNames and Ability.__Name or Ability)
+	for Name, Ability in self.__Assigned do
+		table.insert(List, GetNames and Name or Ability)
 	end
 
 	return List
@@ -66,7 +67,7 @@ end
 function MovesetClass.SortSkills(self: Types.MovesetClass)
 	local Abilities = self:GetAll(true);
 
-	table.sort(Abilities, function(Name1, Name2): boolean  
+	table.sort(Abilities, function(Name1: string, Name2: string): boolean  
 		return Name1 < Name2;
 	end)
 
@@ -77,9 +78,20 @@ function MovesetClass.GetSkillById(self: Types.MovesetClass, Id: number)
 	return self.__Sorted[Id] :: string
 end
 
+function MovesetClass.GetSkillId(self: Types.MovesetClass, Name: string)
+	local Index = table.find(self.__Sorted, Name)
+	if Index == nil then
+		print('Not found: ', Name, ' all names:', self.__Sorted)
+	end
+
+	return Index
+end
+
 function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSignal: boolean?, [string]: any}): boolean
 
-	Type = Type:gsub('_', ' ')
+	if self.__Assigned[Type] == nil and self.__Assigned[string.gsub(Type, '_', ' ')] ~= nil then
+		Type = Type:gsub('_', ' ')
+	end
 	Context = Context or {}
 
 	if not self.__Last_Use[Agent] then
@@ -99,7 +111,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 	end
 
 	-- Run client checks for correcting skill usage
-	if not(Context.IsSignal) and RunService:IsClient() then
+	if not(Context.IsSignal) and RunService:IsClient() and string.match(tostring(Agent), 'Agent') then
 		if Type == "Special" and (Agent:GetEnergy() >= Info.Base.Required_Energy) then
 			Type = "EX Special"
 

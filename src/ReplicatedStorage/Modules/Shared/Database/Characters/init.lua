@@ -36,8 +36,11 @@ function CharacterData:GetStats(Character: string): Types.CharacterStats
 	return AccessedData.Stats
 end
 
-function CharacterData:GetMovesetData(Character: string): Types.MovesetInfo
-	local AccessedData = CharacterData:GetCharacterData(Character)
+function CharacterData:GetMovesetData(Character: string, NoTemplate: boolean): Types.MovesetInfo
+	local AccessedData = CharacterData:GetCharacterData(Character, NoTemplate)
+	if NoTemplate and AccessedData == nil then
+		return
+	end
 
 	return AccessedData.Moveset_Data
 end

@@ -32,7 +32,7 @@ return {
 	},
 
 	Moveset_Data = {
-		['Skill 1'] = {
+		['Electric Slam'] = {
 			Base = {
 				Cooldown = 3,
 
@@ -43,7 +43,7 @@ return {
 				Agent_Stun_Time = 0.3,
 				Damage_Mult = 120,
 
-				Range = 0,
+				Range = 35,
 				Attack_Warning = 0.8,
 			},
 
@@ -52,7 +52,7 @@ return {
 			}
 		},
 
-		['Skill 2'] = {
+		['Fireball'] = {
 			Base = {
 				Cooldown = 2.5,
 

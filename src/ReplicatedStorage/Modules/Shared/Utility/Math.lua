@@ -153,8 +153,8 @@ end
     @return Buffer The buffer in which the numbers were encoded
 ]]
 function Math:Encodeu2u6(First: number, Second: number, GivenBuffer: buffer?, GivenOffset: number?): buffer
-    local FirstMask = bit32.band(First, 0x03)
-    local SecondMask = bit32.band(Second, 0x3F)
+    local FirstMask = bit32.band(First or 0, 0x03)
+    local SecondMask = bit32.band(Second or 0, 0x3F)
 
     local BorResult = bit32.bor(bit32.lshift(FirstMask, 6), SecondMask)
 
