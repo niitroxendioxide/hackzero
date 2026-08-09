@@ -42,7 +42,7 @@ return function(
     DashEffect.Anchored = false
     DashEffect:PivotTo(Caster:GetModel():GetPivot() * CFrame.Angles(0, math.pi, 0))
     Effects:Weld(DashEffect, Caster:GetModel().PrimaryPart)
-    Effects:RecolorToGroundColor(Caster:GetModel():GetPivot().Position, DashEffect.att:GetChildren())
+    Effects:RecolorToGroundColor(Caster:GetModel():GetPivot().Position, DashEffect.att:GetChildren(), 6)
 
     local Active_Time = 0
 

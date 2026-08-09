@@ -111,7 +111,9 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 	end
 
 	-- Run client checks for correcting skill usage
-	if not(Context.IsSignal) and RunService:IsClient() and string.match(tostring(Agent), 'Agent') then
+	local IsAgent = string.match(tostring(Agent), 'Agent')
+
+	if not(Context.IsSignal) and RunService:IsClient() and IsAgent then
 		if Type == "Special" and (Agent:GetEnergy() >= Info.Base.Required_Energy) then
 			Type = "EX Special"
 
@@ -136,7 +138,6 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 		local Verified = self:Verify(Agent, Type)
 		if Info.Base.CustomVerify and AbilityModule.Verify ~= nil then
 			Verified = AbilityModule:Verify(Agent, Type)
-			--print('Custom verify: ', Verified)
 		end
 
 		if not Verified then
@@ -159,7 +160,6 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 		--local LastUse = self.__Last_Use[Agent][Type] or os.clock()	
 
 		--
-		AbilityModule.__Held[Agent] = true
 		if RunService:IsClient() then
 			if not Type:match('Swap') then
 				local Enemy = AbilityModule:Connect(Agent, 1, Context.IsCancel);
@@ -181,9 +181,8 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 			Agent:AddTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER, Statics.Dodge_Active_Time)
 		end
 
-		task.spawn(function()
-			AbilityModule:Play(Agent, Type, 'Begin', Context)
-		end)
+		AbilityModule.__Held[Agent] = true
+		AbilityModule:Play(Agent, Type, 'Begin', Context)
 		self.__Last_Use[Agent][Type] = os.clock()
 
 		--
@@ -226,6 +225,7 @@ function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass, Conte
 		return false, "No base info for skill."
 	end
 
+	local AbilityModule = self.__Assigned[Type]
 	local CooldownKey = self.Name..Type..Caster.Name..Caster:GetId()
 
 	if typeof(self.__Assigned[Type]) == 'table' then
@@ -241,17 +241,19 @@ function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass, Conte
 			Cooldown:Add(CooldownKey, Info.Base.Cooldown)
 		end
 
+		if (AbilityModule.__Held[Caster] ~= true) then
+			return false, 'Ability is not being held.'
+		end
+
 		--print(`{Type} last used with agent: {Agent.Name} on:`.. os.clock() - LastUse)
 		if RunService:IsClient() then
 			local Enemy = self.__Assigned[Type]:Connect(Caster, 2, Context.IsCancel);
 			Context.Target = Enemy;
 		end
 
-		self.__Assigned[Type].__Held[Caster] = false
-		task.spawn(function()
-			self.__Assigned[Type]:Play(Caster, Type, 'End', Context)
-		end)
-		self.__Last_Use[Caster][Type] = os.clock()
+		AbilityModule.__Held[Caster] = false
+		AbilityModule:Play(Caster, Type, 'End', Context)
+		AbilityModule[Type] = os.clock()
 
 
 		return true;
@@ -284,7 +286,13 @@ end
 
 function MovesetClass:Verify(Agent: AgentTypes.AgentClass, Type: string, Release: boolean)
 	local Info = self:GetInfoForSkill(Type)
-	if not string.match(Type, "Swap") and (Agent:GetState() ~= 'Idle' and not(Info.AllowedStates and Info.AllowedStates[Agent:GetState()])) and not Release then
+	local IsSwap = string.match(Type, "Swap")
+	local AgentState = Agent:GetState()
+	local AgentNotInIdle = AgentState ~= 'Idle'
+	local AllowedStates = Info.AllowedStates or {}
+	local AgentStateNotAllowed = (AgentNotInIdle and not AllowedStates[AgentState])
+
+	if not IsSwap and AgentStateNotAllowed and not Release then
 		return false
 	end
 

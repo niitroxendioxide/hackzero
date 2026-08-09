@@ -62,8 +62,8 @@ return {
 			Base = {
 				Cooldown = 0.01,
 				Attack_State_Time = 0.25,
-				Speed = 1,
-				Animation_Speed = 1,
+				Speed = 1.15,
+				Animation_Speed = 1.15,
 				Range = 75,
 				Release = true,
 				
@@ -95,7 +95,7 @@ return {
 					Stun = 0.4,
 					Knockback = {
 						vector.create(0, 0, 1),
-						8,
+						15,
 						0.1,
 					}
 				},

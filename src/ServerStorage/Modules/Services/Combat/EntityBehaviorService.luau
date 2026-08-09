@@ -6,6 +6,8 @@ local ServerStorage = game:GetService("ServerStorage")
 local Libraries = ServerStorage.Modules.Libraries;
 local Shared = ReplicatedStorage.Modules.Shared;
 
+local Ping = require(ServerStorage.Modules.Libraries.Ping)
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Debugger = require(Shared.Utility.Debugger)
 local Enemies = require(Shared.Libraries.Enemies)
 local String = require(Shared.Utility.String)
@@ -49,12 +51,21 @@ local function CreateBehaviorConnector(): (BehaviorTypes.EntityBehavior, Behavio
         Patterns = {},
         PatternRanges = {},
         Events = {},
+        PatternEntered = {},
         PhasePatterns = {},
     }
 
     ---
-    function BehaviorConnector.When(_, _)
-        return Debugger:DebugLine("BehaviorConnector.When", "Method not implemented", 1)
+    BehaviorConnector.Event = GameEnum.EntityBehaviorEvent;
+
+    function BehaviorConnector.When(EventId: number, Handler: () -> ())
+        if BehaviorState.Events[EventId] ~= nil then
+            Debugger:DebugLine("BehaviorConnector.When", `Event {GameEnum.KeyLookup(GameEnum.EntityBehaviorEvent, EventId)}[{EventId}] is already bound.`, 5)
+
+            return
+        end
+
+        BehaviorState.Events[EventId] = Handler
     end
 
     function BehaviorConnector.Phase(Name: string, Priority: number, Condition: () -> ())
@@ -109,10 +120,34 @@ local function CreateBehaviorConnector(): (BehaviorTypes.EntityBehavior, Behavio
     end
 
     function BehaviorConnector.OnPatternUsed(PatternName: string, Handler: () -> ())
-        return Debugger:DebugLine("BehaviorConnector.OnPatternUsed", "Method not implemented", 1)
+        if BehaviorState.PatternEntered[PatternName] ~= nil then
+            Debugger:DebugLine("BehaviorConnector.OnPatternUsed", `Pattern event {PatternName} is already bound.`, 1)
+
+            return
+        end
+
+        BehaviorState.PatternEntered[PatternName] = Handler;
+        
+        if not BehaviorState.Events[GameEnum.EntityBehaviorEvent.PatternUsed] then
+            BehaviorConnector.When(GameEnum.EntityBehaviorEvent.PatternUsed, function(PatternUsedEvent: string)
+                for State, Handler in BehaviorState.PatternEntered do
+                    if State == PatternUsedEvent then
+                        Handler()
+                    end
+                end
+            end)
+        end
     end
     
     return BehaviorConnector :: BehaviorTypes.EntityBehavior, BehaviorState :: BehaviorTypes.EntityBehaviorState
+end
+
+local function RunEvent(Behavior: BehaviorTypes.EntityBehaviorState, EventId: number, ...)
+    if not Behavior.Events[EventId] then
+        return
+    end
+
+    task.spawn(Behavior.Events[EventId], ...)
 end
 
 local function CreateState(Entity: AbilityTypes.ServerEnemy): (BehaviorTypes.EntityState)
@@ -186,6 +221,8 @@ local function UpdateEntityBehavior(Behavior: BehaviorTypes.EntityBehaviorState,
             Name = NewPhase,
             Priority = CurrentPriority,
         }
+
+        RunEvent(Behavior, GameEnum.EntityBehaviorEvent.PhaseEntered, NewPhase, Entity);
     end
 
     ---
@@ -235,6 +272,8 @@ local function UpdateEntityBehavior(Behavior: BehaviorTypes.EntityBehaviorState,
         Behavior.PatternProgress = 1;
         Behavior.CurrentPattern = Pattern.Name;
 
+        RunEvent(Behavior, GameEnum.EntityBehaviorEvent.PatternUsed, Pattern.Name);
+
         ---
         local PatternCooldownTime = Behavior.Patterns[Behavior.CurrentPattern].CooldownTime;
         if typeof(PatternCooldownTime) == 'number' then
@@ -276,15 +315,18 @@ local function UpdateEntityBehavior(Behavior: BehaviorTypes.EntityBehaviorState,
             Behavior.CurrentPattern = ''
         end
 
+        local TargetPing = Ping:Get(EntityTarget.__Player_Assigned)
         local AttackerId = Entity:GetId()
 		local ReplicationSkillId = Moveset:GetSkillId(SkillName)
 
 		Targets:RefreshLastAttackedTime(EntityTarget, Entity)
 		Replicator:EnemyUseSkill(AttackerId, ReplicationSkillId, 'Begin', EntityTarget)
 
-		Moveset:Begin(SkillName, Entity, {
-			Target = EntityTarget,
-		})
+		task.delay(TargetPing, function()
+            Moveset:Begin(SkillName, Entity, {
+                Target = EntityTarget,
+            })
+		end)
     end
 end
 
@@ -382,7 +424,6 @@ function Service:InitializeBehaviors(Entity: AbilityTypes.ServerEnemy)
     end
 
     BehaviorState.EntityId = Entity:GetId()
-
     table.insert(Service.BehaviorStates, BehaviorState)
 end
 

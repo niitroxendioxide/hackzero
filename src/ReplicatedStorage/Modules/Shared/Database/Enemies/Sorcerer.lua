@@ -43,7 +43,7 @@ return {
 				Agent_Stun_Time = 0.3,
 				Damage_Mult = 120,
 
-				Range = 35,
+				Range = -1,
 				Attack_Warning = 0.8,
 			},
 

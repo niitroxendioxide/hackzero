@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Statics = require(Shared.Database.Statics)
 local Signal = require(Shared.Utility.Signal)
 local Clock = require(Shared.Utility.Clock)
@@ -210,6 +211,7 @@ function Service:Init()
 		end
 	end)
 
+	---
 	Network.new("Ability", "Event")
 	Network:On('Ability', Service.ReplicateEvent)
 
@@ -413,7 +415,6 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 
 	--- Skill behavior
 	local SpacelessSkill = string.gsub(Skill, '_', ' ')
-
 	local Info = Moveset:GetInfoForSkill(SpacelessSkill)
 	if SpacelessSkill ~= 'Dodge' and StateId == GameEnum.AbilityStates.Begin then
 		ActiveAgent:Look(LookAt)

@@ -237,6 +237,10 @@ function ServerEnemy:GetId(): number
 	return self.__EnemyId
 end
 
+function ServerEnemy:IsAirborne()
+	return self:GetState() == 'Airborne'
+end
+
 function ServerEnemy.Stun(self: Types.ServerEnemyClass, Time: number, is_airborne: boolean): ()
 	if self:IsFrozen() then
 		return
@@ -251,6 +255,7 @@ function ServerEnemy.Stun(self: Types.ServerEnemyClass, Time: number, is_airborn
 	if self:GetState() == 'Airborne' and not is_airborne then
 		return;
 	end
+
 	self:SwitchState( is_airborne and 'Airborne' or 'Stunned' , Time)
 end
 
@@ -289,14 +294,32 @@ function ServerEnemy.AddEffect(self: Types.ServerEnemyClass, Data: Types.EnemyEf
 	end
 end
 
-function ServerEnemy.AddTag(self: Types.ServerEnemyClass, Tag: string)
+function ServerEnemy.AddTag(self: Types.ServerEnemyClass, Tag: string, Time: number)
+	if not self.__Tag_Threads then
+		self.__Tag_Threads = {}
+	end
+
+	if self.__Tag_Threads[Tag] then
+		task.cancel(self.__Tag_Threads[Tag])
+		self.__Tag_Threads[Tag] = nil
+	end
+
 	table.insert(self.__Tags, Tag)
+
+	Replicator:AddTagEnemy(self, Tag)
+	if typeof(Time) == 'number' and Time > 0 then
+		self.__Tag_Threads[Tag] = task.delay(Time, function()
+			self:RemoveTag(Tag)
+		end)
+	end
 end
 
 function ServerEnemy.RemoveTag(self: Types.ServerEnemyClass, Tag: string)
 	local Index = table.find(self.__Tags, Tag)
 	if Index then
 		table.remove(self.__Tags, Index)
+
+		Replicator:RemoveTagEnemy(self, Tag)
 	end
 end
 

@@ -46,6 +46,7 @@ function AppearanceClass.new(ModelName: string, Directory: string?, BeginTranspa
 	self.__TransparencyValues = {}
 	self.__Trove = Trove.new()
 	self.__Visible_Thread = nil
+	self.__Falling = false
 
 	-- Saving values
 	self.__Model.Parent = World.Entities.Appearances
@@ -58,6 +59,7 @@ function AppearanceClass.new(ModelName: string, Directory: string?, BeginTranspa
 			end
 
 			if Child:IsA("BasePart") then
+				Child.Massless = true
 				Child.CollisionGroup = "Characters"
 			end
 		end
@@ -77,18 +79,33 @@ end
 
 
 function AppearanceClass:Raise(Factor: number, Time: number, Instant: boolean?): ()
-	self.__Extra_Height += Factor;
+	self.__Extra_Height = Factor;
 
 	if self.__Current_Height_Thread then
 		task.cancel(self.__Current_Height_Thread)
 	end
 
-	
 	--
-	local tween_time = (Instant == true and 0) or (self.__Extra_Height / 16)
-	local new_tween = EffectsUtil:Tween(self.__Root_Attachment, {tween_time, 'Quart'}, {Position = vector.create(0, -self.__Extra_Height)})
-	self.__Current_Height_Tween = new_tween
+	local tween_time = (self.__Extra_Height / 40)
+	local RotatedVector = (CFrame.new() * CFrame.Angles(0, 0, -math.rad(self.__Tilt or 0))) * vector.create(0, self.__Extra_Height)
+
+	if not Instant then
+		local new_tween = EffectsUtil:Tween(self.__Target_Attachment, {tween_time, 'Quart'}, {Position = RotatedVector})
+		self.__Current_Height_Tween = new_tween
+	else
+		self.__Target_Attachment.Position = RotatedVector
+	end
 	
+	self.__Current_Height_Thread = task.delay(Time, function()
+		self:__clean_heights();
+	end)
+end
+
+function AppearanceClass:ExtendRaisedTime(Time: number)
+	if self.__Current_Height_Thread then
+		task.cancel(self.__Current_Height_Thread)
+	end
+
 	self.__Current_Height_Thread = task.delay(Time, function()
 		self:__clean_heights();
 	end)
@@ -107,12 +124,17 @@ function AppearanceClass:Land()
 end
 
 function AppearanceClass:__clean_heights()
-	local timeToFall = (self.__Extra_Height / 12)
+	local timeToFall = (self.__Extra_Height / 52)
 
-	local Land_Tween = EffectsUtil:Tween(self.__Root_Attachment, {timeToFall, 'Quart', 'In'}, {Position = vector.zero})
+	self.__Falling = true
+	local Land_Tween = EffectsUtil:Tween(self.__Target_Attachment, {timeToFall, 'Quart', 'In'}, {Position = vector.zero})
 	if self.__Current_Height_Tween then
 		self.__Current_Height_Tween:Destroy()
 		self.__Current_Height_Tween = Land_Tween
+
+		Land_Tween.Completed:Once(function(a0: Enum.PlaybackState)
+			self.__Falling = false
+		end)
 	end
 
 	self.__Extra_Height = 0;
@@ -185,6 +207,7 @@ end
 
 function AppearanceClass:JoinTo(BasePart: BasePart, Responsiveness: number?)
 	local Root =  self.__Model:FindFirstChild('HumanoidRootPart') or self.__Model.PrimaryPart
+	BasePart.Massless = true;
 
 	local AlignPosition =  Instance.new('AlignPosition')
 	local AlignOrientation = Instance.new('AlignOrientation')
@@ -197,12 +220,12 @@ function AppearanceClass:JoinTo(BasePart: BasePart, Responsiveness: number?)
 
 	Att0.Rotation = Vector3.new(0, 0, self.__Tilt)
 
-
+	AlignPosition.Visible = true
 	AlignPosition.Attachment0, AlignPosition.Attachment1 = Att0, Att1
 	AlignOrientation.Attachment0, AlignOrientation.Attachment1 = Att0, Att1
 
-	AlignPosition.Responsiveness = 100
-	AlignPosition.MaxForce = 1e7
+	AlignPosition.Responsiveness = 120
+	AlignPosition.MaxForce = math.huge
 	AlignOrientation.Responsiveness = Responsiveness or 100
 	AlignOrientation.MaxTorque = math.huge
 

@@ -14,12 +14,20 @@ local Ability = AbilityClass.new()
 
 local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 	local Default_Hit_Data = Ability:FromData('Default', nil, Caster:GetSkillLevel(Ability.__Name))
-	Default_Hit_Data.Knockback = Ability:FromData("Knockback");
-
+	local ExtenderMidAir = Ability:FromData('ExtenderMidAir', nil, Caster:GetSkillLevel(Ability.__Name))
+	
 	Attack:Add(0.25, function()
 	
 		Ability:CreateHitbox(Caster, Vector3.zAxis*-3, vector.create(5, 5, 6.65), function(Enemy)
-			Ability:Hit(Caster, Enemy, Default_Hit_Data)
+			if not Enemy:IsAirborne() then
+				Enemy:AddTag('DiveKickable')
+			end
+
+			if Enemy:IsAirborne() and Caster:HasTag('Airborne') then
+				Ability:Hit(Caster, Enemy, ExtenderMidAir)
+			else
+				Ability:Hit(Caster, Enemy, Default_Hit_Data)
+			end
 
 			Caster:UpdateMeter('SaiyanSurge', 2);
 		end)
@@ -59,7 +67,7 @@ local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Buffer:
 		end)
 
 		Attack:Add(0.9 + (i-1) * 0.25, function()
-			Hit_Data.Knocback = {
+			Hit_Data.Knockback = {
 				EnemyObject:GetPivot():VectorToObjectSpace(CFrame.lookAt(EnemyObject:GetPivot().Position, Center).LookVector),
 				25, -- strength
 				0.3 -- time

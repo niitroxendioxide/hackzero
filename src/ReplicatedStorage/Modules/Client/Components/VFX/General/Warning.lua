@@ -11,14 +11,16 @@ local Effects = require(Shared.Utility.Effects)
 local EffectsLib = require(Client.Libraries.Effects)
 
 ---
-return function(Enemy: Types.EnemyClass)
+local DodgeableHighlightColor = Color3.fromRGB(255, 185, 21)
+local UndodgeableHighlightColor = Color3.new(255)
+
+---
+return function(Enemy: Types.EnemyClass, CanBeDodged: boolean)
 	--
-	local Object = Effects:Create(Assets.Effects.General.Combat.Warning, 2.5)
+	local Object = Effects:Create(Assets.Effects.General.Combat[CanBeDodged and 'Dodgeable' or 'Undodgeable'], 2.5)
 	Object.CFrame = Enemy:GetModel().HumanoidRootPart.CFrame * CFrame.new(0, 0.65, 0)
-
-	EffectsLib:Play('Glow', Enemy, {Color = Color3.new(1)})
-
 	Effects:Weld(Object, Enemy:GetModel().PrimaryPart :: BasePart)
-
 	Effects:Emit(Object)
+
+	EffectsLib:Play('Glow', Enemy, {Color = CanBeDodged and DodgeableHighlightColor or UndodgeableHighlightColor})
 end

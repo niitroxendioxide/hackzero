@@ -119,7 +119,7 @@ function EnemyLibrary:GetNearestEnemy(
 			end
 		end
 
-		return (if Chosen then Chosen:GetId() else nil), Chosen
+		return (if Chosen then Chosen:GetId() else 0), Chosen
 	end
 
 	if Selected then

@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local World = require(ReplicatedStorage.Modules.Shared.World)
 local AnimLibrary = require(Client.Libraries.Animation)
 
@@ -78,21 +79,21 @@ function AbilityClass.SetTargetFinder(self: Types.AbilityClass, handler: (Caster
 	self.__Target_Finder = handler;
 end
 
-function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Types.Caster, Target: Types.Target, time: number?, instant: boolean?)
+function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Types.Caster, Target: Types.Target, ParamTime: number?, ParamInstant: boolean?)
 	if Target == nil or Agent == nil then
-		return
+		return GameEnum.AirborneMatchState.None;
 	end
 
 	local TargetsHeight = Target.__Appearance:GetAddedHeight()
 	local Difference = TargetsHeight - Agent:GetAppearance():GetAddedHeight()
 	if (Target:GetState() ~= 'Idle' and TargetsHeight > 0) then
-		Agent:GetAppearance():Raise(Difference, time or 1, instant)
-		Replicator:Replicate(GameEnum.Replication.MatchAirborne, time or 1)
-
 		if (Difference == 0) then
+			Agent:GetAppearance():ExtendRaisedTime(ParamTime or 1)
 			return GameEnum.AirborneMatchState.Same, 0;
+		elseif math.abs(Difference) > 0 then
+			Agent:GetAppearance():Raise(TargetsHeight, ParamTime or 1, ParamInstant)
+			Replicator:Replicate(GameEnum.Replication.MatchAirborne, ParamTime or 1)
 		end
-
 
 		return GameEnum.AirborneMatchState.Raised, Difference;
 	elseif (TargetsHeight <= 0 and Agent:GetAppearance():GetAddedHeight() > 0) then
@@ -117,8 +118,10 @@ function AbilityClass:Begin(Agent: AgentTypes.AgentClass, Frames: Sequence.Seque
 	local Agent_Speed_Mod = Agent:GetStat("Speed")
 
 	if typeof(Attack_Warnings) ~= 'nil' and Attack_Warnings > 0 then
+		local Attack_Undodgeable = self:FromData('Attack_Undodgeable') == true
+
 		local function PlayWarningEffect()
-			Effects:Play('Warning', Agent)
+			Effects:Play('Warning', Agent, not Attack_Undodgeable)
 		end
 
 		local Ping = Replicator:GetPing() / 1000
@@ -211,6 +214,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 		end
 
 		Replicator:Replicate(GameEnum.Replication.PivotTo, Agent:GetPivot(), true)
+
 		Replicator:Replicate(GameEnum.Replication.UseSkill, GameEnum.Skills[self.__Name], EnemyId, StateId, IsCancel, M1_Count, table.unpack(self.__Context_Buffer))
 	
 		return Enemy;
@@ -471,7 +475,7 @@ function AbilityClass.Hit(self: Types.AbilityClass, Caster: any, Target: any, Da
 		EffectsLibrary:ShakeCamera("SoftHit")
 	end
 
-	if Target and Target.Hit and not Data.NoAnim then
+	if Target and Target.Hit and (Data.NoAnim ~= true) then
         Target:Hit(Data)
     end
 

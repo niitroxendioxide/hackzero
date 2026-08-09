@@ -5,6 +5,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local GameEnum = require(Shared.GameEnum)
 -- local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Client.Classes.Ability)
@@ -28,6 +29,10 @@ local function HandleParryAbility(Agent, Target)
 	local ActivatedParry = false
 	local Started = os.clock()
 	while (Ability:Get(Agent, "Holding") == true) do
+		if not Agent:IsActive() then
+			break
+		end
+
 		if not ActivatedParry and (os.clock() - Started) >= 0.2  then
 			ActivatedParry = true
 			Ability:Effect("Chihiro_Stance", Agent)
@@ -85,6 +90,8 @@ function Ability:Play(Agent, _, State, Ctx)
 	if Ability:Get(Agent, 'M1_Track') then
 		Ability:Get(Agent, 'M1_Track'):Stop(0.125)
 	end
+
+	--Debugger:DebugLine("Chihiro.M1", `{State} Started with ID {M1_Count}`, 4)
 
 	--
 	local EffectObj = {}

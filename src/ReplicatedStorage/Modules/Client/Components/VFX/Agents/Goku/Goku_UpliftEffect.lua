@@ -15,8 +15,17 @@ return function(
     Caster: Types.Caster
 ): ()
     --
+    local CasterModel = Caster:GetModel()
     local Explosion = Effects:Create(Assets.Goku.UpLiftEffect, 10)
-    Explosion:PivotTo(Caster:GetPivot() * CFrame.new(0, 0, -2.75))
+    Explosion:PivotTo(CasterModel:GetPivot() * CFrame.new(0, 0, -2.75))
 
     Effects:Emit(Explosion, true)
+
+    ---
+    local CastGround = Effects:CastMapRaycast(CasterModel:GetPivot().Position, vector.create(0, -5))
+    if CastGround then
+        Effects:RecolorSmoke(CastGround, Explosion.Main.Ground:GetChildren())
+    else
+        Explosion.Main.Ground:Destroy()
+    end
 end

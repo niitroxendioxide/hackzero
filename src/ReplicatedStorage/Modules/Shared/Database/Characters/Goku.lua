@@ -63,6 +63,7 @@ return {
 				ReleaseVerify = true,
 				Cooldown = 0,
 				Speed = 1.25,
+				Range = 75,
 
 				Attack_State_Time = {
 					.25 ,
@@ -110,6 +111,20 @@ return {
 						vector.create(0, 0, 1),
 						30,
 						0.2,
+					},
+				},
+
+				DiveKickHitData = {
+					Damage = 175,
+					Daze = 10,
+					Affliction_Buildup = 115,
+					Affliction = 'Energy',
+					HitsAirborne = true,
+					Stun = 0.5,
+					Knockback = {
+						vector.create(0, 0, 1),
+						25,
+						0.5,
 					},
 				},
 
@@ -177,7 +192,7 @@ return {
 				Cooldown = 1,
 				Speed = 1,
 
-				Required_Energy = 60,
+				Required_Energy = 35,
 				Walk_Time = 0.1,
 
 				Attack_State_Time = 0.5,
@@ -228,7 +243,7 @@ return {
 				Animation_Speed = 1,
 				Attack_State_Time = {0.5, 5},
 				
-				Required_Energy = 45,
+				Required_Energy = 35,
 				Hit_Frequency = 14/60,
 				Walk_Time = 5/60,
 
@@ -265,6 +280,26 @@ return {
 					HitType = 'Blunt';
 					Stun = 2.5;
 					Airborne = true;
+					Knockback = {
+						vector.create(0, 0, 1),
+						61,
+						0.2,
+					},
+				};
+
+				ExtenderMidAir = {
+					Damage = 350;
+					Daze = 22;
+					Affliction_Buildup = 35;
+					Affliction = 'Energy';
+					HitType = 'Blunt';
+					Stun = 0.65;
+					HitsAirborne = true;
+					Knockback = {
+						vector.create(0, 0, 1),
+						15,
+						0.3,
+					},
 				};
 
 				Slam_Hit_Mode = {
@@ -274,12 +309,12 @@ return {
 					Affliction = 'Physical';
 					HitType = 'Blunt';
 					Stun = 3.5;
-					HitsAirborne = true;
 					Airborne = true;
 				};
 				
 				Hit_Effect_Data = {
 					Highlight = true,
+
 					Audio = {
 						Id = { 9117969687, 175024455 }, -- 8595980577 lighter
 						Volume = 0.5,

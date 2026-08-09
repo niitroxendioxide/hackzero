@@ -31,7 +31,7 @@ function Ability:Play(Caster: Types.EnemyClass)
 			Ability:Effect("Slash", Caster, Random.new():NextNumber(-70, 70), nil, math.random(1, 2) == 1)
 		end},
 
-		{.3, function()
+		{.4, function()
 			Ability:CreateHitbox(Caster, HitboxOffset, HitboxSize, function(Target: Types.EnemyClass)  
 				Ability:Hit(Caster, Target, {NoAnim = true})
 			end)

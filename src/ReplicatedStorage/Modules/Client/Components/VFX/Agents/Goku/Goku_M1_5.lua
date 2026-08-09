@@ -29,7 +29,7 @@ return function(
     DashEffect.Anchored = false
     DashEffect:PivotTo(Caster:GetModel():GetPivot())
     Effects:Weld(DashEffect, Caster:GetModel().PrimaryPart)
-    Effects:RecolorToGroundColor(Caster:GetModel():GetPivot().Position, DashEffect.att:GetChildren())
+    Effects:RecolorToGroundColor(Caster:GetModel():GetPivot().Position, DashEffect.att:GetChildren(), 6)
 
     task.delay(Time, function()
         Effects:Toggle(DashEffect, false)

@@ -34,6 +34,7 @@ function EnemyClass.new(At: Vector3, Name: string, Level: number): Types.EnemyCl
 	self.__Animator = AnimatorClass.new(self, self.Name)
 	self.__Appearance = AppearanceClass.new(self.Name, 'Enemies')
 	self.__EnemyId = 0
+	self.__Tags = {}
 
 	self.__Daze = Fusion.Value({}, 0)
 	self.__Health = Fusion.Value({}, self.__Status:GetHealth())
@@ -118,7 +119,7 @@ end
 
 function EnemyClass:SwitchState(State: string, Time: number): ()
 	if State == 'Airborne' then
-		self.__Appearance:Raise(5, Time);
+		self.__Appearance:Raise(16, Time);
 	end
 
 	return self.__Status:SwitchState(State, Time);
@@ -182,6 +183,21 @@ end
 
 function EnemyClass:RemoveEffect(Effect)
 	return self.__Status:RemoveEffect(Effect)
+end
+
+function EnemyClass.AddTag(self: Types.EnemyClass, Tag: string)
+	table.insert(self.__Tags, Tag)
+end
+
+function EnemyClass.RemoveTag(self: Types.EnemyClass, Tag: string)
+	local Index = table.find(self.__Tags, Tag)
+	if Index then
+		table.remove(self.__Tags, Index)
+	end
+end
+
+function EnemyClass.HasTag(self: Types.EnemyClass, Tag: string)
+	return table.find(self.__Tags, Tag) ~= nil
 end
 
 function EnemyClass:Rotate(Target)

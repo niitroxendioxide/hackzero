@@ -34,6 +34,7 @@ local Controller = {
 	__HoldingOnChainAttack = false,
 	__Max_Dodge_Count = 2,
 	__Time_Per_Dodge = 1,
+	__Last_Use_Key = {},
 
 	CurrentDodgeData = {},
 	ChainAttackActionChosen = Signal.new() :: Signal.ScriptSignal<number>,
@@ -233,6 +234,19 @@ function Controller:HandleInput(Key: string, State: string)
 		return
 	end
 
+	if Controller.__Last_Use_Key[Key] == nil then
+		Controller.__Last_Use_Key[Key] = {
+			Begin = 0,
+			End = 0,
+		}
+	end
+
+	if (os.clock() - Controller.__Last_Use_Key[Key][State]) < (1 / 8) then
+		return
+	end
+
+	Controller.__Last_Use_Key[Key][State] = os.clock()
+
 	local Is_Cancel = false
 	local CurrentSkill = CurrentAgent:GetCurrentSkill()
 	local DodgeConsumed = Key == 'Dodge' and Controller:TryConsumeDodge()
@@ -253,6 +267,8 @@ function Controller:HandleInput(Key: string, State: string)
 		else
 			Success = CharacterMoveset:Release(Key, CurrentAgent)
 		end
+
+		-- Support template skills
 	elseif Key == "Dodge" then
 		Movesets:RunFromTemplate("Dodge", CurrentAgent, {IsCancel = Is_Cancel})
 	end

@@ -228,7 +228,14 @@ function EnemyMovement:Update(Delta: number)
 	end
 
 	if self.__Collider then
-		self.__Collider.CFrame = CFrame.lookAlong(self.__Position, self.__Looking) * CFrame.Angles(0, 0, math.pi/2)
+		local NewCFrame = CFrame.lookAlong(self.__Position, self.__Looking) * CFrame.Angles(0, 0, math.pi/2)
+		local Lerp = CFrame.lookAlong(self.__Position, self.__Collider.CFrame.LookVector) * CFrame.Angles(0, 0, math.pi/2)
+
+		if RunService:IsClient() then
+			self.__Collider.CFrame = Lerp:Lerp(NewCFrame, Delta * 6)
+		else
+			self.__Collider.CFrame = NewCFrame
+		end
 	end
 
 	if self.__Collider and self.__debug_collider then

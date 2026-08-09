@@ -129,6 +129,29 @@ function Controller:EnterDaze(Buffer: buffer)
 	Enemy:EnterDazedState()
 end
 
+function Controller:AddTagEnemy(Buffer: buffer, Tag: string)
+	local EnemyId = buffer.readu8(Buffer, 1)
+
+	local Enemy = Enemies:GetEnemy(EnemyId)
+	if not Enemy then 
+		return 
+	end
+
+	Enemy:AddTag(Tag)
+end
+
+function Controller:RemoveTagEnemy(Buffer: buffer, Tag: string)
+	local EnemyId = buffer.readu8(Buffer, 1)
+
+	local Enemy = Enemies:GetEnemy(EnemyId)
+	if not Enemy then 
+		return 
+	end
+
+	Enemy:RemoveTag(Tag)
+end
+
+
 function Controller:BeginGrabEnemy(Buffer: buffer, Offset: CFrame)
     local EnemyId = buffer.readu8(Buffer, 1) -- EnemyId
     local PlayerRepId = buffer.readu8(Buffer, 2) -- PlayerReplicationId

@@ -41,7 +41,8 @@ return {
 
 				Hitbox_Size = vector.create(5, 5, 6),
 				Hitbox_Offset = vector.create(0, 0, -3.5),
-				Attack_State_Time = 0.5,
+				Attack_State_Time = 0.65,
+				Attack_Warning = 0.01,
 
 				Hit = {
 					Damage = 24,

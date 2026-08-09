@@ -15,7 +15,7 @@ local JOG_SPEED = 0.95;
 local WALK_SPEED = 0.7;
 
 --
-local Priorities = {Idle = Enum.AnimationPriority.Core, Dash = Enum.AnimationPriority.Action}
+local Priorities = {Idle = Enum.AnimationPriority.Core, AirborneIdle = Enum.AnimationPriority.Core, Falling = Enum.AnimationPriority.Core, Dash = Enum.AnimationPriority.Action}
 local AnimatorClass = {} :: {[string]: (self: Types.AnimatorController, any) -> any}
 AnimatorClass.__index = AnimatorClass
 
@@ -49,6 +49,8 @@ function AnimatorClass:Init()
 	end
 
 	self:Play('Idle')
+	self:Play('AirborneIdle')
+	self:Play('Falling')
 	self:Play('Sprint', {Weight = NON_ZERO, Speed = .825})
 	self:Play('Jog', {Weight = NON_ZERO, Speed = JOG_SPEED})
 	self:Play('Walk', {Weight = NON_ZERO, Speed = WALK_SPEED})
@@ -99,13 +101,19 @@ function AnimatorClass:Update(delta: number)
 	local Moving = Character:IsMoving()
 	local CurrentState = Character:GetState()
 	local WorldSpeed = World:GetSpeed()
+	local IsAirborne = Character.__Appearance:GetAddedHeight() > 0
+	local IsFalling = Character.__Appearance.__Falling == true
 	local SpeedMod = math.min((Character.__States:GetLastChangeTime() / 0.25), 1)
 	local InIdle = CurrentState == 'Idle'
+
 	local Sprint = self:GetTrack('Sprint')
 	local Jog = self:GetTrack('Jog')
 	local Walk = self:GetTrack('Walk')
 	local SprintStop = self:GetTrack('SprintStop')
 	local Dash = self:GetTrack('Dash')
+	local Idle = self:GetTrack('Idle')
+	local AirborneIdle = self:GetTrack('AirborneIdle')
+	local Falling = self:GetTrack('Falling')
 
 	-- Run stop
 	local Timestamp = Sprint.TimePosition > 0.15 and Sprint.TimePosition < 0.45 and 2 or 1
@@ -113,6 +121,10 @@ function AnimatorClass:Update(delta: number)
 		self:Play('SprintStop'..Timestamp, {Fade = 0.15})
 		self.__SinceStop = os.clock()
 	end
+
+	Idle:AdjustWeight(not IsFalling and not IsAirborne and 1 or NON_ZERO)
+	AirborneIdle:AdjustWeight(not IsFalling and IsAirborne and 1 or NON_ZERO)
+	Falling:AdjustWeight(IsFalling and 1 or NON_ZERO)
 
 	-- Adjusting weights
 	local Speed = Character:GetMovementSpeed()

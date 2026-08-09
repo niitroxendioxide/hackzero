@@ -53,7 +53,12 @@ local function LoadAllCharacterAnimations(Name: string)
 			continue
 		end
 		
-		AnimLib:Play(UserCharacter, AnimationObject, 1, 1, 1)
+		local Track = AnimLib:Play(UserCharacter, AnimationObject, 1, 1, 1)
+		Track.Stopped:Once(function()
+			Track:Destroy()
+		end)
+
+		task.wait(1 / 24)
 	end
 end
 

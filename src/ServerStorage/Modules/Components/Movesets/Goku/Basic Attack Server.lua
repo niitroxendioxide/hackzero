@@ -44,7 +44,6 @@ function UseGodFist(Caster: Types.Caster)
 end
 
 function Ability:Play(Caster, _, State, Context): ()
-	--local Is_Airborne = Context.Buffer[2];
 	local M1_Count = (Context.M1_Count :: number)
 	local Meter = Caster:GetMeter("SaiyanSurge")
 	if (not M1_Count) then
@@ -80,68 +79,87 @@ function Ability:Play(Caster, _, State, Context): ()
 		end
 	end
 
+	---
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 
+	local Target = Context.Target
+	local IsDiveKick = false
 	local Size = Vector3.one*5
 	local Offset = Vector3.zAxis * -3
 
 	local Hit_Data = Ability:FromData("Hit_Data")
+	local DiveKickHitData = Ability:FromData("DiveKickHitData")
+	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count) / Ability:FromData('Speed')
 
 	Ability:Begin(Caster, {
 		{0, function()
-			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time', M1_Count) / Ability:FromData('Speed'))
+			if Target:HasTag('DiveKickable') then
+				Target:RemoveTag('DiveKickable')
+				IsDiveKick = true
+				Attack_Time = .9
+			end
+
+			Caster:SwitchState('Attacking', Attack_Time)
 		end,},
 
 		-- 1ST M1
 		{.1, function()
-			if M1_Count == 1 then
+			if M1_Count == 1 and not IsDiveKick then
 				Caster:Walk(Ability:FromData('Walk_Time'))
 			end
 		end,},
 
 		-- 2ND M1
 		{0.15, function()
-			if M1_Count == 2 then
+			if M1_Count == 2 and not IsDiveKick then
 				Caster:Walk(Ability:FromData('Walk_Time'))
 			end
 		end},
 
 		{0.43, function()
-			if M1_Count == 2 then
+			if M1_Count == 2 and not IsDiveKick then
 				Caster:Walk(Ability:FromData('Walk_Time') + .1, 2)
 			end
 		end},
 
 		-- 3RD M1
 		{0.2, function()
-			if M1_Count == 3 then
+			if M1_Count == 3 and not IsDiveKick then
 				Caster:Walk(Ability:FromData('Walk_Time'))
 			end
 		end},
 
 		-- 4TH M1
 		{0.06, function()
-			if M1_Count == 4 then
+			if M1_Count == 4 and not IsDiveKick then
 				Caster:Walk(Ability:FromData('Walk_Time') + 0.1)
 			end
 		end},
 
 		-- 5TH M1
 		{0.27, function()
-			if M1_Count == 5 then
+			if M1_Count == 5 and not IsDiveKick then
 				Caster:WalkBack(Ability:FromData('Walk_Time') + 0.7, 1.5)
 			end
 		end},
 
 		-- 6TH M1
 		{0.18, function()
-			if M1_Count == 6 then
+			if M1_Count == 6 and not IsDiveKick then
 				Caster:Walk(Ability:FromData('Walk_Time') + 0.18, 2.25)
 			end
 		end},
 
+		{0.3, function()
+			if not IsDiveKick then return end
+
+			Caster:Walk(0.6, .75, true)
+		end},
+
 
 		{Ability:FromData("Hit_Times", M1_Count), function()
+			if IsDiveKick then return end
+
 			Ability:CreateHitbox(Caster, Offset, Size, function(Target)
 				Hit_Data.Damage = Ability:FromData("Damage_Mult", M1_Count, SkillLevel)
 				Hit_Data.Daze = Ability:FromData("Daze_Mult", M1_Count, SkillLevel)
@@ -155,6 +173,7 @@ function Ability:Play(Caster, _, State, Context): ()
 		end,},
 
 		{.54, function()
+			if IsDiveKick then return end
 			if M1_Count ~= 4 then return end
 
 			Ability:CreateHitbox(Caster, Offset, Size, function(Target)
@@ -167,6 +186,7 @@ function Ability:Play(Caster, _, State, Context): ()
 		end,},
 
 		{.5, function()
+			if IsDiveKick then return end
 			if M1_Count ~= 2 then return end
 
 			Ability:CreateHitbox(Caster, Offset, Size, function(Target)
@@ -177,6 +197,14 @@ function Ability:Play(Caster, _, State, Context): ()
 				Ability:Hit(Caster, Target, Hit_Data)
 			end)
 		end,},
+
+		{0.7, function()
+			if not IsDiveKick then return end
+
+			Ability:CreateHitbox(Caster, Vector3.zAxis*-5, vector.create(5, 5, 10), function(Target)
+				Ability:Hit(Caster, Target, DiveKickHitData)
+			end)
+		end}
 	})
 end
 

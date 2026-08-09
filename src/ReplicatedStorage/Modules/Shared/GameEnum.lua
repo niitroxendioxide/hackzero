@@ -66,6 +66,9 @@ return {
 		EndGrabEnemy = 90,
 		NewSwitch = 91,
 
+		AddTagEnemy = 92,
+		RemoveTagEnemy = 93,
+
 		-- 
 		ClearPlayerData = 150,
 		SetColliderArea = 152,
@@ -414,6 +417,11 @@ return {
 		Begin = 1,
 		TriggerEnter = 2,
 		BreakStructure = 3,
+	},
+
+	EntityBehaviorEvent = {
+		PhaseEntered = 1,
+		PatternUsed = 2,
 	},
 
 	KeyLookup = function(Table: {}, val: number)

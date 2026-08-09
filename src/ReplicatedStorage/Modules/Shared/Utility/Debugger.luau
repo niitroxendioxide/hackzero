@@ -1,4 +1,5 @@
 local RunService = game:GetService("RunService")
+local TestService = game:GetService("TestService")
 local Debugger = {}
 local Cache = {}
 
@@ -13,6 +14,21 @@ function Debugger:DebugLine(Id: string, Text: string, TimesPerSecond: number, Si
         print(`[SERVER] ({Id}): {Text}`)
     elseif RunService:IsClient() and not(Side == 'Server') then
         print(`[CLIENT] ({Id}): {Text}`)
+    end
+end
+
+function Debugger:BlueLine(Id: string, Text: string, TimesPerSecond: number, Side: string?)
+    if Cache[Id] and (os.clock() - Cache[Id] < (1 / TimesPerSecond)) then
+        return
+    end
+
+    Cache[Id] = os.clock()
+
+
+    if RunService:IsServer() and not(Side == 'Client') then
+        TestService:Message(`[SERVER] ({Id}): {Text}`, script)
+    elseif RunService:IsClient() and not(Side == 'Server') then
+        TestService:Message(`[CLIENT] ({Id}): {Text}`, script)
     end
 end
 

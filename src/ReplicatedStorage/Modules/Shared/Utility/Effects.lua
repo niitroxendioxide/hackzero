@@ -141,14 +141,18 @@ function EffectUtil:FromGui<T>(name: string): T & GuiObject
 end
 
 
-function EffectUtil:RecolorToGroundColor(At: Vector3, Particles: {})
+function EffectUtil:RecolorToGroundColor(At: Vector3, Particles: {}, MaxRange: number)
 	local MapParams = World:GetMapParams()
-	local Cast = EffectUtil:CastMapRaycast(At, vector.create(0, -1000), MapParams)
+	local Cast = EffectUtil:CastMapRaycast(At, vector.create(0, -(MaxRange or 1000)), MapParams)
 
 	if Cast then
 		local Seq = ColorSequence.new(Cast.Color)
 		for _, Particle in Particles do
 			Particle.Color = Seq
+		end
+	elseif not Cast then
+		for _, Particle in Particles do
+			Particle.Enabled = false
 		end
 	end
 

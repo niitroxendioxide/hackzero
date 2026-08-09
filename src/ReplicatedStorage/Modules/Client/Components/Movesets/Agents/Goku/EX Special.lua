@@ -54,10 +54,12 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 
 			if Hit_Counter == 1 then
 				Ability:Effect("Goku_UpliftEffect", Caster);
-			else
-				Ability:Hit(Caster, Enemy, {EffectData = Ability:FromData("Hit_Effect_Data")})
 			end
 
+			Ability:Hit(Caster, Enemy, {
+				EffectData = Ability:FromData("Hit_Effect_Data"), 
+				Track = 'Characters.Goku.Abilities.Special.LauncherTarget'
+			})
 		end)
 
 	end)

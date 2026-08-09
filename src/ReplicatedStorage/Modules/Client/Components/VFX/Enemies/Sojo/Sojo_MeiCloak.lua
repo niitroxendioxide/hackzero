@@ -15,8 +15,8 @@ local Effects = require(Shared.Utility.Effects)
 local Cache = {}
 
 local function CreateBolt(CasterModel: Model, Ground: RaycastResult<BasePart> & {Color: Color3})
-    local SorcererEffects = Assets.Effects.Enemies.Sorcerer
-    local Color = Color3.fromRGB(105, 165, 255)
+    local SojoEffects = Assets.Effects.Enemies.Sojo
+    local Color = Color3.fromRGB(110, 112, 255)  --Color3.fromRGB(105, 165, 255)
     local Parent = Effects:GetParent(script.Name)
     
     local A1 = Instance.new('Attachment')
@@ -26,32 +26,52 @@ local function CreateBolt(CasterModel: Model, Ground: RaycastResult<BasePart> & 
     A1.Parent = CasterModel.PrimaryPart
     
     local Attachment = Instance.new('Attachment')
-    Attachment.WorldPosition = A1.WorldPosition
-    Attachment.WorldAxis = Effects:RandomV3()
-    Attachment.Parent = workspace.Terrain
+    local GroundUsed = true;
     
-    Effects:Tween(Attachment, {.1}, {WorldPosition = Ground.Position})
+    if math.random(1, 3) == 1 then
+        GroundUsed = false;
+        local Parts = CasterModel:GetDescendants()
+        for i = #Parts, 1, -1 do
+            if Parts[i]:IsA('BasePart') then continue end
+            table.remove(Parts, i)
+        end
+
+        local OtherPart = Parts[math.random(1, #Parts)]
+
+        --Attachment.Position = Effects:RandomV3() * OtherPart.Size;
+        Attachment.Parent = OtherPart
+    else
+        Attachment.WorldPosition = A1.WorldPosition
+        Attachment.WorldAxis = Effects:RandomV3()
+        Attachment.Parent = workspace.Terrain
+        Effects:Tween(Attachment, {.1}, {WorldPosition = Ground.Position})
+    end
     
-    local Floor = Effects:Create(SorcererEffects.FloorPart, 1.25)
-    Floor:PivotTo(CFrame.lookAlong(Ground.Position, Ground.Normal) * CFrame.Angles(-math.pi/2, 0, 0))
-    Floor.Parent = Parent
-
-    task.delay(.1, function()
-        Effects:RecolorSmoke(Ground, Floor:GetDescendants())
-
-        Effects:Emit(Floor, true)
-    end)
-
-    Effects:CleanUp(Floor, 2.5)
     
-    local RandomCurve = Effects:Random(-5, 5)
+    if GroundUsed then
+        local Floor = Effects:Create(SojoEffects.FloorPart, 1.25)
+        Floor:PivotTo(CFrame.lookAlong(Ground.Position, Ground.Normal) * CFrame.Angles(-math.pi/2, 0, 0))
+        Floor.Parent = Parent
+
+        task.delay(.1, function()
+            Effects:RecolorSmoke(Ground, Floor:GetDescendants())
+
+            Effects:Emit(Floor, true)
+        end)
+
+        Effects:CleanUp(Floor, 2.5)
+    end
+    
+    local CurveSize = GroundUsed and 5.5 or 2.75
+    local Radius = GroundUsed and {0.9, 2.25} or {0.33, 1.1}
+    local RandomCurve = Effects:Random(-CurveSize, CurveSize)
 
     local NewBolt = LightningBolt.new(A1, Attachment, Effects:Random(8, 14))
     NewBolt.CurveSize0, NewBolt.CurveSize1 = RandomCurve, -RandomCurve
     NewBolt.PulseSpeed = Effects:Random(9, 24)
     NewBolt.PulseLength = Effects:Random(.75, 4)
     NewBolt.ContractFrom = 0
-    NewBolt.MinRadius, NewBolt.MaxRadius = .9, 2.25
+    NewBolt.MinRadius, NewBolt.MaxRadius = Radius[1], Radius[2]
     NewBolt.Thickness = Effects:Random(.15, .3)
     NewBolt.Frequency = Effects:Random(.2, .5)
     NewBolt.Color = Color
@@ -71,12 +91,21 @@ return function(Caster: Types.ClientEnemy, Time: number?): ()
         Active = true,
     }
 
+    ---
+    local SojoEffects = Assets.Effects.Enemies.Sojo
+    local AuraVfx = Effects:Create(SojoEffects.MeiCloakAura, Time + 2);
+    AuraVfx.CFrame = Caster:GetModel():GetPivot()
+    Effects:Weld(AuraVfx, Caster:GetModel().Torso)
+
+
     local Timer = os.clock()
     local UntilNextBolt = os.clock()
 
     while Cache[Caster].Active == true do
         if (Time < os.clock() - Timer) then
             Cache[Caster] = nil
+            Effects:Toggle(AuraVfx, false)
+            Effects:Tween(AuraVfx.Attachment.PointLight, { 0.25, 'Quad' }, { Brightness = 0 })
 
             break
         end
@@ -88,7 +117,7 @@ return function(Caster: Types.ClientEnemy, Time: number?): ()
 
         UntilNextBolt = os.clock()
 
-        local RandomPosition = Caster:GetPivot() * CFrame.new(Effects:Random(-7, 7), 2, Effects:Random(-7, 7))
+        local RandomPosition = Caster:GetPivot() * CFrame.new(Effects:Random(-5, 5), 2, Effects:Random(-5, 5))
         local Ground = Effects:CastMapRaycast(RandomPosition.Position, vector.create(0, -15))
         
         if Ground then

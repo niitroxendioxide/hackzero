@@ -41,6 +41,10 @@ return function(Behavior: Types.EntityBehavior, State: Types.EntityState)
         return State.HealthPercent() < 15;
     end)
 
+    Behavior.When(Behavior.Event.PhaseEntered, function(Phase: string)
+        print('Character entered new phase: ', Phase)
+    end)
+
     --- // Patterns
     Behavior.SetBasePatterns({
         { Name = 'SwordSwings', Weight = 1 },

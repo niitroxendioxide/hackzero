@@ -25,7 +25,11 @@ function Ability:Play(Caster: Types.GenericCaster, _, _, Context): ()
 			Caster:SwitchState("Attacking", AttackStateTime)
 		end},
 
-		{0.3, function()
+		{0.25, function()
+			Caster:Move(vector.create(0, 0, -1), 0.15, 24)
+		end},
+
+		{0.45, function()
 			Ability:CreateHitbox(Caster, HitboxOffset, HitboxSize, function(Enemy: Types.ServerAgent)
 				Ability:Hit(Caster, Enemy, HitData)
 			end)

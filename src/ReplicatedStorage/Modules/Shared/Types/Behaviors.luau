@@ -20,10 +20,16 @@ export type PatternOption = {
     Weight: number,
 }
 
-export type EntityEvent = "";
+export type EntityEvent = number;
 
 export type EntityBehavior = {
-    When: (Event: EntityEvent, fn: (Entity: AbilityTypes.ServerEnemy) -> ()) -> (),
+    Event: {
+        PhaseEntered: number,
+        PatternUsed: number,
+    },
+
+    ---
+    When: (Event: EntityEvent, fn: (...any) -> ()) -> (),
 
     Phase: (Name: string, Priority: number, Condition: () -> ()) -> (),
     DefinePattern: (Name: string, Pattern: PatternData) -> (),
@@ -78,7 +84,7 @@ export type EntityBehaviorState = {
         { string | number }
     },
     Events: {
-        {Type: number, Data: { any }}
+        [number]: () -> (),
     },
     PhasePatterns: {
         [string]: { PatternOption }

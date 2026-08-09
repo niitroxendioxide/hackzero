@@ -318,6 +318,7 @@ export type EnemyClass = {
 	Name: string,
 	__Status: EnemyStatus,
 	__Appearance: AppearanceController,
+	__Tags: { string },
 
 	__Health: Fusion.Value<number>,
 	__Daze: Fusion.Value<number>,

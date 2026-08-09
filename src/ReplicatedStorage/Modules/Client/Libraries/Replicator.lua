@@ -7,6 +7,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 
 --
@@ -97,7 +98,7 @@ function Controller:Replicate(Action: number, ...)
 	elseif Action == GameEnum.Replication.UseSkill then
 		Buffer = buffer.create(5)
 
-		buffer.writei8(Buffer, 1, Args[1])
+		buffer.writeu8(Buffer, 1, Args[1])
 		buffer.writeu8(Buffer, 2, Args[2] or 0)
 		buffer.writei8(Buffer, 3, Args[3] or 1)
 		buffer.writei8(Buffer, 4, Args[4] == true and 1 or 0)

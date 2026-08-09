@@ -8,6 +8,7 @@ local Classes = ServerStorage.Modules.Classes
 local Services = ServerStorage.Modules.Services
 local Libraries = ServerStorage.Modules.Libraries
 
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Types = require(Shared.Types.Abilities)
 local DamageLibrary = require(Libraries.Damage)
 local AbilityClass = require(Classes.Combat.ServerAbility)
@@ -26,6 +27,10 @@ local function HandleParryAbility(Caster)
 	local ParryId = HttpService:GenerateGUID(false)
 
 	while (Ability:Get(Caster, "Holding") == true) do
+		if not Caster:IsActive() then
+			break
+		end
+
 		if not Activated and (os.clock() - Started) >= 0.2 then
 			Activated = true
 
@@ -99,8 +104,8 @@ function Ability:Play(Caster: Types.Caster, _, State, Context:{ read M1_Count: n
 					Stun = 0.25,
 					Knockback = {
 						vector.create(0, 0, 1),
-						15,
-						0.1
+						11,
+						0.2
 					}
 				})
 			end

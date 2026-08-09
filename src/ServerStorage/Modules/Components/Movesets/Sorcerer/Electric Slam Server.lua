@@ -21,7 +21,7 @@ function Ability:Play(Caster: Types.ServerEnemyClass)
 		end,},
 
 		{0.3, 0.8, function()
-			Caster:Move(vector.create(0, 0, -1), 0.783 - 0.367, 45)
+			Caster:Move(vector.create(0, 0, -1), 0.8 - 0.3, 45)
 		end},
 
 		{1, function()

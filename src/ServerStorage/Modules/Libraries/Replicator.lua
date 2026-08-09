@@ -538,6 +538,22 @@ function Replicator:EnterDaze(Enemy: Types.ServerEnemyClass)
 	Network:FireForAll('Replicate', Object)
 end
 
+function Replicator:AddTagEnemy(Enemy: Types.ServerEnemyClass, Tag: string)
+	local Object = buffer.create(2)
+	buffer.writeu8(Object, 0, GameEnum.Replication.AddTagEnemy)
+	buffer.writeu8(Object, 1, Enemy:GetId())
+
+	Network:FireForAll('Replicate', Object, Tag)
+end
+
+function Replicator:RemoveTagEnemy(Enemy: Types.ServerEnemyClass, Tag: string)
+	local Object = buffer.create(2)
+	buffer.writeu8(Object, 0, GameEnum.Replication.RemoveTagEnemy)
+	buffer.writeu8(Object, 1, Enemy:GetId())
+
+	Network:FireForAll('Replicate', Object, Tag)
+end
+
 function Replicator:SwitchStateEnemy(EnemyId: number, State: string, Time: number)
 	local Object = buffer.create(5)
 	buffer.writeu8(Object, 0, GameEnum.Replication.StateSwitchEnemy)

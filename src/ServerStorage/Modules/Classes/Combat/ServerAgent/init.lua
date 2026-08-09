@@ -383,8 +383,10 @@ end
 
 function ServerAgentClass:SwitchState(State: string, Time: number, Iframes: boolean?, Unaffected: boolean)
 	--local TimeExtra = Ping:Get(self.__Player_Assigned)
+	local ReducedTime = math.max(Ping:Get(self.__Player_Assigned), 0.1)
 	local TimeMod = not Unaffected and State == 'Attacking' and self:GetStat("Speed") or 1
-	
+	Time = Time - ReducedTime
+
 	self.__Character.States:Switch(State, (Time) / TimeMod)
 	if Iframes then
 		self:AddTag('Invulnerability', Time / TimeMod)
