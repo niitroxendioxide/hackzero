@@ -81,9 +81,11 @@ function Ability:Play(Caster, _, State, Context): ()
 
 	---
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
+	local IsPlayerMidAir = Caster:HasTag('Airborne')
 
 	local Target = Context.Target
 	local IsDiveKick = false
+	local IsSlam = false
 	local Size = Vector3.one*5
 	local Offset = Vector3.zAxis * -3
 
@@ -93,6 +95,10 @@ function Ability:Play(Caster, _, State, Context): ()
 
 	Ability:Begin(Caster, {
 		{0, function()
+			if IsPlayerMidAir and Target:GetState() ~= 'Airborne' then
+				IsSlam = true
+			end
+
 			if Target:HasTag('DiveKickable') then
 				Target:RemoveTag('DiveKickable')
 				IsDiveKick = true
@@ -104,48 +110,48 @@ function Ability:Play(Caster, _, State, Context): ()
 
 		-- 1ST M1
 		{.1, function()
-			if M1_Count == 1 and not IsDiveKick then
+			if M1_Count == 1 and not IsDiveKick and not IsSlam then
 				Caster:Walk(Ability:FromData('Walk_Time'))
 			end
 		end,},
 
 		-- 2ND M1
 		{0.15, function()
-			if M1_Count == 2 and not IsDiveKick then
+			if M1_Count == 2 and not IsDiveKick and not IsSlam then
 				Caster:Walk(Ability:FromData('Walk_Time'))
 			end
 		end},
 
 		{0.43, function()
-			if M1_Count == 2 and not IsDiveKick then
+			if M1_Count == 2 and not IsDiveKick and not IsSlam then
 				Caster:Walk(Ability:FromData('Walk_Time') + .1, 2)
 			end
 		end},
 
 		-- 3RD M1
 		{0.2, function()
-			if M1_Count == 3 and not IsDiveKick then
+			if M1_Count == 3 and not IsDiveKick and not IsSlam then
 				Caster:Walk(Ability:FromData('Walk_Time'))
 			end
 		end},
 
 		-- 4TH M1
 		{0.06, function()
-			if M1_Count == 4 and not IsDiveKick then
+			if M1_Count == 4 and not IsDiveKick and not IsSlam then
 				Caster:Walk(Ability:FromData('Walk_Time') + 0.1)
 			end
 		end},
 
 		-- 5TH M1
 		{0.27, function()
-			if M1_Count == 5 and not IsDiveKick then
+			if M1_Count == 5 and not IsDiveKick and not IsSlam then
 				Caster:WalkBack(Ability:FromData('Walk_Time') + 0.7, 1.5)
 			end
 		end},
 
 		-- 6TH M1
 		{0.18, function()
-			if M1_Count == 6 and not IsDiveKick then
+			if M1_Count == 6 and not IsDiveKick and not IsSlam then
 				Caster:Walk(Ability:FromData('Walk_Time') + 0.18, 2.25)
 			end
 		end},
@@ -154,6 +160,12 @@ function Ability:Play(Caster, _, State, Context): ()
 			if not IsDiveKick then return end
 
 			Caster:Walk(0.6, .75, true)
+		end},
+
+		{0.2, function()
+			if not IsSlam then return end
+
+			Caster:Walk(0.25, .5, true)
 		end},
 
 

@@ -57,6 +57,15 @@ function AgentClass.GetAppearance(self: AgentTypes.AgentClass)
 	return self.__Character.__Appearance
 end
 
+function AgentClass.IsAirborne(self: AgentTypes.AgentClass)
+	return self:GetAppearance():GetAddedHeight() > 0
+end
+
+function AgentClass.Land(self: AgentTypes.AgentClass)
+	return self:GetAppearance():Land()
+end
+
+
 function AgentClass.GetSkillLevel(self: AgentTypes.AgentClass, Name: string)
 	return (self.__Skill_Levels[Name] or 1)
 end

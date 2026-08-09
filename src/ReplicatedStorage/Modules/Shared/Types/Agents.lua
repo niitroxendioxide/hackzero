@@ -84,6 +84,9 @@ export type AgentClass =  {
 	IsMoving: (self: AgentClass) -> boolean,
 	IsAlive: (self: AgentClass) -> boolean,
 	IsActive: (self: AgentClass) -> boolean,
+	IsAirborne: (self: AgentClass) -> boolean,
+	Land: (self: AgentClass) -> (),
+	
 	GetUltBar: (self: AgentClass) -> (number),
 	BlockRotation: (self: AgentClass, Time: number) -> (),
 	SetPhysicsEnabled: (self: AgentClass, State: boolean) -> (),
