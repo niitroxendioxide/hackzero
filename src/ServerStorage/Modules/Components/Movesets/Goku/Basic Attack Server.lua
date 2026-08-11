@@ -148,12 +148,10 @@ function Ability:Play(Caster, _, State, Context): ()
 	local Attack_Data = Ability:FromData('Attack_Data')
 
 	do
-		-- 
-
 		if IsPlayerMidAir and Target:GetState() ~= 'Airborne' then
 			IsSlam = true
 			Caster:RemoveTag('Airborne')
-		elseif Target:HasTag('DiveKickable') then
+		elseif Target ~= nil and Target:HasTag('DiveKickable') then
 			Target:RemoveTag('DiveKickable')
 			IsDiveKick = true
 		end

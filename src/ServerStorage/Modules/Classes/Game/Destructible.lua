@@ -16,10 +16,9 @@ local DestructiblesDatabase = require(Shared.Database.Destructibles)
 type Destructible = DestructibleTypes.DestructibleServerEntity
 
 --
-local function CreateColliderAt(Position: Vector3, Rotation: number)
+local function CreateColliderAt(GivenCFrame)
     local Newpart = Instance.new("Part")
-    Newpart.Position = Position
-    Newpart.CFrame = Newpart.CFrame * CFrame.Angles(0, Rotation, 0)
+    Newpart.CFrame = GivenCFrame
     Newpart.Size = Vector3.one * 2
     Newpart.Anchored = true
     Newpart.CanCollide = true
@@ -38,13 +37,12 @@ DestructibleClass.__tostring = function()
     return 'DestructibleClass'
 end
 
-function DestructibleClass.new(Type: string, Position: Vector3, Rotation: number?)
+function DestructibleClass.new(Type: string, At: CFrame)
     local self = setmetatable({}, DestructibleClass)
     self.Destroyed = Signal.new()
 
-    self.__Position = Position or Vector3.new()
-    self.__Rotation = Rotation or 0
-    self.__Collider = CreateColliderAt(self.__Position, self.__Rotation)
+    self.__CFrame = At;
+    self.__Collider = CreateColliderAt(At)
     self.__Health = 0
     self.__Type = Type
     self.__Id = 0
@@ -55,6 +53,31 @@ end
 function DestructibleClass.GetId(self: Destructible)
     return 9000 + self.__Id;
 end
+
+function DestructibleClass.HasTag(self: Destructible)
+    return false
+end
+
+function DestructibleClass.AddTag(self: Destructible)
+    return
+end
+
+function DestructibleClass.RemoveTag(self: Destructible)
+    return
+end
+
+function DestructibleClass.IsAirborne(self: Destructible)
+    return false
+end
+
+function DestructibleClass.GetState(self: Destructible)
+    return 'Idle'
+end
+
+function DestructibleClass.GetPivot(self: Destructible)
+    return self.__CFrame
+end
+
 
 function DestructibleClass.Spawn(self: Destructible, Id: number)
     local Data = DestructiblesDatabase:GetData(self.__Type)
@@ -82,15 +105,11 @@ function DestructibleClass.Compress(self: Destructible, OnlyId: boolean)
         return  Obj
     end
 
-    local Object = buffer.create(14)
+    local Object = buffer.create(2)
     buffer.writeu8(Object, 0, self.__Id)
     buffer.writeu8(Object, 1, DestructiblesDatabase:GetId(self.__Type))
-    buffer.writef32(Object, 2, self.__Position.X)
-    buffer.writef32(Object, 6, self.__Position.Z)
-    buffer.writei16(Object, 10, math.floor(self.__Position.Y * 10))
-    buffer.writei16(Object, 12, math.deg(self.__Rotation) * 100)
 
-    return Object
+    return Object, self.__A
 end
 
 function DestructibleClass.TakeDamage(self: Destructible, Perpetrator: Types.GenericClass, Damage: number)

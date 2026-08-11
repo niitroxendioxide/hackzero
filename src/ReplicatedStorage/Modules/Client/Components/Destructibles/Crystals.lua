@@ -1,5 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
+local _TweenService = game:GetService("TweenService")
 
 local Assets = ReplicatedStorage.Assets.Destructibles
 local Client = ReplicatedStorage.Modules.Client
@@ -7,21 +7,62 @@ local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local ClientDestructible = require(Client.Classes.ClientDestructible)
 
 local CrystalObjClass = ClientDestructible.new("Crystals")
-local Rng = Random.new()
+
+local ColorOptions = {
+    Color3.fromRGB(67, 15, 126),
+    Color3.fromRGB(126, 76, 14),
+    Color3.fromRGB(0, 61, 118),
+    Color3.fromRGB(31, 31, 31),
+}
+
+local LastUsed = Color3.new()
 
 CrystalObjClass:OnCreate(function(Object)
-    local CrystalBase = Assets:FindFirstChild('Crystal')
+    local CrystalBase = Assets:FindFirstChild('Crystal_New')
     if not CrystalBase then
         return
     end
 
-    local CFPos = CFrame.new(Object.Position)
-    local Model = Instance.new("Model")
-    Model.Parent = ClientDestructible.Parent
+    local BaseCF = Object.CFrame
 
-    Object.Cache.Model = Model
+    local Possible = table.clone(ColorOptions)
+    local Found = table.find(Possible, LastUsed)
+    if Found then
+        table.remove(Possible, Found)
+    end
 
-    local Max = Rng:NextInteger(4, 6)
+    local Color = Possible[math.random(1, #Possible)]
+    LastUsed = Color;
+
+    local H, S, V = Color:ToHSV()
+    local GlowColor = Color3.fromHSV(H, math.lerp(S, 1, 0.85), math.lerp(V, 1, 0.85))
+
+    local NewModel = CrystalBase:Clone()
+    NewModel:ScaleTo(0.001)
+    NewModel:PivotTo(BaseCF)
+    NewModel.Parent = workspace.World.Effects
+
+    local Highlight = Instance.new("Highlight")
+    Highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+    Highlight.OutlineTransparency = 0
+    Highlight.FillTransparency = 0
+    Highlight.OutlineColor = GlowColor
+    Highlight.FillColor = GlowColor
+    Highlight.Parent = NewModel
+
+    Effects:TweenModel(NewModel, 1, 0.45, 'Back')
+    Effects:Tween(Highlight, {.3}, {FillTransparency = 1, OutlineTransparency = 1})
+    Effects:CleanUp(Highlight, .5)
+
+    for _, part in NewModel:GetDescendants() do
+        if part:IsA('SurfaceAppearance') then
+            part.EmissiveTint = Color
+        end
+    end
+
+    Object.Cache.Model = NewModel
+
+    --[[local Max = Rng:NextInteger(4, 6)
     for i = 1, Max do
         local AngleMult = i == 1 and 0.15 or 1
         local ScaleMult = i == 1 and 1 or 1 - ((i / Max) * 0.225) * Rng:NextInteger(0.9, 1.1)
@@ -66,7 +107,7 @@ CrystalObjClass:OnCreate(function(Object)
         end)
 
         Effects:Tween(Value, {.25 + Rng:NextNumber(0.1, 0.3), 'Back', 'Out'}, {Value = MaxScale})
-    end
+    end]]
 end)
 
 CrystalObjClass:OnDestroy(function(Object)
@@ -75,41 +116,13 @@ CrystalObjClass:OnDestroy(function(Object)
 
     Model.Parent = workspace.World.Effects
 
-    for i, Object: Instance | Model in Model:GetChildren() do
-        if not Object:IsA("Model") then continue end
-
-        local Main = Object:FindFirstChild("Crystal") :: BasePart
-        Effects:Tween(Main, {1}, {Transparency = 1})
-        Main:Destroy()
-
-        if i > 4 then continue end
-
-        for _, Shard in (Object:FindFirstChild("Shards") :: Folder):GetChildren() do
-            if not Shard:IsA("BasePart") then continue end
-
-            local Time = Rng:NextNumber(0.15, 0.3)
-            local DeTime = Rng:NextNumber(0.9, 1.4)
-            Shard.Transparency = 0
-            Shard.Anchored = false
-            Shard.CanCollide = true
-
-            local Vel = Rng:NextUnitVector()
-            local BodyVel = Instance.new('BodyVelocity')
-            local BodyAngVel = Instance.new('BodyAngularVelocity')
-            BodyVel.MaxForce = Vector3.one*math.huge
-            BodyVel.Velocity = Vector3.new(Vel.X, math.abs(Vel.Y), Vel.Z)  * Rng:NextInteger(15, 30)
-            BodyAngVel.AngularVelocity = Rng:NextUnitVector() * Rng:NextInteger(7, 22)
-            BodyAngVel.MaxTorque = Vector3.one*math.huge
-
-            BodyVel.Parent = Shard
-            BodyAngVel.Parent = Shard
-
-            Effects:MultiClean({BodyVel, BodyAngVel}, Time)
-            Effects:Tween(Shard, {DeTime}, {Size = Vector3.zero})
+    for _, part in Model:GetDescendants() do
+        if part:IsA('BasePart') then
+            Effects:Tween(part, { .25, 'Quad' }, { Transparency = 1 })
         end
     end
 
-    Effects:CleanUp(Model, 2)
+    Effects:CleanUp(Model, .25)
 end)
 
 CrystalObjClass:OnHit(function(Object)
@@ -126,47 +139,6 @@ CrystalObjClass:OnHit(function(Object)
 
     Effects:Tween(Highlight, {.2}, {FillTransparency = 1, OutlineTransparency = 1})
     Effects:CleanUp(Highlight, .2)
-
-    --
-    for _, Crystal in Model:GetChildren() do
-        if not Crystal:IsA('Model') then continue end
-
-        local OriginalCFrame = Crystal:GetPivot()
-        local Rx = Rng:NextNumber(-math.pi * 0.05, math.pi * 0.05)
-        local Rz = Rng:NextNumber(-math.pi * 0.05, math.pi * 0.05)
-        local Ry = Rng:NextNumber(-math.pi * 0.1, math.pi * 0.1)
-        local Changed = OriginalCFrame * CFrame.Angles(Rx, Ry, Rz)
-        local TimeForCrystal = Rng:NextNumber(0.7, 1)
-
-        task.spawn(function()
-            local Clock = os.clock()
-
-            while os.clock() - Clock < TimeForCrystal do
-                local Angle = ((os.clock() - Clock) / TimeForCrystal) * math.pi
-                local Sine = math.sin(Angle)
-                local Val = TweenService:GetValue(Sine, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out)
-
-                Crystal:PivotTo(OriginalCFrame:Lerp(Changed, Val))
-                task.wait()
-            end
-        end)
-    end
-
-    local MainModelScale = Model:GetScale()
-    local TweenTime = Rng:NextInteger(0.4, 0.6)
-
-    task.spawn(function()
-        local Clock = os.clock()
-
-        while os.clock() - Clock < TweenTime do
-            local Angle = ((os.clock() - Clock) / TweenTime) * math.pi
-            local Sine = math.sin(Angle)
-            local Val = TweenService:GetValue(Sine, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-
-            Model:ScaleTo(math.lerp(MainModelScale, MainModelScale * 0.4, Val))
-            task.wait()
-        end
-    end)
 end)
 
 return CrystalObjClass

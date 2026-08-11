@@ -28,9 +28,8 @@ export type DestructibleServerEntity = {
     Destroyed: Types.Signal<Types.GenericClass>,
 
     __Type: string,
-    __Position: Vector3,
+    __CFrame: CFrame,
     __Collider: BasePart,
-    __Rotation: number,
     __Health: number,
     __Id: number,
 
@@ -39,6 +38,8 @@ export type DestructibleServerEntity = {
 
     GetCollider: (self: DestructibleServerEntity) -> (BasePart),
     GetPosition: (self: DestructibleServerEntity) -> (Vector3),
+    GetId: (self: DestructibleServerEntity) -> (number),
+    GetPivot: (self: DestructibleServerEntity) -> (CFrame),
 
     --[[
         Sets up the destructible and it's stats

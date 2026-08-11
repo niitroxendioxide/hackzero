@@ -66,12 +66,12 @@ function Camera:UseZoom(Time: number, Value: number)
 end
 
 function Camera:RotateTo(GivenCFrame: CFrame, RotationOnly: boolean)
-	local Yaw, Pitch = GivenCFrame:ToOrientation()
+	local Pitch, Yaw = GivenCFrame:ToOrientation()
+	Camera.__Rotation = Vector2.new(-Yaw, -Pitch)
 
 	if not RotationOnly then
 		Camera.__Position = GivenCFrame.Position
 	end
-	Camera.__Rotation = Vector2.new(Yaw, Pitch)
 end
 
 function Camera:StartAcceleration(Time: number, StartupTime: number)
@@ -146,19 +146,20 @@ function Camera:SetTargetPart(TargetPart: string)
 end
 
 function Camera:SetLookAtPart(p_LookAtPart: BasePart)
-	if (p_LookAtPart == self.__LookAtPart and p_LookAtPart ~= nil) or p_LookAtPart == nil or typeof(p_LookAtPart) ~= 'Instance' or not p_LookAtPart:IsA('BasePart') then
-		local Previous = self.__LookAtPart
-		if typeof(Previous) == 'Instance' and Previous:IsA('BasePart') then
-			local Indicator = Previous:FindFirstChild('LockOn')
-			if Indicator then
-				local UIScale = Indicator.GUI.Circle.UIScale;
-				Indicator.Name = '__destroying'
-				Effects:Tween(UIScale, { 0.45, 'Quad' }, {Scale = 0})
+	local Previous = self.__LookAtPart
+	if typeof(Previous) == 'Instance' and Previous:IsA('BasePart') then
+		local Indicator = Previous:FindFirstChild('LockOn')
+		if Indicator then
+			local UIScale = Indicator.GUI.Circle.UIScale;
+			Indicator.Name = '__destroying'
+			Effects:Tween(UIScale, { 0.45, 'Quad' }, {Scale = 0})
 
-				Effects:CleanUp(Indicator, 0.45)
-			end
+			Effects:CleanUp(Indicator, 0.45)
 		end
+	end
 
+	if (p_LookAtPart == self.__LookAtPart and p_LookAtPart ~= nil) or p_LookAtPart == nil or typeof(p_LookAtPart) ~= 'Instance' or not p_LookAtPart:IsA('BasePart') then
+		
 		self.__LookAtPart = nil;
 		
 		return
@@ -249,8 +250,8 @@ function Camera:Update(delta: number)
 
 		Factor = 15
 		
-		local Yaw, Pitch = CameraCFrame:ToOrientation()
-		Camera.__Rotation = Vector2.new(Yaw, Pitch)
+		local Pitch, Yaw = CameraCFrame:ToOrientation()
+		Camera.__Rotation = Vector2.new(-Yaw, -Pitch)
 	else
 		CameraCFrame = CFrame.lookAlong(Camera.__Position, CameraRotation.LookVector) * CFrame.new(0, 0, ZoomValue)
 	end

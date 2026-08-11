@@ -365,20 +365,13 @@ function Controller:PromptAssist(Buffer: buffer)
 	Moveset:DeletePopUp()
 end
 
-function Controller:CreateDestructible(Buffer: buffer)
+function Controller:CreateDestructible(Buffer: buffer, Pivot: CFrame)
 	local Id = buffer.readu8(Buffer, 1)
 	local Type = DestructiblesDatabase:FromId(buffer.readu8(Buffer, 2))
-	local X = buffer.readf32(Buffer, 3)
-	local Z = buffer.readf32(Buffer, 7)
-	local Y = buffer.readi16(Buffer, 11) / 10
-	local Rotation = math.rad(buffer.readi16(Buffer, 13) / 100)
-
-	local Position = Vector3.new(X, Y, Z)
 
 	Structures.Create(Type, {
 		Id = Id,
-		At = Position,
-		Rotation = Rotation,
+		At = Pivot,
 	})
 end
 

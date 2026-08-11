@@ -6,7 +6,7 @@ local Effects = require(Shared.Utility.Effects)
 local DestructiblesDatabase = require(Shared.Database.Destructibles)
 
 -- typedefs
-type ParsedData = {Id: number, At: Vector3, Rotation: number}
+type ParsedData = {Id: number, At: CFrame}
 type ObjectData = {Created: number, Id: number, Model: Model?, Position: Vector3, Collider: BasePart, Cache: {}, CFrame: CFrame}
 type Handler = (Data: ObjectData) -> ()
 type ClientDestructible = {
@@ -26,10 +26,9 @@ type ClientDestructible = {
 
 -- private
 
-local function CreateColliderAt(Position: Vector3, Size: Vector3, Rotation: number)
+local function CreateColliderAt(Location: CFrame, Size: Vector3)
     local Newpart = Instance.new("Part")
-    Newpart.Position = Position + (Vector3.yAxis * Size.Y/2)
-    Newpart.CFrame *= CFrame.Angles(0, Rotation, 0)
+    Newpart.CFrame = Location
     Newpart.Size = Size
     Newpart.Anchored = true
     Newpart.CanCollide = true
@@ -81,15 +80,11 @@ function ClientDestructible.Create(self: ClientDestructible, Parsed: ParsedData)
     local New_Object: ObjectData = {
         Id = Parsed.Id,
         Created = os.clock(),
-        Position = Parsed.At,
-        Collider = CreateColliderAt(Parsed.At, DestructibleData.Size, Parsed.Rotation),
+        CFrame = Parsed.At,
+        Position = Parsed.At.Position,
+        Collider = CreateColliderAt(Parsed.At, DestructibleData.Size),
         Cache = {},
-        CFrame = CFrame.new(),
     }
-
-    New_Object.CFrame = New_Object.Collider.CFrame
-
-    --
 
     if self.__Instances[Parsed.Id] ~= nil then
         self:Destroy(Parsed)

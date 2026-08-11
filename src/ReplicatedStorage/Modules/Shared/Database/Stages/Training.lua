@@ -81,6 +81,11 @@ return {
                     Destructible_Id = 'Crate',
                 },
 
+                ['Crystals'] = {
+                    Type = 'Destructible',
+                    Destructible_Id = 'Crystals',
+                },
+
                 ['EndArea'] = {
                     Type = 'Trigger',
                     Name = "End",
@@ -97,7 +102,7 @@ return {
                     },
                     Enemies = {
                         [1] = {
-                            {Name = "Sorcerer", Amount = 6, Level = 60, Affected_Aura = true}
+                            {Name = "Sorcerer", Amount = 3, Level = 60, Affected_Aura = true}
                         }
                     },
                     Dialogue = {

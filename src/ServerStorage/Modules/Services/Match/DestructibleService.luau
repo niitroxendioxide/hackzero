@@ -49,13 +49,13 @@ type StructureData = {
 }
 
 --
-local Replicate = function(Type: number, Data: buffer)
+local Replicate = function(Type: number, Data: buffer, ...)
     local BufferLen = buffer.len(Data)
     local NewBuffer = buffer.create(BufferLen + 1)
     buffer.writeu8(NewBuffer, 0, Type)
     buffer.copy(NewBuffer, 1, Data, 0, BufferLen)
 
-    Network:FireForAll("Replicate", NewBuffer)
+    Network:FireForAll("Replicate", NewBuffer, ...)
 end
 
 --
@@ -94,7 +94,7 @@ function Service:SetupStage(Structure_Map_Data: {}, Mission_Structure_Data: {})
 
         for _, Part in StructureObj.Parts do
             local At = (Part.CFrame * CFrame.new(0, -Part.Size.Y/2, 0))
-            Service:Create(Type, At,  Custom_Data or Structure_Data.Default_Structure_Data)
+            Service:Create(Type, At, Custom_Data or Structure_Data.Default_Structure_Data)
         end
     end
 
@@ -103,9 +103,7 @@ end
 
 function Service:Create(Type: string, At: CFrame, StructureData: StructureData?)
     --
-    local Rotation = math.atan2(At.LookVector.X, At.LookVector.Y)
-
-    local DestructibleInstance = Destructible.new(Type, At.Position, Rotation)
+    local DestructibleInstance = Destructible.new(Type, At)
     local UsedStructureData = StructureData or StructureDatabase:GetData(Type).Default_Structure_Data
 
     local DestructibleId = Service.__Total_Destructibles:extract()
@@ -120,7 +118,8 @@ function Service:Create(Type: string, At: CFrame, StructureData: StructureData?)
     end)
 
     local Objbuffer = DestructibleInstance:Compress()
-    Replicate(GameEnum.Replication.CreateDestructible, Objbuffer)
+    local Pivot = DestructibleInstance:GetPivot()
+    Replicate(GameEnum.Replication.CreateDestructible, Objbuffer, Pivot)
 end
 
 function Service:GiveRewards(Data: StructureData, Caster: Types.ServerEnemyClass & AgentTypes.ServerAgentClass)
