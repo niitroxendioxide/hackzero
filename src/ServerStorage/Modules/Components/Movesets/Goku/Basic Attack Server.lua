@@ -75,6 +75,10 @@ local function AddDiveKickFrames(Caster: Types.ClientAgent, Target: Types.Client
 
 	Sequence:Add(0.7, function()
 		Ability:CreateHitbox(Caster, Vector3.zAxis*-5, vector.create(5, 5, 10), function(HitTarget)
+			if not HitTarget:IsAirborne() then
+				return
+			end
+
 			Ability:Hit(Caster, HitTarget, DiveKickHitData)
 		end)
 	end)
@@ -141,7 +145,7 @@ function Ability:Play(Caster, _, State, Context): ()
 	local Target = Context.Target
 	local IsDiveKick = false
 	local IsSlam = false
-	local Size = vector.create(12, 7, 10.5)
+	local Size = vector.create(9, 7, 10.5)
 	local Offset = vector.create(0, 0, -5)
 
 	local Hit_Data = Table.CopyDeep(Ability:FromData("Hit_Data"))
@@ -157,6 +161,7 @@ function Ability:Play(Caster, _, State, Context): ()
 		end
 	end
 
+	local CasterIsAirborne = Caster:HasTag('Airborne')
 	local Sequence = Ability:Begin(Caster, {}, true)
 
 	if IsSlam then
@@ -177,6 +182,12 @@ function Ability:Play(Caster, _, State, Context): ()
 			Size = Size,
 			Offset = Offset,
 			Hit_Function = function(HitEnemy)
+				if HitEnemy:IsAirborne() and not CasterIsAirborne then
+					return
+				elseif CasterIsAirborne and not HitEnemy:IsAirborne() then
+					return
+				end
+
 				Hit_Data.Damage = Ability:FromData("Damage_Mult", HitId, SkillLevel)
 				Hit_Data.Daze = Ability:FromData("Daze_Mult", HitId, SkillLevel)
 				Hit_Data.Affliction_Buildup = Ability:FromData("Affliction_Buildup", HitId, SkillLevel)

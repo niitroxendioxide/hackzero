@@ -18,9 +18,9 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 	
 	Attack:Add(0.25, function()
 	
-		Ability:CreateHitbox(Caster, Vector3.zAxis*-3, vector.create(5, 5, 6.65), function(Enemy)
+		Ability:CreateHitbox(Caster, Vector3.zAxis*-5, vector.create(9, 5, 9), function(Enemy)
 			if not Enemy:IsAirborne() then
-				Enemy:AddTag('DiveKickable')
+				Enemy:AddTag('DiveKickable', 1.75)
 			end
 
 			if Enemy:IsAirborne() and Caster:HasTag('Airborne') then

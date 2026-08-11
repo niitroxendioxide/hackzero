@@ -48,11 +48,11 @@ local function Default(Caster: Types.Caster, Attack: Types.Sequence)
 	
 	Attack:Add(0.25, function()
 		
-		local Hit_Counter = 0;
-		Ability:CreateHitbox(Caster, Vector3.zAxis*-3, vector.create(5, 5, 6.65), function(Enemy)
-			Hit_Counter += 1;
+		local was_hit = false;
+		Ability:CreateHitbox(Caster, Vector3.zAxis*-5, vector.create(9, 5, 9), function(Enemy)
 
-			if Hit_Counter == 1 then
+			if was_hit == false then
+				was_hit = true
 				Ability:Effect("Goku_UpliftEffect", Caster);
 			end
 

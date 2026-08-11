@@ -88,7 +88,7 @@ local function AddSlamFrames(Caster: Types.ClientAgent, Sequence: Types.Sequence
 	Sequence:Add(0.5, function()
 		Ability:Effect("Goku_Sledgehammer", Caster, true)
 
-		Ability:CreateHitbox(Caster, vector.create(0, 0, -3), vector.one * 5, function(Enemy)
+		Ability:CreateHitbox(Caster, vector.create(0, 0, -5), vector.one * 10, function(Enemy)
 			Ability:Hit(Caster, Enemy, {EffectData = Effect_Data, NoHitStop = true, Track = 'Characters.Naruto.Abilities.M1.Victim_3', HitAirborne = true})
 
 			Ability:Effect("GroundRocksTrail", Enemy, 0.5, false)
@@ -119,6 +119,10 @@ local function AddDiveKickFrames(Caster: Types.ClientAgent, Target: Types.Client
 		local played_effect = false
 
 		Ability:CreateHitbox(Caster, Vector3.zAxis*-5, vector.create(5, 5, 10), function(HitEnemy)
+			if not HitEnemy:IsAirborne() then
+				return
+			end
+
 			if not played_effect then
 				played_effect = true
 				Ability:Effect("Goku_DiveKick", Caster, false)
@@ -170,7 +174,7 @@ local function AddDefaultM1Frames(Caster: Types.ClientAgent, M1_Count: number, S
 	end
 end
 
-function Ability:Play(Caster, _, State, Context)
+function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
 	local M1_Count = Ability:Get(Caster, 'Count')
 	local Meter = Caster:GetMeter("SaiyanSurge")
 	
@@ -237,6 +241,7 @@ function Ability:Play(Caster, _, State, Context)
 		Ability:Save(Caster, 'M1_Track', Track)
 	end
 
+	local AgentAirborne = Caster:IsAirborne()
 	local Sequence = Ability:Begin(Caster, {}, true)
 
 	if IsSlam then
@@ -245,7 +250,7 @@ function Ability:Play(Caster, _, State, Context)
 		AddDiveKickFrames(Caster, Target, Sequence)
 	elseif not IsSlam and not IsDiveKick then
 		AddDefaultM1Frames(Caster, M1_Count, Sequence)
-	end
+	end 
 
 	for HitId = M1_Count, M1_Count + 1, 0.1 do
 		local TickData = Attack_Data[HitId]
@@ -254,9 +259,13 @@ function Ability:Play(Caster, _, State, Context)
 		end
 
 		Ability:UseAttackData(Sequence, Caster, TickData, {
-			Size = vector.create(12, 7, 10.5),
+			Size = vector.create(9, 7, 10.5),
 			Offset = vector.create(0, 0, -5),
 			Hit_Function = function(HitEnemy)
+				if (AgentAirborne == true and not HitEnemy:IsAirborne()) or (HitEnemy:IsAirborne() and not AgentAirborne) then
+					return
+				end
+
 				Ability:Hit(Caster, HitEnemy, {EffectData = Effect_Data, NoHitStop = true, HitAirborne = true})
 			end
 		})
