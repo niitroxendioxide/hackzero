@@ -140,11 +140,11 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 			Verified = AbilityModule:Verify(Agent, Type)
 		end
 
-		if not Verified then
+		if (not Verified) and not Context.IsSignal then
 			return false, "Verification failed"
 		end
 
-		if self:IsOnCooldown(Agent, Type) then 
+		if self:IsOnCooldown(Agent, Type) and not Context.IsSignal then 
 			return false, 'In Cooldown'
 		 end
 
@@ -161,7 +161,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 
 		--
 		if RunService:IsClient() then
-			if not Type:match('Swap') then
+			if not Type:match('Swap') and not Context.IsSignal then
 				local Enemy = AbilityModule:Connect(Agent, 1, Context.IsCancel);
 				
 				if Context.Target == nil then
@@ -209,7 +209,7 @@ function MovesetClass:EmulateHooks(Type: string, State: string?, Agent: Types.Ca
 end
 
 
-function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass, Context: {IsCancel: boolean})
+function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass, Context: {IsCancel: boolean, IsSignal: boolean})
 	Type = Type:gsub('_', ' ')
 	Context = Context or {}
 		
@@ -229,11 +229,11 @@ function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass, Conte
 	local CooldownKey = self.Name..Type..Caster.Name..Caster:GetId()
 
 	if typeof(self.__Assigned[Type]) == 'table' then
-		if not(Info.Base.Release) and not(Info.Base.ReleaseVerify) then
+		if (not(Info.Base.Release) and not(Info.Base.ReleaseVerify)) and not Context.IsSignal then
 			return false, "Skill is not release-able, nor has a release verification";
 		end
 
-		if Info.Base.ReleaseVerify and not self:Verify(Caster, Type, true) then
+		if (Info.Base.ReleaseVerify and not self:Verify(Caster, Type, true)) and not Context.IsSignal then
 			return false, "Skill verification failed.";
 		end
 

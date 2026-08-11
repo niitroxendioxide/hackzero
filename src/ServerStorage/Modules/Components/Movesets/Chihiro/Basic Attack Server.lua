@@ -8,7 +8,6 @@ local Classes = ServerStorage.Modules.Classes
 local Services = ServerStorage.Modules.Services
 local Libraries = ServerStorage.Modules.Libraries
 
-local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Types = require(Shared.Types.Abilities)
 local DamageLibrary = require(Libraries.Damage)
 local AbilityClass = require(Classes.Combat.ServerAbility)
@@ -84,6 +83,7 @@ function Ability:Play(Caster: Types.Caster, _, State, Context:{ read M1_Count: n
 	--local M1_Count = Ability:Get(Caster, 'Count')
 	local SkillLevel = Caster:GetSkillLevel(self.__Name)
 	local Sequence = Ability:Begin(Caster, {})
+	local FishLimit = math.floor(Ability:FromData("FishMaxLimit", nil, SkillLevel + 1))
 	
 	for HitCount = M1_Count, M1_Count + 1, 0.1 do
 		local AttackData = Ability:FromData("Attack_Data", HitCount)
@@ -91,10 +91,17 @@ function Ability:Play(Caster: Types.Caster, _, State, Context:{ read M1_Count: n
 			break
 		end
 
+		local RanOnce = false
 		Ability:UseAttackData(Sequence, Caster, AttackData, {
 			Size = Vector3.new(9, 9, 14),
 			Offset = Vector3.new(0, 0, -7),
 			Hit_Function = function(Target: Types.Target)
+				if M1_Count == 4 and not RanOnce then
+					RanOnce = true
+
+					ChihiroGameplayController:MarkSpecialHit(Caster, Target, FishLimit)
+				end
+
 				Ability:Hit(Caster, Target, {
 					Damage = Ability:FromData('Damage', HitCount, SkillLevel),
 					Daze = Ability:FromData('Daze', HitCount, SkillLevel),

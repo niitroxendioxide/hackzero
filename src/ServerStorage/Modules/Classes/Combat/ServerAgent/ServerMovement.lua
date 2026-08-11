@@ -212,7 +212,7 @@ function ServerCharacterClass:Update(Delta: number)
 		local Params = RaycastParams.new()
 		Params.FilterDescendantsInstances = {EnemyCollisions.Instance}
 		Params.FilterType = Enum.RaycastFilterType.Include
-		local IsInDirection = workspace:Raycast(Origin.Position, AddOns * Delta * 3, Params)
+		local IsInDirection = workspace:Raycast(Origin.Position, AddOns, Params)
 		if IsInDirection then
 			Velocity = Vector3.zero
 		else

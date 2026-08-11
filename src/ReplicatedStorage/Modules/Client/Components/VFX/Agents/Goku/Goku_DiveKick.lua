@@ -33,15 +33,16 @@ local DashKickTweens = {
 
 local KickHitTweens = {
     Orange = function(Innermesh)
-        Effects:Tween(Innermesh.Mesh, { .225, 'Cubic' }, { Scale = vector.create(Innermesh.Mesh.Scale.x * 1.35, 0, 0) })
-        Effects:Tween(Innermesh, { .45, 'Quart' }, { CFrame = Innermesh.CFrame * CFrame.new(-12, 0, 0) * CFrame.Angles(math.pi * Rng:NextNumber(-0.22, 0.22), 0, 0) })
+        Effects:Tween(Innermesh.Decal, { .4, 'Cubic' }, { Transparency = 1 })        
+        Effects:Tween(Innermesh.Mesh, { .3, 'Cubic' }, { Scale = vector.create(Innermesh.Mesh.Scale.x * 2.25, 0, 0) })
+        Effects:Tween(Innermesh, { .45, 'Quart' }, { CFrame = Innermesh.CFrame * CFrame.new(-6, 0, 0) * CFrame.Angles(math.pi * Rng:NextNumber(-0.22, 0.22), 0, 0) })
 
-        Innermesh.Mesh.Scale *= vector.create(1.65, 3, 3)
+        Innermesh.Mesh.Scale *= vector.create(2.5, 4, 4)
     end,
 
     Outer = function(Innermesh)
         Effects:Tween(Innermesh.Decal, {.37, 'Sine'}, {Transparency = 1})
-        Effects:Tween(Innermesh.Mesh, { .45, 'Cubic' }, {Scale = Innermesh.Mesh.Scale * Rng:NextNumber(1.8, 2) })
+        Effects:Tween(Innermesh.Mesh, { .45, 'Cubic' }, {Scale = Innermesh.Mesh.Scale * Rng:NextNumber(2.25, 2.65) })
         Effects:Tween(Innermesh, { .35, 'Quart' }, { CFrame = Innermesh.CFrame * CFrame.new(7, 0, 0) * CFrame.Angles(-math.pi * Rng:NextNumber(-0.1, 0.1), 0, 0) })
 
         Innermesh.Mesh.Scale *= vector.create(0.5, 0.45, 0.45)
@@ -49,7 +50,7 @@ local KickHitTweens = {
 
     Blue = function(Innermesh)
         Effects:Tween(Innermesh.Decal, {.5, 'Sine'}, {Transparency = 1})
-        Effects:Tween(Innermesh.Mesh, { .45, 'Cubic' }, {Scale = Innermesh.Mesh.Scale * Rng:NextNumber(1.6, 2) })
+        Effects:Tween(Innermesh.Mesh, { .45, 'Cubic' }, {Scale = Innermesh.Mesh.Scale * Rng:NextNumber(1.8, 2.25) })
         Effects:Tween(Innermesh, { .65, 'Quart' }, { CFrame = Innermesh.CFrame * CFrame.new(-2, 0, 0) * CFrame.Angles(-math.pi * Rng:NextNumber(-0.65, 0.65), 0, 0) })
 
         Innermesh.Mesh.Scale *= vector.create(0.5, 0.45, 0.45)

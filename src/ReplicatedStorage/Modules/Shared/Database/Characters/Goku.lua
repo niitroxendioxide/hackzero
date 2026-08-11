@@ -62,27 +62,22 @@ return {
 				Release = true,
 				ReleaseVerify = true,
 				Cooldown = 0,
-				Speed = 1.25,
+				Speed = 1,
 				Range = 75,
-
-				Attack_State_Time = {
-					.25 ,
-					.583,
-					.6,
-					.7,
-					0.34,
-					.75,
+				
+				Attack_Data = {
+					--- move, hit, endlag
+					[1]   = {0.1, 0.15, 0.25, 0.15, 1.5},
+					[2]   = {0.15, 0.267, 0.5, 0.2},
+					[2.1] = {0, 0.5},
+					[3]   = {0.2, 0.267, 0.6, 0.1, 2},
+					[4]   = {0.06, 0.3, 0.55, 0.15, 1.5},
+					[4.1] = {0, 0.53},
+					[5]   = {0.3, 0.27, 0.45, 0.5, -2.25},
+					[6]   = {0.18, 0.483, 0.52, 0.3, 2, true},
 				},
+
 				Animation_Speed = 1,
-
-				Hit_Times = {
-					0.15,
-					0.267,
-					0.267,
-					0.3,
-					0.17,
-					0.483,
-				},
 
 				Effect_Data = {
 					Highlight = true,
@@ -128,6 +123,20 @@ return {
 					},
 				},
 
+				SledgeHammerData = {
+					Damage = 120,
+					Daze = 25,
+					Affliction_Buildup = 75,
+					Affliction = 'Energy',
+					HitsAirborne = true,
+					Stun = 0.5,
+					Knockback = {
+						vector.create(0, 0, 1),
+						45,
+						0.5,
+					},
+				},
+
 				Hit_Data = {
 					HitType = 'Blunt',
 					Affliction = 'Energy',
@@ -135,18 +144,18 @@ return {
 					Stun = 0.325,
 					Knockback = {
 						vector.create(0, 0, 1),
-						10,
-						0.2,
+						15,
+						0.1,
 					}
 				},
 
 				Damage_Mult = {
 					[1] = 36,
 					[2] = 62,
-					[2.5] = 121,
+					[2.1] = 121,
 					[3] = 83,
 					[4] = 92,
-					[4.5] = 91,
+					[4.1] = 91,
 					[5] = 98,
 					[6] = 291,
 				},
@@ -154,10 +163,10 @@ return {
 				Daze_Mult = {
 					[1] = 17,
 					[2] = 22.5,
-					[2.5] = 29,
+					[2.1] = 29,
 					[3] = 25,
 					[4] = 32,
-					[4.5] = 18,
+					[4.1] = 18,
 					[5] = 22,
 					[6] = 27,
 				},
@@ -165,10 +174,10 @@ return {
 				Affliction_Buildup = {
 					[1] = 101,
 					[2] = 122,
-					[2.5] = 285,
+					[2.1] = 285,
 					[3] = 155,
 					[4] = 103,
-					[4.5] = 92,
+					[4.1] = 92,
 					[5] = 212,
 					[6] = 170,
 				}
@@ -179,10 +188,18 @@ return {
 				Damage_Mult = {
 					[1] = 3.3,
 					[2] = 5.7,
+					[2.1] = 5.7,
 					[3] = 7.6,
 					[4] = 8,
+					[4.1] = 8,
 					[5] = 9,
 					[6] = 26,
+				},
+
+				SledgeHammerData = {
+					Damage = 2,
+					Daze = 0.75,
+					Affliction_Buildup = 1,
 				},
 			}
 		},
@@ -213,13 +230,15 @@ return {
 					HitType = "Blunt",
 					HitsAirborne = true,
 					Affliction_Buildup = 70,
+					DontChargeEnergy = true,
 				},
 
 				Sledge_Hammer = {
 					Damage = 237,
 					StunTime = 0.75,
 					Daze = 264,
-					Affliction_Buildup = 65,
+					Affliction_Buildup = 65,					
+					DontChargeEnergy = true,
 				},
 			},
 

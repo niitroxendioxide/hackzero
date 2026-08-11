@@ -19,7 +19,9 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Agent: Types.AgentClass, Key: string)
 	local Direction = Key == 'Swap Back' and -1 or Key == 'Swap Forth' and 1 or 0
-	if Direction == 0 then return end
+	if Direction == 0 then 
+		return 
+	end
 
 	local Plr = Players.LocalPlayer
 	local Localplr = Plr:GetAttribute("ReplicationId")
@@ -38,9 +40,8 @@ function Ability:Play(Agent: Types.AgentClass, Key: string)
 	local NewAgent = CharacterLibrary:GetCurrent(Localplr)
 	if TargetId then
 		local MovesetData = Characters:GetMovesetData(NewAgent.Name)
-		local QuickAssist = MovesetData["Quick Assist"] or {Base = {Attack_State_Time = 1}}
 
-		NewAgent:AddTag('Switching', QuickAssist.Base.Attack_State_Time or 1)
+		NewAgent:AddTag('Switching', 0.45)
 	end
 
 	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, NewIndex, nil, NewAgent:GetRotation())

@@ -5,7 +5,6 @@ local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
 
-local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Statics = require(Shared.Database.Statics)
 local Signal = require(Shared.Utility.Signal)
 local Clock = require(Shared.Utility.Clock)
@@ -23,9 +22,10 @@ local AgentService = require(ServerStorage.Modules.Services.Combat.AgentService)
 local QuestService = require(ServerStorage.Modules.Services.Data.QuestService)
 
 --
-const HELP_ASSIST_PROMPT_TIME = 1.25
+const HELP_ASSIST_PROMPT_TIME = 3
 const CHAIN_ATTACKS_ENABLED = true
 const CHAIN_ATTACK_REQUIRE_STUN = true
+const _CHAIN_ASSIST_CHANCE = 40
 
 --
 local Service = {
@@ -358,15 +358,26 @@ function Service:TriggerMeterFullEvent(MeterName: string, CasterAgent: AgentType
 	end
 end
 
-function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: number, Target: number?, fn: () -> ())
+function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: number, Target: number?, fn: () -> (), SkipAgent: number | {})
+	if Service.__PlayerPrompts == nil then
+		Service.__PlayerPrompts = {}
+	end
+	
 	local ReplicationId = CasterAgent.__Player_Assigned:GetAttribute("ReplicationId")
 	local AllAgents = AgentLibrary:GetAlive(ReplicationId)
 	local CurId = table.find(AllAgents, CasterAgent)
-	local AgentToSwitch = CurId + 1 > #AllAgents and AllAgents[1] or AllAgents[CurId + 1]
 	local AgentIdToSwitch = CurId + 1 > #AllAgents and 1 or CurId + 1
+	local AgentToSwitch = AllAgents[AgentIdToSwitch]
 	local AgentPerpetratorId = Target or CasterAgent.__Last_Hit_Caster
 
-	if AgentPerpetratorId == nil then
+	if typeof(SkipAgent) == 'table' then
+		if AgentToSwitch == SkipAgent then
+			AgentIdToSwitch = AgentIdToSwitch + 1 > #AllAgents and 1 or CurId + 1
+			AgentToSwitch = AllAgents[AgentIdToSwitch]
+		end
+	end
+
+	if AgentPerpetratorId == nil or Service.__PlayerPrompts[CasterAgent.__Player_Assigned] then
 		return
 	end
 
@@ -374,6 +385,8 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	if not EnemyExists or AgentToSwitch == CurId then
 		return
 	end
+
+	Service.__PlayerPrompts[CasterAgent.__Player_Assigned] = true
 
 	--
 	for _, Agent in AllAgents do
@@ -384,7 +397,16 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	local Prompt = CasterAgent:MarkTarget(AgentPerpetratorId, Time, AgentIdToSwitch)
 	Replicator:PromptAssist(Player, AgentToSwitch, Time, AgentPerpetratorId)
 
+	local Thread = task.delay(Time, function()
+		Service.__PlayerPrompts[CasterAgent.__Player_Assigned] = true
+	end)
+
 	Prompt.Accepted:Once(function()
+		Service.__PlayerPrompts[CasterAgent.__Player_Assigned] = false
+		if Thread then
+			task.cancel(Thread)
+		end
+
 		CasterAgent:MarkTarget(nil)
 		if fn then
 			fn()
@@ -482,6 +504,11 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 	if not Success then
 		warn(`Error while executing skill: {SpacelessSkill}. Error Message: {ErrorMessage}`)
 	else
+		--[[local Chance = Random.new():NextInteger(1, 100)
+		if (Chance <= CHAIN_ASSIST_CHANCE) and (SkillId == GameEnum.Skills.EX_Special or SkillId == GameEnum.Skills.Dodge_Counter) then
+			Service:PromptAssist(ActiveAgent, 5, EnemyId)
+		end]]
+
 		local IncludePlayer = SkillId == GameEnum.Skills.Quick_Assist or SkillId == GameEnum.Skills.Dodge_Counter
 
 		Replicator:UseSkill(Player, SkillId, IncludePlayer, EnemyId, StateId, IsCancel, Other)

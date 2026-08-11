@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
+local Agents = require(ServerStorage.Modules.Libraries.Agents)
 local MikuGameplayController = require(script.Parent.MikuGameplayController)
 local AbilityService = require(ServerStorage.Modules.Services.Combat.AbilityService)
 local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
@@ -46,6 +47,25 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 	local StrengthBuff = MikuGameplayController:PackBuff(Caster, 'Attack', 30, StrengthBuffValue, Ability:FromData("StrengthBuffId"))
 	local DefenseBuff = MikuGameplayController:PackBuff(Caster, 'Defense', 30, DefenseBuffValue, Ability:FromData("DefenseBuffId"))
 
+	local function WhileActive()
+		local NextAssist = os.clock()
+		while Caster:HasTag('MIKU_ASSIST_MODE') do
+			if (os.clock() - NextAssist) > Ability:FromData('Assist_Frequency') then
+				NextAssist = os.clock()
+				if TargetId == nil then
+					TargetId = Enemies:GetNearestEnemy(Caster:GetPivot().Position, 75, true)
+				end
+
+				---
+				local ActiveAgent = Agents:GetCurrentActive(Caster.__Player_Assigned:GetAttribute('ReplicationId'))
+
+				AbilityService:PromptAssist(ActiveAgent, 2.75, TargetId, nil, Caster)
+			end
+
+			task.wait()
+		end
+	end
+
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState("Attacking", 5e12)
@@ -56,7 +76,8 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 		{0.35, function()
 			Ability:ForOtherAgents(Caster, function(Agent, Data: { IsNext: boolean })  
 				if Data.IsNext then
-					AbilityService:PromptAssist(Caster, 1.5, TargetId)
+					local ActiveAgent = Agents:GetCurrentActive(Caster.__Player_Assigned:GetAttribute('ReplicationId'))
+					AbilityService:PromptAssist(ActiveAgent, 2,75, TargetId, nil, Caster)
 				end
 
 				for _, Buff in {StrengthBuff, DefenseBuff} do
@@ -68,6 +89,10 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 				end
 			end)
 		end},
+
+		{0.5, function()
+			task.spawn(WhileActive)
+		end}
 	})
 end
 

@@ -8,20 +8,29 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
 local Types = require(ReplicatedStorage.Modules.Shared.Types.Agents)
+local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
 local AgentTypes = require(Shared.Types.Agents)
 local Statics = require(Database.Statics)
 local AssistUtil = require(Shared.Utility.Assist)
 local Enemies = require(Shared.Libraries.Enemies)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
+
 --
 local Characters = {
 	__Player_Data = {} :: {[number]: {Active: number, List: {AgentTypes.AgentClass}}},
 	__Targets = {},
 	__Target_Threads = {},
+	__SwitchTo = 0,
 	__Current_Hitting_Target = 0,
+	
+	SwitchedToAssist = Signal.new(),
 }
 
 local Switch_Threads = {}
+
+function Characters:QueueNextSwitchTo(Id: number)
+	Characters.__SwitchTo = Id or 0;
+end
 
 function Characters:GetCharacterTarget(Player: Player)
 	return Characters.__Targets[Player]
@@ -44,7 +53,14 @@ function Characters:SetCharacterTarget(Player: Player, Id: number, Time: number)
 		task.cancel(Characters.__Target_Threads[Player])
 	end
 
-	Characters.__Targets[Player] = Id
+	if (Time or 0) <= 0 then
+		Characters.__Targets[Player] = nil
+		Characters.__Target_Threads[Player] = nil
+		
+		return
+	else
+		Characters.__Targets[Player] = Id
+	end
 
 	Characters.__Target_Threads[Player] = task.delay(Time, function()
 		Characters.__Targets[Player] = nil
@@ -63,12 +79,18 @@ function Characters:Switch(ReplicationId: number, Direction: number, EnemyTarget
 	local TargetObject = EnemyTargetId and Enemies:GetEnemy(EnemyTargetId)
 	local NewCFrame = AssistUtil:CalculateSwitchCFrame(Data.List[Data.Active], Direction, TargetObject)
 
-	if Data.Active + Direction > #Data.List then
-		Data.Active = 1
-	elseif Data.Active + Direction < 1 then
-		Data.Active = #Data.List
+	if Characters.__SwitchTo > 0 then
+		Data.Active = Characters.__SwitchTo
+		Characters.__SwitchTo = 0
+		Characters.SwitchedToAssist:Fire()
 	else
-		Data.Active += Direction
+		if Data.Active + Direction > #Data.List then
+			Data.Active = 1
+		elseif Data.Active + Direction < 1 then
+			Data.Active = #Data.List
+		else
+			Data.Active += Direction
+		end
 	end
 
 	local Count = 0

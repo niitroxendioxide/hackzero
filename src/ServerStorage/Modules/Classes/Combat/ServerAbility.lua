@@ -377,7 +377,7 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 	--
 	local PercentDealt = (Dealt_Damage / Enemy.__Status:GetStat('Max_Health'))
 	local Total = math.min(Dealt_Damage / 3000, 1)
-	local EnergyAmount = Random.new():NextNumber(0.7 + (PercentDealt*2), 4 + (PercentDealt*2)) * Total
+	local EnergyAmount = Random.new():NextNumber(0.25 + (PercentDealt*2), 1 + (PercentDealt*2)) * Total
 	if not Data.DontChargeEnergy then
 		Agent:GiveEnergy(EnergyAmount)
 	end
@@ -525,18 +525,19 @@ function ServerAbilityClass.UseAttackData(self: Types.ServerAbilityClass, Sequen
 	if Walk_Event_Time and Walk_Event_Time > 0 then
 		local Movement_Length = Data[GameEnum.AttackData.Movement_Length]
 		local Movement_Strength = Data[GameEnum.AttackData.Movement_Strength]
+		local Movement_Linear = not not(Data[GameEnum.AttackData.Movement_Linear])
 
 		Sequence:Add(Walk_Event_Time, function()
 			local Length = (typeof(Movement_Length) == 'number' and math.abs(Movement_Length) > 0 and Movement_Length) or self:FromData("Walk_Time") or 0.15
-			local Power = (typeof(Movement_Strength) == 'number' and Movement_Strength > 0 and Movement_Strength) or 1
+			local Power = (typeof(Movement_Strength) == 'number' and math.abs(Movement_Strength) > 0 and Movement_Strength) or 1
 
-			local Direction = math.sign(Length)
+			local Direction = math.sign(Power)
 			local TimeToWalk = math.abs(Length)
 
 			if Direction == -1 then
-				Caster:WalkBack(TimeToWalk, Power)
+				Caster:WalkBack(TimeToWalk, math.abs(Power), Movement_Linear)
 			else
-				Caster:Walk(TimeToWalk, Power)
+				Caster:Walk(TimeToWalk, math.abs(Power), Movement_Linear)
 			end
 		end)
 	end

@@ -30,7 +30,7 @@ function Ability:Play(Caster: Types.Caster, _, _, Ctx): ()
 
 			ChihiroGameplayController:CashOutFishes(Caster, Ctx.Target, function(At: vector, Direction: vector)
 				local Object do
-					Object = Ability:CreateMovingHitbox(Caster, CFrame.lookAlong(At, Direction), vector.create(4, 4, 12), 75, 2, function(Target)  
+					Object = Ability:CreateMovingHitbox(Caster, CFrame.lookAlong(At, Direction), vector.create(5, 5, 12), 120, 1, function(Target)  
 						Object:Destroy()
 						Ability:Hit(Caster, Target, HitData)
 					end)

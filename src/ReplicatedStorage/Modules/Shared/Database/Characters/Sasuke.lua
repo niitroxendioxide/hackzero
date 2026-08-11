@@ -160,6 +160,7 @@ return {
 				Required_Energy = 30,
 
 				Hit = {
+					DontChargeEnergy = true,
 					Damage = 61,
 					Affliction = "Physical",
 					HitType = "Slash",

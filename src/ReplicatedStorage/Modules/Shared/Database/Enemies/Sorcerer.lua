@@ -66,7 +66,7 @@ return {
 				},
 
 				Range = 110,
-				Attack_Warning = 0.4,
+				Attack_Warning = 0.2,
 			},
 
 			Upgrades = {

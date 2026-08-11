@@ -5,6 +5,7 @@ local RunService = game:GetService('RunService')
 --
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Environment = require(ReplicatedStorage.Modules.Shared.Environment)
 local PhysicsHelper = require(Shared.Libraries.PhysicsHelper)
 local World = require(Shared.World)
 local Types = require(Shared.Types)
@@ -217,16 +218,31 @@ function PhysicsClass:Update(Delta: number)
 	local AddOns = self:GetAdditionalVelocities()
 	local Velocity = self.__Velocity + AddOns
 
+	if Environment.PROJECT_IMPULSES then
+		if self.__destroyed_thing then
+			self.__destroyed_thing:Destroy()
+		end
+
+		self.__destroyed_thing = Instance.new("Part")
+		self.__destroyed_thing.Anchored = true
+		self.__destroyed_thing.Color = Color3.new(0, 1, 1)
+		self.__destroyed_thing.Size = vector.create(.25, .25, AddOns.Magnitude)
+		self.__destroyed_thing.CFrame = CFrame.lookAlong(self.__Position, AddOns.Magnitude > 0  and AddOns or vector.create(0, 0, -1)) 
+		* CFrame.new(0, 0, -AddOns.Magnitude/2)
+		self.__destroyed_thing.Parent = workspace
+	end
+
 	--
 	local Origin = self:GetPivot() * CFrame.new(0, 0, Collider.Size.Z/2)
-	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
+	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.8, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
 	if EnemyCollisions then
 		local Params = RaycastParams.new()
 		Params.FilterDescendantsInstances = {EnemyCollisions.Instance}
 		Params.FilterType = Enum.RaycastFilterType.Include
-		local IsInDirection = workspace:Raycast(Origin.Position, AddOns * Delta * 3, Params)
+
+		local IsInDirection = workspace:Raycast(Origin.Position, AddOns, Params)
 		if IsInDirection then
-			Velocity = Vector3.zero
+			Velocity = vector.zero
 		else
 			Velocity = AddOns
 		end
@@ -295,8 +311,9 @@ function PhysicsClass:CreateCollider()
 	local WorldFolder = workspace:FindFirstChild('World') :: Folder
 	local Collider = Instance.new('Part')
 	Collider.Size = Vector3.new(4, self.__Height * 1.5873015873, 3)
-	Collider.Transparency = 1
+	Collider.Transparency = Environment.DISPLAY_COLLIDERS and 0.25 or 1
 	Collider.Color = Color3.new(1)
+	Collider.CastShadow = false
 	Collider.Anchored = true
 	Collider.CanCollide = false
 	Collider.Position = self.__Position

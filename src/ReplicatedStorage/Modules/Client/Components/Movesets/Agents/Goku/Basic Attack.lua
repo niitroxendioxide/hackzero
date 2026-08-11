@@ -5,14 +5,13 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Types = require(ReplicatedStorage.Modules.Shared.Types.Abilities)
 local AbilityClass = require(Client.Classes.Ability)
-local Enemies = require(Shared.Libraries.Enemies)
-local Types = require(Shared.Types.Agents)
 
 --
 local Ability = AbilityClass.new(true)
 
-Ability:SetTargetFinder(function(Caster)
+--[[Ability:SetTargetFinder(function(Caster)
 	local last_target = Ability:Get(Caster, "last_hit_enemy");
 	if ((Ability:Get(Caster, 'Count') or 0) >= 5) and (last_target ~= nil) then
 		return (last_target):GetId(), last_target
@@ -29,7 +28,7 @@ Ability:SetTargetFinder(function(Caster)
 	end)
 
 	return id, nearest;
-end)
+end)]]
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 6})
@@ -69,6 +68,106 @@ function UseGodFist(Caster)
 		{0.55, HitEnemy},
 		{0.65, HitEnemy},
 	})
+end
+
+local function AddSlamFrames(Caster: Types.ClientAgent, Sequence: Types.Sequence)
+	local Effect_Data = Ability:FromData("Effect_Data")
+
+	Sequence:Add(0, function()
+		Caster:SwitchState('Attacking', 0.6)
+	end)
+
+	Sequence:Add(0.2, function()
+		Caster:Walk(0.3, 1, true)
+	end)
+
+	Sequence:Add(0.06, function()
+		Ability:Effect("Goku_Spinning", Caster, 0.225 / (Ability:FromData("Speed") or 1));
+	end)
+
+	Sequence:Add(0.5, function()
+		Ability:Effect("Goku_Sledgehammer", Caster, true)
+
+		Ability:CreateHitbox(Caster, vector.create(0, 0, -3), vector.one * 5, function(Enemy)
+			Ability:Hit(Caster, Enemy, {EffectData = Effect_Data, NoHitStop = true, Track = 'Characters.Naruto.Abilities.M1.Victim_3', HitAirborne = true})
+
+			Ability:Effect("GroundRocksTrail", Enemy, 0.5, false)
+		end)
+	end)
+end
+
+local function AddDiveKickFrames(Caster: Types.ClientAgent, Target: Types.ClientEnemy, Sequence: Types.Sequence)
+	local Effect_Data = Ability:FromData("Effect_Data")
+
+	Sequence:Add(0, function()
+		Caster:SwitchState('Attacking', 0.9)
+	end)
+
+	Sequence:Add(0.3, function()
+		Caster:Walk(0.6, .75, true)
+	end)
+	
+	Sequence:Add(0.3, 0.7, function()
+		Caster:LookAtTarget(Target)
+	end)
+	
+	Sequence:Add(0.63, function()
+		Ability:Effect("Goku_DiveKick", Caster, true)
+	end)
+
+	Sequence:Add(0.7, function()
+		local played_effect = false
+
+		Ability:CreateHitbox(Caster, Vector3.zAxis*-5, vector.create(5, 5, 10), function(HitEnemy)
+			if not played_effect then
+				played_effect = true
+				Ability:Effect("Goku_DiveKick", Caster, false)
+			end
+
+			Ability:Hit(Caster, HitEnemy, {EffectData = Effect_Data, NoHitStop = true, HitAirborne = true})
+		end)
+	end)
+end
+
+local function AddDefaultM1Frames(Caster: Types.ClientAgent, M1_Count: number, Sequence: Types.Sequence)
+	if M1_Count == 6 then
+		Sequence:Add(0.18, function()
+			Ability:Effect("Goku_M1_2", Caster);
+		end)
+
+	elseif M1_Count == 5 then
+		Sequence:Add(0.27, function()
+			Ability:Effect("Goku_M1_5", Caster)
+		end)
+
+	elseif M1_Count == 4 then
+		Sequence:Add(0.233, function()
+			Ability:Effect("Goku_M1_4", Caster);
+		end)
+
+		Sequence:Add(0.5, function()
+			Ability:Effect("Goku_M1_4", Caster, 2);
+		end)
+
+	elseif M1_Count == 3 then
+		Sequence:Add(0.2, function()
+			Ability:Effect("Goku_M1_2", Caster, 3);
+		end)
+
+	elseif M1_Count == 2 then
+		Sequence:Add(0.567, function()
+			Ability:Effect("Goku_M1_1", Caster);
+		end)
+
+		Sequence:Add(0.43, function()
+			Caster:Walk(0.2, 2)
+		end)
+
+	elseif M1_Count == 1 then
+		Sequence:Add(0.15, function()
+			Ability:Effect("Goku_M1_1", Caster);
+		end)
+	end
 end
 
 function Ability:Play(Caster, _, State, Context)
@@ -113,181 +212,57 @@ function Ability:Play(Caster, _, State, Context)
 	local IsDiveKick = false
 	local IsSlam = false
 	local Effect_Data = Ability:FromData('Effect_Data')
-	local Attack_Time = Ability:FromData('Attack_State_Time', M1_Count)
+	local Attack_Data = Ability:FromData('Attack_Data')
 
-	Ability:Begin(Caster, {
-		{0, function()
-			local AttackTime = Attack_Time / (Ability:FromData('Speed') or 1)
-			local AnimTrackId = 'Goku.Abilities.M1.'..Ability:Get(Caster, 'Count')
+	do
+		-- setup attack pre-sequence
+		local AnimTrackId = 'Goku.Abilities.M1.'..Ability:Get(Caster, 'Count')
+		local Result = Ability:MatchAirborneHeights(Caster, Target, 2.15, false, 0.175);
+		if Result == GameEnum.AirborneMatchState.Raised then
+			Ability:Effect("Goku_RaiseVfx", Caster)
+		elseif Result == GameEnum.AirborneMatchState.Grounded then
+			IsSlam = true
+			AnimTrackId = 'Goku.Abilities.M1.Sledgehammer'
+		end
 
-			local Result = Ability:MatchAirborneHeights(Caster, Target, 2.15);
-			if Result == GameEnum.AirborneMatchState.Raised then
-				Ability:Effect("Goku_RaiseVfx", Caster)
-			elseif Result == GameEnum.AirborneMatchState.Grounded then
-				IsSlam = true
-				AnimTrackId = 'Goku.Abilities.M1.Sledgehammer'
+		if Target ~= nil and Target:HasTag('DiveKickable') then
+			IsDiveKick = true
+			AnimTrackId = 'Goku.Abilities.M1.DiveKick'
+		end
+
+		local Track = Ability:PlayAnimation(Caster, AnimTrackId, {
+			Fade = .1,
+		})
+
+		Ability:Save(Caster, 'M1_Track', Track)
+	end
+
+	local Sequence = Ability:Begin(Caster, {}, true)
+
+	if IsSlam then
+		AddSlamFrames(Caster, Sequence)
+	elseif IsDiveKick then
+		AddDiveKickFrames(Caster, Target, Sequence)
+	elseif not IsSlam and not IsDiveKick then
+		AddDefaultM1Frames(Caster, M1_Count, Sequence)
+	end
+
+	for HitId = M1_Count, M1_Count + 1, 0.1 do
+		local TickData = Attack_Data[HitId]
+		if not(TickData) or (IsSlam or IsDiveKick) then
+			break
+		end
+
+		Ability:UseAttackData(Sequence, Caster, TickData, {
+			Size = vector.create(12, 7, 10.5),
+			Offset = vector.create(0, 0, -5),
+			Hit_Function = function(HitEnemy)
+				Ability:Hit(Caster, HitEnemy, {EffectData = Effect_Data, NoHitStop = true, HitAirborne = true})
 			end
+		})
+	end
 
-			if Target ~= nil and Target:HasTag('DiveKickable') then
-				IsDiveKick = true
-				AttackTime = .9
-				AnimTrackId = 'Goku.Abilities.M1.DiveKick'
-			end
-			
-			Caster:SwitchState('Attacking', AttackTime)
-			
-			local Track = Ability:PlayAnimation(Caster, AnimTrackId, {
-				Fade = .1,
-				Active_Time = Attack_Time + .25,
-			})
-
-			Ability:Save(Caster, 'M1_Track', Track)
-		end,},
-
-		-- 1ST M1
-		{.1, function()
-			if M1_Count == 1 and not IsDiveKick and not IsSlam then
-				Caster:Walk(Ability:FromData('Walk_Time'))
-			end
-		end,},
-
-		-- 2ND M1
-		{0.15, function()
-			if M1_Count == 1 and not IsDiveKick and not IsSlam then
-				Ability:Effect("Goku_M1_1", Caster);
-			end
-
-			if M1_Count == 2 and not IsDiveKick and not IsSlam  then
-				Caster:Walk(Ability:FromData('Walk_Time'))
-			end
-		end},
-
-		{0.43, function()
-			if M1_Count == 2 and not IsDiveKick and not IsSlam  then
-				Caster:Walk(Ability:FromData('Walk_Time') + .1, 2)
-			end
-
-			if IsSlam then
-				Ability:Effect("Goku_Sledgehammer", Caster, true)
-			end
-		end},
-
-		-- 3RD M1
-		{0.2, function()
-			if M1_Count == 3 and not IsDiveKick and not IsSlam  then
-				Ability:Effect("Goku_M1_2", Caster, 3);
-				Caster:Walk(Ability:FromData('Walk_Time'))
-			end
-		end},
-
-		{0.233, function()
-			if M1_Count == 4 and not IsDiveKick and not IsSlam then
-				Ability:Effect("Goku_M1_4", Caster);
-			end
-		end},
-
-		-- 4TH M1
-		{0.06, function()
-			if M1_Count == 4 and not IsDiveKick and not IsSlam then
-				Caster:Walk(Ability:FromData('Walk_Time') + 0.1)
-			end
-		end},
-
-		-- 5TH M1
-		{0.27, function()
-			if M1_Count == 5 and not IsDiveKick and not IsSlam then
-				Ability:Effect("Goku_M1_5", Caster)
-				Caster:WalkBack(Ability:FromData('Walk_Time') + 0.3, 2)
-			end
-		end},
-
-		-- 6TH M1
-		{0.18, function()
-			if M1_Count == 2 and not IsDiveKick and not IsSlam then
-				Ability:Effect("Goku_M1_2", Caster);
-			end
-
-			if M1_Count == 6 and not IsDiveKick and not IsSlam then
-				Ability:Effect("Goku_M1_6", Caster)
-
-				Caster:Walk(Ability:FromData('Walk_Time') + 0.18, 2.5)
-			end
-		end},
-
-		{Ability:FromData("Hit_Times", M1_Count), function()
-			if M1_Count == 6 and not IsDiveKick and not IsSlam  then
-				Ability:Effect("Goku_M1_1", Caster);
-			end
-
-			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
-				Ability:Hit(Caster, Target, {EffectData = Effect_Data, NoHitStop = true})
-			end)
-		end,},
-
-		{.567, function()
-			if M1_Count == 2 and not IsDiveKick and not IsSlam  then
-				Ability:Effect("Goku_M1_1", Caster);
-			end
-			if M1_Count ~= 4 or IsDiveKick then return end
-
-			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
-				Ability:Hit(Caster, Target, {EffectData = Effect_Data, NoHitStop = true})
-			end)
-		end,},
-
-		{0.63, function()
-			if not IsDiveKick then return end
-
-			Ability:Effect("Goku_DiveKick", Caster, true)
-		end},
-
-		{0.3, function()
-			if not IsDiveKick then
-				return
-			end
-
-			Caster:Walk(0.6, .75, true)
-		end},
-
-		{.3, 0.7, function()
-			if not IsDiveKick then return end
-
-			Caster:LookAtTarget(Target)
-		end,},
-
-		{.7, function()
-			if not IsDiveKick then return end
-
-			local played_effect = false
-
-			Ability:CreateHitbox(Caster, Vector3.zAxis*-5, vector.create(5, 5, 10), function(Target)
-				if not played_effect then
-					played_effect = true
-					Ability:Effect("Goku_DiveKick", Caster, false)
-				end
-
-				Ability:Hit(Caster, Target, {EffectData = Effect_Data, NoHitStop = true})
-			end)
-		end,},
-
-		{0.2, function()
-			if not IsSlam then return end
-
-			Caster:Walk(0.25, .5, true)
-		end},
-
-		{.5, function()
-			if M1_Count == 4 and not IsDiveKick then
-				Ability:Effect("Goku_M1_4", Caster, 2);
-			end
-			if (M1_Count ~= 2 and not IsSlam) or IsDiveKick then return end
-
-			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target)
-				Ability:Hit(Caster, Target, {EffectData = Effect_Data, NoHitStop = true})
-			end)
-		end,},
-	})
-
+	Sequence:Start()
 end
 
 return Ability

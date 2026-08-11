@@ -3,6 +3,7 @@ local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage.Modules.Shared
 
 local World = require(Shared.World)
+local Env = require(Shared.Environment)
 local PhysicsHelper = {}
 
 local ENEMY_SIZE_RADIUS = 2.25
@@ -20,7 +21,7 @@ function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir:
 			local Direction = (CFrame.lookAlong(OriginPoint.Position, MovementDir) * CFrame.Angles(0, Angle, 0)).LookVector * Length
 			local Result = workspace:Raycast(OriginPoint.Position, Direction, Params)
 
-			if (workspace:GetAttribute("DebugMovement") and RunService:IsServer() and RunService:IsStudio()) then
+			if (Env.PROJECT_COLLISIONS and RunService:IsClient()() and RunService:IsStudio()) then
 				local Part = Instance.new("Part")
 				Part.Color = Result and Color3.new(0, 1) or Color3.new(1)
 				Part.Anchored = true

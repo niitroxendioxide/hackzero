@@ -86,7 +86,7 @@ function Controller:CashOutFishes(Caster: AgentTypes.ServerAgentClass, Target: A
         CasterData.IdHeap:insert(Id)
         
         ---
-        task.delay(At * 0.15, function()
+        task.delay(At * 0.2, function()
             local Direction = CFrame.lookAt(Fish.At, Target:GetPivot().Position).LookVector
             Replicator:Effect("Chihiro_FishKuro", {Caster, Id, 'Shoot', Direction}, true)
 

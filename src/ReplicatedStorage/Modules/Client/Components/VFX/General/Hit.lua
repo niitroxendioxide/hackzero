@@ -14,6 +14,7 @@ local Effects = require(Shared.Utility.Effects)
 return function(
 	Enemy: Types.EnemyClass,
 	Data: {
+		Weld: boolean,
 		Emitter: string?, 
 		Offset: CFrame?, 
 		HueShift: number?, 
@@ -45,6 +46,11 @@ return function(
 	
 	local Object = Effects:Create(CombatFolder[EmitterId], 25)
 	Object.CFrame = BaseCFrame * Offset
+
+	if Data.Weld then
+		Object.Anchored = false
+		Effects:Weld(Object, Enemy:GetModel().PrimaryPart)
+	end
 
 	if Data.HueShift or Data.HueShiftFilter then
 		Effects:HueShift(Object, Data.HueShift or 0, Data.HueShiftFilter)

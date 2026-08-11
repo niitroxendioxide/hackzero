@@ -112,6 +112,7 @@ return {
 				Required_Energy = 45,
 
 				Hit = {
+					DontChargeEnergy = true,
 					HitType = 'Blunt',
 					Stun = 1,
 					Daze = 220,

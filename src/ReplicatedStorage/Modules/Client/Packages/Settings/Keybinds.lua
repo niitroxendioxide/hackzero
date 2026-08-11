@@ -5,6 +5,8 @@ return {
 		Move_Left = Enum.KeyCode.S,
 		Move_Right = Enum.KeyCode.D,
 
+		LockOn = Enum.KeyCode.ButtonR3,
+
 		Jog = Enum.KeyCode.Unknown,
 		Sprint = Enum.KeyCode.ButtonL3,
 
@@ -26,6 +28,8 @@ return {
 		Move_Back = Enum.KeyCode.S,
 		Move_Left = Enum.KeyCode.A,
 		Move_Right = Enum.KeyCode.D,
+
+		LockOn = Enum.UserInputType.MouseButton3,
 
 		Jog = Enum.KeyCode.LeftControl,
 		Sprint = Enum.KeyCode.LeftShift,

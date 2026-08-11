@@ -6,6 +6,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 local Modules = ServerStorage.Modules
 
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local MikuGameplayController = require(script.Parent.MikuGameplayController)
 local AbilityService = require(Modules.Services.Combat.AbilityService)
 local Agents = require(Modules.Libraries.Agents)
@@ -51,6 +52,7 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 	local OrbBuffs = Ability:FromData("OrbBuffs")
 	local Hitboxes = {}
 	local Id = 0
+	local NextAssist = os.clock()
 	local function SpawnOrbs()
 		local Params = OverlapParams.new()
 		Params.FilterDescendantsInstances = {}
@@ -59,6 +61,18 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 		local Clock = os.clock()
 		while Caster:GetState() == 'Attacking' and Caster:HasTag("MIKU_ASSIST_MODE") do
 			local _ = task.wait(1 / 24)
+
+			if (os.clock() - NextAssist) > Ability:FromData('Assist_Frequency') then
+				NextAssist = os.clock()
+				if TargetId == nil then
+					TargetId = Enemies:GetNearestEnemy(Caster:GetPivot().Position, 75, true)
+				end
+
+				
+				local ActiveAgent = Agents:GetCurrentActive(Caster.__Player_Assigned:GetAttribute('ReplicationId'))
+
+				AbilityService:PromptAssist(ActiveAgent, 2.75, TargetId, nil, Caster)
+			end
 
 			for i = #Hitboxes, 1, -1 do
 				-- calculate any user going inside this hitbox
@@ -126,7 +140,8 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 		{0.35, function()
 			Ability:ForOtherAgents(Caster, function(Agent, Data: { IsNext: boolean })  
 				if Data.IsNext then
-					AbilityService:PromptAssist(Caster, 1.5, TargetId)
+					local ActiveAgent = Agents:GetCurrentActive(Caster.__Player_Assigned:GetAttribute('ReplicationId'))
+					AbilityService:PromptAssist(ActiveAgent, 2.75, TargetId, nil, Caster)
 				end
 
 				for _, Buff in {StrengthBuff, DefenseBuff} do

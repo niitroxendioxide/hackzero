@@ -23,9 +23,7 @@ return function(
     State: string,
     ...
 ): ()
-    if Anim == nil then
-        Animation:GetAnim("Characters.Chihiro.Abilities.Special.Fish.Smallidle")
-    end
+    Anim = Animation:GetAnim("Characters.Chihiro.Abilities.Special.Fish.Smallidle")
 
     local KuroAssets = Assets.Chihiro.Kuro
     local CasterLook = Caster:GetPivot().LookVector
@@ -86,6 +84,10 @@ return function(
         KuroEffect:ScaleTo(0.25)
         KuroEffect.Ground:Destroy()
 
+        local ShootFishy = Effects:Create(KuroAssets.ShootFishy, 2)
+        ShootFishy:PivotTo(ProjectileCFrame)
+        Effects:Emit(ShootFishy, true)
+
         FishIdData.Cleanup()
         Cache[Caster][Id] = nil
 
@@ -106,7 +108,7 @@ return function(
         end
         Effects:CleanUp(CleanupProjectile, 1)
 
-        Effects:MoveProjectile(KuroEffect, vector.create(5.5, 3.7), 75, 2, function(Target): boolean
+        Effects:MoveProjectile(KuroEffect, vector.create(5.5, 3.7), 120, 1, function(Target): boolean
             CleanupProjectile()
             EffectsLibrary:Play("Hit", Target, {
                 HighlightColor = Color3.new(),

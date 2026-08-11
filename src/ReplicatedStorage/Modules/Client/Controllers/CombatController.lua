@@ -2,14 +2,17 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService('Players')
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Camera = require(ReplicatedStorage.Modules.Client.Libraries.Camera)
 local Replicator = require(ReplicatedStorage.Modules.Client.Libraries.Replicator)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
+local World = require(ReplicatedStorage.Modules.Shared.World)
 local GameEnum = require(Shared.GameEnum)
 local Inputs = require(Client.Libraries.Inputs)
 local Movesets = require(Client.Libraries.Movesets)
@@ -18,6 +21,7 @@ local CutsceneLibrary = require(Client.Libraries.Cutscenes)
 local Places = require(Shared.Places)
 local Network = require(Shared.Network)
 local InterfaceController = require(Client.Controllers.InterfaceController)
+local TargetStates = require(Client.States.Targets)
 --local Replicator = require(Client.Libraries.Replicator)
 
 --local GameEnum = require(Shared.GameEnum)
@@ -91,6 +95,43 @@ function Controller:Init()
 		end
 	end)
 
+	Inputs:Bind("LockOn", {
+		Callback = function()
+			local Character = Players.LocalPlayer.Character;
+			local CamPos = Camera:GetPivot().Position
+			local MousePosition = Players.LocalPlayer:GetMouse().Hit.Position
+			local Direction = CFrame.lookAt(CamPos, MousePosition).LookVector
+
+			local HitboxRaycast = workspace:Raycast(CamPos, Direction * 1000, World:GetEnemyColliderParams())
+			if HitboxRaycast then
+				local Collider = HitboxRaycast.Instance;
+				local RetrievedEnemy = Enemies:GetFromCollider(Collider)
+				if RetrievedEnemy then
+					local RootPart = RetrievedEnemy:GetModel().PrimaryPart
+					if Camera.__LookAtPart == RootPart then
+						TargetStates.Current_Target = nil
+					else
+						TargetStates.Current_Target = RetrievedEnemy
+					end
+
+					Camera:SetLookAtPart(RootPart)
+				end
+			else
+				local _, NearestEnemy = Enemies:GetNearestEnemy(Character:GetPivot().Position, 100, true)
+				if NearestEnemy then
+					local RootPart = NearestEnemy:GetModel().PrimaryPart
+					if Camera.__LookAtPart == RootPart then
+						TargetStates.Current_Target = nil
+					else
+						TargetStates.Current_Target = NearestEnemy
+					end
+
+					Camera:SetLookAtPart(RootPart)
+				end
+			end
+		end,
+	})
+
 	--
 	for _, Key in Controller.__Abilities do
 		Inputs:Bind(Key, {
@@ -128,10 +169,6 @@ function Controller:TryConsumeDodge()
 	end
 
 	return false
-end
-
-function Controller:RequestCutscene()
-	
 end
 
 function Controller:IsChainAttackPromptActive(): boolean

@@ -71,7 +71,7 @@ function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 				Offset = CFrame.new(0, 0.75, 0)
 			end
 			
-			Ability:Hit(Caster, Target, {Track = TrackToBeUsed, EffectData = {
+			Ability:Hit(Caster, Target, {Track = TrackToBeUsed, HitAirborne = true, EffectData = {
 				Offset = Offset
 			}})
 

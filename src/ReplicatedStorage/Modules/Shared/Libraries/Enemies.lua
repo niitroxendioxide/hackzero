@@ -102,10 +102,13 @@ function EnemyLibrary:GetNearestEnemy(
 			continue
 		end
 
+		local WeightedDistance = DistanceToEnemy
+		if Enemy.__Appearance and Enemy.__Appearance:GetAddedHeight() > 0 then
+			WeightedDistance *= 0.5
+		end
 
-		if DistanceToEnemy < Distance then
-
-			Distance = DistanceToEnemy
+		if WeightedDistance < Distance then
+			Distance = WeightedDistance
 			Selected = Key
 		end
 	end

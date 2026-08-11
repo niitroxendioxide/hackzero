@@ -47,9 +47,24 @@ function Ability:Play(Caster: Types.Caster, _, _, Context): ()
 			end
 		end},
 
+		{0.27, function()
+			if Count == 2 then
+				Caster:Walk(0.15, 1.2)
+			end
+		end},
+
 		{0.417, function()
 			if Count == 2 then
 				Ability:CreateHitbox(Caster, vector.create(0, 0, -4.5), vector.create(5, 5, 9), function(Enemy)
+					ChihiroGameplayController:MarkSpecialHit(Caster, Enemy, FishLimit)
+					Ability:Hit(Caster, Enemy, HitData)
+				end)
+			end
+		end},
+
+		{0.317, function()
+			if Count == 3 then
+				Ability:CreateHitbox(Caster, vector.create(0, 0, -6), vector.create(5, 5, 12), function(Enemy)
 					ChihiroGameplayController:MarkSpecialHit(Caster, Enemy, FishLimit)
 					Ability:Hit(Caster, Enemy, HitData)
 				end)

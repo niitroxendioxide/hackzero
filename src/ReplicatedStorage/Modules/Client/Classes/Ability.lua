@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local TargetStates = require(ReplicatedStorage.Modules.Client.States.Targets)
 local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local World = require(ReplicatedStorage.Modules.Shared.World)
 local AnimLibrary = require(Client.Libraries.Animation)
@@ -79,7 +80,7 @@ function AbilityClass.SetTargetFinder(self: Types.AbilityClass, handler: (Caster
 	self.__Target_Finder = handler;
 end
 
-function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Types.Caster, Target: Types.Target, ParamTime: number?, ParamInstant: boolean?)
+function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Types.Caster, Target: Types.Target, ParamTime: number?, ParamInstant: boolean?, ParamLandDelay: number?)
 	if Target == nil or Agent == nil then
 		return GameEnum.AirborneMatchState.None;
 	end
@@ -89,6 +90,8 @@ function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Type
 	if (Target:GetState() ~= 'Idle' and TargetsHeight > 0) then
 		if (Difference == 0) then
 			Agent:GetAppearance():ExtendRaisedTime(ParamTime or 1)
+			Replicator:Replicate(GameEnum.Replication.MatchAirborne, ParamTime or 1)
+			
 			return GameEnum.AirborneMatchState.Same, 0;
 		elseif math.abs(Difference) > 0 then
 			Agent:GetAppearance():Raise(TargetsHeight, ParamTime or 1, ParamInstant)
@@ -97,9 +100,15 @@ function AbilityClass.MatchAirborneHeights(self: Types.AbilityClass, Agent: Type
 
 		return GameEnum.AirborneMatchState.Raised, Difference;
 	elseif (TargetsHeight <= 0 and Agent:GetAppearance():GetAddedHeight() > 0) then
-		Agent:Land()
+		if ParamLandDelay > 0 then
+			task.delay(ParamLandDelay, function()
+				Agent:Land()	
+			end)
+		else
+			Agent:Land()
+		end
 
-		Replicator:Replicate(GameEnum.Replication.MatchAirborne, 0)
+		Replicator:Replicate(GameEnum.Replication.MatchAirborne, 0.2)
 
 		return GameEnum.AirborneMatchState.Grounded;
 	end
@@ -191,10 +200,15 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 		local LookAtEnemy = self:FromData('NoAutoTrack') ~= true
 		local EnemyId, Enemy;
 		if LookAtEnemy then
-			if self.__Target_Finder then
-				EnemyId, Enemy = self.__Target_Finder(Agent);
+			if TargetStates.Current_Target then
+				Enemy = TargetStates.Current_Target
+				EnemyId = TargetStates.Current_Target:GetId()
 			else
-				EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, Range, true)
+				if self.__Target_Finder then
+					EnemyId, Enemy = self.__Target_Finder(Agent);
+				else
+					EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, Range, true)
+				end
 			end
 
 			CharactersLib.__Current_Hitting_Target = EnemyId
@@ -290,7 +304,10 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	Data = Data or {}
 
 	local Agent_Speed_Mod = Agent:GetStat("Speed")
-	Data.Speed = (Data.Speed or 1) * (self:FromData('Animation_Speed', nil, nil, 1) or 1) * Agent_Speed_Mod * World:GetSpeed()
+	local SequenceSpeed = self:FromData("Speed", nil, nil, 1)
+	local AnimSpeed = self:FromData('Animation_Speed', nil, nil, 1) or 1
+
+	Data.Speed = (Data.Speed or 1) * (AnimSpeed) * Agent_Speed_Mod * SequenceSpeed * World:GetSpeed()
 
 	local AnimCache = self:Get(Agent, "CurrentSkillSavedObjects")
 	if AnimCache == nil then
@@ -470,6 +487,10 @@ function AbilityClass.Hit(self: Types.AbilityClass, Caster: any, Target: any, Da
 	local HitstopDuration = Data.HitstopDuration
 	local Sequence = self:Get(Caster, 'CurrentPlayerSequence')
 	local Animations = self:Get(Caster, "CurrentSkillSavedObjects")
+	local CancelHitDueToAirborne = (Target.__Appearance:GetAddedHeight() > 0 and not(Data.HitAirborne or Data.HitsAirborne))
+	if CancelHitDueToAirborne then
+		return
+	end
 
 	if Caster.__Player_Assigned == Players.LocalPlayer and not Data.NoCameraShake then
 		EffectsLibrary:ShakeCamera("SoftHit")

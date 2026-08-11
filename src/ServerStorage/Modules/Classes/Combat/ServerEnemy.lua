@@ -295,6 +295,11 @@ function ServerEnemy.AddEffect(self: Types.ServerEnemyClass, Data: Types.EnemyEf
 end
 
 function ServerEnemy.AddTag(self: Types.ServerEnemyClass, Tag: string, Time: number)
+	local Index = table.find(self.__Tags, Tag)
+	if Index then
+		table.remove(self.__Tags, Index)
+	end
+	
 	if not self.__Tag_Threads then
 		self.__Tag_Threads = {}
 	end

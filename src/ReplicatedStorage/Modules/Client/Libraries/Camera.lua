@@ -12,7 +12,7 @@ local Effects = require(Shared.Utility.Effects)
 --
 local Rad, Clamp = math.rad, math.clamp
 local Settings = {
-	Offset = Vector3.new(0, 2),
+	Offset = Vector3.new(0, 1.5),
 
 	Max_Zoom = 50,
 	Min_Zoom = 10,
@@ -38,6 +38,7 @@ local Camera = {
 	__Using_fov = false,
 	__Delta = 24,
 	__Delta_thread = nil,
+	__LookAtPart = nil,
 	
 	__ZoomThread = nil,
 	__Moving_Delta = Vector2.new(),
@@ -64,10 +65,12 @@ function Camera:UseZoom(Time: number, Value: number)
 	end)
 end
 
-function Camera:RotateTo(GivenCFrame: CFrame)
+function Camera:RotateTo(GivenCFrame: CFrame, RotationOnly: boolean)
 	local Yaw, Pitch = GivenCFrame:ToOrientation()
 
-	Camera.__Position = GivenCFrame.Position
+	if not RotationOnly then
+		Camera.__Position = GivenCFrame.Position
+	end
 	Camera.__Rotation = Vector2.new(Yaw, Pitch)
 end
 
@@ -116,7 +119,7 @@ function Camera:Init()
 		end
 
 		--
-		if (Input.UserInputType == Enum.UserInputType.MouseMovement) then
+		if (Input.UserInputType == Enum.UserInputType.MouseMovement) and (Camera.__UsedBy == nil) and (Camera.__LookAtPart == nil) then
 			local MouseDelta = UserInputService:GetMouseDelta()
 			
 			Camera.__Rotation += MouseDelta*Rad(Settings.Sensitivity)
@@ -140,6 +143,46 @@ end
 
 function Camera:SetTargetPart(TargetPart: string)
 	self.__Target_Part = TargetPart
+end
+
+function Camera:SetLookAtPart(p_LookAtPart: BasePart)
+	if (p_LookAtPart == self.__LookAtPart and p_LookAtPart ~= nil) or p_LookAtPart == nil or typeof(p_LookAtPart) ~= 'Instance' or not p_LookAtPart:IsA('BasePart') then
+		local Previous = self.__LookAtPart
+		if typeof(Previous) == 'Instance' and Previous:IsA('BasePart') then
+			local Indicator = Previous:FindFirstChild('LockOn')
+			if Indicator then
+				local UIScale = Indicator.GUI.Circle.UIScale;
+				Indicator.Name = '__destroying'
+				Effects:Tween(UIScale, { 0.45, 'Quad' }, {Scale = 0})
+
+				Effects:CleanUp(Indicator, 0.45)
+			end
+		end
+
+		self.__LookAtPart = nil;
+		
+		return
+	end
+
+	self.__LookAtPart = p_LookAtPart;
+
+	---
+	local LockOnEffect = ReplicatedStorage.Assets.Effects.General:FindFirstChild('LockOn')
+	if LockOnEffect then
+		LockOnEffect = LockOnEffect:Clone();
+
+		local Circle = LockOnEffect.GUI.Circle
+		local UIScale = Circle.UIScale;
+		UIScale.Scale = 0;
+		Effects:Tween(UIScale, { 0.45, 'Back' }, {Scale = 1})
+
+		Circle.OuterCircle.BorderOffset = UDim.new(0, 0)
+		Circle.OuterStroke.BorderOffset = UDim.new(0, 0)
+		Effects:Tween(Circle.OuterStroke, { 0.6, 'Back' }, {BorderOffset = UDim.new(0.55, 0)})
+		Effects:Tween(Circle.OuterCircle, { 0.6, 'Back' }, {BorderOffset = UDim.new(0.4, 0)})
+
+		LockOnEffect.Parent = p_LookAtPart;
+	end
 end
 
 function Camera:UseFov(p_Usage_Time: number, p_Value: number, p_Tween_Time: number?)
@@ -181,8 +224,9 @@ function Camera:Update(delta: number)
 	local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
 	local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
 	local Goal = Vector3.new(Torso.X, Torso:Lerp(Root, 0).Y, Torso.Z)
+	local LookAtPart = Camera.__LookAtPart
 
-	if Camera.__Moving_Delta.Magnitude > 0 then
+	if Camera.__Moving_Delta.Magnitude > 0 and LookAtPart == nil then
 		local IsConsole = Inputs:GetDevice() == GameEnum.Device.Console
 
 		Camera.__Rotation += Camera.__Moving_Delta*Rad(Settings.Sensitivity)*(IsConsole and Settings.ConsoleSensitivity or 1)
@@ -190,22 +234,37 @@ function Camera:Update(delta: number)
 	end
 
 	--
+
 	CameraPosition = Goal + Settings.Offset
 
 	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * Camera.__Delta)
 
-	local CameraCFrame = CFrame.lookAlong(Camera.__Position, CameraRotation.LookVector) * CFrame.new(0, 0, ZoomValue)
-	--print(CameraCFrame.LookVector)
+	local SubCamOffset = CFrame.new()
+	local Factor = 45;
+	local CameraCFrame: CFrame = nil;
+	if LookAtPart ~= nil then
+		SubCamOffset = CFrame.new(4.5, 0, 0)
+		CameraCFrame = CFrame.lookAt(Camera.__Position, LookAtPart.Position) * SubCamOffset;
+		CameraCFrame = CFrame.lookAt(CameraCFrame.Position, LookAtPart.Position) * CFrame.new(0, 0, ZoomValue * 0.5)
 
-	local Cast = workspace:Raycast(Camera.__Position, CameraRotation.LookVector * -ZoomValue, World:GetMapParams(false, {}) :: RaycastParams)
+		Factor = 15
+		
+		local Yaw, Pitch = CameraCFrame:ToOrientation()
+		Camera.__Rotation = Vector2.new(Yaw, Pitch)
+	else
+		CameraCFrame = CFrame.lookAlong(Camera.__Position, CameraRotation.LookVector) * CFrame.new(0, 0, ZoomValue)
+	end
+
+	local Cast = workspace:Raycast(Camera.__Position, CameraCFrame.LookVector * -ZoomValue, World:GetMapParams(false, {}) :: RaycastParams)
 	if Cast then
-		CameraCFrame = CFrame.lookAlong(Cast.Position, CameraRotation.LookVector)
+		CameraCFrame = CFrame.lookAlong(Cast.Position, CameraCFrame.LookVector) * SubCamOffset
 	end
 
 	if not Camera.__Using_fov then
-		CameraObject.FieldOfView = 70
+		local Value = LookAtPart and 75 or 70
+		CameraObject.FieldOfView = Value
 	end
-	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * 45)
+	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * Factor) 
 end
 
 function Camera:TweenTo(GoalCFrame: CFrame, Info: {number | string}?): Tween?

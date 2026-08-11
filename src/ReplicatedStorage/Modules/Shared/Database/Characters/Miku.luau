@@ -200,9 +200,11 @@ return {
                 Attack_State_Time = 5e12,
                 Speed = 1,
                 Animation_Speed = 1,
+				Range = 200,
 
                 Required_Energy = 60,
 				CustomVerify = true,
+				Assist_Frequency = 7,
 
 				MaxAttackValue = 500,
 				MaxDefenseValue = 600,
@@ -223,10 +225,12 @@ return {
 			Base = {
 				Cooldown = 2,
 				Speed = 1,
+				Range = 200,
 				Animation_Speed = 1,
 				Attack_State_Time = 5e12,
 				Required_Energy = 60,
 				CustomVerify = true,
+				Assist_Frequency = 4.5,
 
 				OrbBuffs = {
 					{

@@ -174,9 +174,9 @@ function Controller:EnemyUseSkill(Buffer: buffer)
 	local SkillName = CharacterMoveset:GetSkillById(SkillId)
 
 	if State == 'Begin' then
-		CharacterMoveset:Begin(SkillName, Enemy, {Target = Target})
+		CharacterMoveset:Begin(SkillName, Enemy, {Target = Target, IsSignal = true})
 	else
-		CharacterMoveset:Release(SkillName, Enemy, {Target = Target})
+		CharacterMoveset:Release(SkillName, Enemy, {Target = Target, IsSignal = true})
 	end
 end
 
@@ -344,10 +344,24 @@ function Controller:PromptAssist(Buffer: buffer)
 		return
 	end
 
+	Characters:QueueNextSwitchTo(AgentId)
 	Characters:SetCharacterTarget(Players.LocalPlayer, EnemyTargetId, Time)
 	Moveset:PopUpAgent(Agent.Name)
 
+	local Switched = false;
+	local Connection = Characters.SwitchedToAssist:Once(function()
+		Switched = true
+		Characters:SetCharacterTarget(Players.LocalPlayer, nil)
+		Moveset:DeletePopUp()
+	end)
+
 	task.wait(Time)
+	if Switched then
+		return
+	end
+
+	Connection:Disconnect()
+	Characters:QueueNextSwitchTo(0)
 	Moveset:DeletePopUp()
 end
 

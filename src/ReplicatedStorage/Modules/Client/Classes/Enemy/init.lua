@@ -186,6 +186,7 @@ function EnemyClass:RemoveEffect(Effect)
 end
 
 function EnemyClass.AddTag(self: Types.EnemyClass, Tag: string)
+	self:RemoveTag(Tag)
 	table.insert(self.__Tags, Tag)
 end
 

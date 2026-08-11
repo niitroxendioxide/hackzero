@@ -87,6 +87,7 @@ return {
 				Animation_Speed = 1.1,
 				Range = 75,
 				Release = true,
+				FishMaxLimit = 4,
 
 				Attack_Data = {
 					-- The "?" symbol means it can be there or not.
@@ -142,7 +143,51 @@ return {
 					[4.1] = 7,
 					[4.2] = 25,
 				}
-			}
+			},
+
+			Upgrade = {
+				FishMaxLimit = 0.1,
+				Damage = {
+					[1] = 2,
+					[2] = 1,
+					[2.1] = 2.25,
+					[3] = 2,
+					[3.1] = 2.5,
+					[4] = 2.25,
+					[4.1] = 0.5,
+					[4.2] = 2,
+					--[[[1] = 71,
+					[2] = 45,
+					[2.1] = 82,
+					[3] = 71,
+					[3.1] = 122,
+					[4] = 81,
+					[4.1] = 30,
+					[4.2] = 102,]]
+				},
+
+				Daze = {
+					[1] = 0.1,
+					[2] = 0.2,
+					[2.1] = 0.2,
+					[3] = 0.2,
+					[3.1] = 0.1,
+					[4] = 0.2,
+					[4.1] = 0.2,
+					[4.2] = 0.2,
+				},
+
+				Affliction_Buildup = {
+					[1] = .2,
+					[2] = .5,
+					[2.1] = .2,
+					[3] = .5,
+					[3.1] = 1,
+					[4] = .25,
+					[4.1] = .05,
+					[4.2] = .2,
+				}
+			},
 		},
 
 		['Special'] = {
@@ -159,6 +204,7 @@ return {
 				FishMaxLimit = 4,
 
 				Hit = {
+					DontChargeEnergy = true,
 					Damage = 120,
 					HitType = 'Slash',
 					Affliction = 'Physical',
@@ -166,6 +212,11 @@ return {
 					Daze = 61,
 					Affliction_Buildup = 12,
 					HitsAirborne = true,
+					Knockback = {
+						vector.create(0, 0, 1),
+						15,
+						0.2
+					}
 				},
 			},
 
