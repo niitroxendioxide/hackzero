@@ -1,3 +1,4 @@
+local RunService = game:GetService("RunService")
 --[[
     @niitroxendioxide 2025-10
 
@@ -12,7 +13,9 @@ export type AudioInformation = {
     Loop: boolean?,
 }
 
-local AudioDatabase = {}
+local AudioDatabase = {
+    __Cache = {},
+}
 
 AudioDatabase.General = {
 	Music = {
@@ -28,7 +31,9 @@ AudioDatabase.General = {
     },
 
     Effects = {
-
+        Dodge = { 
+            Id = { 108928552267639, 101379165800189, 138149044086182 } 
+        },
     }
 }
 
@@ -53,10 +58,16 @@ function AddDirectory(p_Directory: Instance | ModuleScript, p_CurrentDirectory: 
 end
 
 function AudioDatabase:Init()
+    if RunService:IsServer() then
+        return
+    end
 
     for _, Child in script:GetChildren() do
-        if Child:IsA("Folder") and not AudioDatabase.General[Child.Name] then
-            AudioDatabase.General[Child.Name] = {};
+        if Child:IsA("Folder") then
+            if not AudioDatabase.General[Child.Name] then
+                AudioDatabase.General[Child.Name] = {};
+            end
+
             AddDirectory(Child, AudioDatabase.General[Child.Name]);
         else
             AddDirectory(Child);
@@ -64,22 +75,47 @@ function AudioDatabase:Init()
 
     end
 
+    print('Audio Database:', AudioDatabase)
+
 end
 
 function AudioDatabase:FromString(p_AudioDir: string): AudioInformation? 
     local Split = string.split(p_AudioDir, '/')
     local Current = AudioDatabase.General;
     
+    if AudioDatabase.__Cache[p_AudioDir] then
+        local Data = AudioDatabase.__Cache[p_AudioDir].Data;
+        local Thread = AudioDatabase.__Cache[p_AudioDir].Thread;
+
+        if typeof(Thread) == 'thread' then
+            task.cancel(Thread)
+        end
+
+        AudioDatabase.__Cache[p_AudioDir].Thread = task.delay(120, function()
+            AudioDatabase.__Cache[p_AudioDir] = nil
+        end)
+
+        return table.clone(Data);
+    end
+    
     for i = 1, #Split do
         local var = Split[i]
         if Current[var] then
             Current = Current[var]
+            continue
         end
 
         return nil;
     end
 
     if typeof(Current) == 'table' and Current.Id then
+        AudioDatabase.__Cache[p_AudioDir] = {
+            Data = Current,
+            Thread = task.delay(210, function()
+                AudioDatabase.__Cache[p_AudioDir] = nil
+            end)
+        }
+
         return table.clone(Current);
     end
     

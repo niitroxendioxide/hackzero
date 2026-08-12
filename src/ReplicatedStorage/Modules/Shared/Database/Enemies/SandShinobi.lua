@@ -44,7 +44,7 @@ return {
 				Attack_State_Time = 1.45,
 
 				Agent_Stun_Time = 0.85,
-				Damage_Mult = 220,
+				Damage_Mult = 450,
 				Attack_Warning = 0.2,
 			},
 

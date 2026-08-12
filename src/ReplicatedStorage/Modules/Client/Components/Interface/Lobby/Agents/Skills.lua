@@ -75,12 +75,6 @@ local function UpdateSkillUpgradeRequirements(StatsTab, Agent, Skill)
     local BaseItem = Element..'Chip'
     
     local SkillLevel = (AgentSkills[Skill] or 0)
-    
-    --local SkillData = AgentCompleteData.Moveset_Data[Skill] or {}
-    --[[for Item, Amount in (SkillData.Upgrade_Requirements or {}) do
-            table.insert(ItemNames, Item)
-            table.insert(ItemsToUpgrade, {Item, Amount})
-        end]]
 
     if SkillLevel < Statics.Max_Skill_Level then
         local TotalItems = LocalData:GetItems()
@@ -97,7 +91,7 @@ local function UpdateSkillUpgradeRequirements(StatsTab, Agent, Skill)
         StatsTab.UpgradeNeeded.Text = '0 / '..BaseToUpgrade
 
         for _, Item in StatsTab.ItemList:GetChildren() do
-            if Item:IsA('Frame') and not table.find(ItemNames, Item.Name) then
+            if Item:IsA('Frame') then
                 Item:Destroy()
             end
         end
@@ -125,12 +119,11 @@ local function UpdateSkillUpgradeRequirements(StatsTab, Agent, Skill)
                 continue
             end
 
-            CurrentUpgradeItemsQueue[Tier] = (CurrentUpgradeItemsQueue[Tier] or 0) 
+            CurrentUpgradeItemsQueue[Tier] = 0 
 
             local Existed = StatsTab.ItemList:FindFirstChild(ItemToShow)
             local NewItem = Existed or Assets.Interface.Agents.Skills.ItemRequired:Clone()
             NewItem.Name = ItemToShow
-            --NewItem.Item.ItemIcon.Image = 'rbxassetid://' .. ItemDBData.Icon
             NewItem.Count.TextLabel.Text = `{CurrentUpgradeItemsQueue[Tier]} / <b>{PlayerHas}</b>`
             NewItem.Count.TextLabel.TextColor3 = PlayerHas >= AmountToShow and ENOUGH_COLOR or NOT_ENOUGH_COLOR
             NewItem.Parent = StatsTab.ItemList

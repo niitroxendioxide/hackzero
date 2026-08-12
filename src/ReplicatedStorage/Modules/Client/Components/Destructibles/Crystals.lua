@@ -60,6 +60,7 @@ CrystalObjClass:OnCreate(function(Object)
         end
     end
 
+    Object.Cache.Color = Color;
     Object.Cache.Model = NewModel
 
     --[[local Max = Rng:NextInteger(4, 6)
@@ -114,15 +115,46 @@ CrystalObjClass:OnDestroy(function(Object)
     local Model: Model = Object.Cache.Model;
     if not Model then return end
 
+    Object.Collider.CanCollide = false
+    Object.Collider.CanQuery = false
     Model.Parent = workspace.World.Effects
 
+    local Highlight = Instance.new("Highlight")
+    Highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+    Highlight.OutlineTransparency = 0
+    Highlight.FillTransparency = 0
+    Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    Highlight.FillColor = Color3.fromRGB(255, 255, 255)
+    Highlight.Parent = Object.Cache.Model
+
+    Effects:Tween(Highlight, {.2}, {FillTransparency = 1, OutlineTransparency = 1})
+    Effects:CleanUp(Highlight, .2)
+
+    local ParticleColor = ColorSequence.new(Object.Cache.Color);
     for _, part in Model:GetDescendants() do
-        if part:IsA('BasePart') then
-            Effects:Tween(part, { .25, 'Quad' }, { Transparency = 1 })
+        if part:IsA('MeshPart') then
+            local TransDelay = 0;
+            part.CollisionGroup = 'Effects'
+            if part.Name ~= 'Base' then
+                TransDelay = 0.2;
+                part.Anchored = false;
+
+                part:ApplyImpulseAtPosition(Effects:RandomV3() * Effects:Random(45, 75), Effects:RandomV3() * Effects:Random(0.6, 5))
+                Effects:Tween(part, { .75, 'Quad' }, { Size = vector.zero })
+            end
+
+            task.delay(TransDelay, function()
+                Effects:Tween(part, { .75 - TransDelay, 'Sine' }, { Transparency = 1 })
+            end)
+        elseif part:IsA('ParticleEmitter') then
+            if part:HasTag('Recolorable') then
+                part.Color = ParticleColor;
+            end
+            part:Emit(part:GetAttribute('EmitCount'))
         end
     end
 
-    Effects:CleanUp(Model, .25)
+    Effects:CleanUp(Model, 2)
 end)
 
 CrystalObjClass:OnHit(function(Object)

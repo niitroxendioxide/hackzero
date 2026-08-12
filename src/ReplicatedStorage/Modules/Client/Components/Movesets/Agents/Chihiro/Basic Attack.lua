@@ -20,6 +20,7 @@ end)
 local function HandleParryAbility(Agent, Target)
 	Ability:Save(Agent, "Holding", true)
 
+	Agent:AddTag('CharacterStatic')
 	local CurrentTrack = Ability:PlayAnimation(Agent, "Chihiro.Abilities.M1.ParryInit", {})
 	Agent:SwitchState("Attacking", 9e12)
 	
@@ -29,10 +30,6 @@ local function HandleParryAbility(Agent, Target)
 	local ActivatedParry = false
 	local Started = os.clock()
 	while (Ability:Get(Agent, "Holding") == true) do
-		if not Agent:IsActive() then
-			break
-		end
-
 		if not ActivatedParry and (os.clock() - Started) >= 0.2  then
 			ActivatedParry = true
 			Ability:Effect("Chihiro_Stance", Agent)
@@ -51,6 +48,8 @@ local function HandleParryAbility(Agent, Target)
 
 		task.wait()
 	end
+
+	Agent:RemoveTag('CharacterStatic')
 
 	if ActivatedParry then
 		Ability:Effect("Chihiro_Stance", Agent)

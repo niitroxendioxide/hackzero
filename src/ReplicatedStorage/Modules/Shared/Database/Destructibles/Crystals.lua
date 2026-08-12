@@ -1,7 +1,7 @@
 return {
 
-    Health = 1e5,
-    Size = Vector3.new(8.5, 14, 8.5),
+    Health = 120,
+    Size = Vector3.new(7.75, 10, 7.75),
 
     Element_Damage_Multipliers = {
         Fire = 1.25,

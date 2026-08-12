@@ -527,9 +527,6 @@ function Controller:ChainAttack(Buffer: buffer)
 	local AgentId = buffer.readu8(Buffer, 1)
 	local EnemyId = buffer.readu8(Buffer, 2)
 	local ChainAttackComponent = InterfaceController:GetComponent("ChainAttack")
-	--CutsceneUtils:HideHUD(2)
-
-	CombatController:EnterChainAttackPrompt(EnemyId)
 
 	---
 	local CharactersToPrompt = Characters:GetCharacters()
@@ -552,16 +549,20 @@ function Controller:ChainAttack(Buffer: buffer)
 	local CentreAgent = Characters:GetAgent(Players.LocalPlayer:GetAttribute("ReplicationId"), AgentId)
 	local Position = table.find(AllNames, CentreAgent.Name);
 
-	if Position == 1 then
+	if Position == 1 or Position == 3 then
 		Options = {Options[2], Options[1]}
 	end
 
 
 	Effects:Play("Chain")
 
+	
 	ChainAttackComponent:Show(Options)
 
 	---
+	task.wait(0.25)
+
+	CombatController:EnterChainAttackPrompt(EnemyId)
 	CombatController.ChainAttackActionChosen:Once(function(OptionChosen: number)
 		ChainAttackComponent:Choose(OptionChosen)
 	end)

@@ -148,7 +148,19 @@ function ServerAbilityClass:CreateAgentHitbox(At: CFrame, Offset: Vector3, Size:
 	Targets = Targets or {}
 
 	local function Process()
+		--[[local Part = Instance.new("Part");
+		Part.Size = Size;
+		Part.CFrame = At * CFrame.new(Offset);
+		Part.Transparency = 0.85
+		Part.Anchored = true
+		Part.CanCollide = false
+		Part.Color = Color3.new(0.882353, 0.270588, 0.960784)
+		Part.Parent = workspace
+
+		task.delay(Time or 1, Part.Destroy, Part)]]
+
 		ServerHitboxUtil:ForAgentsInZone(Size, At * CFrame.new(Offset), function(Target: AgentTypes.ServerAgentClass, ...)
+			
 			if Targets[Target] then
 				return
 			end
@@ -374,6 +386,10 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 	
 	local Dealt_Daze, Is_Dazed = DamageLibrary:Daze(Agent, Enemy, Data.Daze)
 
+	if Enemy.__Status:IsKnocked() then
+		Enemy:Rotate(Agent:GetPivot().Position)
+	end
+
 	--
 	local PercentDealt = (Dealt_Damage / Enemy.__Status:GetStat('Max_Health'))
 	local Total = math.min(Dealt_Damage / 3000, 1)
@@ -444,6 +460,7 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 		Burst = Affliction_Triggered,
 		IsKill = EnemyDied,
 		Hit_Type = 'Entity',
+		CanChainAttack = not not Data.CanChainAttack,
 	}
 end
 

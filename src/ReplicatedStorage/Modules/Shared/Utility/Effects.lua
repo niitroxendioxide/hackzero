@@ -504,6 +504,12 @@ function EffectUtil:GetParent(Name: string?): Instance
 end
 
 function EffectUtil:Toggle(Object: Instance, State: boolean, Filter: ((Object: ParticleEmitter | Beam | Instance) -> (boolean))?, IncludeLights: boolean?)
+	if Object:IsA('ParticleEmitter') then
+		Object.Enabled = State
+
+		return
+	end
+	
 	for _, Child in Object:GetDescendants() do
 		if not (Child:IsA('ParticleEmitter') or Child:IsA('Beam') or (IncludeLights and Child:IsA("PointLight"))) then
 			continue
@@ -587,7 +593,7 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 				local ToStop = false;
 				local AllInvulnerable = true;
 				for _, Part in PartBounds do
-					if not Part:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER) and not Part:HasTag('Invulnerability') then
+					if not Part:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER) and not Part:HasTag('Invulnerability') and not Part:HasTag('ClientAirborne') then
 						AllInvulnerable = false;
 					end
 

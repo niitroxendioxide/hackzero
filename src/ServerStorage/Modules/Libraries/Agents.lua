@@ -54,10 +54,9 @@ function Agents:GetActiveAgentsHitboxes()
 
 	for _, PlayerAgents in Agents.__Players do
 		for _, Agent in PlayerAgents do
-			if Agent.__Active then
+			if Agent.__Active or Agent:HasTag('CanBeTargetted') then
 				Active[Agent:GetHitbox()] = Agent
 				table.insert(List, Agent:GetHitbox())
-				break
 			end
 		end
 	end
@@ -71,6 +70,20 @@ function Agents:GetAll(UserId: number): {Types.AgentClass | Types.ServerAgentCla
 	end
 
 	return table.clone(Agents.__Players[UserId])
+end
+
+function Agents:GetAllAliveAgents(): { Types.ServerAgentClass }
+	local List = {}
+
+	for _, PlayerList in Agents.__Players do
+		for _, Agent in PlayerList do
+			if not Agent:IsAlive() then continue end
+
+			table.insert(List, Agent)
+		end
+	end
+
+	return List
 end
 
 function Agents:GetAlive(UserId: number): {Types.AgentClass | Types.ServerAgentClass}

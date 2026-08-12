@@ -7,6 +7,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Ping = require(ServerStorage.Modules.Libraries.Ping)
 local ClockUtil = require(Shared.Utility.Clock)
 local Replicator = require(Libraries.Replicator)
@@ -47,6 +48,7 @@ function ServerEnemy.new(At: Vector3, Name: string, Level: number)
 	self.__LastMovement = os.clock()
 	self.__EnemyId = -1
 	self.__Next = 1
+	self.__TargetRepeatedCount = 0;
 	self.__Next_Attack = 'Skill 1'
 	self.__Tags = {}
 	self.__Snapfix = os.clock()
@@ -112,18 +114,25 @@ function ServerEnemy:Attack()
 		return
 	end
 
+	local MapBase = workspace.World.Map;
+	if MapBase:FindFirstChild('Design') then
+		MapBase = MapBase:FindFirstChild('Design')
+	end
+
 	local Params = RaycastParams.new()
-	Params.FilterDescendantsInstances = {workspace.Camera.Destructibles}
+	Params.FilterDescendantsInstances = {workspace.Camera.Destructibles, MapBase}
 	Params.FilterType = Enum.RaycastFilterType.Include
 
 	local At = self:GetPivot()
 	local LookAt = CFrame.lookAt(At.Position, Target:GetPivot().Position)
 	local LookAtRay = workspace:Raycast(At.Position, LookAt.LookVector * 1000, Params)
 	if LookAtRay then
-		return
+		return 
 	end
 
-	if not Targets:CanAttackTarget(Target, self) or Target:HasTag("Invulnerability") or self:IsGrabbed() then
+	local CanAttackTarget = Targets:CanAttackTarget(Target, self)
+
+	if not CanAttackTarget or Target:HasTag("Invulnerability") or self:IsGrabbed() then
 		return
 	end
 
@@ -192,15 +201,34 @@ function ServerEnemy:Init(Key: number)
 	--
 	--local NextAttack = os.clock()
 	local Clock = os.clock()
+	local RandomRotation = os.clock()
+	local FocusTarget = os.clock()
 	self.__Snapfix = os.clock()
 	self.__Movement:SnapToFirstGround()
 	self.__Thread = ClockUtil:Heartbeat(function(delta: number)
 		--
+		local CurrentTarget = self:GetTarget()
 		if self:GetState() == 'Attacking' and os.clock() - Clock > 1/30 then
 			Clock = os.clock()
 			self:TrackCurrentTarget()
-		elseif os.clock() - Clock > 1/3 and self:GetState() == 'Idle' then
+		elseif os.clock() - Clock > 1 / 5 and self:GetState() == 'Idle' then
 			Clock = os.clock()
+
+			if CurrentTarget then
+				self:Rotate(CurrentTarget:GetPivot().Position)
+			else
+				if os.clock() - RandomRotation > 1.5 then
+					RandomRotation = os.clock()
+					local RandomPos = (self:GetPivot() * CFrame.Angles(0, Random.new():NextNumber(-math.pi, math.pi), 0) * CFrame.new(0, 0, -5)).Position
+
+					self:Rotate(RandomPos)
+				end
+			end
+		end
+		
+		local TargetActive = if CurrentTarget ~= nil then (CurrentTarget:IsActive() or CurrentTarget:HasTag('CanBeTargetted')) else false
+		if os.clock() - FocusTarget > 1 / 2 or (os.clock() - FocusTarget > 1 / 6 and not TargetActive) then
+			FocusTarget = os.clock()
 			self:FindRandomAggro()
 		end
 
@@ -209,22 +237,26 @@ function ServerEnemy:Init(Key: number)
 			Replicator:PivotEnemy(self.__EnemyId, self:GetPivot())
 		end
 
-		--[[if os.clock() - NextAttack >= 1 then
-			NextAttack = os.clock()
-			self:Attack()
-		end]]
-
-		if (self.__Current_Target and (self.__Current_Target:GetPivot().Position - self:GetPivot().Position).Magnitude < 4.5) or self:GetState() ~= 'Idle' then
-			self:Move(Vector3.zero)
+		local DistanceToTarget = (CurrentTarget and (CurrentTarget:GetPivot().Position - self:GetPivot().Position).Magnitude) or 12
+		if DistanceToTarget > 120 then
+			self.__Current_Target = nil
 		end
 
 		if (os.clock() - self.__LastMovement > self.__Next) and self:GetState() == 'Idle' then
-			local Frontback = -1 --Rng:NextInteger(-1, 1)
-			if self:GetTarget() and (self:GetTarget():GetPivot().Position - self:GetPivot().Position).Magnitude >= 45 then
+			self.__LastMovement = os.clock()
+
+			self.__Next = Rng:NextNumber(0.5, 3)
+
+			local Frontback = Rng:NextInteger(-1, 1)
+			if DistanceToTarget >= 22.5 then
 				Frontback = -1
 			end
 
 			self:Move(Vector3.new(Rng:NextInteger(-1, 1), 0, Frontback))
+		end
+
+		if (DistanceToTarget < 5) or self:GetState() ~= 'Idle' then
+			self:Move(Vector3.zero)
 		end
 
 		self.__Movement:Update(delta)
@@ -376,7 +408,7 @@ function ServerEnemy.Move(self: Types.ServerEnemyClass, Direction: Vector3 | vec
 	end
 
 	--
-	if LockFor then
+	if typeof(LockFor) == 'number' then
 		self.__Movement_Lock = {
 			Time = LockFor,
 			Start = os.clock(),
@@ -387,9 +419,6 @@ function ServerEnemy.Move(self: Types.ServerEnemyClass, Direction: Vector3 | vec
 	end
 
 	self.__Movement:Move(Direction)
-	self.__LastMovement = os.clock()
-
-	self.__Next = Rng:NextNumber(0.5, 3.5)
 
 	Replicator:MoveEnemy(self.__EnemyId, Direction, LockFor, Speed)
 end
@@ -407,30 +436,63 @@ function ServerEnemy:TrackCurrentTarget()
 end
 
 function ServerEnemy:FindRandomAggro()
-	local Agents = AgentsLibrary:GetActiveAgents()
+	local Agents = AgentsLibrary:GetAllAliveAgents()
 	local At = self.__Movement.__Position
 	local MaxDistance = 120 --math.huge
+	local CurrentDistance = MaxDistance
 	local Chosen: AgentTypes.ServerAgentClass = nil
 
+	local Options = {}
 	for _, Agent in Agents do
+		if not Agent:IsActive() and not(Agent:HasTag('CanBeTargetted')) then
+			continue
+		end
+
 		local Distance = (Agent:GetPivot().Position - At).Magnitude
 
-		if Distance < MaxDistance then
-			MaxDistance = Distance
+		if Distance < CurrentDistance then
+			table.insert(Options, {Agent, Distance})
+			CurrentDistance = Distance
 			Chosen = Agent
+		elseif Distance < MaxDistance then
+			table.insert(Options, {Agent, Distance})
+		end
+	end
+
+	if #Options > 1 and (self.__Last_Target == Chosen) then
+		local DifferenceIsHigher = math.abs(Options[2][2] - Options[1][2]) > 10;
+
+		if not DifferenceIsHigher or (self.__TargetRepeatedCount > 2) then
+			self.__TargetRepeatedCount = 0;
+			table.sort(Options, function(OptA, OptB): boolean  
+				return OptA[2] < OptB[2]
+			end)
+
+			for idx, Option in Options do
+				if Option[1] == Chosen then 
+					table.remove(Options, idx)
+					break 
+				end
+			end
+			
+			Chosen = Options[1][1];
+		else
+			self.__TargetRepeatedCount += 1;
 		end
 	end
 
 	if Chosen then
 		At = Chosen:GetPivot().Position
 
-		self.__Current_Target = Chosen
 		self:Rotate(At)
+
+		self.__Last_Target = Chosen
+		self.__Current_Target = Chosen
 	end
 end
 
 function ServerEnemy:Rotate(Direction: Vector3 | AgentTypes.ServerAgentClass)
-	if self.__Movement.__World_Speed <= 0 or self.__Status:IsKnocked() then return end
+	if self.__Movement.__World_Speed <= 0 then return end
 
 	if typeof(Direction) == 'CFrame' then
 		Direction = Direction.Position

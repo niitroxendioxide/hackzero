@@ -58,6 +58,8 @@ return function(Caster: Types.Caster, State: string): ()
         OverlapParams.FilterDescendantsInstances = Characters:GetAllHitboxes()
         OverlapParams.FilterType = Enum.RaycastFilterType.Include
 
+        task.delay(1, CleanUp)
+
         Effects:MoveProjectile(FireballVfx, vector.create(5, 5), 135, 1, function(): boolean  
             CleanUp()
 

@@ -140,7 +140,7 @@ function Ability:Play(Caster: Types.Caster, _, _, Context: {[any]: any})
 	local Attack = Ability:Begin(Caster, {
 
 		{0, function()
-			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime)
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime, true)
 		end},
 
 	}, true);

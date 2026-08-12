@@ -49,7 +49,7 @@ return {
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = 0.05,
-				Speed = 1.3,
+				Speed = 1.6,
 				Animation_Speed = 1,
 				Attack_State_Time = 0.65,
 
@@ -145,6 +145,7 @@ return {
 				Hit_Count = 5,
 				
 				Hit = {
+					DontChargeEnergy = true,
 					HitType = 'Blunt',
 					Stun = .3,
 					Daze = 24,

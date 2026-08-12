@@ -18,6 +18,7 @@ return function(EnemyId: number, Aura: string)
 		return
 	end
 
+	local Appearance = Enemy.__Appearance
 	local Model = Enemy:GetModel()
 
 	local LimbsFolder = BaseAura:FindFirstChild('Limbs')
@@ -33,6 +34,7 @@ return function(EnemyId: number, Aura: string)
 			for _, LimbVFX in LimbsFolder:GetChildren() do
 				local Cloned = Effects:Create(LimbVFX, nil, BodyPart)
 				Cloned.Name = 'Affected_Aura'
+				Appearance:BindParticles(Cloned)
 			end
 		end
 	end
@@ -41,5 +43,6 @@ return function(EnemyId: number, Aura: string)
 		local Clone = Effects:Create(Body)
 		Clone:PivotTo(Model:GetPivot())
 		Effects:Weld(Clone, Model.PrimaryPart);
+		Appearance:BindParticles(Clone)
 	end
 end

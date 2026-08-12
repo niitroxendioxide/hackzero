@@ -247,7 +247,6 @@ function Controller:HandleInput(Key: string, State: string)
 				return;
 			end 
 
-
 			local NewAgentObj = Characters:GetAgent(LocalPlayerId, NewAgentId)
 			CharacterMoveset = Movesets:Get(NewAgentObj.Name)
 			NewAgentObj:AddTag('Switching', 0.5)
@@ -260,9 +259,9 @@ function Controller:HandleInput(Key: string, State: string)
 			Replicator:Replicate(GameEnum.Replication.CancelChainAttack)
 		end
 
-		Controller:LeaveChainAttackPrompt()
 		Controller.ChainAttackActionChosen:Fire(InputType)
 		Controller.ChainAttackActionChosen:DisconnectAll()
+		Controller:LeaveChainAttackPrompt()
 
 		return;
 	end

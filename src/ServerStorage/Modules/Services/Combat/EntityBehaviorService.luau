@@ -344,10 +344,12 @@ function Service:Init()
         for _, Default in Service.BehaviorDefault do
             local Entity = Enemies:GetEnemy(Default.EntityId)
 
-            if Default.UpdateClock >= 1 then
+            if (os.clock() - Default.UpdateClock) >= 1 then
                 Default.UpdateClock = os.clock()
 
-                Entity:Attack()
+                task.spawn(function()
+                    Entity:Attack()
+                end)
             end
         end
 

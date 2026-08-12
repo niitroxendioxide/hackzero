@@ -52,7 +52,13 @@ return function(Enemy: Types.EnemyClass)
 			return
 		end
 
-		local Height = Enemy.__Appearance:GetAddedHeight()
+		if not Enemy:IsVisible() then
+			Gui.Enabled = false
+			return
+		end
+
+		Gui.Enabled = true
+
 		local SpringVal = peek(Health_Spring)
 		local MaxVal = Enemy:GetStat('Max_Health')
 		local TotalDaze = peek(Enemy.__Daze)

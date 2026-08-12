@@ -318,6 +318,7 @@ export type ServerAgentClass = {
 	Move: (self: ServerAgentClass) -> (),
 	Rotate: (self: ServerAgentClass, Angle: number) -> (),
 	
+	IsActive: (self: ServerAgentClass) -> (boolean),
 	IsBeingAttacked: (self: ServerAgentClass) -> (boolean),
 	Hit: (self: ServerAgentClass, Caster: Enemy, Time: number) -> (),
 	GetMarkedTarget: (self: ServerAgentClass) -> (AssistStruct?),

@@ -54,7 +54,7 @@ function Ability:Play(Caster: Types.GenericClass)
             end
 
 			Ability:CreateHitbox(Caster, Offset, Size, function(Enemy)
-                if HitList[Enemy] then
+                if HitList[Enemy] or Enemy:IsAirborne() then
                     return
                 end
 

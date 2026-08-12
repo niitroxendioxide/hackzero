@@ -220,6 +220,10 @@ function Service:UpgradeAgentSkill(Player: Player, AgentName: string, SkillName:
 
     local TotalUsedAmount = 0;
     for Tier, Amount in ItemsUsed do
+        if Amount <= 0 then
+            continue
+        end
+
         TotalUsedAmount += math.max((Tier-1) * 3, 1) * Amount
 
         local HasOfItem = DataService:HasItem(Player, CHIPS_PREFIX[Tier] .. ItemName, Amount)
@@ -241,8 +245,6 @@ function Service:UpgradeAgentSkill(Player: Player, AgentName: string, SkillName:
             local TierUpgradeAmount = math.max((Tier-1) * 3, 1)
 
             while Difference % TierUpgradeAmount == 0 and Difference > 0 do
-                print('current diff:', Difference)
-
                 Refund[Tier] = (Refund[Tier] or 0) + 1;
                 TotalUsedAmount -= TierUpgradeAmount
                 Difference = math.max(TotalUsedAmount - Cost, 0)

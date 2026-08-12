@@ -8,6 +8,7 @@ local Inputs = require(ReplicatedStorage.Modules.Client.Libraries.Inputs)
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local World = require(Shared.World)
 local Effects = require(Shared.Utility.Effects)
+local Enemies = require(Shared.Libraries.Enemies)
 
 --
 local Rad, Clamp = math.rad, math.clamp
@@ -42,6 +43,7 @@ local Camera = {
 	
 	__ZoomThread = nil,
 	__Moving_Delta = Vector2.new(),
+	__Enemies_Blocking_Vision = {},
 }
 
 function Camera:ResetZoom()
@@ -100,6 +102,13 @@ function Camera:Init()
 	end
 
 	Camera.__Inited = true
+
+	local ParamsNew = OverlapParams.new()
+	ParamsNew.FilterDescendantsInstances = {
+		workspace.World:WaitForChild('Entities'):WaitForChild('Colliders'),
+	}
+	ParamsNew.FilterType = Enum.RaycastFilterType.Include
+	Camera.__Enemy_Params = ParamsNew
 
 	UserInputService.TouchRotate:Connect(function(_: {any}, _: number, _: number, _: Enum.UserInputState, _: boolean) 
 
@@ -265,7 +274,52 @@ function Camera:Update(delta: number)
 		local Value = LookAtPart and 75 or 70
 		CameraObject.FieldOfView = Value
 	end
-	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * Factor) 
+	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * Factor)
+
+	--[[
+	---
+	local EndCf = CameraObject.CFrame
+	local Length = (EndCf.Position - Camera.__Position).Magnitude;
+	local Origin = CFrame.lookAt(EndCf.Position, Camera.__Position)
+	local HalfFovCos = math.cos(math.rad(CameraObject.FieldOfView * 0.5))
+
+	local HitColliders = workspace:GetPartBoundsInBox(Origin * CFrame.new(0, 0, -Length * 0.25), vector.create(15, 5, 4), Camera.__Enemy_Params)
+	local Checked = {}
+	for _, Collider in HitColliders do
+		local Enemy = Enemies:GetFromCollider(Collider)
+		if Enemy == nil then
+			continue
+		end
+
+		local IsInGroup = table.find(Camera.__Enemies_Blocking_Vision, Enemy)
+
+		Checked[Enemy:GetId()] = true
+
+		local ToCollider = (Collider.Position - Origin.Position).Unit
+		local DotResult = vector.dot(Origin.LookVector :: vector, ToCollider :: vector)
+
+		local IsInFov = DotResult >= HalfFovCos
+		if not IsInFov then
+			if IsInGroup then
+				Enemy:SetVisible(true)
+			end
+
+			continue
+		elseif IsInGroup then continue end
+
+		table.insert(Camera.__Enemies_Blocking_Vision, Enemy)
+		Enemy:SetVisible(false)
+	end
+
+	for idx = #Camera.__Enemies_Blocking_Vision, 1, -1 do
+		local Enemy = Camera.__Enemies_Blocking_Vision[idx]
+		if Checked[Enemy:GetId()] then
+			continue
+		end
+
+		Enemy:SetVisible(true)
+		table.remove(Camera.__Enemies_Blocking_Vision, idx)
+	end]]
 end
 
 function Camera:TweenTo(GoalCFrame: CFrame, Info: {number | string}?): Tween?

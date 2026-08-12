@@ -95,13 +95,12 @@ function Ability:Play(Caster: Types.Caster, _, _, Context: { Buffer: {any | {num
 	local Attack = Ability:Begin(Caster, {
 		
 		{0, function()
-			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime)
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime, true)
 		end},
 		
 	}, true);
 	
 	if InMode then
-		Caster:AddTag("Invulnerability", AttackTime)
 		ModeVersion(Caster, Attack, Context.Buffer)
 	else
 		Default(Caster, Attack)

@@ -62,6 +62,14 @@ function EnemyClass:IsAirborne()
 	return self.__Appearance:IsRaised()
 end
 
+function EnemyClass:IsVisible()
+	return self.__Appearance:IsVisible()
+end
+
+function EnemyClass:SetVisible(State: boolean)
+	return self.__Appearance:SetVisible(State)
+end
+
 
 --
 function EnemyClass:TakeDamage(number: number)

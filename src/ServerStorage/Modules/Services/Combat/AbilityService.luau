@@ -78,13 +78,12 @@ function HandleSkillHit(Data: AbilityTypes.AbilityHitInfo, SkillId: number)
 	local Agent = Data.Caster :: AgentTypes.ServerAgentClass
 	if not Agent or Data.Hit_Type ~= 'Entity' then return end
 	local AgentPlayer = Agent.__Player_Assigned
-	
-	if not AgentPlayer then return end
+
+	if not AgentPlayer or Data.CanChainAttack == false then return end
 	local RepId = AgentPlayer:GetAttribute("ReplicationId") :: number
 	local CurrentAgent = AgentLibrary:GetCurrentActive(RepId)
 
-	-- Handle chain attacks!
-	if SkillId == GameEnum.Skills.EX_Special and CHAIN_ATTACKS_ENABLED and #AgentLibrary:GetAlive(RepId) > 1 then
+	if (SkillId == GameEnum.Skills.EX_Special or Data.CanChainAttack == true) and CHAIN_ATTACKS_ENABLED and #AgentLibrary:GetAlive(RepId) > 1 then
 		local is_enemy_stunned = Data.Enemy.__Status:IsKnocked()
 		
 		if (CHAIN_ATTACK_REQUIRE_STUN and is_enemy_stunned) or (not CHAIN_ATTACK_REQUIRE_STUN) then
@@ -336,14 +335,14 @@ function Service:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Enemy: Ag
 		EnemyId = Enemy:GetId(),
 	}
 
-	task.delay(Statics.Chain_Attack_Invulnerability_Time, function()
+	task.delay(Statics.Chain_Attack_Invulnerability_Time + 0.25, function()
 		local Prompt = Service.__Chain_Attack_Prompts[Agent.__Player_Assigned];
 		if Prompt and Prompt.Id == Id then
 			Service.__Chain_Attack_Prompts[Agent.__Player_Assigned] = nil;
 		end
 	end)
 
-	Agent:AddTag('Invulnerability', Statics.Chain_Attack_Invulnerability_Time)
+	Agent:AddTag('Invulnerability', Statics.Chain_Attack_Invulnerability_Time + 0.25)
 
 	--
 	Replicator:PromptChainAttack(Agent, Enemy)
@@ -398,7 +397,7 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	Replicator:PromptAssist(Player, AgentToSwitch, Time, AgentPerpetratorId)
 
 	local Thread = task.delay(Time, function()
-		Service.__PlayerPrompts[CasterAgent.__Player_Assigned] = true
+		Service.__PlayerPrompts[CasterAgent.__Player_Assigned] = false
 	end)
 
 	Prompt.Accepted:Once(function()

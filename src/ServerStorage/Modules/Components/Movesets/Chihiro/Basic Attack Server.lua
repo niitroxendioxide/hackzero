@@ -19,6 +19,8 @@ local Ability = AbilityClass.new()
 
 local function HandleParryAbility(Caster)
 	Ability:Save(Caster, "Holding", true)
+	Caster:AddTag('CanBeTargetted')
+	Caster:AddTag('CharacterStatic')
 	Caster:SwitchState("Attacking", 9e12)
 
 	local Activated = false
@@ -26,10 +28,6 @@ local function HandleParryAbility(Caster)
 	local ParryId = HttpService:GenerateGUID(false)
 
 	while (Ability:Get(Caster, "Holding") == true) do
-		if not Caster:IsActive() then
-			break
-		end
-
 		if not Activated and (os.clock() - Started) >= 0.2 then
 			Activated = true
 
@@ -48,6 +46,9 @@ local function HandleParryAbility(Caster)
 
 		task.wait()
 	end
+
+	Caster:RemoveTag('CharacterStatic')
+	Caster:RemoveTag('CanBeTargetted')
 
 	if Activated then
 		Caster:SwitchState("Attacking", 0.25)

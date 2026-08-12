@@ -14,7 +14,7 @@ return {
 		Daze_Length = 2,
 
 		Weakness = {'Water'},
-		Strength = {'Energy'},
+		Strength = {'Fire'},
 
 		--
 		Daze_Multiplier = 200,

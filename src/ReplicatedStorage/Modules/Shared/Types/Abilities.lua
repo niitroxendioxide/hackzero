@@ -153,6 +153,7 @@ export type AbilityClass = {
 
 export type DamageHitType = 'Blunt' | 'Slash' | 'None'
 export type HitEnemyData = {
+	CanChainAttack: boolean,
 	Damage: number,
 	Stun: number,
 	Daze: number,
@@ -213,6 +214,7 @@ export type MovingHitboxObject = {
 
 export type AbilityHitInfo = {
 	Enemy: Agents.Enemy,
+	CanChainAttack: boolean,
 	Caster: {},
 	Type: Default.Element,
 	Damage: number,

@@ -233,6 +233,7 @@ return {
 				Required_Energy = 30,
 				Range = 100,
 				Hit = {
+					DontChargeEnergy = true,
 					HitType = 'Slash',
 					Damage = 164,
 					Affliction = 'Water',

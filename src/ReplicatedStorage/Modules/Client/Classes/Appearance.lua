@@ -76,6 +76,9 @@ function AppearanceClass:Tilt(number: number)
 	self.__Tilt = number
 end
 
+function AppearanceClass:IsVisible(number: number)
+	return self.__Visible
+end
 
 
 function AppearanceClass:Raise(Factor: number, Time: number, Instant: boolean?): ()

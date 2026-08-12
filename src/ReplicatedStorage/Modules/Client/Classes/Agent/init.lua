@@ -214,12 +214,6 @@ function AgentClass:Look(Vector, Instant, Bypass)
 	return self.__Character:Look(Vector, Instant)
 end
 
-function asd()
-	if true then
-		asd()
-	end
-end
-
 function AgentClass:SetVisible(...)
 	return self.__Character:SetVisible(...)
 end
@@ -228,7 +222,6 @@ function AgentClass:Init(PlayerId: number)
 	assert(typeof(PlayerId) == 'number', 'Requires a valid playerid to initialize agent.')
 
 	self.PlayerId = PlayerId
-
 
 	for _, Player in Players:GetPlayers() do
 		if Player:GetAttribute("ReplicationId") == PlayerId then

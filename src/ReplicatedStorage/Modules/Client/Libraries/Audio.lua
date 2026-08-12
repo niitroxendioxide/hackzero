@@ -14,6 +14,7 @@ local RunService = game:GetService("RunService")
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Effects = require(Shared.Utility.Effects)
 local AudioDatabase = require(Shared.Database.Audio)
 local AudioController = require(Client.Controllers.AudioController)
 local Mock = require(Shared.Utility.Mock)
@@ -67,12 +68,12 @@ function AudioLib:Create(p_AudioId: string, p_CreationData: AudioCreationData): 
         return (Mock :: EmitterAttachment);
     end
     
-    local Group = AudioController:GetGroup(p_CreationData.Category, p_CreationData.Priority);
+    local Group = AudioController:GetGroup(p_CreationData.Category or 'Effects', p_CreationData.Priority);
     local CategoryVolume = Group.Parent.Volume;
     local PriorityVolume = Group.Volume;
 
     local Emitter = CreateEmitter(p_CreationData.At :: vector, Sanitized)
-    local TrackVolume = p_CreationData.Volume
+    local TrackVolume = p_CreationData.Volume or 0.5
 
     Emitter:SetAttribute('TrackVolume', TrackVolume * PriorityVolume)
     Emitter.AudioPlayer.Volume = TrackVolume * PriorityVolume * CategoryVolume
@@ -112,6 +113,17 @@ function AudioLib:PlayId(p_Id: string | number | { number }, p_CreationData: Aud
     return Emitter
 end
 
+function AudioLib:FadeOutAudio(p_Attachment: EmitterAttachment, p_Time: number)
+    if typeof(p_Attachment) ~= 'Instance' or not p_Attachment:FindFirstChild('AudioPlayer') then
+        return;
+    end
+
+    Effects:Tween(p_Attachment.AudioPlayer, { p_Time or 0.25 }, {Volume = 0});
+    Effects:CleanUp(p_Attachment, p_Time or 0.25)
+end
+
+
+--p_Type: string?, p_Priority: string?
 function AudioLib:PlayFromDb(p_AudioDirectory: string, p_AudioLocation: vector | Vector3): EmitterAttachment
     local AudioData = AudioDatabase:FromString(p_AudioDirectory)
     if not AudioData then

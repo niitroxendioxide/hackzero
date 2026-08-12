@@ -110,10 +110,10 @@ function Component:Show( AgentNames: { string } )
 
     MainFrame.Line.Fill.Size = UDim2.fromScale(1, 1)
 
-    Effects:Tween(MainFrame.Line.Fill, {Statics.Chain_Attack_Invulnerability_Time}, { Size = UDim2.fromScale(0, 1) })
+    Effects:Tween(MainFrame.Line.Fill, {Statics.Chain_Attack_Invulnerability_Time + 0.25}, { Size = UDim2.fromScale(0, 1) })
 
     --
-    CompThread = task.delay(Statics.Chain_Attack_Invulnerability_Time, function()
+    CompThread = task.delay(Statics.Chain_Attack_Invulnerability_Time + 0.25, function()
         Component:Close()
     end)
 end

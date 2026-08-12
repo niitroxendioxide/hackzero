@@ -381,6 +381,7 @@ function ServerAgentClass:GetState()
 	return self.__Character:GetState()
 end
 
+
 function ServerAgentClass:SwitchState(State: string, Time: number, Iframes: boolean?, Unaffected: boolean)
 	--local TimeExtra = Ping:Get(self.__Player_Assigned)
 	local ReducedTime = math.max(Ping:Get(self.__Player_Assigned), 0.1)

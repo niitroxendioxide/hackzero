@@ -48,17 +48,17 @@ local function LoadAllCharacterAnimations(Name: string)
 		return
 	end
 
+	AnimsLoaded[Name] = true
+
 	for _, AnimationObject in GivenCharacterDir:GetDescendants() do
 		if not AnimationObject:IsA('Animation') then
 			continue
 		end
 		
-		local Track = AnimLib:Play(UserCharacter, AnimationObject, 1, 1, 1)
-		Track.Stopped:Once(function()
-			Track:Destroy()
-		end)
+		local Track = AnimLib:Play(UserCharacter, AnimationObject, 1, 1, 5)
+		Track:Destroy()
 
-		task.wait(1 / 24)
+		task.wait(0.1)
 	end
 end
 

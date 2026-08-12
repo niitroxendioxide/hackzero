@@ -82,7 +82,7 @@ return {
 				Effect_Data = {
 					Highlight = true,
 					Audio = {
-						Id = {8595980577}, --{ 9117969687, 175024455 }, -- 8595980577 lighter
+						Id =  {8595980577}, --{ 9117969687, 175024455 }, -- 8595980577 lighter  --{ 135200034075896, 135175485527318 }, 
 						Volume = 0.5,
 					}
 				},
@@ -124,6 +124,7 @@ return {
 				},
 
 				SledgeHammerData = {
+					CanChainAttack = true,
 					Damage = 120,
 					Daze = 25,
 					Affliction_Buildup = 75,
@@ -270,7 +271,6 @@ return {
 				Knockback_Strength = 3,
 				Knockback_Time = 0.2,
 
-
 				--
 				SSJ2Buff = {{
 					Type = 'Attack',
@@ -292,6 +292,7 @@ return {
 
 				--
 				Default = {
+					CanChainAttack = false,
 					Damage = 248;
 					Daze = 19;
 					Affliction_Buildup = 22;
@@ -307,6 +308,7 @@ return {
 				};
 
 				ExtenderMidAir = {
+					CanChainAttack = false,
 					Damage = 350;
 					Daze = 22;
 					Affliction_Buildup = 35;
@@ -348,7 +350,6 @@ return {
 					HitType = 'Blunt';
 					Stun = 3;
 					HitsAirborne = true;
-
 
 					Knockback = {
 						vector.create(0, 0, 1),

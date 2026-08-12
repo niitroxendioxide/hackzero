@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Assets = ReplicatedStorage.Assets.Effects.Agents
 local Shared = ReplicatedStorage.Modules.Shared
 
+local Audio = require(ReplicatedStorage.Modules.Client.Libraries.Audio)
 local Types = require(Shared.Types.Abilities)
 local Effects = require(Shared.Utility.Effects)
 
@@ -45,6 +46,7 @@ return function(
     local Hit_Effect = Effects:Create(Assets.Goku.BasicAttack.DashVFX, 3)
     Hit_Effect:PivotTo(Caster:GetModel():GetPivot() * CFrame.new(0, 0.33, -1))
 
+    Audio:PlayFromDb('Effects/Dodge', Caster:GetPivot().Position)
     Effects:ForModelParts(Hit_Effect, MeshTweens)
 
     --
