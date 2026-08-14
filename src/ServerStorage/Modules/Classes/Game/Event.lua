@@ -228,7 +228,7 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
     for i = 1, #CurrentWave do
         local EnemyType = CurrentWave[i].Name
         local EnemyCount = CurrentWave[i].Amount
-        local EnemyLevel = CurrentWave[i].Level
+        local EnemyLevel = CurrentWave[i].LevelZ
 
         Total += EnemyCount
         local NewBuffs = table.clone(EnemyBuffs)
@@ -236,6 +236,7 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
         if CurrentWave[i].Affected_Aura == true then
             table.insert(NewBuffs, {'Affected_Aura'})
         end
+
 
         for i = 1, EnemyCount do
             EnemyService:Spawn(EnemyType, EnemyLevel, self.__Event, NewBuffs)

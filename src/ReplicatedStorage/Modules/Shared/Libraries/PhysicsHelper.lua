@@ -86,7 +86,8 @@ function PhysicsHelper:CalculateEnemyCollisions(Origin: CFrame, MovementDir: Vec
 	end
 
 	local DebugOn = (workspace:GetAttribute("DebugMovement") and RunService:IsClient() and RunService:IsStudio())
-	for i = 0, 1.5, 1.5 do
+	do
+		local i = 0;
 		local OriginPoint = (Origin * CFrame.new(0, i, 0))
 		local Length = 2 + MovementDir.Magnitude * 0.1 * Delta * 4
 		local Direction = (CFrame.lookAlong(OriginPoint.Position, MovementDir)).LookVector * Length

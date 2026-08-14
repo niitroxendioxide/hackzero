@@ -259,13 +259,20 @@ return {
 		},
 		['EX Special'] = {
 			Base = {
+				Cooldown = 0.25,
 				Speed = 1,
 				Animation_Speed = 1,
-				Attack_State_Time = {0.5, 5},
-				
+				Attack_State_Time = 0.5,
+				Range = 75,
+
+				DiskTime = 1,
+				DiskSpeed = 150,
+
 				Required_Energy = 35,
 				Hit_Frequency = 14/60,
 				Walk_Time = 5/60,
+				GroundExtraTime = 0.317,
+				DestructoDiskTime = 0.767,
 
 				Knockback_Direction = Vector3.new(0, 0, 1),
 				Knockback_Strength = 3,
@@ -274,7 +281,7 @@ return {
 				--
 				SSJ2Buff = {{
 					Type = 'Attack',
-					Value = "30%",
+					Value = "20%",
 					Tag = 'SS2',
 					Time = 3,
 				},{
@@ -305,6 +312,17 @@ return {
 						61,
 						0.2,
 					},
+				};
+
+				DestructoDisk = {
+					CanChainAttack = false,
+					Damage = 100;
+					Daze = 32;
+					Affliction_Buildup = 45;
+					Affliction = 'Energy';
+					HitType = 'Slash';
+					Stun = .5;
+					HitsAirborne = true,
 				};
 
 				ExtenderMidAir = {
@@ -386,12 +404,12 @@ return {
 					Type = 'Attack',
 					Value = "25%",
 					Tag = 'GOKU_MODE_BUFF',
-					Time = 15,
+					Time = 22,
 				},{
 					Hide = true,
 					Type = 'Speed',
 					Value = .3,
-					Time = 15,
+					Time = 22,
 				}}
 			},
 			Upgrades = {},

@@ -110,6 +110,11 @@ end
 
 function PlayerAgentDataClass.Compress(self: Types.PlayerAgentDataClass)
     local Id = CharactersDatabase:GetIdForCharacter(self.Name)
+    if Id == nil then
+        warn('Couldn\'t find id for: '..self.Name)
+
+        return {}
+    end
 
     local DataBuffer = buffer.create(8)
     buffer.writeu8(DataBuffer, 0, Id)

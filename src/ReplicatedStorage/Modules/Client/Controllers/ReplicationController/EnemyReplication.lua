@@ -10,6 +10,7 @@ local EnemyDatabase = require(Shared.Database.Enemies)
 local EnemyClass = require(Client.Classes.Enemy)
 local GameEnum = require(Shared.GameEnum)
 local Effects = require(Client.Libraries.Effects)
+local EnemyOverheadGui = require(Client.Libraries.EnemyStatusIndicator)
 
 --
 local Controller = {}
@@ -26,11 +27,11 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | num
 		Controller:RemoveEnemy(Buffer)
 	end
 
-
+	
 	---
 	local NewEnemy = EnemyClass.new(At, Name, Level)
 	NewEnemy:Init(EnemyId)
-
+	
 	if typeof(Buffs) == 'table' then
 		for _, Buff in Buffs do
 			NewEnemy:AddEffect({
@@ -40,8 +41,9 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | num
 			})
 		end
 	end
-
-	Effects:Play('EnemyStats', NewEnemy)
+	
+	--Effects:Play('EnemyStats', NewEnemy)
+	EnemyOverheadGui:AddIndicator(EnemyId, NewEnemy)
 	Enemies:AddEnemy(EnemyId, NewEnemy)
 end
 
@@ -51,6 +53,7 @@ function Controller:RemoveEnemy(Buffer: buffer)
 	local Enemy = Enemies:GetEnemy(EnemyId)
 
 	Enemies:RemoveEnemy(EnemyId)
+	EnemyOverheadGui:RemoveIndicator(EnemyId)
 
 	Effects:Play('Death', Enemy)
 
@@ -125,6 +128,8 @@ function Controller:EnterDaze(Buffer: buffer)
 	if Enemy.__Status.__Daze <= 0 then
 		Enemy.__Status:Daze(Enemy.__Status.__Max_Daze)
 	end
+
+	EnemyOverheadGui:UpdateDaze(EnemyId, 100)
 
 	Enemy:EnterDazedState()
 end

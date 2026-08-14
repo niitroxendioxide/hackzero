@@ -1,5 +1,6 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
@@ -29,6 +30,14 @@ function Service:Init()
 	Network.new('ReliableReplication', 'Event')
 
 	Network:On('Replicate', Service.ReplicateEvent)
+
+	RunService.Heartbeat:Connect(function(Delta: number)
+		for _, PlayerList in AgentLibrary.__Players do
+			for _, Agent in PlayerList do
+				Agent:Update(Delta)
+			end
+		end
+	end)
 end
 
 function Service:Create(Player: Player)
@@ -153,7 +162,6 @@ function Service:Rotate(Player: Player, Buffer: buffer)
 	local CurrentCharacter = Service:GetCurrentCharacter(Player)
 	CurrentCharacter:Rotate(Rebuilt)
 
-	--
 	Replicator:Rotate(Player, Rebuilt)
 end
 

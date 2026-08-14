@@ -39,15 +39,19 @@ return function(
     UseShuriken: boolean,
     LightTrail: boolean,
     Offset: CFrame?,
-    AreFire: boolean?
+    AreFire: boolean?,
+    CastEffect: boolean?
 ): ()
     --
     local KunaiVFX = Assets.Sasuke.Kunai
     local Model = Caster:GetModel()
 
+    
     local BaseModel = KunaiVFX.Kunai
     if UseShuriken then
         BaseModel = Assets.Sasuke.Shuriken
+    else
+        CastEffect = true
     end
 
     Offset = Offset or CFrame.new()
@@ -90,6 +94,16 @@ return function(
             Projectile.Handle.CFrame *= CFrame.Angles(0, math.pi * Delta * 2, 0)
         end
     end)
+
+    if CastEffect then
+        local VFXOffset = AreFire and CFrame.new(-0.243, 0.898, -1) or CFrame.new(0, 0, -1.75)
+
+        local CastVFX = Effects:Create(if AreFire then KunaiVFX.FireThrowableCast else KunaiVFX.ThrowableCast, 2)
+        CastVFX:PivotTo(Model:GetPivot() * VFXOffset)
+        Effects:Weld(CastVFX, Model.PrimaryPart)
+
+        Effects:Emit(CastVFX, true)
+    end
 
     task.spawn(function()
         local Length = os.clock()

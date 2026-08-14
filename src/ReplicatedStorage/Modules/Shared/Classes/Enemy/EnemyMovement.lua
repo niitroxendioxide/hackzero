@@ -200,7 +200,7 @@ function EnemyMovement:Update(Delta: number)
 			Movement = ProjectedMovement * (self.__Speed * self.__World_Speed) * Delta * World:GetSpeed()
 		end
 
-		local EntitiesHit = workspace:Spherecast(self.__Position, 1.5, ConvertedDirection * 2, Colliders)
+		local EntitiesHit = workspace:Raycast(self.__Position, ConvertedDirection * 2, Colliders)
 		if EntitiesHit then
 			local ProjectedMovement = Movement - Movement:Dot(EntitiesHit.Normal) * EntitiesHit.Normal
 

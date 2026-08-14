@@ -48,6 +48,10 @@ function EnemyClass:SetWorldSpeed(Speed: number, Time: number?)
 	self.__Movement:SetWorldSpeed(Speed, Time)
 end
 
+function EnemyClass.IsKnocked(self)
+	return self.__Status:IsKnocked()
+end
+
 function EnemyClass:Destroy()
 	self.__Movement:Destroy()
 
@@ -107,6 +111,14 @@ function EnemyClass:TakeAffliction(Type: string, Amount: number)
 
 	self.__Affliction:set(Affliction)
 	self.__Affliction_Type:set(Type)
+end
+
+function EnemyClass:GetAfflictionType()
+	return Fusion.peek(self.__Affliction_Type)
+end
+
+function EnemyClass:GetAffliction(Type: string)
+	return self.__Status:GetAffliction(Type)
 end
 
 function EnemyClass:ResetAffliction(Type: string)
@@ -260,14 +272,14 @@ function EnemyClass:Init(Key: number)
 
 	self.__Movement:SnapToFirstGround()
 	self.__Appearance:SetRotationResponsiveness(30)
+end
 
-	self.__Thread = ClockUtil:Heartbeat(function(delta: number)
-		if self.__Status:GetState() ~= 'Idle' then
-			self:Move(Vector3.zero)
-		end
+function EnemyClass:Update(Delta: number)
+	if self.__Status:GetState() ~= 'Idle' then
+		self:Move(Vector3.zero)
+	end
 
-		self.__Movement:Update(delta)
-	end)
+	self.__Movement:Update(Delta)
 end
 
 function EnemyClass:Knockback(Dir: Vector3, Pow: number, Time: number)

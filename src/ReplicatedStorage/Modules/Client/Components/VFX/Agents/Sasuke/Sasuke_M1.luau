@@ -15,13 +15,15 @@ return function(Caster, Offset: CFrame, no_vfx: boolean)
 
     Effects:ForModelParts(Hit_Effect, {
         Outer = function(Outermesh)
-            Effects:Tween(Outermesh.Decal, {.225, 'Sine'}, {Transparency = 1})
-            Effects:Tween(Outermesh.Mesh, { .175, 'Cubic' }, { Scale = Outermesh.Mesh.Scale * vector.create(1.25, 1, 1) })
-            Effects:Tween(Outermesh, { .3, 'Quart' }, { CFrame = Outermesh.CFrame * CFrame.new(-1.25, 0, 0) * CFrame.Angles(math.pi * .25, 0, 0) })
+            Effects:Tween(Outermesh.Decal, {.27, 'Sine'}, {Transparency = 1})
+            Effects:Tween(Outermesh.Mesh, { .2, 'Cubic' }, { Scale = Outermesh.Mesh.Scale * vector.create(1.45, 1.15, 1.15) })
+            Effects:Tween(Outermesh, { .35, 'Quart' }, { CFrame = Outermesh.CFrame * CFrame.new(-1.75, 0, 0) * CFrame.Angles(math.pi * .25, 0, 0) })
         end,
         Color = function(Innermesh)
-            Effects:Tween(Innermesh.Mesh, { .125, 'Quad' }, { Scale = Innermesh.Mesh.Scale * vector.create(1.35, 0, 0) })
-            Effects:Tween(Innermesh, { .25, 'Quart' }, { CFrame = Innermesh.CFrame * CFrame.new(-2, 0, 0) * CFrame.Angles(math.pi * .25, 0, 0) })
+            
+            Effects:Tween(Innermesh.Mesh, { .17, 'Quad' }, { Scale = Innermesh.Mesh.Scale * vector.create(1.45, 0, 0) })
+            Effects:Tween(Innermesh, { .27, 'Quart' }, { CFrame = Innermesh.CFrame * CFrame.new(-3.25, 0, 0) * CFrame.Angles(math.pi * .25, 0, 0) })
+            Innermesh.Mesh.Scale *= vector.create(1, 1.25, 1.25)
         end,
         Effect = function(vfx)
             if no_vfx then return end

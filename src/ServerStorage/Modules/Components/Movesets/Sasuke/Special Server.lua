@@ -36,8 +36,6 @@ function Ability:Play(Caster: Types.ServerAgent): ()
 						Ability:Effect("Substitution", { Caster }, true)
 					end)
 				end
-
-				Caster:UpdateMeter("Sharingan", 1)
 				
 				SasukeGameplayController:ConnectThread(Enemy, Caster)
 				Ability:Hit(Caster, Enemy, Ability:FromData("Hit", nil, Caster:GetSkillLevel(Ability.__Name)))

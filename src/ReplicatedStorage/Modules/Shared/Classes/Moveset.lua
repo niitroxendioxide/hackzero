@@ -170,11 +170,11 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 			end
 
 			-- #TODO: FIX WTV THIS IS
-			if (Agent :: AgentTypes.AgentClass).BlockRotation ~= nil then
+			--[[if (Agent :: AgentTypes.AgentClass).BlockRotation ~= nil then
 				local Time = Info.Base.LockRotation == true and Info.Base.Attack_State_Time or .075
 				
 				Agent:BlockRotation(Time)
-			end
+			end]]
 		end
 
 		if Type == 'Dodge' then

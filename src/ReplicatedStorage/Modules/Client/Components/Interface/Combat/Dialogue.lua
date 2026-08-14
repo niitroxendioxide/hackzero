@@ -1,5 +1,4 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
 
 local Client = ReplicatedStorage.Modules.Client
 local Assets = ReplicatedStorage.Assets

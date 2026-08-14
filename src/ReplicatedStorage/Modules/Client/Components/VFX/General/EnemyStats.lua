@@ -1,7 +1,5 @@
 ---
-local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local RunService = game:GetService('RunService')
-
+--[[local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Assets = ReplicatedStorage.Assets
 local Client = ReplicatedStorage.Modules.Client
@@ -13,13 +11,40 @@ local Fusion = require(Client.Libraries.Fusion)
 local IconDatabase = require(Shared.Database.Icons)
 
 local Scope = Fusion.scoped(Fusion)
-local peek = Fusion.peek
+local peek = Fusion.peek]]
 
 ---
-return function(Enemy: Types.EnemyClass)
-	if typeof(Enemy) == 'nil' then return end
+return function(Enemy)
+	--[[if typeof(Enemy) == 'nil' then return end
+
+	if true then return end
 
 	local Indicator = Effects:Create(Assets.Interface.Combat.BillboardFight, 10)
+	local Billboard = Indicator.Billboard
+	local Gui = Billboard.BillboardGui
+
+	Billboard.Parent = Enemy:GetModel().Head
+	Billboard.Position = Vector3.yAxis * 2.5
+
+	--
+	Gui.Meters.Health.Main.UIGradient.Offset = Vector2.new(.2, 0)
+
+	Scope:Observer(Enemy.__Affliction_Type):onChange(function()
+		local Element = peek(Enemy.__Affliction_Type)
+
+		for _, Item in Gui.Effect.Bar:GetChildren() do
+			Item.ImageLabel.ImageColor3 = IconDatabase.Elements.Colors[Element].Meter
+		end
+
+		Gui.Effect.Icon.Image = IconDatabase.Elements[Element]
+		Gui.Effect.Icon.ImageColor3 = IconDatabase.Elements.Colors[Element].Main
+		Gui.Effect.Icon.UIGradient.Color = IconDatabase.Elements.Colors[Element].Gradient
+
+		Effects:Tween(Gui.Effect.UIScale, {.45, 'Back', 'Out'}, {Scale = 1})
+	end)]]
+end
+
+--[[local Indicator = Effects:Create(Assets.Interface.Combat.BillboardFight, 10)
 	local Billboard = Indicator.Billboard
 	local Gui = Billboard.BillboardGui
 
@@ -98,5 +123,4 @@ return function(Enemy: Types.EnemyClass)
 		Gui.Effect.Bar['1'].ImageLabel.UIGradient.Rotation = 180 - 181 * TopPart
 		Gui.Effect.Bar['2'].ImageLabel.UIGradient.Rotation = 360 - 181 * LowPart
 		Gui.Effect.Visible = true
-	end)
-end
+	end)]]

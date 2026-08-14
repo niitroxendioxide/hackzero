@@ -34,6 +34,8 @@ function Service:Create(Player: Player)
             AgentDataClass = AgentData
         end
 
+        if AgentData == nil then continue end
+
         local AgentInstance = ServerAgentClass.new(AgentDataClass.Name, AgentData.Level, AgentDataClass.Skills, AgentDataClass.Ascensions)
 
         if AgentDataClass.Drive then

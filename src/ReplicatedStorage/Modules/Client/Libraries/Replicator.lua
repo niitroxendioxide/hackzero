@@ -7,8 +7,6 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
-local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
-local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 
 --
 local Controller = {

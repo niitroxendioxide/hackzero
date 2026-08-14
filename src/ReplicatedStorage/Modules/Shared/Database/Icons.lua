@@ -154,7 +154,6 @@ return {
 		Earth = PREFIX .. 108297083537522,
 		Wind = PREFIX .. 88351380181917,
 
-
 		Colors = {
 			Ice = {
 				Main = RGB(66, 164, 255),

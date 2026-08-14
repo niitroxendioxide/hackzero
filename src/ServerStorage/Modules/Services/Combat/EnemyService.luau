@@ -1,5 +1,6 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService('ServerStorage')
 
 local Shared = ReplicatedStorage.Modules.Shared
@@ -38,6 +39,20 @@ function Service:Init()
 
 	Service.EnemyDied = Signal.new();
 	Service.EventEnemiesCleared = Signal.new();
+
+	local EnemyUpdateTime = os.clock()
+	RunService.Heartbeat:Connect(function(rawDelta: number)
+		if (os.clock() - EnemyUpdateTime) < 1 / 24 then
+			return
+		end
+
+		local Delta = os.clock() - EnemyUpdateTime
+		EnemyUpdateTime = os.clock()
+
+		for _, Enemy in Service.__EnemyCache do
+			Enemy:Update(Delta)
+		end
+	end)
 end
 
 function Service:LoadEnemies(Player: Player)
@@ -83,7 +98,6 @@ function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string
 		Spawn = RandomSpawn[math.random(1, #RandomSpawn)]
 
 		if not Spawn then 
-			print('no spawns') 
 			return 
 		end
 	end

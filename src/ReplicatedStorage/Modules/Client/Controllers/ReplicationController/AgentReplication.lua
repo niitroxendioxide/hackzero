@@ -1,10 +1,12 @@
 --
+local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Companion = require(Client.Classes.Companion)
 local Companions = require(Client.Libraries.Companions)
 local CompanionsDatabase = require(Shared.Database.Companions)
@@ -41,7 +43,6 @@ local function LoadAllCharacterAnimations(Name: string)
 		return
 	end
 
-	local UserCharacter = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
 	local CharacterAnims = ReplicatedStorage.Assets.Animations.Characters
 	local GivenCharacterDir = CharacterAnims:FindFirstChild(Name)
 	if not GivenCharacterDir then
@@ -49,17 +50,21 @@ local function LoadAllCharacterAnimations(Name: string)
 	end
 
 	AnimsLoaded[Name] = true
+	local AnimTable = {}
 
-	for _, AnimationObject in GivenCharacterDir:GetDescendants() do
+	for _, AnimationObject: Animation in GivenCharacterDir:GetDescendants() do
 		if not AnimationObject:IsA('Animation') then
 			continue
 		end
-		
-		local Track = AnimLib:Play(UserCharacter, AnimationObject, 1, 1, 5)
-		Track:Destroy()
 
-		task.wait(0.1)
+		table.insert(AnimTable, AnimationObject)
 	end
+
+	ContentProvider:PreloadAsync(AnimTable, function(Id, Status): ...any
+		if Status == Enum.AssetFetchStatus.Failure then
+			Debugger:DebugLine("ContentProvider.PreloadAsync", "Failed to load animation with id:" .. Id, 5)
+		end
+	end)
 end
 
 --

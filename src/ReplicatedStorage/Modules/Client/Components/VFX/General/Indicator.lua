@@ -144,7 +144,7 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 		local Number = string.sub(NumberToString, i, i)
 		local X_Size = tonumber(Number) == nil and 0.07 or 0.1
 		if IsText then 
-			X_Size = 0.11
+			X_Size = 0.1
 		end
 
 		local Exists = Indicator.Holder.Main:FindFirstChild(tostring(i))

@@ -61,6 +61,10 @@ function Quests:AddQuest(Player: Player, Type: QuestType, Data: {[string]: any})
     end
 
     local PlayerData = DataService:GetDataFor(Player)
+    if not PlayerData or not PlayerData.Quests then
+        return
+    end
+
     local Directory = PlayerData.Quests[Type]
     if not Directory then
         return

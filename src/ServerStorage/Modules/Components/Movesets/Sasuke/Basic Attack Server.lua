@@ -25,8 +25,8 @@ local function ShootShurikensWithData(Caster: Types.ServerAgent, Info: { number 
 		ShurikenHit.Affliction_Buildup += 10;
 	end
 
-	for i = Amount // 2, -Amount // 2, -math.sign(Amount) do
-		local new_Angle = Angle * i;
+	for i = 1, Amount do
+		local new_Angle = -(Angle / 2) + (Angle * (i - 1) / (Amount - 1))
 		local Origin = Caster:GetPivot() * CFrame.Angles(0, math.rad(new_Angle), 0)
 
 		local Projectile; Projectile = Ability:CreateMovingHitbox(Caster, Origin, ShurikenSize, 95, 1, function(Target)
@@ -39,7 +39,8 @@ end
 local function HandleShurikenBarrage(Caster: Types.ServerAgent, Target: Types.ServerEnemy)
 	Ability:Save(Caster, "Holding", true)
 	
-	Caster:SwitchState("Attacking", 2.15)
+	local EditedSpeed =  Caster:GetStat('Speed') * Ability:FromData("Speed") * Ability:FromData("Animation_Speed")
+	Caster:SwitchState("Attacking", 2.15 / EditedSpeed)
 
 	local DelayedOrigin = os.clock()
 	local Started = os.clock()
@@ -48,7 +49,7 @@ local function HandleShurikenBarrage(Caster: Types.ServerAgent, Target: Types.Se
 	local Finished = false;
 	
 	while (Ability:Get(Caster, "Holding") == true) do
-		if (os.clock() - Started) >= 2.15 then
+		if (os.clock() - Started) >= (2.15 / EditedSpeed) then
 			Finished = true
 			break
 		end
@@ -57,17 +58,17 @@ local function HandleShurikenBarrage(Caster: Types.ServerAgent, Target: Types.Se
 			return false
 		end
 
-		if Batch < 3 and (os.clock() - Started >= 1.45) then
+		if Batch < 3 and (os.clock() - Started >= (1.45 / EditedSpeed)) then
 			Batch = 3
 			DelayedTime = 0.65
 			Caster:Walk(0.45, -1.25)
 			DelayedOrigin = os.clock()
 
 			local ConfigData = Ability:FromData("ShurikenConfigs", Batch)
-			task.delay(0.3, function()
+			task.delay(0.3 / EditedSpeed, function()
 				ShootShurikensWithData(Caster, ConfigData)
 			end)
-		elseif Batch < 2 and (os.clock() - Started >= .7) then
+		elseif Batch < 2 and (os.clock() - Started >= (.7 / EditedSpeed)) then
 			Batch = 2
 			DelayedTime = 0.23
 			Caster:Walk(0.1, -1)
@@ -75,13 +76,13 @@ local function HandleShurikenBarrage(Caster: Types.ServerAgent, Target: Types.Se
 
 			local ConfigData = Ability:FromData("ShurikenConfigs", Batch)
 			ShootShurikensWithData(Caster, ConfigData)
-		elseif Batch < 1 and (os.clock() - Started >= .233) then
+		elseif Batch < 1 and (os.clock() - Started >= (.233 / EditedSpeed)) then
 			Batch = 1
 			DelayedTime = 0.3
 			DelayedOrigin = os.clock()
 
 			local ConfigData = Ability:FromData("ShurikenConfigs", Batch)
-			task.delay(0.2, function()
+			task.delay(0.2 / EditedSpeed, function()
 				Caster:Walk(0.1, -1)
 				ShootShurikensWithData(Caster, ConfigData)
 			end)
@@ -102,8 +103,6 @@ local function HandleShurikenBarrage(Caster: Types.ServerAgent, Target: Types.Se
 
 		task.delay(RemainingTime, function()
 			if Finished then return end
-
-			Caster:SwitchState("Attacking", 0.225)
 		end)
 		
 		return false

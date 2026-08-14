@@ -138,6 +138,8 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}, SubLookup:
             for _, Object in Map.Markers:GetChildren() do
                 if Object.Name == MarkerId then
                     Object.Transparency = 1;
+                    Object.CanQuery = false;
+                    Object.CanCollide = false;
                     table.insert(PartList, Object)
                 end
             end

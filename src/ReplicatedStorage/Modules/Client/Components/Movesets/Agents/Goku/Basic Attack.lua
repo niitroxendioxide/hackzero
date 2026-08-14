@@ -1,7 +1,6 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
@@ -177,7 +176,7 @@ end
 function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
 	local M1_Count = Ability:Get(Caster, 'Count')
 	local Meter = Caster:GetMeter("SaiyanSurge")
-	
+
 	Ability:Save(Caster, "last_hit_enemy", Context.Target);
 	
 	local ActiveWaitThread = Ability:Get(Caster, 'ActiveWaitThread')

@@ -14,7 +14,12 @@ local AbilityClass = require(Client.Classes.Ability)
 local EnemyList = {}
 local Ability = AbilityClass.new(true)
 
-Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster: Types.Caster)  
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster: Types.Caster) 
+	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
+	if not InMode then
+		return
+	end
+	
 	EnemyList = {}
 
 	local AllEnemies = Enemies:GetAll()
@@ -41,33 +46,70 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster
 end)
 
 
-local function Default(Caster: Types.Caster, Attack: Types.Sequence)
-	Attack:Add(0, function()
-		Ability:PlayAnimation(Caster, 'Goku.Abilities.Special.EX_Default_Kick', {})
-	end)
+local function Default(Caster: Types.Caster, Target: Types.ClientEnemy, Attack: Types.Sequence)
 	
-	Attack:Add(0.25, function()
+	if (Target == nil) or (not Target:IsAirborne()) then
+		local AttackTime = Ability:FromData('Attack_State_Time');	
+		Attack:Add(0, function()
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime, true)
+			Ability:PlayAnimation(Caster, 'Goku.Abilities.Special.EX_Default_Kick', {})
+		end)
 		
-		local was_hit = false;
-		Ability:CreateHitbox(Caster, Vector3.zAxis*-5, vector.create(9, 5, 9), function(Enemy)
+		Attack:Add(0.25, function()
+			
+			local was_hit = false;
+			Ability:CreateHitbox(Caster, Vector3.zAxis*-5, vector.create(9, 5, 9), function(Enemy)
 
-			if was_hit == false then
-				was_hit = true
-				Ability:Effect("Goku_UpliftEffect", Caster);
+				if was_hit == false then
+					was_hit = true
+					Ability:Effect("Goku_UpliftEffect", Caster);
+				end
+
+				Ability:Hit(Caster, Enemy, {
+					EffectData = Ability:FromData("Hit_Effect_Data"), 
+					Track = 'Characters.Goku.Abilities.Special.LauncherTarget'
+				})
+			end)
+
+		end)
+	else
+		local DiskTime, DiskSpeed = Ability:FromData("DiskTime"), Ability:FromData("DiskSpeed")
+		local IsAirborne = Caster:IsAirborne()
+		local ExtraTime = (not IsAirborne and Ability:FromData("GroundExtraTime") or 0)
+		local AttackTime = Ability:FromData('DestructoDiskTime') + ExtraTime
+
+		Attack:Add(0, function()
+			local Track = 'Goku.Abilities.Special.DestructoDiskAir'
+			local Res = Ability:MatchAirborneHeights(Caster, Target, 1.5, false, 0.175);
+			if Res == GameEnum.AirborneMatchState.Raised then
+				Track = 'Goku.Abilities.Special.DestructoDiskGround'
+				Ability:Effect("Goku_RaiseVfx", Caster)
 			end
 
-			Ability:Hit(Caster, Enemy, {
-				EffectData = Ability:FromData("Hit_Effect_Data"), 
-				Track = 'Characters.Goku.Abilities.Special.LauncherTarget'
+			Ability:PlayAnimation(Caster, Track, {
+				Active_Time = 1,
 			})
+			
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime, true)
 		end)
 
-	end)
+		Attack:Add(0.18 + ExtraTime, function()
+			Ability:Effect("Goku_DestructoDisk", Caster, true)
+		end)
+
+		Attack:Add(0.5 + ExtraTime, function()
+			Ability:Effect("Goku_DestructoDisk", Caster, false, DiskTime, DiskSpeed)
+		end)
+	end
+	
 end
 
 local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, EnemiesToCycle: {[any]: any})
 	--
 	Attack:Add(0, function()
+		local AttackTime = 0.6 + math.max(#EnemiesToCycle - 1, 0) * 0.25
+		Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime, true)
+
 		Ability:PlayAnimation(Caster, 'Goku.Abilities.Special.EX_Slam', {
 			Active_Time = 0.65,
 			Fade = 0.1,
@@ -132,23 +174,12 @@ function Ability:Play(Caster: Types.Caster, _, _, Context: {[any]: any})
 		else {}
 
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
-	local AttackTime = Ability:FromData('Attack_State_Time', 1);
-	if InMode then
-		AttackTime = 0.6 + math.max(#EnemiesToCycle - 1, 0) * 0.25
-	end
-
-	local Attack = Ability:Begin(Caster, {
-
-		{0, function()
-			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime, true)
-		end},
-
-	}, true);
+	local Attack = Ability:Begin(Caster, {}, true);
 
 	if InMode then
 		ModeVersion(Caster, Attack, EnemiesToCycle)
 	else
-		Default(Caster, Attack)
+		Default(Caster, Context.Target, Attack)
 	end
 
 	Attack:Start()

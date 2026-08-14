@@ -1,22 +1,21 @@
 return {
-	Display_Name = 'Sazuki Uchiro',
-	Nickname = 'Sazuki',
-	Element = 'Fire',
+	Display_Name = 'Laluz Vibrania',
+	Nickname = 'Lulu',
+	Element = 'Physical',
 	Role = 'Attack',
 	Tier = "Legendary",
 	Faction = "Team 7",
 
 	
-	IconGlowColor = Color3.fromRGB(255, 222, 199),
+	IconGlowColor = Color3.fromRGB(171, 97, 255),
 
 	Appearance = {
 		Height = 2.85
 	},
 
 	ImportantStats = {
-		'Attack',
-        'Critical_Rate',
-		'Critical_Damage',
+		'Defense',
+		'Energy_Regeneration'
 	},
 
 	--
@@ -69,9 +68,9 @@ return {
 				
 				ShurikenSize = vector.create(5, 5),
 				ShurikenConfigs = {
-					{2, 4},
-					{2, -4},
-					{4, -4},
+					{3, 4},
+					{3, -4},
+					{6, -4},
 				},
 
 				Attack_Data = {
@@ -82,10 +81,10 @@ return {
 					[2]   = {0.267, .33, 1.1, 0.15, 1.35},
 					[2.1] = {0.7, 0.767, 0, .233, 1.25},
 					[3]   = {0.217, .267, 1.5, 0.175, 1.15},
-					[3.1] = {0.567, 0, 0, .433, -1.4},
+					[3.1] = {0.567, 0, 0, .35, -1.5},
 				},
 
-				HitboxSize = vector.create(8, 5, 9),
+				HitboxSize = vector.create(5, 5, 7),
 				HitboxOffset = vector.create(0, 0, -4),
 
 				Hit = {
@@ -95,7 +94,7 @@ return {
 					Stun = 0.4,
 					Knockback = {
 						vector.create(0, 0, 1),
-						19,
+						15,
 						0.1,
 					}
 				},

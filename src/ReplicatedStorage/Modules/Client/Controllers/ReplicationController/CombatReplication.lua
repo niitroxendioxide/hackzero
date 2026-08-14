@@ -22,6 +22,7 @@ local InterfaceController = require(Client.Controllers.InterfaceController)
 
 local AgentsDatabase = require(Shared.Database.Characters)
 local DestructiblesDatabase = require(Shared.Database.Destructibles)
+local EnemyOverheadGui = require(Client.Libraries.EnemyStatusIndicator)
 
 
 --
@@ -56,7 +57,7 @@ function Controller:UseSkill(Buffer: buffer, Extra: {})
 		local XZ = Vector3.new(1, 0, 1)
 
 		local LookAt = CFrame.lookAt(ActiveAgent:GetPivot().Position * XZ, AgentEnemy:GetPivot().Position * XZ).LookVector
-		ActiveAgent:Look(LookAt)
+		ActiveAgent:Look(LookAt, true, true)
 	end
 
 	if Key == 'Dodge' then
@@ -192,7 +193,12 @@ function Controller:ProcessDodge(Buffer: buffer)
 	AgentObject:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
 	AgentObject:AddTag('Dodge_Counter_Tag', Statics.Dodge_Counter_React_Time)
 	AgentObject:AddTag('Invulnerability', Statics.Dodge_Invulnerability_Time)
-	Effects:Play('Dodge', Statics.Dodge_Invulnerability_Time)
+	
+	if PlayerId == Players.LocalPlayer:GetAttribute('ReplicationId') then
+		Effects:Play('Dodge', Statics.Dodge_Invulnerability_Time)
+	else
+		Effects:Play('Indicator', AgentObject, {Text = 'DODGE', Critical = true})
+	end
 end
 
 
@@ -210,6 +216,7 @@ function Controller:DisplayDamage(Buffer: buffer)
 		Type = 'Shatter'
 		EnemyObject = Enemies.__Last_Enemy_Pos[EnemyId]
 	else
+		EnemyOverheadGui:UpdateHealth(EnemyId, EnemyHealth)
 		EnemyObject:SetHealth(EnemyHealth)
 	end
 
@@ -227,6 +234,7 @@ function Controller:DazeEnemy(Buffer: buffer)
 	end
 
 	EnemyObject:TakeDaze(Amount)
+	EnemyOverheadGui:UpdateDaze(EnemyId, EnemyObject.__Status.__Daze)
 end
 
 function Controller:DamageAgent(Buffer: buffer)
@@ -288,7 +296,17 @@ function Controller:FillAffliction(Buffer: buffer)
 		return
 	end
 
+	local CurrentActiveAffliction = EnemyObject:GetAfflictionType();
 	EnemyObject:TakeAffliction(Type, Amount)
+
+	if Type == CurrentActiveAffliction then
+		CurrentActiveAffliction = nil;
+	else
+		CurrentActiveAffliction = Type;
+	end
+
+	local CurrentAfflictionFill = EnemyObject:GetAffliction(Type);
+	EnemyOverheadGui:UpdateAffliction(EnemyId, CurrentAfflictionFill, CurrentActiveAffliction)
 end
 
 function Controller:ResetAffliction(Buffer: buffer)
@@ -301,7 +319,13 @@ function Controller:ResetAffliction(Buffer: buffer)
 		return
 	end
 
+	local CurrentActiveAffliction = EnemyObject:GetAfflictionType();
+	if Type == CurrentActiveAffliction then
+		CurrentActiveAffliction = nil;
+	end
+
 	EnemyObject:ResetAffliction(Type)
+	EnemyOverheadGui:UpdateAffliction(EnemyId, 0, CurrentActiveAffliction)
 end
 
 function Controller:AddEffect(Buffer: buffer, Effect: AgentTypes.EffectParameters)

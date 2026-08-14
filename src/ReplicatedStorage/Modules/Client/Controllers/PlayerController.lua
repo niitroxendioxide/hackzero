@@ -11,7 +11,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
-local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
 local Trove = require(Shared.Utility.Trove)
@@ -65,6 +65,20 @@ function Controller:Init(): ()
 	end
 
 	local RunningTrack = nil;
+
+	local EnemyUpdateTime = os.clock()
+	RunService.Heartbeat:Connect(function(rawDelta: number)
+		if (os.clock() - EnemyUpdateTime) < 1 / 24 then
+			return
+		end
+
+		local Delta = os.clock() - EnemyUpdateTime
+		EnemyUpdateTime = os.clock()
+
+		for _, Enemy in Enemies:GetAll() do
+			Enemy:Update(Delta)
+		end
+	end)
 
 	RunService:BindToRenderStep('PlayerControllerMainLoop', Enum.RenderPriority.Camera.Value, function(Delta: number)
 		if not FightEnabled then

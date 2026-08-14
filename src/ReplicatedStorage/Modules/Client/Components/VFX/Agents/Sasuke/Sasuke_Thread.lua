@@ -125,7 +125,7 @@ return function(Caster: Types.AgentClass, EnemyId: number, Type: number, fn): ()
         Effects:Tween(Object.FireTrail, {0.3, 'Sine'}, {Width0 = 0, Width1 = 0})
         Effects:CleanUp(Object, 2)
 
-        Library:Play("Sasuke_FireExplosion", EnemyObject:GetPivot())
+        --Library:Play("Sasuke_FireExplosion", EnemyObject:GetPivot())
 
         EnemyObject:Hit()
     end

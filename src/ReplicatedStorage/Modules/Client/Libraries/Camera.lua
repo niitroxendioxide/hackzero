@@ -212,6 +212,8 @@ function Camera:Update(delta: number)
 	local CameraObject = workspace.CurrentCamera
 	CameraObject.CameraType = Enum.CameraType.Scriptable
 
+	delta = math.min(delta, 1)
+
 	if not(Camera.__Subject) or (Camera:GetCurrentUser() ~= nil) then
 		return
 	end
@@ -274,7 +276,7 @@ function Camera:Update(delta: number)
 		local Value = LookAtPart and 75 or 70
 		CameraObject.FieldOfView = Value
 	end
-	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * Factor)
+	CameraObject.CFrame = CameraCFrame -- CameraObject.CFrame:Lerp(CameraCFrame, delta * Factor)
 
 	--[[
 	---

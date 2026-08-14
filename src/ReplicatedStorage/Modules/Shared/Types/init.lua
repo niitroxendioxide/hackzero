@@ -409,6 +409,7 @@ export type ServerEnemyClass = {
 	GetAfflictionStackedDamage: (self: ServerEnemyClass, Affliction: Element) -> (number),
 	ResetAffliction: (self: ServerEnemyClass, Affliction: Element) -> (),
 	GetAffliction: (self: ServerEnemyClass, Affliction: Element) -> (number),
+	GetAfflictionType: (self: ServerEnemyClass) -> (string),
 
 	Rotate: (self: ServerEnemyClass, Direction: Vector3) -> (),
 	PivotTo: (self: ServerEnemyClass, At: CFrame) -> (),

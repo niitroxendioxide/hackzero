@@ -173,43 +173,46 @@ function ServerAgentClass.Init(self: Types.ServerAgentClass, Player: Player)
 	self.__Player_Assigned = Player
 
 	--
-	local ReplicationClock = os.clock()
-
 	self:SetMaxHealth(self:GetStat("Health"), true)
 
-	self.__Main_Thread = RunService.Heartbeat:Connect(function(Delta: number)
-		self.__Status:Update(Delta)
-
-		--
-		if (os.clock() - ReplicationClock) > 1/(2.5) then
-			ReplicationClock = os.clock()
-			Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self)
-		end
-
-		for _, MeterData in self.__Status:GetAllMeters() do
-			if (os.clock() - MeterData.LastUpdate >= 1) and (MeterData.Fill or MeterData.Empty) then
-				local Change = MeterData.Fill and MeterData.FillSpeed or MeterData.Empty and -MeterData.EmptySpeed
-				local Previous = MeterData.Value
-
-				MeterData.LastUpdate = os.clock()
-				MeterData.Value = math.clamp(MeterData.Value + Change, 0, MeterData.Max)
-
-				if Previous ~= MeterData.Value then
-					local hasEmptied = (Previous > MeterData.Value and MeterData.Value <= 0)
-					if hasEmptied and MeterData.EmptiedHandler then
-						task.spawn(MeterData.EmptiedHandler)
-					elseif (Previous < MeterData.Value and MeterData.Value == MeterData.Max) and MeterData.FilledHandler then
-						task.spawn(MeterData.FilledHandler)
-					end
-				end
-
-				local Percent = MeterData.Value / MeterData.Max
-				Replicator:UpdateMeter(self, MeterData.Id, MeterData.Value, Percent)
-			end
-		end
-	end)
+	--[[self.__Main_Thread = RunService.Heartbeat:Connect(function(Delta: number)
+		
+	end)]]
 
 	return self.__Character:Init()
+end
+
+function ServerAgentClass.Update(self: Types.ServerAgentClass, Delta: number)
+	self.__Status:Update(Delta)
+	self.__Replication_Clock = self.__Replication_Clock or os.clock()
+
+	--
+	if (os.clock() - self.__Replication_Clock) > 1/(2.5) then
+		self.__Replication_Clock = os.clock()
+		Replicator:UpdateCurrentEnergy(self.__Player_Assigned, self)
+	end
+
+	for _, MeterData in self.__Status:GetAllMeters() do
+		if (os.clock() - MeterData.LastUpdate >= 1) and (MeterData.Fill or MeterData.Empty) then
+			local Change = MeterData.Fill and MeterData.FillSpeed or MeterData.Empty and -MeterData.EmptySpeed
+			local Previous = MeterData.Value
+
+			MeterData.LastUpdate = os.clock()
+			MeterData.Value = math.clamp(MeterData.Value + Change, 0, MeterData.Max)
+
+			if Previous ~= MeterData.Value then
+				local hasEmptied = (Previous > MeterData.Value and MeterData.Value <= 0)
+				if hasEmptied and MeterData.EmptiedHandler then
+					task.spawn(MeterData.EmptiedHandler)
+				elseif (Previous < MeterData.Value and MeterData.Value == MeterData.Max) and MeterData.FilledHandler then
+					task.spawn(MeterData.FilledHandler)
+				end
+			end
+
+			local Percent = MeterData.Value / MeterData.Max
+			Replicator:UpdateMeter(self, MeterData.Id, MeterData.Value, Percent)
+		end
+	end
 end
 
 function ServerAgentClass.UpdateMeter(self: Types.ServerAgentClass, Meter: string, Amount: number)

@@ -194,75 +194,82 @@ function ServerEnemy:Init(Key: number)
 		return warn('Cannot initialize an enemy with an empty id')
 	end
 
+	self.__Enemy_Active = true
 	self.__EnemyId = Key
 
 	self.Name = `"{self.__Name}"-id:{self.__EnemyId}`
 
 	--
-	--local NextAttack = os.clock()
-	local Clock = os.clock()
-	local RandomRotation = os.clock()
-	local FocusTarget = os.clock()
-	self.__Snapfix = os.clock()
+	self.__Clocks = {
+		Base = os.clock(),
+		Focus = os.clock(),
+		Rotation = os.clock(),
+	}
+	self.__Snapfix = os.clock() + Rng:NextNumber(0, 1)
+
 	self.__Movement:SnapToFirstGround()
-	self.__Thread = ClockUtil:Heartbeat(function(delta: number)
-		--
-		local CurrentTarget = self:GetTarget()
-		if self:GetState() == 'Attacking' and os.clock() - Clock > 1/30 then
-			Clock = os.clock()
-			self:TrackCurrentTarget()
-		elseif os.clock() - Clock > 1 / 5 and self:GetState() == 'Idle' then
-			Clock = os.clock()
-
-			if CurrentTarget then
-				self:Rotate(CurrentTarget:GetPivot().Position)
-			else
-				if os.clock() - RandomRotation > 1.5 then
-					RandomRotation = os.clock()
-					local RandomPos = (self:GetPivot() * CFrame.Angles(0, Random.new():NextNumber(-math.pi, math.pi), 0) * CFrame.new(0, 0, -5)).Position
-
-					self:Rotate(RandomPos)
-				end
-			end
-		end
-		
-		local TargetActive = if CurrentTarget ~= nil then (CurrentTarget:IsActive() or CurrentTarget:HasTag('CanBeTargetted')) else false
-		if os.clock() - FocusTarget > 1 / 2 or (os.clock() - FocusTarget > 1 / 6 and not TargetActive) then
-			FocusTarget = os.clock()
-			self:FindRandomAggro()
-		end
-
-		if os.clock() - self.__Snapfix > 1 / 8 or self:IsAbilityMoving() then
-			self.__Snapfix = os.clock()
-			Replicator:PivotEnemy(self.__EnemyId, self:GetPivot())
-		end
-
-		local DistanceToTarget = (CurrentTarget and (CurrentTarget:GetPivot().Position - self:GetPivot().Position).Magnitude) or 12
-		if DistanceToTarget > 120 then
-			self.__Current_Target = nil
-		end
-
-		if (os.clock() - self.__LastMovement > self.__Next) and self:GetState() == 'Idle' then
-			self.__LastMovement = os.clock()
-
-			self.__Next = Rng:NextNumber(0.5, 3)
-
-			local Frontback = Rng:NextInteger(-1, 1)
-			if DistanceToTarget >= 22.5 then
-				Frontback = -1
-			end
-
-			self:Move(Vector3.new(Rng:NextInteger(-1, 1), 0, Frontback))
-		end
-
-		if (DistanceToTarget < 5) or self:GetState() ~= 'Idle' then
-			self:Move(Vector3.zero)
-		end
-
-		self.__Movement:Update(delta)
-	end)
 
 	return;
+end
+
+function ServerEnemy.Update(self: Types.ServerEnemyClass, delta: number)
+	local Clock = self.__Clocks.Base
+	local RandomRotation = self.__Clocks.Rotation
+	local FocusTarget = self.__Clocks.Focus
+
+	local CurrentTarget = self:GetTarget()
+	if self:GetState() == 'Attacking' and os.clock() - Clock > 1/30 then
+		self.__Clocks.Base = os.clock()
+		self:TrackCurrentTarget()
+	elseif os.clock() - Clock > 1 / 5 and self:GetState() == 'Idle' then
+		self.__Clocks.Base = os.clock()
+
+		if CurrentTarget then
+			self:Rotate(CurrentTarget:GetPivot().Position)
+		else
+			if os.clock() - RandomRotation > 1.5 then
+				self.__Clocks.Rotation = os.clock()
+				local RandomPos = (self:GetPivot() * CFrame.Angles(0, Random.new():NextNumber(-math.pi, math.pi), 0) * CFrame.new(0, 0, -5)).Position
+
+				self:Rotate(RandomPos)
+			end
+		end
+	end
+	
+	local TargetActive = if CurrentTarget ~= nil then (CurrentTarget:IsActive() or CurrentTarget:HasTag('CanBeTargetted')) else false
+	if os.clock() - FocusTarget > 1 / 2 or (os.clock() - FocusTarget > 1 / 6 and not TargetActive) then
+		self.__Clocks.Focus = os.clock()
+		self:FindRandomAggro()
+	end
+
+	if os.clock() - self.__Snapfix > 1 / 5 or self:IsAbilityMoving() then
+		self.__Snapfix = os.clock()
+		Replicator:PivotEnemy(self.__EnemyId, self:GetPivot())
+	end
+
+	local DistanceToTarget = (CurrentTarget and (CurrentTarget:GetPivot().Position - self:GetPivot().Position).Magnitude) or 12
+	if DistanceToTarget > 120 then
+		self.__Current_Target = nil
+	end
+
+	if (os.clock() - self.__LastMovement > self.__Next) and self:GetState() == 'Idle' then
+		self.__LastMovement = os.clock()
+
+		self.__Next = Rng:NextNumber(0.5, 3)
+
+		local Frontback = Rng:NextInteger(-1, 1)
+		if DistanceToTarget >= 22.5 then
+			Frontback = -1
+		end
+
+		self:Move(Vector3.new(Rng:NextInteger(-1, 1), 0, Frontback))
+	end
+
+	if (DistanceToTarget < 5) or self:GetState() ~= 'Idle' then
+		self:Move(Vector3.zero)
+	end
+
+	self.__Movement:Update(delta)
 end
 
 function ServerEnemy:GetId(): number
