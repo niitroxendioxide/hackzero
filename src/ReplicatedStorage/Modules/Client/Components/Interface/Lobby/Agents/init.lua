@@ -15,6 +15,7 @@ local World = workspace:FindFirstChild("World")
 
 local Effects = require(ReplicatedStorage.Modules.Client.Libraries.Effects)
 local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
+local Artifacts = require(ReplicatedStorage.Modules.Shared.Database.Artifacts)
 local Icons = require(ReplicatedStorage.Modules.Shared.Database.Icons)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
@@ -657,6 +658,7 @@ function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
         if ExistingItem.Id.Value == Artifact.Id then return end
     end
 
+    local DbArtifact = Artifacts:Get(Artifact.Name)
     local NewObject = Assets.Interface.Agents.Items.ListItemArtifact:Clone()
     NewObject.Name = Artifact.Id
     NewObject.Id.Value = Artifact.Id
@@ -668,7 +670,10 @@ function Component:AddArtifact(Artifact: Types.PlayerArtifactData)
     end)
 
     local HasModel = UIUtils:CreateArtifactModel(Artifact.Name, Artifact.Slot, NewObject.Viewport, Artifact.Id)
-    NewObject.ItemIcon.Visible = not HasModel
+    if not HasModel then
+        NewObject.ItemName.Text = DbArtifact.Name or Artifact.Name
+        NewObject.ItemName.Visible = true
+    end
 
     NewObject.Parent = Holder
 end

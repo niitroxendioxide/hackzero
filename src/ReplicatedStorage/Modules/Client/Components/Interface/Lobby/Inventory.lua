@@ -162,6 +162,10 @@ local function SetFilter(FilterName: string, State: boolean)
         end
     end
 
+    if FilterName == 'Artifact' or FilterName == 'Drive' then
+        CreateDrivesAndArtifacts()
+    end
+
     --
     local MainFrame = Component:GetFrame()
     local InvFrame = MainFrame.InventoryFrame
@@ -192,13 +196,12 @@ local function SetFilter(FilterName: string, State: boolean)
             continue
         end
 
-        local Type = Object.Type.Value
-
         if AllInactive then
             Object.Visible = true
             continue
         end
 
+        local Type = Object.Type.Value
         local TextMatches = (string.match(string.lower(Object.ObjName.Value), Lower) == Lower)
 
         if (not IsTypeFilter and State) then
@@ -292,9 +295,10 @@ local function SelectItem(ItemId: string)
 end
 
 local OrderTypes = {
-    ['Drive'] = 1,
-    ['Artifact'] = 2,
-    ['Item'] = 3,
+    ['Item'] = 1,
+    ['Chip'] = 3,
+    ['Drive'] = 500,
+    ['Artifact'] = 900,
 }
 local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', ItemData: Types.PlayerDriveData & Types.PlayerArtifactData & DataTypes.PlayerItemData)
     local MainFrame = Component:GetFrame()
@@ -327,8 +331,15 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
     if Type == 'Drive' then
         local DriveData = DrivesDatabase:GetDriveData(ItemData.Name)
 
-        ObjectDesign.DriveIcon.Image = Prefix .. DriveData.IconId
-        ObjectDesign.DriveIcon.Visible = true
+        if (DriveData.IconId == 0) then
+            ObjectDesign.ItemName.Text = (DriveData.Name or ItemData.Name)
+            ObjectDesign.DriveIcon.Visible = false
+            ObjectDesign.ItemName.Visible = true
+        else
+            ObjectDesign.DriveIcon.Image = Prefix .. DriveData.IconId
+            ObjectDesign.DriveIcon.Visible = true
+        end
+        
         ObjectDesign.ItemIcon.Visible = false
         ObjectDesign.Level.Visible = true
         ObjectDesign.Level.Label.Text = 'Lv. '..ItemData.Level
@@ -341,9 +352,13 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
         local HasModel = UIUtils:CreateUpgradeChipModel(ChipName, Tier, ObjectDesign.Viewport)
         if HasModel then
             ObjectDesign.ItemIcon.Visible = false
-        elseif (ItemInfo and ItemInfo.Icon)then
+        elseif (ItemInfo and ItemInfo.Icon > 0)then
             ObjectDesign.ItemIcon.Visible = true
             ObjectDesign.ItemIcon.Image = Prefix .. ItemInfo.Icon
+        else
+            ObjectDesign.ItemIcon.Visible = false
+            ObjectDesign.ItemName.Visible = true
+            ObjectDesign.ItemName.Text = (ItemInfo.Name or ItemData.Name)
         end
     else
         ObjectDesign.DriveIcon.Visible = false
@@ -358,9 +373,13 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
         local HasModel = UIUtils:CreateArtifactModel(ItemData.Name, ItemData.Slot, ObjectDesign.Viewport, ItemId)
         if HasModel then
             ObjectDesign.ItemIcon.Visible = false
-        elseif (ItemInfo and ItemInfo.Icon)then
+        elseif (ItemInfo and ItemInfo.Icon > 0)then
             ObjectDesign.ItemIcon.Visible = true
             ObjectDesign.ItemIcon.Image = Prefix .. ItemInfo.Icon
+        else
+            ObjectDesign.ItemIcon.Visible = false
+            ObjectDesign.ItemName.Visible = true
+            ObjectDesign.ItemName.Text = (ItemInfo.Name or ItemData.Name)
         end
     end
 
@@ -378,37 +397,57 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
     InventoryObject.Parent = InventoryFrame.ItemList
 end
 
-local function CreateAllItems()
+function CreateDrivesAndArtifacts()
+    local AllInactive = true
+    for _, FilterState in Filters do
+        if FilterState then
+            AllInactive = false
+        end
+    end
+
     local Count = 0;
     for _, Drive in LocalData:GetDrives() do
+        if Filters['Drive'] ~= true and not AllInactive then
+            break
+        end
+
         CreateItem(Drive.Id, 'Drive', Drive)
 
         Count += 1;
-        if Count > 50 then
+        if Count > 35 then
             Count = 0
-            task.wait(1/10)
+            task.wait()
         end
     end
 
     for _, Artifact in LocalData:GetArtifacts() do
+        if Filters['Artifact'] ~= true and not AllInactive then
+            break
+        end
+
         CreateItem(Artifact.Id, 'Artifact', Artifact)
 
         Count += 1;
-        if Count > 50 then
+        if Count > 35 then
             Count = 0
-            task.wait(1/10)
+            task.wait()
         end
     end
+end
 
+local function CreateAllItems()
+    local Count = 0;
     for _, Item in LocalData:GetItems() do
         CreateItem(Item.Name, 'Item', Item)
 
         Count += 1;
-        if Count > 50 then
+        if Count > 35 then
             Count = 0
-            task.wait(1/10)
+            task.wait()
         end
     end
+
+    CreateDrivesAndArtifacts();
 end
 
 
@@ -431,6 +470,9 @@ function Component:Init()
     for _, FilterName in UsedFilters do
         CreateFilterBtn(FilterName)
     end
+
+    SetFilter('Item', true)
+    SetFilter('Chip', true)
 
     ShowItemInfo(nil)
     Component:BindToStateChange(function(State: boolean)
