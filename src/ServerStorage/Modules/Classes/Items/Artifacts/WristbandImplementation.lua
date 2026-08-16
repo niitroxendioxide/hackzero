@@ -5,13 +5,8 @@ local ArtifactClass = require(Classes.Items.Artifact)
 
 local ArtifactObject = ArtifactClass.new('Wristband')
 
-ArtifactObject:OnEffectProcess(function(Data, PieceCount: number)
-	if Data.Element == 'Physical' then
-
-	end
-end)
-
-ArtifactObject:OnHitProcess("After", function()
+ArtifactObject:OnHitProcess("After", function(Data, PieceCount)
+	if PieceCount < 4 then return end
 
 end)
 

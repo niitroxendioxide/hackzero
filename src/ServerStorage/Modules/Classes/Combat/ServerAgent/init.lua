@@ -120,11 +120,10 @@ function ServerAgentClass.IsBeingAttacked(self: Types.ServerAgentClass)
 end
 
 function ServerAgentClass.GetStat(self: Types.ServerAgentClass, Name: Types.Stat): number
-	local Base = self.__Status:GetStat(Name)
-	local Effects = self.__Status:GetStatEffects(Name)
-	local ItemAdded = self.__Items:GetTotalAddedStat(Name)
-	local GearAdded = self.__Gear:GetAddedGearStat(Name)
-
+	local Base = self.__Status:GetStat(Name) or 0
+	local Effects = self.__Status:GetStatEffects(Name) or 0
+	local ItemAdded = self.__Items:GetTotalAddedStat(Name) or 0
+	local GearAdded = self.__Gear:GetAddedGearStat(Name) or 0
 	
 	local Total = Base + ItemAdded + GearAdded + Effects
 	
@@ -361,10 +360,10 @@ function ServerAgentClass.PivotTo(self: Types.ServerAgentClass, Place: CFrame, r
 	self.__Character:PivotTo(Place)
 
 	if not(replicator_inside_call) then
-		Replicator:PivotTo(self.__Player_Assigned, Place)
+		Replicator:PivotTo(self, Place)
 
 		-- second call because it excludes the player
-		Replicator:PivotTo(self.__Player_Assigned, Place, self.__Player_Assigned)
+		Replicator:PivotTo(self, Place, self.__Player_Assigned)
 	end
 end
 
@@ -520,6 +519,14 @@ function ServerAgentClass.AddEffect(self: Types.ServerAgentClass, EffectParams: 
 	Replicator:AddEffect(self, EffectParams)
 
 	return Effect
+end
+
+function ServerAgentClass.ChangeEffect(self: Types.ServerAgentClass, Tag: string, Amt: number?, Restart: boolean?): Types.EffectObject
+	local RestartedThread = self.__Status:ChangeEffect(Tag, Amt, Restart)
+
+	Replicator:ChangeEffect(self, Tag, Amt, RestartedThread)
+
+	return RestartedThread
 end
 
 function ServerAgentClass.RefreshEffect(self: Types.ServerAgentClass, EffectTag: string)

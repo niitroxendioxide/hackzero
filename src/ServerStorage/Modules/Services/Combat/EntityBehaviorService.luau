@@ -340,16 +340,31 @@ local Service = {
 
 function Service:Init()
 
-    RunService.Heartbeat:Connect(function(Delta: number)
-        for _, Default in Service.BehaviorDefault do
-            local Entity = Enemies:GetEnemy(Default.EntityId)
+    local LastUpdate = os.clock()
 
-            if (os.clock() - Default.UpdateClock) >= 1 then
+    RunService.Heartbeat:Connect(function(_: number)
+        local Delta = os.clock() - LastUpdate
+        if (Delta < 1 / 16) then
+            return
+        end
+
+        LastUpdate = os.clock()
+
+        for Index = #Service.BehaviorDefault, 1, -1 do
+            local Default = Service.BehaviorDefault[Index];
+            local Entity = Enemies:GetEnemy(Default.EntityId)
+            if Entity == nil or not Entity:IsAlive() then
+                table.remove(Service.BehaviorStates, Index)
+
+                continue
+            end
+
+
+            local TimeSinceLastUpdate = os.clock() - Default.UpdateClock
+            if (TimeSinceLastUpdate) >= 1 then
                 Default.UpdateClock = os.clock()
 
-                task.spawn(function()
-                    Entity:Attack()
-                end)
+                Entity:Attack()
             end
         end
 

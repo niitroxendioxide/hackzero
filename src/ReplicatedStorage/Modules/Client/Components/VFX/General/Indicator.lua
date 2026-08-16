@@ -120,6 +120,11 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 		Effects:Tween(Indicator.Holder, {.6, 'Back', 'Out'}, {Size = UDim2.fromScale(7, 3)})
 	end
 
+	if IsText then
+		Indicator.Holder.Size = UDim2.fromScale(Indicator.Holder.Size.X.Scale * 1.25, Indicator.Holder.Size.Y.Scale * 1.25)
+		Indicator.Holder.StudsOffset += vector.create(0, 0, 0.01)
+	end
+
 	if typeof(At) == 'table' and At.GetPivot then
 		Indicator.Position = At:GetModel():GetPivot().Position
 		Indicator.Name = At:GetId()..'indicatorobj'
@@ -135,7 +140,7 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 
 	table.insert(Threads[Indicator], ClearThread)
 	table.insert(Threads[Indicator], task.delay(10, function()
-		if typeof(At) == 'table' then
+		if typeof(At) == 'table' and typeof(Counter[At]) == 'number' then
 			Counter[At] -= 1
 		end
 	end))
@@ -144,7 +149,7 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 		local Number = string.sub(NumberToString, i, i)
 		local X_Size = tonumber(Number) == nil and 0.07 or 0.1
 		if IsText then 
-			X_Size = 0.1
+			X_Size = 0.09
 		end
 
 		local Exists = Indicator.Holder.Main:FindFirstChild(tostring(i))
@@ -159,7 +164,7 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 
 		Object.UIStroke.Thickness = 0
 		Effects:Tween(Object.UIStroke, {.35, 'Quad'}, {Thickness = 0.12})
-		if Data.Critical or Burst then
+		if (Data.Critical or Burst) and not Data.ForceStroke then
 			Object.UIStroke.Color = White
 			Effects:Tween(Object.UIStroke, {.3}, {Color = Color3.fromRGB(115, 115, 115)})
 		else

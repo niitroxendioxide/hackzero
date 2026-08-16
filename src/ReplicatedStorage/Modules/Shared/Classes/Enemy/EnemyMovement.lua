@@ -3,12 +3,18 @@ local RunService = game:GetService('RunService')
 
 --
 local Shared = ReplicatedStorage.Modules.Shared
+local Environment = require(ReplicatedStorage.Modules.Shared.Environment)
 local PhysicsHelper = require(ReplicatedStorage.Modules.Shared.Libraries.PhysicsHelper)
 local World = require(Shared.World)
 local WorldFolder = workspace:FindFirstChild("World")
 
 --
 local DEBUG_ENEMY_POSITIONS = false
+if RunService:IsServer() then
+	local ServerStorage = game:GetService("ServerStorage")
+	local settings = require(ServerStorage.Modules[".testenv"].settings)
+	DEBUG_ENEMY_POSITIONS = settings.REPLICATE_CONSTANTS.ENEMY_LOCATIONS
+end
 
 --
 local EnemyMovement = {}
@@ -119,6 +125,15 @@ function EnemyMovement:CreateCollider()
 		self.__debug_collider.Anchored = true
 		self.__debug_collider.Shape = Enum.PartType.Cylinder
 		self.__debug_collider.Parent = workspace
+
+		---
+		local coneIndicator = Instance.new("ConeHandleAdornment")
+		coneIndicator.Height = 5
+		coneIndicator.Radius = 0.25
+		coneIndicator.Color3 = self.__debug_collider.Color
+		coneIndicator.Shading = Enum.AdornShading.XRayShaded
+		coneIndicator.Parent = self.__debug_collider
+		coneIndicator.Adornee = self.__debug_collider
 	end
 
 	self.__Enemy_Collider = Instance.new('Part')
@@ -128,7 +143,7 @@ function EnemyMovement:CreateCollider()
 	self.__Enemy_Collider.CanCollide = false
 	self.__Enemy_Collider.Anchored = false
 	self.__Enemy_Collider.Shape = Enum.PartType.Cylinder
-	self.__Enemy_Collider.Transparency = 1
+	self.__Enemy_Collider.Transparency = RunService:IsClient() and Environment.DISPLAY_COLLIDERS and 0.75 or 1
 	self.__Enemy_Collider.Parent = RunService:IsClient() and WorldFolder.Entities.Colliders or (workspace:FindFirstChild("Camera") :: Camera):FindFirstChild("Enemy_Collisions")
 
 	local Weld = Instance.new('WeldConstraint')

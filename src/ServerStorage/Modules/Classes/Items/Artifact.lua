@@ -53,6 +53,16 @@ function ArtifactClass.OnHitProcess(self: Types.AgentArtifactClass, State: Types
 	return;
 end
 
+function ArtifactClass.OnEvent(self: Types.AgentArtifactClass, State: string, Event: (Data: any) -> (number, number))
+	if self.__Events[State] ~= nil then
+		return warn('function', self.__Events[State], 'already bound to event: ', State)
+	end
+
+	self.__Events[State] = Event
+
+	return;
+end
+
 function ArtifactClass.GetEventFor(self: Types.AgentArtifactClass, Name: string): ()
 	return self.__Events[Name]
 end

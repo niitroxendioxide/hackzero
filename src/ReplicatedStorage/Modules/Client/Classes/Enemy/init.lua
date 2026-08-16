@@ -15,6 +15,7 @@ local AnimatorClass = require(script:WaitForChild('Animator'))
 local MovementClass = require(Shared.Classes.Enemy.EnemyMovement)
 local AppearanceClass = require(Client.Classes.Appearance)
 local Fusion = require(Client.Libraries.Fusion)
+local EnemyOverheadGui = require(Client.Libraries.EnemyStatusIndicator)
 
 --
 local EnemyClass = {} :: {new: (At: Vector3, Name: string) -> Types.EnemyClass, [string]: (self: Types.EnemyClass, any) -> any}
@@ -134,6 +135,7 @@ end
 function EnemyClass:EnterDazedState()
 	return self.__Status:EnterDazedState(function(Value: number)
 		self.__Daze:set(Value)
+		EnemyOverheadGui:UpdateDaze(self:GetId(), Fusion.peek(self.__Daze))
 	end)
 end
 

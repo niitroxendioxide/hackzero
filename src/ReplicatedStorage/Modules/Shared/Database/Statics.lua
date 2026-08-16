@@ -155,6 +155,18 @@ return {
 
 	Switch_Character_Dash_Strength = 45,
 
+	Affliction_Tick_Damage = {
+		Energy = {
+			Time = 0.5,
+			Ticks = 20,
+		},
+
+		Fire = {
+			Time = 0.75,
+			Ticks = 20,
+		},
+	} :: { [string]:  {Time: number, Ticks: number} },
+
 
 	Get_Agent_Experience_For_Level = function(Level: number)
 		local Amount = (Level - 1);

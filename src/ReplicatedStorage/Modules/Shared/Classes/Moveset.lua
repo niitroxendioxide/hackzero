@@ -182,8 +182,11 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 		end
 
 		AbilityModule.__Held[Agent] = true
-		AbilityModule:Play(Agent, Type, 'Begin', Context)
 		self.__Last_Use[Agent][Type] = os.clock()
+
+		task.spawn(function()
+			AbilityModule:Play(Agent, Type, 'Begin', Context)
+		end)
 
 		--
 		return true;
@@ -247,13 +250,16 @@ function MovesetClass:Release(Type: string, Caster: AgentTypes.AgentClass, Conte
 
 		--print(`{Type} last used with agent: {Agent.Name} on:`.. os.clock() - LastUse)
 		if RunService:IsClient() then
-			local Enemy = self.__Assigned[Type]:Connect(Caster, 2, Context.IsCancel);
+			local Enemy = AbilityModule:Connect(Caster, 2, Context.IsCancel);
 			Context.Target = Enemy;
 		end
 
 		AbilityModule.__Held[Caster] = false
-		AbilityModule:Play(Caster, Type, 'End', Context)
-		AbilityModule[Type] = os.clock()
+		self.__Last_Use[Caster][Type] = os.clock()
+
+		task.spawn(function()
+			AbilityModule:Play(Caster, Type, 'Release', Context)
+		end)
 
 
 		return true;

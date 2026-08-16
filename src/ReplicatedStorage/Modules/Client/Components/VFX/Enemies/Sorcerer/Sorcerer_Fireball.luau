@@ -60,7 +60,11 @@ return function(Caster: Types.Caster, State: string): ()
 
         task.delay(1, CleanUp)
 
-        Effects:MoveProjectile(FireballVfx, vector.create(5, 5), 135, 1, function(): boolean  
+        Effects:MoveProjectile(FireballVfx, vector.create(5, 5), 135, 1, function(Target): boolean 
+            if not Target:CanBeHit() then
+                return;
+            end
+
             CleanUp()
 
             local HitVFX = Effects:Create(FireballFX.BlastHit, 1)

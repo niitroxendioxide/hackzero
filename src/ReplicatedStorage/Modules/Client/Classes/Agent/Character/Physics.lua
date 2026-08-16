@@ -311,7 +311,7 @@ function PhysicsClass:CreateCollider()
 	local WorldFolder = workspace:FindFirstChild('World') :: Folder
 	local Collider = Instance.new('Part')
 	Collider.Size = Vector3.new(4, self.__Height * 1.5873015873, 3)
-	Collider.Transparency = Environment.DISPLAY_COLLIDERS and 0.25 or 1
+	Collider.Transparency = Environment.DISPLAY_AGENT_HITBOXES and 0.25 or 1
 	Collider.Color = Color3.new(1)
 	Collider.CastShadow = false
 	Collider.Anchored = true

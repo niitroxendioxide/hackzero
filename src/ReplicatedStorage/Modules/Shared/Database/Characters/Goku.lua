@@ -1,7 +1,7 @@
 return {
 	Display_Name = 'Sonku (Z)',
 	Nickname = 'Kokun (Z)',
-	Element = 'Energy',
+	Element = 'Physical',
 	Role = 'Affliction',
 	Tier = "Legendary",
 	Faction = "Z Warriors",
@@ -99,7 +99,7 @@ return {
 					Damage = 140,
 					Daze = 20,
 					Affliction_Buildup = 90,
-					Affliction = 'Energy',
+					Affliction = 'Physical',
 					HitsAirborne = true,
 					Stun = 0.4,
 					Knockback = {
@@ -113,7 +113,7 @@ return {
 					Damage = 175,
 					Daze = 10,
 					Affliction_Buildup = 115,
-					Affliction = 'Energy',
+					Affliction = 'Physical',
 					HitsAirborne = true,
 					Stun = 0.5,
 					Knockback = {
@@ -128,7 +128,7 @@ return {
 					Damage = 120,
 					Daze = 25,
 					Affliction_Buildup = 75,
-					Affliction = 'Energy',
+					Affliction = 'Physical',
 					HitsAirborne = true,
 					Stun = 0.5,
 					Knockback = {
@@ -140,7 +140,7 @@ return {
 
 				Hit_Data = {
 					HitType = 'Blunt',
-					Affliction = 'Energy',
+					Affliction = 'Physical',
 					HitsAirborne = true,
 					Stun = 0.325,
 					Knockback = {
@@ -330,7 +330,7 @@ return {
 					Damage = 350;
 					Daze = 22;
 					Affliction_Buildup = 35;
-					Affliction = 'Energy';
+					Affliction = 'Physical';
 					HitType = 'Blunt';
 					Stun = 0.65;
 					HitsAirborne = true;

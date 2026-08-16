@@ -14,6 +14,7 @@ return {
 		UpdateEnergy = 14,
 		UpdateUltBar = 15,
 		AddEffect = 16,
+		ChangeEffect = 161,
 		RemoveEffect = 17,
 		AddGear = 18,
 		RemoveGear = 19,
@@ -163,6 +164,11 @@ return {
 		BeforeCancel = 2,
 	},
 
+	ArtifactEvents = {
+		SkillCasted = '_skc',
+		AgentSwitchedIn = "_agswi", 
+	},
+
 	Afflictions = {
 		Physical = 0,
 		Fire = 1,
@@ -171,6 +177,8 @@ return {
 		Energy = 4,
 		Earth = 5,
 		Water = 6,
+		Antimatter = 7,
+		Electric = 8,
 		Default = 70,
 	},
 
@@ -192,7 +200,7 @@ return {
 
 	AbilityStates = {
 		Begin = 1,
-		End = 2,
+		Release = 2,
 		Cancel = 3,
 	},
 

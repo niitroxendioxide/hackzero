@@ -64,7 +64,7 @@ local function HandleParryAbility(Caster)
 end
 
 function Ability:Play(Caster: Types.Caster, _, State, Context:{ read M1_Count: number }): ()
-	if State == 'End' then
+	if State == 'Release' then
 		Ability:Save(Caster, "Holding", false)
 
 		return

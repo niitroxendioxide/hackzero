@@ -99,27 +99,11 @@ function GearStore.RunHook(self: AgentTypes.ServerGearManager, HookId: GearTypes
 end
 
 function GearStore.RunEffectProcesses(self: AgentTypes.ServerGearManager, Event_Data: AgentTypes.ProcessEventData)
-    local CountList = self.__Items:GetArtifactPieceEffects()
-
-    for _, Item in self.__Objects do
-        local ItemType = tostring(Item)
-
-        if ItemType == 'ArtifactClass' then
-            local ArtifactCount = CountList[Item.Name] or 0
-
-            if ArtifactCount >= 2 then
-                local Effect = Item:GetEventFor('Effect')
-                if not Effect then
-                    continue
-                end
-
-                task.spawn(Effect, Event_Data, ArtifactCount)
-            end
-        end
-    end
+    return self:RunEventHooks('Effect', Event_Data)
 end
 
 function GearStore.RunHitProcesses(self: AgentTypes.ServerGearManager, State: AgentTypes.HitProcessState, Event_Data: AgentTypes.ProcessEventData)
+    --[[
     local CountList = self.__Items:GetArtifactPieceEffects()
 
     for _, Item in self.__Objects do
@@ -129,6 +113,27 @@ function GearStore.RunHitProcesses(self: AgentTypes.ServerGearManager, State: Ag
             local ArtifactCount = CountList[Item.Name] or 0
             if ArtifactCount >= 2 then
                 local Effect = Item:GetEventFor(State .. "Hit")
+                if not Effect then
+                    continue
+                end
+
+                task.spawn(Effect, Event_Data, ArtifactCount)
+            end
+        end
+    end]]
+    return self:RunEventHooks(State .. 'Hit', Event_Data)
+end
+
+function GearStore.RunEventHooks(self: AgentTypes.ServerGearManager, State: string, Event_Data: AgentTypes.ProcessEventData)
+    local CountList = self.__Items:GetArtifactPieceEffects()
+
+    for _, Item in self.__Objects do
+        local ItemType = tostring(Item)
+
+        if ItemType == 'ArtifactClass' then
+            local ArtifactCount = CountList[Item.Name] or 0
+            if ArtifactCount >= 2 then
+                local Effect = Item:GetEventFor(State)
                 if not Effect then
                     continue
                 end

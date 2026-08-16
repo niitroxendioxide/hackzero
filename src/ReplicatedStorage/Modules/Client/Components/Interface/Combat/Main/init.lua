@@ -115,10 +115,14 @@ function Component:Init()
 		Scope:Spring(Icon_Positions[6], 20, .7)
 	}
 
+	local EffectIconCache = {}
 	local function CleanUpEffectIcons()
 		for _, EffectObj in EffectsFrame:GetChildren() do
 			if EffectObj:IsA("Frame") then
 				EffectObj:Destroy()
+				if EffectIconCache[EffectObj] then
+					task.cancel(EffectIconCache[EffectObj])
+				end
 			end
 		end
 	end
@@ -133,22 +137,42 @@ function Component:Init()
 		--
 		local Object = InterfaceAssets.Combat.Effects.EffectObj:Clone()
 		Object.Name = AgentName..Effect.Id
+		Object.Counter.Visible = Effect.Amount > 1 
 		Object.Icon.Image = IconDatabase.PREFIX .. IconId
 		Object.Timer.Visible = Effect.Time ~= nil
 		Object.Parent = EffectsFrame
 
+		if Object.Counter.Visible then
+			Object.Counter.Label.Text = tostring(Effect.Amount)
+		end
 
 		if Effect.Time then
-			local TimeLeft = Effect.Time - (os.clock() - Effect.Created)
-			local Size = UDim2.fromScale(1, TimeLeft / Effect.Time)
-			Object.Timer.Fill.Size = Size
-			EffectUtil:Tween(Object.Timer.Fill, {TimeLeft}, {Size = UDim2.fromScale(1, 0)})
+			EffectIconCache[Object] = task.spawn(function()
+				while true do
+					local CurrentCharges = Effect.Amount;
+					Object.Counter.Label.Text = tostring(Effect.Amount)
+					if CurrentCharges <= 0 then
+						break
+					end
+
+					local TimeLeft = Effect.Time - (os.clock() - Effect.Created)
+					local Size = UDim2.fromScale(1, TimeLeft / Effect.Time)
+					Object.Timer.Fill.Size = Size
+					EffectUtil:Tween(Object.Timer.Fill, {TimeLeft}, {Size = UDim2.fromScale(1, 0)})
+
+					task.wait(TimeLeft)
+				end
+			end)
 		end
 	end
 
 	local function RemoveEffectIcon(Id: string)
 		local Object = EffectsFrame:FindFirstChild(Id)
 		if Object then
+			if EffectIconCache[Object] then
+				task.cancel(EffectIconCache[Object])
+			end
+
 			Object.Name = '__destroying'
 			EffectUtil:Tween(Object.UIScale, {.2, 'Quad'}, {Scale = 0})
 			EffectUtil:CleanUp(Object, .2)
@@ -243,6 +267,20 @@ function Component:Init()
 				return;
 			end
 	
+			AddEffectIcon(Agent.Name, EffectObj)
+		end
+	end)
+
+	InterfaceStates.EffectReset:Connect(function(AgentId: number, EffectObj)
+		local Agent, ActiveAgentId = CharacterLibrary:GetCurrent(ReplicationId())
+
+		--print(AgentId, ActiveAgentId)
+		if AgentId == ActiveAgentId and Agent then
+			if EffectObj.Hide then
+				return;
+			end
+	
+			RemoveEffectIcon(Agent.Name..EffectObj.Id)
 			AddEffectIcon(Agent.Name, EffectObj)
 		end
 	end)

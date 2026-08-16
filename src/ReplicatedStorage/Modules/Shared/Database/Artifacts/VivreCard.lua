@@ -7,8 +7,8 @@ return {
 
 	Piece_Effects = {
 		Two_Piece = {
-			Health = "12%",
-			Attack = "10%",
+			["Health%"] = 12,
+			["Attack%"] = 10,
 		},
 
 		Four_Piece = {},

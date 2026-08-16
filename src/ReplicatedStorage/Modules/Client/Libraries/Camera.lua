@@ -8,7 +8,6 @@ local Inputs = require(ReplicatedStorage.Modules.Client.Libraries.Inputs)
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local World = require(Shared.World)
 local Effects = require(Shared.Utility.Effects)
-local Enemies = require(Shared.Libraries.Enemies)
 
 --
 local Rad, Clamp = math.rad, math.clamp
@@ -276,7 +275,7 @@ function Camera:Update(delta: number)
 		local Value = LookAtPart and 75 or 70
 		CameraObject.FieldOfView = Value
 	end
-	CameraObject.CFrame = CameraCFrame -- CameraObject.CFrame:Lerp(CameraCFrame, delta * Factor)
+	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * Factor)
 
 	--[[
 	---

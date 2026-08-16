@@ -212,8 +212,6 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
     local EnemyBuffs = EventData.EnemyBuffs or {}
     local NextWaveTime = 0.5
 
-    
-
     if #EnemyWaves <= 0 or WaveNumber > #EnemyWaves then
         self:SetBarrierCollision(false)
 
@@ -228,7 +226,7 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
     for i = 1, #CurrentWave do
         local EnemyType = CurrentWave[i].Name
         local EnemyCount = CurrentWave[i].Amount
-        local EnemyLevel = CurrentWave[i].LevelZ
+        local EnemyLevel = CurrentWave[i].Level
 
         Total += EnemyCount
         local NewBuffs = table.clone(EnemyBuffs)

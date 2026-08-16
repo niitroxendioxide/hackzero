@@ -792,7 +792,7 @@ function Service:GetCompanions(Player: Player, Filter: ((Companion: CompTypes.Pl
     end
 
     local List = {}
-    for _, Companion in CompanionList do
+    for _, Companion in (CompanionList or {}) do
         if Filter(Companion) then
             if First then
                 return Companion

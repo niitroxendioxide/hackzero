@@ -21,6 +21,7 @@ local function HandleParryAbility(Agent, Target)
 	Ability:Save(Agent, "Holding", true)
 
 	Agent:AddTag('CharacterStatic')
+	Agent:AddTag('CanBeTargetted')
 	local CurrentTrack = Ability:PlayAnimation(Agent, "Chihiro.Abilities.M1.ParryInit", {})
 	Agent:SwitchState("Attacking", 9e12)
 	
@@ -50,6 +51,7 @@ local function HandleParryAbility(Agent, Target)
 	end
 
 	Agent:RemoveTag('CharacterStatic')
+	Agent:RemoveTag('CanBeTargetted')
 
 	if ActivatedParry then
 		Ability:Effect("Chihiro_Stance", Agent)

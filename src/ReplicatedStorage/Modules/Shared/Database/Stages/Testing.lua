@@ -111,7 +111,7 @@ return {
                     Global = true,
 
                     Finished = function(State: Types.EventHandlerState): string
-                        return "NextStage"
+                        return "Begin"
                     end
                 },
 

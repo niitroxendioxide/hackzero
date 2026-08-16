@@ -1,9 +1,11 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Ping = require(ServerStorage.Modules.Libraries.Ping)
 local Companions = require(Shared.Types.Companions)
 local CompanionsDatabase = require(Shared.Database.Companions)
 local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
@@ -113,19 +115,27 @@ function Replicator:Move(Player: Player, Target: Player?)
 
 
 	if Target then
-		Network:Fire('Replicate', Target, Object)
+		Network:Fire('ReliableReplication', Target, Object)
 	else
-		Network:FireForAllBut(Player, 'Replicate', Object)
+		Network:FireForAllBut(Player, 'ReliableReplication', Object)
 	end
 end
 
-function Replicator:PivotTo(Player: Player, At: CFrame, Target: Player?)
-	local Object = buffer.create(12)
+function Replicator:PivotTo(Agent: AgentTypes.ServerAgentClass, At: CFrame, Target: Player?)
+	local Player = Agent.__Player_Assigned;
+	local RepId = Player:GetAttribute("ReplicationId")
+	local AgentId = Agents:GetIdForPlayer(RepId, Agent)
+
+	local PlayerPing = math.floor(Ping:Get(Player) * 1000)
+
+	local Object = buffer.create(15)
 	buffer.writeu8(Object, 0, GameEnum.Replication.PivotTo)
-	buffer.writeu8(Object, 1,  Player:GetAttribute("ReplicationId") :: number)
-	buffer.writef32(Object, 2, At.X)
-	buffer.writef32(Object, 6, At.Z)
-	buffer.writei16(Object, 10, At.Y * 100)
+	buffer.writeu8(Object, 1, RepId :: number)
+	buffer.writeu8(Object, 2, AgentId)
+	buffer.writef32(Object, 3, At.X)
+	buffer.writef32(Object, 7, At.Z)
+	buffer.writei16(Object, 11, At.Y * 100)
+	buffer.writeu16(Object, 13, PlayerPing)
 
 	if Target then
 		Network:Fire('Replicate', Target, Object, At)
@@ -139,7 +149,7 @@ function Replicator:Stop(Player: Player)
 	buffer.writeu8(Object, 0, GameEnum.Replication.Stop)
 	buffer.writeu8(Object, 1,  Player:GetAttribute("ReplicationId") :: number)
 
-	Network:FireForAllBut(Player, 'Replicate', Object)
+	Network:FireForAllBut(Player, 'ReliableReplication', Object)
 end
 
 function Replicator:Rotate(Player: Player, Direction: Vector3, Target: Player?)
@@ -151,9 +161,9 @@ function Replicator:Rotate(Player: Player, Direction: Vector3, Target: Player?)
 	buffer.writeu8(Object, 3,  Player:GetAttribute("ReplicationId") :: number)
 
 	if Target then
-		Network:Fire('Replicate', Target, Object)
+		Network:Fire('ReliableReplication', Target, Object)
 	else
-		Network:FireForAllBut(Player, 'Replicate', Object)
+		Network:FireForAllBut(Player, 'ReliableReplication', Object)
 	end
 end
 
@@ -249,6 +259,22 @@ function Replicator:RemoveEffect(Agent: AgentTypes.ServerAgentClass, EffectId: n
 	buffer.writeu8(Object, 1, PlayerRepId)
 	buffer.writei8(Object, 2, Id)
 	buffer.writeu8(Object, 3, EffectId)
+
+	Network:FireForAll('Replicate', Object)
+end
+
+function Replicator:ChangeEffect(Agent: AgentTypes.ServerAgentClass, Tag: string, Amt: number, Restart: boolean?)
+	local Player = Agent.__Player_Assigned
+	local PlayerRepId = Player:GetAttribute("ReplicationId") :: number
+	local Id = Agents:GetIdForPlayer(PlayerRepId, Agent) :: number
+
+	local Object = buffer.create(5 + #Tag)
+	buffer.writeu8(Object, 0, GameEnum.Replication.ChangeEffect)
+	buffer.writeu8(Object, 1, PlayerRepId)
+	buffer.writei8(Object, 2, Id)
+	buffer.writeu8(Object, 3, Amt)
+	buffer.writeu8(Object, 4, (Restart == true) and 1 or 0)
+	buffer.writestring(Object, 5, Tag, #Tag)
 
 	Network:FireForAll('Replicate', Object)
 end

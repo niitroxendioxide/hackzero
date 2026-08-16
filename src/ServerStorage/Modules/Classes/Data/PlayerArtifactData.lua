@@ -15,7 +15,7 @@ local CharacterDatabase = require(Database.Characters)
 local PlayerArtifactDataClass = {}
 PlayerArtifactDataClass.__index = PlayerArtifactDataClass;
 
-function PlayerArtifactDataClass.new(ArtifactData: Types.PlayerArtifactData, AgentEquipped: Types.PlayerAgentDataClass?): ()
+function PlayerArtifactDataClass.new(ArtifactData: Types.PlayerArtifactData, AgentEquipped: Types.PlayerAgentDataClass?): (Types.PlayerArtifactDataClass)
     local self = setmetatable({}, PlayerArtifactDataClass)
 
     -- Requires another parameter

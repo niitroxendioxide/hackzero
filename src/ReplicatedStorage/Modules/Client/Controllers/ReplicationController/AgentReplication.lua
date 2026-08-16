@@ -162,20 +162,23 @@ end
 
 function Controller:PivotTo(Buffer: buffer)
 	local UserId = buffer.readu8(Buffer, 1)
-	local X, Z = buffer.readf32(Buffer, 2), buffer.readf32(Buffer, 6)
-	local Y = buffer.readi16(Buffer, 10) / 100
+	local AgentId = buffer.readu8(Buffer, 2)
+	local X, Z = buffer.readf32(Buffer, 3), buffer.readf32(Buffer, 7)
+	local Y = buffer.readi16(Buffer, 11) / 100
 	local Vector = Vector3.new(X, Y, Z)
+	local Ping = (buffer.readu16(Buffer, 13) / 1000)
 
-	local Character = CharacterLibrary:GetCurrent(UserId)
+	local Character = CharacterLibrary:GetAgent(UserId, AgentId)
 	if not Character then
 		return
-	end
+	end 
 
 	if IsOwnId(UserId) then
 		Character:MarkServerAction(GameEnum.Replication.PivotTo)
 	end
 
 	Character:PivotTo(CFrame.lookAlong(Vector, Character.__Character.__Controller.__Rotation), true)
+	Character:Update(Ping)
 end
 
 function Controller:KeySwitch(Buffer: buffer, Value: boolean)

@@ -7,7 +7,7 @@ return {
 
 	Piece_Effects = {
 		Two_Piece = {
-			Energy_Regeneration = "25%",
+			["Energy_Regeneration%"] = 25,
 		},
 
 		Four_Piece = {

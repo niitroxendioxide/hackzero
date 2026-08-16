@@ -22,6 +22,7 @@ local module = {
 	},
 
 	EffectAdded = Signal.new(),
+	EffectReset = Signal.new(),
 	EffectRemoved = Signal.new(),
 
 	Health = {

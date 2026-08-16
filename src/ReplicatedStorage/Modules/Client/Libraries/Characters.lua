@@ -329,10 +329,7 @@ function Characters:GetAllHitboxes()
 	local HitboxList = {}
 	for userId, PlayerAgents in Characters.__Player_Data do
 		for _, Agent in PlayerAgents.List do
-			if Characters:GetCurrent(userId) == Agent then
-				table.insert(HitboxList, Agent:GetHitbox())
-				break
-			end
+			table.insert(HitboxList, Agent:GetHitbox())
 		end
 	end
 

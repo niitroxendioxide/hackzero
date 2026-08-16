@@ -1,7 +1,7 @@
 local Types = require('../../Types')
 
 return {
-	Name = 'Capsule',
+	Name = 'CC Capsule',
 	Tier = 'Epic',
 	Icon = 0,
 

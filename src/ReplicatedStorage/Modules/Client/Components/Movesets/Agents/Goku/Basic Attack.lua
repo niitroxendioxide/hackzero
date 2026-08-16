@@ -132,12 +132,15 @@ local function AddDiveKickFrames(Caster: Types.ClientAgent, Target: Types.Client
 	end)
 end
 
-local function AddDefaultM1Frames(Caster: Types.ClientAgent, M1_Count: number, Sequence: Types.Sequence)
+local function AddDefaultM1Frames(Caster: Types.ClientAgent, Target: any, M1_Count: number, Sequence: Types.Sequence)
 	if M1_Count == 6 then
 		Sequence:Add(0.18, function()
 			Ability:Effect("Goku_M1_2", Caster);
 		end)
 
+		Sequence:Add(0.18, 0.45, function()
+			Caster:LookAtTarget(Target)
+		end)
 	elseif M1_Count == 5 then
 		Sequence:Add(0.27, function()
 			Ability:Effect("Goku_M1_5", Caster)
@@ -188,8 +191,8 @@ function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
 	local Held_Time = os.clock() - (Ability:Get(Caster, 'TimeStart') or 0)
 	Ability:Save(Caster, 'TimeStart', os.clock())
 
-	if ((State == 'Begin' and Meter >= 2) or (State == 'End')) then
-		local Should_Release = State == 'End' and Meter >= 2 and (Ability:Get(Caster, 'UsedInHeld') ~= true)
+	if ((State == 'Begin' and Meter >= 2) or (State == 'Release')) then
+		local Should_Release = State == 'Release' and Meter >= 2 and (Ability:Get(Caster, 'UsedInHeld') ~= true)
 		local Was_Held = (Held_Time > 0.4)
 
 		if Should_Release and Was_Held then
@@ -201,7 +204,7 @@ function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
 				UseGodFist(Caster)
 				Ability:Save(Caster, 'UsedInHeld', true)
 			end))
-		elseif State == 'End' then
+		elseif State == 'Release' then
 			Ability:Save(Caster, 'UsedInHeld', false)
 			return;
 		end
@@ -248,7 +251,7 @@ function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
 	elseif IsDiveKick then
 		AddDiveKickFrames(Caster, Target, Sequence)
 	elseif not IsSlam and not IsDiveKick then
-		AddDefaultM1Frames(Caster, M1_Count, Sequence)
+		AddDefaultM1Frames(Caster, Target, M1_Count, Sequence)
 	end 
 
 	for HitId = M1_Count, M1_Count + 1, 0.1 do

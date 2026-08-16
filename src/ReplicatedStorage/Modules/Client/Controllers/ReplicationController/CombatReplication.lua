@@ -42,7 +42,7 @@ function Controller:UseSkill(Buffer: buffer, Extra: {})
 	local CharacterMoveset = Movesets:Get(Characters:GetCurrentName(UserId))
 
 	if UserId == Players.LocalPlayer:GetAttribute('ReplicationId') and Skill ~= GameEnum.Skills.Quick_Assist then
-		if State == "End" then
+		if State == "Release" then
 			CharacterMoveset:Release(Key, ActiveAgent)
 		elseif State == "Cancel" then
 			CharacterMoveset:CancelSkill(Key, ActiveAgent)
@@ -77,7 +77,7 @@ function Controller:UseSkill(Buffer: buffer, Extra: {})
 
 		CharacterMoveset:EmulateHooks(Key, State, ActiveAgent, Context)
 		CharacterMoveset:Begin(Key, ActiveAgent, Context)
-	elseif State == "End" then
+	elseif State == "Release" then
 		CharacterMoveset:EmulateHooks(Key, 'Release', ActiveAgent, Context)
 		CharacterMoveset:Release(Key, ActiveAgent, Context)
 	elseif State == "Cancel" then
@@ -220,7 +220,12 @@ function Controller:DisplayDamage(Buffer: buffer)
 		EnemyObject:SetHealth(EnemyHealth)
 	end
 
-	Effects:Play('Indicator', EnemyObject, {Affliction = Type, Critical = Critical, Number = math.floor(Amount), Burst = Burst})
+	if Burst then
+		Effects:Play("AfflictionBurst", EnemyObject, Type, {})
+	end
+
+	local ExtraTime = Burst and 1.5 or 0.75
+	Effects:Play('Indicator', EnemyObject, {Affliction = Type, Critical = Critical, Number = math.floor(Amount), Burst = Burst, VanishTime = ExtraTime})
 end
 
 function Controller:DazeEnemy(Buffer: buffer)
@@ -340,6 +345,23 @@ function Controller:AddEffect(Buffer: buffer, Effect: AgentTypes.EffectParameter
 		InterfaceStates.EffectAdded:Fire(AgentId, EffectObj)
 	end
 end
+
+function Controller:ChangeEffect(Buffer: buffer)
+	local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")
+	local RepId = buffer.readu8(Buffer, 1)
+	local AgentId = buffer.readu8(Buffer, 2)
+	local Amount = buffer.readu8(Buffer, 3)
+	local Restart = (buffer.readu8(Buffer, 4) == 1)
+	local Tag = buffer.readstring(Buffer, 5, buffer.len(Buffer) - 5)
+
+	local Agent = Characters:GetAgent(RepId, AgentId)
+	local _, EffectObj = Agent:ChangeEffect(Tag, Amount, Restart)
+
+	if UserId == RepId then
+		InterfaceStates.EffectReset:Fire(AgentId, EffectObj)
+	end
+end
+
 
 function Controller:RemoveEffect(Buffer: buffer)
 	local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")

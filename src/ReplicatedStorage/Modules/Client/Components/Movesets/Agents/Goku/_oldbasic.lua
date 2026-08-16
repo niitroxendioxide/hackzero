@@ -84,8 +84,8 @@ function Ability:Play(Caster, _, State, Context)
 	local Held_Time = os.clock() - (Ability:Get(Caster, 'TimeStart') or 0)
 	Ability:Save(Caster, 'TimeStart', os.clock())
 
-	if ((State == 'Begin' and Meter >= 2) or (State == 'End')) then
-		local Should_Release = State == 'End' and Meter >= 2 and (Ability:Get(Caster, 'UsedInHeld') ~= true)
+	if ((State == 'Begin' and Meter >= 2) or (State == 'Release')) then
+		local Should_Release = State == 'Release' and Meter >= 2 and (Ability:Get(Caster, 'UsedInHeld') ~= true)
 		local Was_Held = (Held_Time > 0.4)
 
 		if Should_Release and Was_Held then
@@ -97,7 +97,7 @@ function Ability:Play(Caster, _, State, Context)
 				UseGodFist(Caster)
 				Ability:Save(Caster, 'UsedInHeld', true)
 			end))
-		elseif State == 'End' then
+		elseif State == 'Release' then
 			Ability:Save(Caster, 'UsedInHeld', false)
 			return;
 		end

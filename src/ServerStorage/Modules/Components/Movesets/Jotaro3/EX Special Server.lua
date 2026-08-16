@@ -13,7 +13,7 @@ local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.Caster, _, State: Types.InputState)
 	--
-    local Release = State == 'End'
+    local Release = State == 'Release'
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 
     if Ability:Get(Caster, 'plrSequence') or Release then

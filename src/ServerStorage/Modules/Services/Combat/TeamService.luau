@@ -8,9 +8,12 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Classes = Modules.Classes
 local Services = Modules.Services
 
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
 local ServerAgentClass = require(Classes.Combat.ServerAgent)
 local StagePlayerClass = require(Classes.Game.Player)
+local PlayerArtifactData = require(Classes.Data.PlayerArtifactData)
 
 local AbilityService = require(Services.Combat.AbilityService)
 local DataService = require(Services.Data.DataService)
@@ -47,6 +50,14 @@ function Service:Create(Player: Player)
         end
 
         local ArtifactIds = Table:WriteValues(AgentDataClass.Artifacts)
+
+        if settings.USE_BORROW and settings.TEST_AGENT_ARTIFACTS[AgentData.Name] then
+            for SlotId, ArtifactName in settings.TEST_AGENT_ARTIFACTS[AgentData.Name] do
+                local NewArtifact = PlayerArtifactData.randomize(ArtifactName, 'Mythical', 90, SlotId)  
+
+                AgentInstance:BindArtifact(NewArtifact:ToData())
+            end
+        end
 
         if #ArtifactIds > 0 then
             local Artifacts = DataService:GetArtifacts(Player, function(QueryArtifact)

@@ -118,6 +118,10 @@ end)
 
 function Ability:Play(Caster: Types.AgentClass, _key, State, Ctx)
 	local M1_Count = Ability:Get(Caster, 'Count')
+	if Ctx.IsSignal then
+		print('Running SASUKE BASIC ATTACK! State:', State)
+	end
+
 	if State == 'Begin' then
 		local ShouldContinue = HandleShurikenBarrage(Caster, Ctx.Target)
 		if not ShouldContinue then

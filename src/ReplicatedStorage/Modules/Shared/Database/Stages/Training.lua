@@ -97,7 +97,7 @@ return {
                     Objective = "Train with your agents.",
                     Goal = {KillEnemies = 1},
                     EnemyBuffs = {
-                        {'Max_Health', "25000%"},
+                        {'Max_Health', "999999%"},
                         --{'Defense', "200%"},
                     },
                     Enemies = {
@@ -138,11 +138,17 @@ return {
                 },
 
                 NextStage = {
-                    Objective = "Fight against the training dummies",
+                    Objective = "Fight against the training entities",
                     Global = true,
                     Goal = {KillEnemies = 1},
+                    EnemyBuffs = {
+                        {'Max_Health', "999999%"},
+                        --{'Defense', "200%"},
+                    },
                     Enemies = {
-                        [1] = {"Strongest", 1, 60},
+                        [1] = {
+                            {Name = "Sorcerer", Amount = 1, Level = 60, Affected_Aura = true},
+                        }
                     },
 
                     Finished = function()

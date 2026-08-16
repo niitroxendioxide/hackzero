@@ -117,7 +117,7 @@ function Ability:Play(Caster: Types.Caster, _, State, Context): ()
 		if not ShouldContinue then
 			return
 		end
-	elseif State == 'End' then
+	elseif State == 'Release' then
 		Ability:Save(Caster, "Holding", false)
 		return
 	end

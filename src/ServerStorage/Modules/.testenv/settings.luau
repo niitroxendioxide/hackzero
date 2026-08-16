@@ -2,6 +2,7 @@ return table.freeze({
     REPLICATE_CONSTANTS = {
         HITBOXES = false,
         MARKERS = false,
+        ENEMY_LOCATIONS = true,
     },
 
     MISSION = {
@@ -44,7 +45,7 @@ return table.freeze({
 
 
     --- PASSIVE, EASY, MEDIUM, HARD, EXTREME
-    DIFFICULTY = 'EASY', 
+    DIFFICULTY = 'HARD', 
     USE_BORROW = true, -- whether to replace agents with lvl 60 max
     BORROWED_AGENT_LEVEL = 60,
     CHARACTERS_INVINCIBLE = false,
@@ -53,8 +54,19 @@ return table.freeze({
 
     TEST_COMPANION = '8bdc68f8-cb56-4576-a193-689bb87043df',
     TEST_AGENTS = {
-        'Goku',
         'Sasuke',
+        'Chihiro',
         'Miku',
+    },
+
+    TEST_AGENT_ARTIFACTS = {
+        Chihiro = {
+            'HanafudaEarrings',
+            'HanafudaEarrings',
+            'HanafudaEarrings',
+            'HanafudaEarrings',
+            'DatensekiFragment',
+            'DatensekiFragment',
+        },
     },
 })

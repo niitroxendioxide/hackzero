@@ -3,6 +3,7 @@ local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage.Modules.Shared
+local Characters = require(ReplicatedStorage.Modules.Shared.Database.Characters)
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Types = require(Shared.Types.Abilities)
 local GameEnum = require(Shared.GameEnum)
@@ -53,12 +54,25 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	AgentGear:RunHitProcesses("Before", {
 		Agent = Agent,
 		Target = Enemy,
+		Hit = Data,
 	})
 
 	local HitType = Data.HitType or 'None'
 
 	-- Agent
+	local AgentData = Characters:GetCharacterData(Agent.Name, true)
+	local AgentAffliction = 'None';
+	if AgentData and AgentData.Element then
+		AgentAffliction = AgentData.Element
+	end
+
 	local Attack = Agent:GetStat('Attack')
+	local Affliction_Boost = 1 + Agent:GetStat('DMG_' .. Data.Affliction)
+	local Affliction_Damage = 1 + Agent:GetStat('Affliction_Damage')
+	if (AgentAffliction ~= Data.Affliction) or AgentAffliction == 'None' then
+		Affliction_Damage = 1;
+	end
+
 	local Crit_Rate = Agent:GetStat('Critical_Rate')
 	local Crit_Damage = 1 + Agent:GetStat('Critical_Damage') / 100
 	local Penetration = Agent:GetStat('Penetration')
@@ -85,7 +99,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	local Affliction_Type = Element_Multiplier < 1 and 'Weak' or Data.Affliction
 	local Dazed_State_Multiplier = EnemyStatus:IsKnocked() and EnemyStatus:GetDazeMultiplier() or 1
 
-	local Final_Damage = math.max(Base_Damage * Damage_Bonus_Mult * Crit_Mult * Defense_Mult * Element_Multiplier * Resistance_Multiplier * Damage_Taken_Mult * Dazed_State_Multiplier * Damage_Type_Extra, 1)
+	local Final_Damage = math.max(Base_Damage * Damage_Bonus_Mult * Crit_Mult * Defense_Mult * Affliction_Damage * Element_Multiplier * Resistance_Multiplier * Damage_Taken_Mult * Dazed_State_Multiplier * Damage_Type_Extra * Affliction_Boost, 1)
 	local Percent_Bonus = (Final_Damage / EnemyStatus:GetStat('Max_Health')) / 0.63
 	local Filled_Affliction = ((Data.Affliction_Buildup or 1) / 100) * (1 + Affliction_Aptitude/90) * (1 + Percent_Bonus)
 	local Burst_Damage = 0
@@ -210,6 +224,9 @@ function DamageLibrary:CalculateAfflictionBurst(
 )
 	local EnemyStatus = Enemy.__Status
 
+	local Affliction_Boost = 1 + Agent:GetStat('DMG_' .. Type)
+	local Affliction_Damage = 1 + Agent:GetStat('Affliction_Damage')
+
 	local Damage_Taken_Mult = EnemyStatus:GetDamageTakenMultiplier()
 	local Element_Multiplier = EnemyStatus:GetElementMultiplier(Type)
 
@@ -220,9 +237,11 @@ function DamageLibrary:CalculateAfflictionBurst(
 	local Taken_Damage = Stacked_Damage * (Base_Divider / 100)
 	local Dazed_State_Multiplier = EnemyStatus:IsKnocked() and EnemyStatus:GetDazeMultiplier() or 1
 	local Daze_Multiplier = 1
-	local Affliction_Type_Mult = 7.25--VALUES[Type]
+	local Affliction_Type_Mult = VALUES[Type]
 
-	local Total_Damage = (Attack * Affliction_Type_Mult) * Level_Multiplier * Element_Multiplier * Aptitude_Multiplier * Defense * Resistance_Multiplier * Daze_Multiplier * Taken_Damage * Dazed_State_Multiplier * Damage_Taken_Mult
+	print('Affliction Burst Info:', `TypeMult:{Affliction_Type_Mult}, LevelMult: {Level_Multiplier}, AptMult: {Aptitude_Multiplier}, TakenDmg: {Taken_Damage}`)
+
+	local Total_Damage = (Attack * Affliction_Type_Mult) * Affliction_Boost * Affliction_Damage * Level_Multiplier * Element_Multiplier * Aptitude_Multiplier * Defense * Resistance_Multiplier * Daze_Multiplier * Taken_Damage * Dazed_State_Multiplier * Damage_Taken_Mult
 
 	return Total_Damage
 end

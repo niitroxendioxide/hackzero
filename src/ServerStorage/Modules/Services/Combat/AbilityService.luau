@@ -38,6 +38,7 @@ local Service = {
 	__Chain_Attack_Cooldown = {},
 	__Agent_Damage_Hooks = {} :: { [number]: { [string]: {Agent: AgentTypes.ServerAgentClass, Handler: () -> ()} } },
 	__Pre_Hit_Hooks = {} :: { [number]: { [string]: {Agent: AgentTypes.ServerAgentClass, Handler: () -> ()} } },
+	__Active_Affliction_Thread = {},
 
 	--- Signals
 	DodgeSuccesful = nil :: Signal.ScriptSignal<AgentTypes.Enemy>,
@@ -348,6 +349,43 @@ function Service:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Enemy: Ag
 	Replicator:PromptChainAttack(Agent, Enemy)
 end
 
+function Service:RunAffliction(Target: AgentTypes.Enemy, ElementName: string, Data: { Damage: number })
+	local Objects = Service.__Active_Affliction_Thread;
+	local ElementInfo = Statics.Affliction_Tick_Damage[ElementName]
+
+	if Objects[Target] then
+		task.cancel(Objects[Target].Thread)
+
+		---
+		local PrevDmgPerTick = Objects[Target].Damage_Per_Tick;
+		local TicksRemaining = (Objects[Target].Ticks_Remaining + 1);
+		local TotalDamage = PrevDmgPerTick * TicksRemaining
+
+		Target:TakeDamage(TotalDamage)
+		Replicator:DisplayDamage(Target, Data.Damage, false, nil, true)
+	end
+
+	if not ElementInfo then
+		return;
+	end
+
+	Objects[Target] = {
+		Damage_Per_Tick = Data.Damage,
+		Ticks_Remaining = ElementInfo.Ticks,
+	}
+
+	Objects[Target].Thread = task.spawn(function()
+		local Obj = Objects[Target]
+		while Obj.Ticks_Remaining > 0 do
+			Obj.Ticks_Remaining -= 1;
+
+			Target:TakeDamage(Data.Damage)
+			Replicator:DisplayDamage(Target, Obj.Damage_Per_Tick, false, ElementName, false)
+			task.wait(ElementInfo.Time)
+		end
+	end)
+end
+
 function Service:TriggerMeterFullEvent(MeterName: string, CasterAgent: AgentTypes.ServerAgentClass)
 	local name = CasterAgent.Name;
 	local Moveset = MovesetLibrary:Get(name)
@@ -417,7 +455,7 @@ end
 
 function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, StateId: number, IsCancel: boolean, ...)
 	local ReplicationId = Player:GetAttribute("ReplicationId") :: number
-	local ActiveAgent, _ = AgentLibrary:GetCurrentActive(ReplicationId)
+	local ActiveAgent: AgentTypes.ServerAgentClass, _ = AgentLibrary:GetCurrentActive(ReplicationId)
 	local Other = {...}
 
 	--print('Server got: ', GameEnum.KeyLookup(GameEnum.AbilityStates, StateId))
@@ -462,6 +500,8 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 		end
 	end
 
+	local AgentGearManager = ActiveAgent:GetGearManager()
+
 	local Success, ErrorMessage = pcall(function()
 		if (SkillId == GameEnum.Skills.Quick_Assist) or (SkillId == GameEnum.Skills.Dodge_Counter) then
 			ActiveAgent:AddTag('Invulnerability', Statics.Assist_Counter_Invulnerability_Time)
@@ -470,10 +510,10 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 		if StateId == GameEnum.AbilityStates.Begin then
 			if not Moveset:HasSkill(Skill) and SpacelessSkill == "Dodge" then
 				MovesetLibrary:RunFromTemplate("Dodge", ActiveAgent, {IsCancel = IsCancel})
-
+				
 				return
 			end
-
+			
 			AgentService:Stop(Player)
 
 			local Status, ErrorMessage = Moveset:Begin(Skill, ActiveAgent, {
@@ -484,7 +524,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 			})
 
 			return Status, ErrorMessage
-		elseif StateId == GameEnum.AbilityStates.End then
+		elseif StateId == GameEnum.AbilityStates.Release then
 			local Status, ErrorMessage = Moveset:Release(Skill, ActiveAgent, {
 				Target = Enemy,
 				M1_Count = Other and Other[1] or nil,
@@ -503,13 +543,19 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 	if not Success then
 		warn(`Error while executing skill: {SpacelessSkill}. Error Message: {ErrorMessage}`)
 	else
+		task.spawn(function()
+			AgentGearManager:RunEventHooks(GameEnum.ArtifactEvents.SkillCasted, {
+				Agent = ActiveAgent,
+				SkillId = SkillId,
+			})
+		end)
+
 		--[[local Chance = Random.new():NextInteger(1, 100)
 		if (Chance <= CHAIN_ASSIST_CHANCE) and (SkillId == GameEnum.Skills.EX_Special or SkillId == GameEnum.Skills.Dodge_Counter) then
 			Service:PromptAssist(ActiveAgent, 5, EnemyId)
 		end]]
 
 		local IncludePlayer = SkillId == GameEnum.Skills.Quick_Assist or SkillId == GameEnum.Skills.Dodge_Counter
-
 		Replicator:UseSkill(Player, SkillId, IncludePlayer, EnemyId, StateId, IsCancel, Other)
 	end
 

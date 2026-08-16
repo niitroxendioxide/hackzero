@@ -214,16 +214,16 @@ function StatusClass.GetStat(self: Types.AgentStatusClass, n)
 end
 
 function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.EffectParameters)
-	if self.__Total_Effects:isEmpty() then
-		return
-	end
-
 	if Effect.Tag and Effect.Unique then
 		for _, Other in self.__Effects do
 			if Other.Tag ~= nil and Other.Tag == Effect.Tag then
 				Other.Remove();
 			end
 		end
+	end
+
+	if self.__Total_Effects:isEmpty() then
+		return
 	end
 
 	local NewId = self.__Total_Effects:extract()
@@ -233,6 +233,11 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 		local Stat = self.__Base_Stats[Effect.Type]
 
 		Effect.Value = Stat * (Number / 100)
+	elseif Effect.Type:find("%%") then
+		local Actual_Stat = string.gsub(Effect.Type, "%%", "")
+		
+		Effect.Type = Actual_Stat
+		Effect.Value = (Effect.Value / 100)
 	end
 
 	local Callback = Effect.Callback
@@ -245,9 +250,24 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 		Value = Effect.Value,
 		Hide = Effect.Hide,
 		Created = os.clock(),
+		Amount = Effect.Base_Amount or 1,
+		Limit = Effect.Limit or math.huge,
 		Thread = nil,
 
-		Remove = function()
+		Remove = function(Obj)
+			if Effect.RemovesAll then
+				Obj.Amount = 0;
+			else
+				Obj.Amount -= 1;
+			end
+
+			if Obj.Amount > 0 then
+				Obj.Created = os.clock();
+				Obj.Thread = task.delay(Obj.Time, Obj.Remove, Obj)
+
+				return;
+			end
+
 			self:RemoveEffect(NewId)
 
 			if Callback then
@@ -257,12 +277,34 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 	}
 
 	if Effect.Time then
-		EffectObject.Thread = task.delay(Effect.Time, EffectObject.Remove)
+		EffectObject.Thread = task.delay(Effect.Time, EffectObject.Remove, EffectObject)
 	end
 
 	self.__Effects[NewId] = EffectObject
 
 	return EffectObject
+end
+
+function StatusClass.ChangeEffect(self: Types.AgentStatusClass, Tag: string, Amount: number?, RestartThread: boolean?)
+	local EffectObject = self:GetEffect(Tag);
+	if not EffectObject then
+		return;
+	end
+
+	---
+	Amount = Amount or 1;
+	RestartThread = RestartThread or (EffectObject.Amount == EffectObject.Limit);
+
+	EffectObject.Amount = math.clamp(EffectObject.Amount + Amount, 0, EffectObject.Limit);
+
+	if RestartThread and (EffectObject.Time) then
+		task.cancel(EffectObject.Thread)
+
+		EffectObject.Created = os.clock()
+		EffectObject.Thread = task.delay(EffectObject.Time, EffectObject.Remove, EffectObject)
+	end
+
+	return RestartThread, EffectObject
 end
 
 function StatusClass.GetEffect(self: Types.AgentStatusClass, Tag: string)
@@ -288,12 +330,13 @@ function StatusClass.RemoveEffect(self: Types.AgentStatusClass, Id: number)
 	end
 end
 
-function StatusClass.GetStatEffects(self: Types.AgentStatusClass, Type: Types.Stat)
+function StatusClass.GetStatEffects(self: Types
+	.AgentStatusClass, Type: Types.Stat)
 	local Amount = 0
 
 	for _, Effect in self.__Effects do
 		if Effect.Type == Type then
-			Amount += Effect.Value
+			Amount += (Effect.Value * Effect.Amount)
 		end
 	end
 

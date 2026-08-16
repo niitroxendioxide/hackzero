@@ -17,9 +17,11 @@ local PassiveManager = {
 }
 
 function PassiveManager:Init(Caster: Types.ServerAgentClass)
+    AbilityService.DodgeSuccesful:Connect(function(Dodger: Types.ServerAgentClass, Attacker)
+        if Dodger ~= Caster then
+            return;
+        end
 
-
-    AbilityService.DodgeSuccesful:Connect(function(Attacker)
         if PassiveManager:__is_active(Caster) then
             return
         end

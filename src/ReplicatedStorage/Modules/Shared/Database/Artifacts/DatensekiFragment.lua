@@ -7,7 +7,7 @@ return {
 
 	Piece_Effects = {
 		Two_Piece = {
-			DMG_Physical = "10%",
+			["DMG_Physical%"] = 10,
 		},
 
 		Four_Piece = {},

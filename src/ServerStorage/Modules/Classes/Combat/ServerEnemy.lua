@@ -110,17 +110,16 @@ function ServerEnemy:Attack()
 	local MovesetData = EnemyDatabase:GetMovesetData(self.__Name)
 	local Target = self:GetTarget()
 
-	if not Target or self.__Status:IsKnocked() or not self.__Status:IsAlive() or self.__Movement.__World_Speed <= 0 or self:IsAirborne() then
+	if Target == nil then
 		return
 	end
 
-	local MapBase = workspace.World.Map;
-	if MapBase:FindFirstChild('Design') then
-		MapBase = MapBase:FindFirstChild('Design')
+	if self.__Status:IsKnocked() or not self.__Status:IsAlive() or self.__Movement.__World_Speed <= 0 or self:IsAirborne() then
+		return
 	end
 
 	local Params = RaycastParams.new()
-	Params.FilterDescendantsInstances = {workspace.Camera.Destructibles, MapBase}
+	Params.FilterDescendantsInstances = {workspace.Camera.Destructibles}
 	Params.FilterType = Enum.RaycastFilterType.Include
 
 	local At = self:GetPivot()
@@ -175,17 +174,16 @@ function ServerEnemy:Attack()
 	end
 
 	if SkillToUse ~= nil then
-		local PlayerPing = Ping:Get(TargetPlayer) :: number
-
 		local ReplicationSkillId = Moveset:GetSkillId(SkillToUse.Name)
-
-		Targets:RefreshLastAttackedTime(Target, self)
-		Replicator:EnemyUseSkill(OwnId, ReplicationSkillId, 'Begin', Target)
-
-		task.wait(PlayerPing)
-		Moveset:Begin(SkillToUse.Name, self, {
+		local Success = Moveset:Begin(SkillToUse.Name, self, {
 			Target = Target,
 		})
+
+		Targets:RefreshLastAttackedTime(Target, self)
+
+		if Success then
+			Replicator:EnemyUseSkill(OwnId, ReplicationSkillId, 'Begin', Target)
+		end
 	end
 end
 
@@ -218,7 +216,8 @@ function ServerEnemy.Update(self: Types.ServerEnemyClass, delta: number)
 	local FocusTarget = self.__Clocks.Focus
 
 	local CurrentTarget = self:GetTarget()
-	if self:GetState() == 'Attacking' and os.clock() - Clock > 1/30 then
+	local IsAttacking = self:GetState() == 'Attacking'
+	if IsAttacking and os.clock() - Clock > 1/30 then
 		self.__Clocks.Base = os.clock()
 		self:TrackCurrentTarget()
 	elseif os.clock() - Clock > 1 / 5 and self:GetState() == 'Idle' then
@@ -237,7 +236,7 @@ function ServerEnemy.Update(self: Types.ServerEnemyClass, delta: number)
 	end
 	
 	local TargetActive = if CurrentTarget ~= nil then (CurrentTarget:IsActive() or CurrentTarget:HasTag('CanBeTargetted')) else false
-	if os.clock() - FocusTarget > 1 / 2 or (os.clock() - FocusTarget > 1 / 6 and not TargetActive) then
+	if not IsAttacking and (os.clock() - FocusTarget > 1 / 2) or (os.clock() - FocusTarget > 1 / 6 and not TargetActive) then
 		self.__Clocks.Focus = os.clock()
 		self:FindRandomAggro()
 	end

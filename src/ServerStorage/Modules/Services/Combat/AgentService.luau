@@ -31,10 +31,24 @@ function Service:Init()
 
 	Network:On('Replicate', Service.ReplicateEvent)
 
+	local BatchSyncClock = os.clock()
+
 	RunService.Heartbeat:Connect(function(Delta: number)
 		for _, PlayerList in AgentLibrary.__Players do
 			for _, Agent in PlayerList do
 				Agent:Update(Delta)
+			end
+		end
+
+		if (os.clock() - BatchSyncClock) >= 2 then
+			BatchSyncClock = os.clock()
+
+			for Player, PlayerList in AgentLibrary.__Players do
+				for _, Agent in PlayerList do
+					local Location = Agent:GetPivot();
+
+					Replicator:PivotTo(Agent, Location)
+				end
 			end
 		end
 	end)
@@ -133,7 +147,7 @@ function Service:PivotTo(Player: Player, Buffer: buffer, Force: boolean?)
 
 	CurrentCharacter:PivotTo(CharacterNewCFrame, true);
 
-	Replicator:PivotTo(Player, Vector)
+	Replicator:PivotTo(CurrentCharacter, Vector)
 end
 
 function Service:SnapTo(Player: Player, CF: CFrame)
@@ -141,8 +155,8 @@ function Service:SnapTo(Player: Player, CF: CFrame)
 	local Vector = CF.Position
 
 	CurrentCharacter:PivotTo(CFrame.lookAlong(Vector, CurrentCharacter:GetPivot().LookVector))
-	Replicator:PivotTo(Player, Vector, Player)
-	Replicator:PivotTo(Player, Vector)
+	Replicator:PivotTo(CurrentCharacter, Vector, Player)
+	Replicator:PivotTo(CurrentCharacter, Vector)
 end
 
 function Service:Stop(Player: Player)
@@ -193,7 +207,7 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer, p_Target: numbe
 	local PrevIndex = Data.Active
 	
 	local PreviousAgent = Data.Characters[PrevIndex]
-	local NewAgent = Data.Characters[NewAgentIndex]
+	local NewAgent = Data.Characters[NewAgentIndex] :: AgentTypes.ServerAgentClass
 
 	if not NewAgent:IsAlive() then
 		return
@@ -220,7 +234,7 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer, p_Target: numbe
 	end
 
 	if not NewAgent:HasTag("CharacterStatic") then
-		NewAgent:PivotTo(SwitchCFrame)
+		NewAgent:PivotTo(SwitchCFrame, true)
 		NewAgent:Rotate(RebuiltRotationVector)
 
 		if not Target then
@@ -234,7 +248,15 @@ function Service:CharacterSwitch(Player: Player, Buffer: buffer, p_Target: numbe
 	end
 
 	Replicator:CharacterSwitch(Player, NewAgentIndex, 1, Target and Target:GetId())
+	--Replicator:PivotTo(NewAgent, NewAgent:GetPivot())
 	Replicator:Rotate(Player, RebuiltRotationVector)
+
+	--- Events
+	local AgentGearManager = NewAgent:GetGearManager()
+	AgentGearManager:RunEventHooks(GameEnum.ArtifactEvents.AgentSwitchedIn, {
+		Agent = NewAgent,
+		Previous = PreviousAgent,
+	})
 
 	---
 	if MarkedAgentStruct then

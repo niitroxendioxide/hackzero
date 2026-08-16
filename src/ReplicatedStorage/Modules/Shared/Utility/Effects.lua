@@ -539,7 +539,7 @@ type CamShakePreset = "Bump"
 | "Earthquake"
 | "Terrified"
 function EffectUtil:ShakeCamera(Preset: CamShakePreset)
-	local IsCameraShakeEnabled = false --Settings:Get("CameraShake", "Graphics");
+	local IsCameraShakeEnabled = Settings:Get("CameraShake", "Graphics");
 	if not IsCameraShakeEnabled then
 		return Mock;
 	end

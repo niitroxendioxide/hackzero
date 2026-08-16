@@ -27,6 +27,7 @@ export type ProcessEventData = {
 	Target: Enemy?,
 	Critical: boolean?,
 	Element: Element?,
+	SkillId: number?,
 	Total_Damage: number?,
 }
 
@@ -46,6 +47,7 @@ export type AgentArtifactClass = {
 
 	OnEffectProcess: (self: AgentArtifactClass, Event: (Data: ProcessEventData, PieceCount: number) -> ()) -> (),
 	OnHitProcess: (self: AgentArtifactClass, State: HitProcessState, Event: (Data: ProcessEventData, PieceCount: number) -> (number, number)) -> (),
+	OnEvent: (self: AgentArtifactClass, State: string, Event: (Data: {} & ProcessEventData, PieceCount: number) -> ()) -> (),
 	GetEventFor: (self: AgentArtifactClass, EventName: string) -> ((Data: ProcessEventData) -> () | (Effect: Element, Data: ProcessEventData) -> ())?,
 }
 export type DriveObject = {}
@@ -74,6 +76,7 @@ export type AgentClass =  {
 	Init: (self: AgentClass) -> (),
 	Move: (self: AgentClass) -> (),
 	Stop: (self: AgentClass) -> (),
+	Update: (self: AgentClass, Delta: number) -> (),
 	Look: (self: AgentClass, Direction: Vector3, Instant: boolean?, Bypass: boolean?) -> (),
 	GetHitbox: (self: AgentClass) -> (BasePart),
 
@@ -142,6 +145,15 @@ export type AgentClass =  {
 	GetEffect: (self: AgentClass, Name: string) -> StateEffect,
 	RemoveEffect: (self: AgentClass, Id: number) -> (),
 
+	--[[
+		Increase the amount of effects/charges an effect has
+		@param Tag The tag to look the effect by
+		@param Amount The amount to increase by
+		@param RestartThread Whether to restart the timer or not, for timed effects.
+	]]
+	ChangeEffect: (self: ServerAgentClass, Tag: string, Amount: number?, RestartThread: boolean?) -> (EffectObject),
+
+	---
 	GetAnimator: (self: AgentClass) -> AnimatorController,
 
 	--[[
@@ -223,6 +235,7 @@ export type AgentStatusClass = {
 
 	AddEffect: (self: AgentStatusClass, EffectParameters) -> (EffectObject),
 	GetEffect: (self: AgentStatusClass, string) -> (EffectObject),
+	ChangeEffect: (self: AgentStatusClass, Tag: string, Amount: number?, RestartThread: boolean?) -> (EffectObject),
 	GetStatEffects: (self: AgentStatusClass, Stat) -> (number),
 	RemoveEffect: (self: AgentStatusClass, Id: number) -> (),
 
@@ -238,8 +251,28 @@ export type AgentStatusClass = {
 
 
 -- [[Server data]]
-export type EffectParameters = {Type: (Stat & AgentMovesetAbility)?, Value: (number | string)?, Time: number?, Tag: string, Unique: boolean?, Callback: ((Id: number) -> ())?, Hide: boolean,}
-export type EffectObject = {Remove: () -> (), Id: number, Value: number, Type: Stat & AgentMovesetAbility, Tag: string?, Time: number?, Created: number}
+export type EffectParameters = {
+	Type: (Stat & AgentMovesetAbility)?, 
+	Value: (number | string)?, 
+	Time: number?, 
+	Tag: string, 
+	Unique: boolean?, 
+	Callback: ((Id: number) -> ())?, 
+	Hide: boolean,
+	Base_Amount: number?,
+	Limit: number?,
+}
+export type EffectObject = {
+	Remove: () -> (), 
+	Id: number, Value: number, 
+	Type: Stat & AgentMovesetAbility, 
+	Tag: string?, 
+	Time: number?, 
+	Created: number,
+	Thread: thread,
+	Amount: number,
+	Limit: number,
+}
 export type ServerCharacterClass = {
 	__MovementVelocity: Vector3,
 	__SurfaceVelocity: Vector3,
@@ -440,6 +473,14 @@ export type ServerAgentClass = {
 	GetEffect: (self: ServerAgentClass, Tag: string) -> (EffectObject?),
 
 	--[[
+		Increase the amount of effects/charges an effect has
+		@param Tag The tag to look the effect by
+		@param Amount The amount to increase by
+		@param RestartThread Whether to restart the timer or not, for timed effects.
+	]]
+	ChangeEffect: (self: ServerAgentClass, Tag: string, Amount: number?, RestartThread: boolean?) -> (EffectObject),
+
+	--[[
 		Refresh an agent buff effect, recreate it from scratch.
 		@param Tag The tag to find and refresh. beware as repeated tags could cause trouble and refresh unwanted effects
 	]]
@@ -506,6 +547,11 @@ export type ServerGearManager = {
 		@param EventData : `ProcessEventData` The data for the effect process event
 	]]
 	RunEffectProcesses: (self: ServerGearManager, EventData: ProcessEventData) -> (),
+
+	--[[
+	]]
+
+	RunEventHooks:(self: ServerGearManager, EventId: string, EventData: any) -> (),
 
 	--[[
 		Runs all the Hit Events for the artifacts/items equipped

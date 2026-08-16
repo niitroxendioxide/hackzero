@@ -3,4 +3,5 @@ return {
 	PROJECT_COLLISIONS = false,
 	
 	DISPLAY_COLLIDERS = false,
+	DISPLAY_AGENT_HITBOXES = false,
 }

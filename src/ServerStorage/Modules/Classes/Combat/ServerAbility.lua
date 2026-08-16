@@ -24,6 +24,7 @@ local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 local DamageLibrary = require(ServerStorage.Modules.Libraries.Damage)
 local AgentsLibrary = require(ServerStorage.Modules.Libraries.Agents)
 local MatchStats = require(ServerStorage.Modules.Libraries.MatchStats)
+local Ping = require(ServerStorage.Modules.Libraries.Ping)
 local AbilityService = require(ServerStorage.Modules.Services.Combat.AbilityService)
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local WorldCamera = workspace:WaitForChild('Camera')
@@ -144,6 +145,31 @@ function ServerAbilityClass:CreateEnemyHitbox(At: CFrame, Offset: Vector3, Size:
 	end
 end
 
+local function IsHitCancelled(Target: Types.ServerAgent, Caster: Types.ServerEnemy)
+	local Is_Dodge = Target:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
+	local Switch_Assist_Dodge = Target:HasTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE)
+	if Is_Dodge or Switch_Assist_Dodge then
+		if Is_Dodge then
+			AbilityService.DodgeSuccesful:Fire(Target, Caster)
+
+			Target:GiveUltimate(Statics.Dodge_Ult_Bar_Fill)
+			Replicator:ProcessDodge(Target)
+		else
+			Replicator:Effect('Dodge', {Target}, {Target.__Player_Assigned})
+		end
+
+		MatchStats:AddToStat(Target.__Player_Assigned, "Dodges", 1)
+
+		Target:AddTag('Invulnerability', Statics.Dodge_Invulnerability_Time)
+		Target:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
+		Target:RemoveTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE)
+
+		return true
+	end
+
+	return false
+end
+
 function ServerAbilityClass:CreateAgentHitbox(At: CFrame, Offset: Vector3, Size: Vector3, Event: (Enemy: AgentTypes.ServerAgentClass) -> (), Time: number?, Repeat: boolean?, Caster: AgentTypes.Enemy, Targets: {}?)
 	Targets = Targets or {}
 
@@ -173,29 +199,14 @@ function ServerAbilityClass:CreateAgentHitbox(At: CFrame, Offset: Vector3, Size:
 				return
 			end
 
-			local Is_Dodge = Target:HasTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
-			local Switch_Assist_Dodge = Target:HasTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE)
-			if Is_Dodge or Switch_Assist_Dodge then
-				if Is_Dodge then
-					AbilityService.DodgeSuccesful:Fire(Caster)
-
-					Target:GiveUltimate(Statics.Dodge_Ult_Bar_Fill)
-					Replicator:ProcessDodge(Target)
-				else
-					self:Effect('Dodge', {Target}, {Target.__Player_Assigned})
-				end
-
-				MatchStats:AddToStat(Target.__Player_Assigned, "Dodges", 1)
-
-				Target:AddTag('Invulnerability', Statics.Dodge_Invulnerability_Time)
-				Target:RemoveTag(GameEnum.Boost_Effects.DODGE_FLOW_TRIGGER)
-				Target:RemoveTag(GameEnum.Boost_Effects.SWITCH_ASSIST_DODGE)
-
+			
+			local CanHitTarget = AbilityService:RunVerificationHooks(Target, Caster)
+			if CanHitTarget == false then
 				return
 			end
 
-			local CanHitTarget = AbilityService:RunVerificationHooks(Target, Caster)
-			if CanHitTarget == false then
+			local IsCancelled = IsHitCancelled(Target, Caster)
+			if IsCancelled then
 				return
 			end
 
@@ -373,13 +384,12 @@ local function KnockEnemy(_: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enem
 	Replicator:Knockback(Enemy, Direction, Power, Time)
 end
 
-local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Data: Types.HitEnemyData)
+local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Data: Types.HitEnemyData, SkillId: number)
 	local AgentPivot = Agent:GetPivot()
 	-- local EnemyPivot = Enemy:GetPivot()
 
-
 	--
-	local Validated, Dealt_Damage, EnemyDied, Critical, Affliction, Affliction_Fill, Burst_Damage, Affliction_Triggered = DamageLibrary:Deal(Agent, Enemy, Data)
+	local Validated, Dealt_Damage, EnemyDied, Critical, Affliction, Affliction_Fill, Burst_Damage, Affliction_Triggered = DamageLibrary:Deal(Agent, Enemy, Data, SkillId)
 	if not Validated then
 		return;
 	end
@@ -444,6 +454,7 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 	end
 
 	if Burst_Damage > 0 then
+		AbilityService:RunAffliction(Enemy, Data.Affliction, {Damage = Burst_Damage})
 		Replicator:DisplayDamage(Enemy, Burst_Damage, false, Data.Affliction, true)
 	end
 
@@ -464,14 +475,19 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 	}
 end
 
-local function HitAgent(Caster: AgentTypes.Enemy, Agent: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
-	local NewData = AbilityService:RunAbilityDamageHooks(Agent, Caster, Table.CopyDeep(Data))
-	local DealtDamage = DamageLibrary:DealEnemyToAgent(Caster, Agent, NewData)
+local function HitAgent(Perpetrator: AgentTypes.Enemy, Target: AgentTypes.ServerAgentClass, Data: Types.HitEnemyData)
+	local IsCancelled = IsHitCancelled(Target, Perpetrator)
+	if IsCancelled then
+		return
+	end
+	
+	local NewData = AbilityService:RunAbilityDamageHooks(Target, Perpetrator, Table.CopyDeep(Data))
+	local DealtDamage = DamageLibrary:DealEnemyToAgent(Perpetrator, Target, NewData)
 
 	--
 	return {
-		Caster = Caster,
-		Enemy = Agent,
+		Caster = Perpetrator,
+		Enemy = Target,
 		Hit_Type = 'Entity',
 		Damage = DealtDamage,
 	}
@@ -518,15 +534,20 @@ function ServerAbilityClass:KnockBack(Agent: Types.Caster, Enemy: Types.Target, 
 	return KnockEnemy(Agent, Enemy, Data)
 end
 
-function ServerAbilityClass:Hit(Agent: any, Enemy: any, Data: Types.HitEnemyData)
+function ServerAbilityClass:Hit(Perpetrator: any, Target: any, Data: Types.HitEnemyData)
 	local Result;
+	local IsAgent = tostring(Target) == 'ServerAgentClass'
+	local IsEnemy = tostring(Target) == 'EnemyClass'
 
-	if tostring(Enemy) == 'ServerAgentClass' then
-		Result = HitAgent(Agent, Enemy, Data)
-	elseif tostring(Enemy) == 'EnemyClass' then
-		Result = HitEnemy(Agent, Enemy, Data)
+	if IsAgent then
+		local PlayerPing = Ping:Get(Target.__Player_Assigned)
+		task.wait(PlayerPing)
+
+		Result = HitAgent(Perpetrator, Target, Data)
+	elseif IsEnemy then
+		Result = HitEnemy(Perpetrator, Target, Data, self.__Skill_Type)
 	else
-		Result = HitStructure(Agent, Enemy, Data)
+		Result = HitStructure(Perpetrator, Target, Data)
 	end
 
 	if Result ~= nil then
@@ -652,7 +673,7 @@ function ServerAbilityClass.ForceRelease(self: Types.ServerAbilityClass, Caster:
 		return;
 	end
 
-	Replicator:UseSkill(Caster.__Player_Assigned, SkillId, true, 0, GameEnum.AbilityStates.End)
+	Replicator:UseSkill(Caster.__Player_Assigned, SkillId, true, 0, GameEnum.AbilityStates.Release)
 end
 
 function ServerAbilityClass.Cancel(self: Types.ServerAbilityClass, Caster: AgentTypes.ServerAgentClass, Context: {ClientInstruction: boolean?})

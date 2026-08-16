@@ -108,10 +108,10 @@ function AgentClass:SetLevel(Amount: number)
 end
 
 function AgentClass:GetStat(Key: string)
-	local Base = self.__Status:GetStat(Key)
-	local Effects = self.__Status:GetStatEffects(Key)
-	local Added = self.__Items:GetTotalAddedStat(Key)
-	local GearAdded = self.__Gear:GetAddedGearStat(Key)
+	local Base = self.__Status:GetStat(Key) or 0
+	local Effects = self.__Status:GetStatEffects(Key) or 0
+	local Added = self.__Items:GetTotalAddedStat(Key) or 0
+	local GearAdded = self.__Gear:GetAddedGearStat(Key) or 0
 
 	local Total = Base + Added + Effects + GearAdded
 	
@@ -218,6 +218,10 @@ function AgentClass:SetVisible(...)
 	return self.__Character:SetVisible(...)
 end
 
+function AgentClass:CanBeHit()
+	return (self:IsActive() or self:HasTag("CanBeTargetted"))
+end
+
 function AgentClass:Init(PlayerId: number)
 	assert(typeof(PlayerId) == 'number', 'Requires a valid playerid to initialize agent.')
 
@@ -229,15 +233,17 @@ function AgentClass:Init(PlayerId: number)
 		end
 	end
 
-	local a  = nil
-
 	self:SetMaxHealth(self:GetStat("Health"), true)
 
 	self.__Main_Thread = RunService.Heartbeat:Connect(function(Delta: number)
-		self.__Status:Update(Delta)
+		self:Update(Delta)
 	end)
 
 	return self.__Character:Init()
+end
+
+function AgentClass.Update(self: AgentTypes.AgentClass, Delta: number)
+	self.__Status:Update(Delta)
 end
 
 function AgentClass.CreateMeter(self: AgentTypes.AgentClass, Name: string, Data: {[string]: any})
@@ -347,6 +353,10 @@ end
 
 function AgentClass:AddEffect(...)
 	return self.__Status:AddEffect(...)
+end
+
+function AgentClass:ChangeEffect(...)
+	return self.__Status:ChangeEffect(...)
 end
 
 function AgentClass:GetEffect(...)

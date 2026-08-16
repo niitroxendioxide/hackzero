@@ -15,7 +15,7 @@ function Math:ApplyPercents(StatsTable: { [string]: number }, AgentStats: {})
         if string.match(StatBuffName, "%%") then
             local StatRaw = string.gsub(StatBuffName, "%%", "")
 
-            local AddedPercentBoost = AgentStats[StatRaw] * (StatBuffValue / 100)
+            local AddedPercentBoost = (AgentStats[StatRaw] or 1) * (StatBuffValue / 100)
             if not StatsTable[StatRaw] then
                 StatsTable[StatRaw] = 0
             end
@@ -36,7 +36,7 @@ function Math:WriteArtifactsStats(StatsTable: {}, Artifacts)
         local MainStatValue = ArtifactObject.Stats.Main_Stat[MainStatName]
 
         if Effects[Data.Name] == nil then
-            local SlotCount = 0
+            local SlotCount = 1
 
             for _, OtherItem in Artifacts do
                 if OtherItem.Id == ArtifactObject.Id then continue end
@@ -46,16 +46,18 @@ function Math:WriteArtifactsStats(StatsTable: {}, Artifacts)
                 end
             end
 
-            for StatName, StatValue in Data.Piece_Effects.Two_Piece do
-                if StatsTable[StatName] == nil then
-                    StatsTable[StatName] = 0
-                end
+            if SlotCount >= 2 then
+                for StatName, StatValue in Data.Piece_Effects.Two_Piece do
+                    if StatsTable[StatName] == nil then
+                        StatsTable[StatName] = 0
+                    end
 
-                StatsTable[StatName] += StatValue
+                    StatsTable[StatName] += StatValue
+                end
             end
 
             if SlotCount >= 4 then
-                for StatName, StatValue in Data.Piece_Effects.Two_Piece do
+                for StatName, StatValue in Data.Piece_Effects.Four_Piece do
                     if StatsTable[StatName] == nil then
                         StatsTable[StatName] = 0
                     end

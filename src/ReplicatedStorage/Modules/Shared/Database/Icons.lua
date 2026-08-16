@@ -32,6 +32,7 @@ return {
 			MikuStrengthBuff = 126683577406553,
 			MikuDefenseBuff = 126683577406553,
 			NishikiBuff = 138936674868049,
+			--Concentration = 72824425525185 
 		},
 
 		Values = {
