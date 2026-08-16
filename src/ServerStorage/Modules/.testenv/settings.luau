@@ -2,7 +2,7 @@ return table.freeze({
     REPLICATE_CONSTANTS = {
         HITBOXES = false,
         MARKERS = false,
-        ENEMY_LOCATIONS = true,
+        ENEMY_LOCATIONS = false,
     },
 
     MISSION = {
@@ -54,11 +54,12 @@ return table.freeze({
 
     TEST_COMPANION = '8bdc68f8-cb56-4576-a193-689bb87043df',
     TEST_AGENTS = {
-        'Sasuke',
         'Chihiro',
-        'Miku',
+        'Sasuke',
+        'Jotaro3',
     },
 
+    --REPLACE_AFFLICTION = 'Ice',
     TEST_AGENT_ARTIFACTS = {
         Chihiro = {
             'HanafudaEarrings',

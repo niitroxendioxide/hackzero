@@ -455,10 +455,14 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 
 	if Burst_Damage > 0 then
 		AbilityService:RunAffliction(Enemy, Data.Affliction, {Damage = Burst_Damage})
-		Replicator:DisplayDamage(Enemy, Burst_Damage, false, Data.Affliction, true)
+		if Data.Affliction ~= 'Ice' then
+			Replicator:DisplayDamage(Enemy, Burst_Damage, false, Data.Affliction, true)
+		end
 	end
 
-	Replicator:FillAffliction(Enemy, Data.Affliction, Affliction_Fill)
+	if Affliction_Fill > 0 then
+		Replicator:FillAffliction(Enemy, Data.Affliction, Affliction_Fill)
+	end
 	Replicator:DisplayDamage(Enemy, Dealt_Damage, Critical, Affliction)
 	Replicator:DazeEnemy(Enemy, Dealt_Daze)
 

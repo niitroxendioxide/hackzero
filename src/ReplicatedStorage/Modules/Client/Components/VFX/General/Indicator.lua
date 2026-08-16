@@ -125,13 +125,14 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 		Indicator.Holder.StudsOffset += vector.create(0, 0, 0.01)
 	end
 
+	local AdditionalPosition = IsText and vector.create(0, 2.5, 0) or vector.zero
 	if typeof(At) == 'table' and At.GetPivot then
 		Indicator.Position = At:GetModel():GetPivot().Position
 		Indicator.Name = At:GetId()..'indicatorobj'
 
-		Effects:Tween(Indicator, {.4, 'Back'}, {Position = Indicator.Position + Effects:RandomV3() * Effects:Random(0.8, 1.3)})
+		Effects:Tween(Indicator, {.4, 'Back'}, {Position = Indicator.Position + AdditionalPosition + Effects:RandomV3() * Effects:Random(0.8, 1.3)})
 	else
-		Indicator.Position = typeof(At) == 'Vector3' and At or (At :: CFrame).Position
+		Indicator.Position = (typeof(At) == 'Vector3' and At or (At :: CFrame).Position) + AdditionalPosition
 	end
 
 	if not Threads[Indicator] then

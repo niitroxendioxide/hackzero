@@ -11,7 +11,7 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 --
 local Ability = AbilityClass.new()
 
-function Ability:Play(Caster: Types.Caster, _, State: Types.InputState)
+function Ability:Play(Caster: Types.Caster, _, State: Types.InputState, Context: Types.SkillContext)
 	--
     local Release = State == 'Release'
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
@@ -46,6 +46,10 @@ function Ability:Play(Caster: Types.Caster, _, State: Types.InputState)
 				Ability:ForceRelease(Caster)
 			end
 
+            if Context.Target then
+                Caster:LookAtTarget(Context.Target)
+            end
+
 			if (os.clock() - Clock) < Ability:FromData('Hit_Frequency') then
                 return
 			end
@@ -67,6 +71,10 @@ function Ability:Play(Caster: Types.Caster, _, State: Types.InputState)
 			end)
 		end,},
 	})
+
+    Sequence:After(function(self: Types.Sequence)
+        Ability:Save(Caster, "plrSequence", nil) 
+    end)
 
     Ability:Save(Caster, 'plrSequence', Sequence)
 end

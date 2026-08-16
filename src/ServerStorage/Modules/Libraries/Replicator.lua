@@ -17,6 +17,7 @@ local Enemies = require(Database.Enemies)
 local Gears = require(Database.Gears)
 local GameEnum = require(Shared.GameEnum)
 local Agents = require(script.Parent.Agents)
+local EffectSerdes = require(Shared.Libraries.EffectSerdes)
 
 --
 local _ReplicatePlayerToo = false
@@ -58,13 +59,13 @@ function Replicator:RemoveTag(Agent: AgentTypes.ServerAgentClass, Tag: string)
 end
 
 function Replicator:Effect(Name: string, Data: {}, Targets: boolean | {})
-	local BufferObject = buffer.create(1 + #Name)
+	local BufferObject = buffer.create(1 + EffectSerdes.IdByteSize)
 	buffer.writeu8(BufferObject, 0, GameEnum.Replication.PlayVisualEffect)
-	buffer.writestring(BufferObject, 1, Name)
+	buffer.writebits(BufferObject, 8, EffectSerdes.IdByteSize * 8, EffectSerdes:ForName(Name))
 
 	for Key, Value in Data do
 		if tostring(Value):match('ServerAgentClass') then
-			local PlayerId = Value.__Player_Assigned:GetAttribute('ReplicationId')
+			local PlayerId = Value.__Player_Assigned:GetAttribute('ReplicationId')	
 			local AgentId = Agents:GetIdForPlayer(PlayerId, Value)
 
 			local NewValue = buffer.create(2)
@@ -390,7 +391,7 @@ function Replicator:ProcessDodge(Agent: AgentTypes.ServerAgentClass)
 	buffer.writeu8(Object, 1, Id)
 	buffer.writeu8(Object, 2, AgentId)
 
-	Network:FireForAll('Replicate', Object)
+	Network:FireForAll('ReliableReplication', Object)
 end
 
 function Replicator:UseSkill(Player: Player, SkillId: number, IncludePlayer: boolean, EnemyNumber: number, StateId: number, IsCancel: boolean, Extra: {any}?)

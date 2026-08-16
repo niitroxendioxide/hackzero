@@ -294,7 +294,7 @@ function ServerEnemy.Stun(self: Types.ServerEnemyClass, Time: number, is_airborn
 		return;
 	end
 
-	self:SwitchState( is_airborne and 'Airborne' or 'Stunned' , Time)
+	self:SwitchState(is_airborne and 'Airborne' or 'Stunned', Time)
 end
 
 function ServerEnemy:SwitchState(State: string, Time: number)

@@ -66,6 +66,11 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 		AgentAffliction = AgentData.Element
 	end
 
+	if settings.REPLACE_AFFLICTION ~= nil and RunService:IsStudio() then
+		AgentAffliction = settings.REPLACE_AFFLICTION
+		Data.Affliction = settings.REPLACE_AFFLICTION
+	end
+
 	local Attack = Agent:GetStat('Attack')
 	local Affliction_Boost = 1 + Agent:GetStat('DMG_' .. Data.Affliction)
 	local Affliction_Damage = 1 + Agent:GetStat('Affliction_Damage')
@@ -81,6 +86,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	local Level = Agent.__Level
 	local Damage_Bonus_Mult = 1 + (Agent.GetMultBonus and (Agent:GetMultBonus(Data.Affliction :: DefaultTypes.Element) + Agent:GetMultBonus(Data.Attack_Type)) or 0)
 
+	local Enemy_Crit_Defense = 1 - (Enemy:GetStat("Critical_Defense") or 0) 
 	local Is_Critical = RNG:NextNumber(0, 100) <= Crit_Rate
 
 	-- Enemy
@@ -93,7 +99,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	--
 	local Damage_Type_Extra = math.max(HitType ~= 'None' and AgentGear:GetAddedGearStat((HitType..'%') :: AgentTypes.Stat) or 1, 1)
 	local Resistance_Multiplier = 1 - (EnemyStatus:GetResistanceMultiplier() / 100)
-	local Crit_Mult = Is_Critical and Crit_Damage or 1
+	local Crit_Mult = Is_Critical and (Crit_Damage * Enemy_Crit_Defense) or 1
 	local Raw_Damage_Mult = Data.Damage / 100
 	local Base_Damage = Raw_Damage_Mult * Attack
 	local Affliction_Type = Element_Multiplier < 1 and 'Weak' or Data.Affliction
@@ -110,7 +116,11 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	AgentGear:RunHook(GameEnum.GearHookType.BeforeAffliction, {Caster = Agent, Target = Enemy, HitData = Data})
 	--
 
-	Enemy:TakeAffliction(Data.Affliction or 'None', Filled_Affliction)
+	if (Data.Affliction == AgentAffliction) then
+		Enemy:TakeAffliction(Data.Affliction or 'None', Filled_Affliction)
+	else
+		Filled_Affliction = 0;
+	end
 
 	AgentGear:RunHook(GameEnum.GearHookType.AfterAffliction, {Caster = Agent, Target = Enemy, HitData = Data})
 
@@ -118,10 +128,13 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 
 	if (Enemy:GetAffliction(Data.Affliction) or 0) >= 100 then
 		AgentGear:RunHook(GameEnum.GearHookType.OnAfflictionBurst, {Caster = Agent, Target = Enemy, HitData = Data})
-		-- TODO: Fix the res mult to change based on enemy stuff idk
 		AfflictionTriggered = true;
 		Burst_Damage = DamageLibrary:CalculateAfflictionBurst(Attack, Data.Affliction, Defense_Mult, Resistance_Multiplier, Agent, Enemy)
-		Enemy:TakeDamage(Burst_Damage)
+		
+		if Data.Affliction ~= 'Ice' then
+			Enemy:TakeDamage(Burst_Damage)
+		end
+
 		Enemy:ResetAffliction(Data.Affliction)
 
 		AgentGear:RunEffectProcesses({
@@ -209,6 +222,7 @@ end
 local VALUES = {
 	Physical = 7.13,
 	Ice = 5,
+	Antimatter = 5,
 	Electric = 1.25,
 	Energy = 0.625,
 	Fire = 0.5,
@@ -238,8 +252,6 @@ function DamageLibrary:CalculateAfflictionBurst(
 	local Dazed_State_Multiplier = EnemyStatus:IsKnocked() and EnemyStatus:GetDazeMultiplier() or 1
 	local Daze_Multiplier = 1
 	local Affliction_Type_Mult = VALUES[Type]
-
-	print('Affliction Burst Info:', `TypeMult:{Affliction_Type_Mult}, LevelMult: {Level_Multiplier}, AptMult: {Aptitude_Multiplier}, TakenDmg: {Taken_Damage}`)
 
 	local Total_Damage = (Attack * Affliction_Type_Mult) * Affliction_Boost * Affliction_Damage * Level_Multiplier * Element_Multiplier * Aptitude_Multiplier * Defense * Resistance_Multiplier * Daze_Multiplier * Taken_Damage * Dazed_State_Multiplier * Damage_Taken_Mult
 

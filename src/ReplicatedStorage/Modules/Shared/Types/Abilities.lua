@@ -151,6 +151,13 @@ export type AbilityClass = {
 	Hit: (self: AbilityClass, Caster: Caster, Target: Target, Data: {HitstopDuration: number, EffectData: HitVFXData, NoHitStop: boolean, NoAnim: boolean, NoVFX: boolean, StopEffect: any}) -> (),
 }
 
+
+export type HitResult = {
+	Burst_Damage: number,
+	Critical: number,
+	Target: ServerEnemy,
+}
+
 export type DamageHitType = 'Blunt' | 'Slash' | 'None'
 export type HitEnemyData = {
 	CanChainAttack: boolean,

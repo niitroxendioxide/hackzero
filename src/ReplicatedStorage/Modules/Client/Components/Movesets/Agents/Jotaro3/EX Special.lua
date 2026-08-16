@@ -12,7 +12,7 @@ local AbilityClass = require(Client.Classes.Ability)
 local RNG = Random.new()
 local Ability = AbilityClass.new(true)
 
-function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: string)
+function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: string, Context)
 	--
 	local PreviousSequence = Ability:Get(Caster, "CurrentSequence")
 	if State ~= 'Begin' then
@@ -64,6 +64,10 @@ function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: str
 		end},
 
 		{0.317, Attack_Time, function(self)
+			if Context.Target then
+                Caster:LookAtTarget(Context.Target)
+            end
+
 			if (os.clock() - LastHitClock > Ability:FromData('Hit_Frequency')) then
 				Caster:Walk(Ability:FromData("Walk_Time"))
 				LastHitClock = os.clock()
@@ -91,6 +95,7 @@ function Ability:Play(Caster: AgentTypes.AgentClass, Binding: string, State: str
             Model = StandModel,
         })
 
+		Ability:Save(Caster, "CurrentSequence", nil)
 		Caster:RemoveTag('Barraging')
 
         Ability:Effect("JP3_Stand", Caster, {

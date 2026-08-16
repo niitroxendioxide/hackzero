@@ -233,7 +233,7 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 		local Stat = self.__Base_Stats[Effect.Type]
 
 		Effect.Value = Stat * (Number / 100)
-	elseif Effect.Type:find("%%") then
+	elseif Effect.Type and Effect.Type:find("%%") then
 		local Actual_Stat = string.gsub(Effect.Type, "%%", "")
 		
 		Effect.Type = Actual_Stat
@@ -255,6 +255,8 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 		Thread = nil,
 
 		Remove = function(Obj)
+			if Obj == nil then return end
+			
 			if Effect.RemovesAll then
 				Obj.Amount = 0;
 			else

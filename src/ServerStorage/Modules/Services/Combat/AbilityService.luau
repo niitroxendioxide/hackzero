@@ -29,6 +29,7 @@ const _CHAIN_ASSIST_CHANCE = 40
 
 --
 local Service = {
+	__Affliction_Components = {},
 	__Movesets = {},
 	__Prompts = {},
 	__Prompt_Cooldown = {},
@@ -229,7 +230,18 @@ function Service:Init()
 		end
 	end)
 
-	--
+	---
+	for _, Component in ServerStorage.Modules.Components.Afflictions:GetChildren() do
+		local AfflictionName = Component.Name
+		local Success, Required = pcall(require, Component)
+		if Success then
+			Service.__Affliction_Components[AfflictionName] = Required;
+		else
+			warn('Error loading Affliction Component: ', Required)
+		end
+	end
+
+	---
 	for _, Moveset in MovesetLibrary:GetAll() do
 		local Skills = Moveset:GetAll()
 
@@ -352,17 +364,35 @@ end
 function Service:RunAffliction(Target: AgentTypes.Enemy, ElementName: string, Data: { Damage: number })
 	local Objects = Service.__Active_Affliction_Thread;
 	local ElementInfo = Statics.Affliction_Tick_Damage[ElementName]
+	local AfflictionHandler = Service.__Affliction_Components[ElementName]
 
 	if Objects[Target] then
 		task.cancel(Objects[Target].Thread)
 
 		---
-		local PrevDmgPerTick = Objects[Target].Damage_Per_Tick;
-		local TicksRemaining = (Objects[Target].Ticks_Remaining + 1);
-		local TotalDamage = PrevDmgPerTick * TicksRemaining
+		local TotalDamage;
+		if Objects[Target].Damage_Per_Tick ~= nil then
+			local PrevDmgPerTick = Objects[Target].Damage_Per_Tick;
+			local TicksRemaining = (Objects[Target].Ticks_Remaining + 1);
+			TotalDamage = PrevDmgPerTick * TicksRemaining
+		elseif Objects[Target].Damage_Falloff ~= nil then
+			local MaxDamage = Objects[Target].Max_Damage;
+			local MaxTime = Objects[Target].Max_Time;
+			local Elapsed = os.clock() - Objects[Target].Started;
+			TotalDamage = (MaxDamage) * (math.min(MaxTime - Elapsed, 1) / MaxTime)
+		end
 
 		Target:TakeDamage(TotalDamage)
 		Replicator:DisplayDamage(Target, Data.Damage, false, nil, true)
+	end
+
+	if typeof(AfflictionHandler) == 'function' then
+
+		Objects[Target] = AfflictionHandler(Target, Data, function()
+			Objects[Target] = nil
+		end)
+
+		return
 	end
 
 	if not ElementInfo then
@@ -383,6 +413,8 @@ function Service:RunAffliction(Target: AgentTypes.Enemy, ElementName: string, Da
 			Replicator:DisplayDamage(Target, Obj.Damage_Per_Tick, false, ElementName, false)
 			task.wait(ElementInfo.Time)
 		end
+
+		Objects[Target] = nil;
 	end)
 end
 
@@ -514,7 +546,9 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 				return
 			end
 			
-			AgentService:Stop(Player)
+			if SpacelessSkill ~= 'Dodge' then
+				AgentService:Stop(Player)
+			end
 
 			local Status, ErrorMessage = Moveset:Begin(Skill, ActiveAgent, {
 				Target = Enemy, 

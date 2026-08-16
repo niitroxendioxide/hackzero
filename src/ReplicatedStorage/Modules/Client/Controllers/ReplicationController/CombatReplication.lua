@@ -220,7 +220,7 @@ function Controller:DisplayDamage(Buffer: buffer)
 		EnemyObject:SetHealth(EnemyHealth)
 	end
 
-	if Burst then
+	if Burst and Type ~= GameEnum.Afflictions.Ice then
 		Effects:Play("AfflictionBurst", EnemyObject, Type, {})
 	end
 

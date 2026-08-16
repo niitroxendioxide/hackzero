@@ -21,7 +21,7 @@ function JotaroStandUtils:CheckAndSummon(Ability, Caster)
         Ability:Effect("JP3_Stand", {Caster, {State = true}}, true)
 
         Caster:SetMeterUpdateType('Stand', GameEnum.Meter_States.Empty, true, function()
-            CreatedObject.Remove()
+            CreatedObject:Remove()
             Ability:Effect("JP3_Stand", {Caster, {State = false}}, true)
         end)
     end
