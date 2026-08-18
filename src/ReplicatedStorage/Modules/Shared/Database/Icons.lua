@@ -33,6 +33,7 @@ return {
 			MikuDefenseBuff = 126683577406553,
 			NishikiBuff = 138936674868049,
 			Concentration = 74265874608316, 
+			DragonBall = 103566142143666,
 		},
 
 		Values = {

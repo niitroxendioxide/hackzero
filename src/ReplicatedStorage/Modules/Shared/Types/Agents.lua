@@ -29,6 +29,7 @@ export type ProcessEventData = {
 	Element: Element?,
 	SkillId: number?,
 	Total_Damage: number?,
+	Burst: boolean?,
 }
 
 export type HitProcessState = "Before" | "After"
@@ -264,7 +265,8 @@ export type EffectParameters = {
 }
 export type EffectObject = {
 	Remove: () -> (), 
-	Id: number, Value: number, 
+	Id: number, 
+	Value: number, 
 	Type: Stat & AgentMovesetAbility, 
 	Tag: string?, 
 	Time: number?, 
@@ -470,7 +472,7 @@ export type ServerAgentClass = {
 		@param Tag The tag to look the effect by
 		@return `EffectObject` The effect object. Effect.Remove() to delete.
 	]]
-	GetEffect: (self: ServerAgentClass, Tag: string) -> (EffectObject?),
+	GetEffect: (self: ServerAgentClass, Tag: string) -> (EffectObject),
 
 	--[[
 		Increase the amount of effects/charges an effect has
@@ -485,6 +487,12 @@ export type ServerAgentClass = {
 		@param Tag The tag to find and refresh. beware as repeated tags could cause trouble and refresh unwanted effects
 	]]
 	RefreshEffect: (self: ServerAgentClass, Tag: string) -> (),
+
+	--[[
+		Remove an agent buff effect
+		@param Tag The tag to find and delete
+	]]
+	RemoveEffect: (self: ServerAgentClass, Tag: string) -> (),
 }
 
 export type AgentItemsClass = {

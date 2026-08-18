@@ -54,13 +54,21 @@ return table.freeze({
 
     TEST_COMPANION = '8bdc68f8-cb56-4576-a193-689bb87043df',
     TEST_AGENTS = {
-        'Chihiro',
+        'Goku',
         'Sasuke',
         'Jotaro3',
     },
 
     --REPLACE_AFFLICTION = 'Ice',
     TEST_AGENT_ARTIFACTS = {
+        Goku = {
+            'DragonBall',
+            'DragonBall',
+            'DragonBall',
+            'DragonBall',
+            'DatensekiFragment',
+            'DatensekiFragment',
+        },
         Chihiro = {
             'HanafudaEarrings',
             'HanafudaEarrings',

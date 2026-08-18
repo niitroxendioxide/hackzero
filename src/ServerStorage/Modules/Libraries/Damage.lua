@@ -156,6 +156,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 		Element = Data.Affliction,
 		Total_Damage = Final_Damage,
 		Critical = Is_Critical,
+		Burst = AfflictionTriggered,
 	})
 
 
