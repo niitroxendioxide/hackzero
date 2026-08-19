@@ -8,5 +8,7 @@ return {
     Map = "General/DailyImprovement", --"Dragon Ball/Namek",
     Icon = 122286576896635,
 
-    Acts = {},
+    Acts = {
+        
+    },
 } :: Types.Stage

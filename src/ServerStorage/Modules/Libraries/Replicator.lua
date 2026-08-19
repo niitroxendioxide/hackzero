@@ -85,7 +85,7 @@ function Replicator:Effect(Name: string, Data: {}, Targets: boolean | {})
 	end
 end
 
-function Replicator:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClass, Target: Player?, At: CFrame?)
+function Replicator:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClass, Target: Player?, At: CFrame?, OverrideArtifacts: {}?)
 	--print(Table:printTable(AgentClass))
 	local Object = buffer.create(6)
 	buffer.writeu8(Object, 0, GameEnum.Replication.AddAgent)
@@ -94,9 +94,9 @@ function Replicator:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentC
 	buffer.writeu8(Object, 3, AgentClass.__Level or 1)
 
 	if Target then
-		Network:Fire('Replicate', Target, Object, At)
+		Network:Fire('Replicate', Target, Object, At, OverrideArtifacts)
 	else
-		Network:FireForAll('Replicate', Object)
+		Network:FireForAll('Replicate', Object, At, OverrideArtifacts)
 	end
 end
 
@@ -273,7 +273,7 @@ function Replicator:ChangeEffect(Agent: AgentTypes.ServerAgentClass, Tag: string
 	buffer.writeu8(Object, 0, GameEnum.Replication.ChangeEffect)
 	buffer.writeu8(Object, 1, PlayerRepId)
 	buffer.writei8(Object, 2, Id)
-	buffer.writeu8(Object, 3, Amt)
+	buffer.writei8(Object, 3, Amt)
 	buffer.writeu8(Object, 4, (Restart == true) and 1 or 0)
 	buffer.writestring(Object, 5, Tag, #Tag)
 

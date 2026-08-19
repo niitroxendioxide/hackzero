@@ -56,6 +56,7 @@ EventClass.new = function(Stage: string, Act: string, Event: string)
     if typeof(Stage) == 'table' then
         self.__Is_Custom_Event = true;
         self.__Custom_Event_Data = Stage;
+        self.__Custom_Event_Type = Act;
     end
 
     return self
@@ -63,7 +64,7 @@ end
 
 function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): (boolean, boolean)
     if self.__Finish_Status then
-        return false;
+        return false, "Event is... finished?";
     end
 
     local EventData;
@@ -91,7 +92,7 @@ function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): (boolean,
     end
 
     local TotalGoals = 0;
-    for Goal, Value in EventData.Goal do
+    for Goal, Value in (EventData.Goal or {}) do
         local Default = typeof(Value) == "number" and 0 or ''
 
         TotalGoals += 1;
@@ -113,7 +114,7 @@ function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): (boolean,
         end
     end
 
-    if TotalGoals <= 0 then
+    if TotalGoals <= 0 and self.__Custom_Event_Type ~= "ChaosControl" then
         self:Destroy()
 
         return false, true
@@ -269,6 +270,10 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
 end
 
 function EventClass.HasGoal(self: Types.EventClass, Type: Types.Stage_Objective): boolean
+    if not self.__Current_Goals then
+        return false
+    end
+
     return self.__Current_Goals[Type] ~= nil
 end
 
@@ -329,6 +334,8 @@ function EventClass.Destroy(self: Types.EventClass, Not_Finished: boolean)
 
     local CorrectedState = self:GetCorrectedState()
     local Next_Stage = typeof(EventData.Finished) == 'function' and EventData.Finished(self.__Current_State) or tostring(EventData.Finished)
+    print(EventData)
+
     self:SetBarrierCollision(false)
 
     if Not_Finished then

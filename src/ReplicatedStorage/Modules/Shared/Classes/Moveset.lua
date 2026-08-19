@@ -5,7 +5,7 @@ local RunService = game:GetService('RunService')
 local Shared = ReplicatedStorage.Modules.Shared
 
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
-local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
+--local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Types = require(Shared.Types.Abilities)
 local AgentTypes = require(Shared.Types.Agents)
 local Cooldown = require(Shared.Utility.Cooldown)
@@ -185,6 +185,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 		self.__Last_Use[Agent][Type] = os.clock()
 
 		task.spawn(function()
+			AbilityModule:Save(Agent, 'CasterUniqueUseToken', {})
 			AbilityModule:Play(Agent, Type, 'Begin', Context)
 		end)
 

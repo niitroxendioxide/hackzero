@@ -2,6 +2,7 @@
 local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
@@ -14,7 +15,6 @@ local Math = require(Shared.Utility.Math)
 local CharacterLibrary = require(Client.Libraries.Characters)
 local AgentClass = require(Client.Classes.Agent)
 local GameEnum = require(Shared.GameEnum)
-local AnimLib = require(Client.Libraries.Animation)
 
 --local BufferUtil = require(Shared.Utility.Buffer)
 local InterfaceStates = require(Client.Packages.InterfaceStates)
@@ -70,11 +70,15 @@ end
 --
 local Controller = {}
 
-function Controller:AddAgent(Buffer: buffer, At: CFrame)
+function Controller:AddAgent(Buffer: buffer, At: CFrame, OverrideArtifacts: {}?)
 	local CharacterId = buffer.readu8(Buffer, 1)
 	local UserId = buffer.readu8(Buffer, 2)
 	local Level = buffer.readu8(Buffer, 3)
 	local CharacterName = CharacterDatabase:GetCharacterFromId(CharacterId)
+
+	if typeof(OverrideArtifacts) == 'table' and #OverrideArtifacts <= 0 then
+		OverrideArtifacts = nil
+	end
 
 	if CharacterLibrary:HasCharacter(UserId, CharacterName) then
 		warn('Cannot add same character twice for a player')
@@ -115,8 +119,11 @@ function Controller:AddAgent(Buffer: buffer, At: CFrame)
 	do
 		CharacterInstance:SetLevel(AgentData.Level)
 
-		for _, ArtifactId in (AgentData.Artifacts or {}) do
+		for _, ArtifactId in (OverrideArtifacts or AgentData.Artifacts or {}) do
 			local ArtifactData = SharedData:GetArtifactById(AgentOwner, ArtifactId)
+			if not ArtifactData and RunService:IsStudio() then
+				ArtifactData = LocalData:GetArtifactById(ArtifactId)
+			end
 
 			if ArtifactData ~= nil then
 				CharacterInstance.__Items:BindArtifact(ArtifactData)

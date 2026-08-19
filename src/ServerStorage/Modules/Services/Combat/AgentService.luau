@@ -84,7 +84,7 @@ function Service.ReplicateEvent(Player: Player, ClientBuffer: buffer, ...)
 	end
 end
 
-function Service:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClass, Target: Player?)
+function Service:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClass, Target: Player?, OverrideArtifacts: {}?)
 	local Data = Service:Get(Player)
 	for _, Character in Data.Characters do
 		if Character.Name == AgentClass.Name then
@@ -94,7 +94,7 @@ function Service:AddAgent(Player: Player, AgentClass: AgentTypes.ServerAgentClas
 
 	table.insert(Data.Characters, AgentClass)
 
-	Replicator:AddAgent(Player, AgentClass, Target)
+	Replicator:AddAgent(Player, AgentClass, Target, nil, OverrideArtifacts)
 	Service.AgentAdded:Fire(AgentClass)
 	AgentLibrary:Add(Player:GetAttribute("ReplicationId") :: number, AgentClass)
 end

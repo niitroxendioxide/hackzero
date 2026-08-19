@@ -244,10 +244,10 @@ function StatusClass.AddEffect(self: Types.AgentStatusClass, Effect: Types.Effec
 
 	local EffectObject = {
 		Id = NewId,
-		Type = Effect.Type,
+		Type = Effect.Type or Effect.Types,
 		Time = Effect.Time,
 		Tag = Effect.Tag,
-		Value = Effect.Value,
+		Value = Effect.Value or Effect.Values,
 		Hide = Effect.Hide,
 		Created = os.clock(),
 		Amount = Effect.Base_Amount or 1,
@@ -332,11 +332,17 @@ function StatusClass.RemoveEffect(self: Types.AgentStatusClass, Id: number)
 	end
 end
 
-function StatusClass.GetStatEffects(self: Types
-	.AgentStatusClass, Type: Types.Stat)
+function StatusClass.GetStatEffects(self: Types.AgentStatusClass, Type: Types.Stat)
 	local Amount = 0
 
 	for _, Effect in self.__Effects do
+		if typeof(Effect.Type) == 'table' and table.find(Effect.Type, Type) then
+			local Index = table.find(Effect.Type, Type)
+			Amount += (Effect.Value[Index] * Effect.Amount)
+
+			continue
+		end
+
 		if Effect.Type == Type then
 			Amount += (Effect.Value * Effect.Amount)
 		end

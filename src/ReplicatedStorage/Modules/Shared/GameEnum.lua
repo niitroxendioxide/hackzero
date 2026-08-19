@@ -167,6 +167,7 @@ return {
 	ArtifactEvents = {
 		SkillCasted = '_skc',
 		AgentSwitchedIn = "_agswi", 
+		AgentHurt = "_agh",
 	},
 
 	Afflictions = {
@@ -311,6 +312,7 @@ return {
 		UpdateDrive = 4,
 		GetCurrencies = 5,
 		GetAllItems = 6,
+		AddNewArtifacts = 11,
 	},
 
 	ShareDataEvent = {
@@ -359,6 +361,16 @@ return {
 		["Penetration"] = 9,
 		["Affliction_Aptitude"] = 10,
 		["Daze"] = 11,
+		--[[
+		["Affliction_Damage%"] = 12,
+		["Energy_Regeneration%"] = 12,
+		["Skill_Damage_1"] = 43,
+		["Skill_Damage_2"] = 44,
+		["Skill_Damage_3"] = 45,
+		["Skill_Damage_4"] = 46,
+		["Skill_Damage_5"] = 47,
+		["Skill_Damage_6"] = 48,
+		--]]
 	},
 
 	GearHookType = {

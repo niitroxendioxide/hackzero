@@ -7,16 +7,16 @@ return {
 
 	Piece_Effects = {
 		Two_Piece = {
-			["Energy_Regeneration%"] = 10,
-			Critical_Rate = 6,
+			["Energy_Regeneration%"] = 25,
+			["Attack%"] = 8,
 		},
 
 		Four_Piece = {},
 	},
 
 	Piece_Descriptions = {
-		Two_Piece = "CRIT Rate +6%, Affliction Aptitude +30",
-		Four_Piece = [[Every critical hit adds a 'Cursed Energy' stack, once you reach 5, next critical hit will trigger a 'Black Flash', dealing big anomaly damage in burst. Has a cooldown of 7s]],
+		Two_Piece = "Attack +8%, Energy_Regeneration +25%",
+		Four_Piece = [[Using Special or EX Special marks an enemy for 10s, up to 5 enemies at the time. When any of those enemies receive EX / Special, Chain Attack, or Ultimate Damage, caster receives a percent of Energy casted. If any enemy dies during the 10 seconds period, receive 10% Energy.]],
 	},
 
 } :: Types.Artifact_Data

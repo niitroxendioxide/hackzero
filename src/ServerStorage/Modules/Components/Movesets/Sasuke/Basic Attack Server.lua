@@ -146,17 +146,21 @@ function Ability:Play(Caster: Types.Caster, _, State, Context): ()
 
 		BaseHitData.Damage = Ability:FromData("Damage", i, SkillLevel)
 		BaseHitData.Daze = Ability:FromData("Daze", i, SkillLevel)
+		local HitboxSize = Ability:FromData("HitboxSize")
+		if i == 2.1 then
+			HitboxSize = vector.create(11, 4, 9)
+		end
 
 		Ability:UseAttackData(Sequence, Caster, TickData, {
-			Size = Ability:FromData("HitboxSize"),
+			Size = HitboxSize,
 			Offset = Ability:FromData("HitboxOffset"),
 
 			Hit_Function = function(Target)
 				if i == 2.1 then
 					BaseHitData.Knockback = {
 						vector.create(0, 0, 1),
-						36,
-						0.2,
+						24,
+						0.4,
 					}
 				end
 

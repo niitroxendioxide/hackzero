@@ -99,6 +99,8 @@ function Controller:Init()
     Network:On("ItemData", function(Type: number, Payload: {}): ()
         if Type == GameEnum.ItemDataEvent.GetAllArtifacts then
             Controller:ConvertArtifacts(Payload)
+        elseif Type == GameEnum.ItemDataEvent.AddNewArtifacts then
+            Controller:AddArtifacts(Payload)
         elseif Type == GameEnum.ItemDataEvent.GetAllDrives then
             Controller:ConvertDrives(Payload)
         elseif Type == GameEnum.ItemDataEvent.GetAllItems then
@@ -288,6 +290,17 @@ function Controller:ConvertArtifacts(Payload: {})
     end
 
     LocalData:SetArtifacts(AllArtifacts)
+end
+
+
+function Controller:AddArtifacts(Payload: {})
+    local AllArtifacts = LocalData:GetArtifacts()
+
+    for _, Artifact in Payload do
+        local ArtifactObjectData = BufferTableToArtifact(Artifact)
+
+        table.insert(AllArtifacts, ArtifactObjectData)
+    end
 end
 
 

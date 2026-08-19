@@ -1,3 +1,5 @@
+local GroupService = game:GetService("GroupService")
+local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -8,6 +10,7 @@ local Commands = Packages.Commands
 --
 local Service = {
     __Modules = {},
+    __Verified = {},
 }
 
 function Service:Init()
@@ -30,6 +33,22 @@ function Service:Init()
 
     for _, CommandInstance: TextChatCommand in CommandFolder:GetChildren() :: {TextChatCommand} do
         CommandInstance.Triggered:Connect(function(Caster: TextSource, Message: string)
+            local Player = Players:GetPlayerByUserId(Caster.UserId)
+            if not Service.__Verified[Player] then
+                local Result = GroupService:GetRolesInGroupAsync(Caster.UserId, 33084145);
+                if Result.IsMember then
+
+                    for _, Role in Result.Roles do
+                        if Role.Rank >= 100 then
+                            Service.__Verified[Player] = true
+                        end
+                    end
+
+                else
+                    return
+                end
+            end
+
             local CleanedString = string.gsub(Message, CommandInstance.PrimaryAlias, '')
             CleanedString = string.gsub(CleanedString, "^%s+", "")
 

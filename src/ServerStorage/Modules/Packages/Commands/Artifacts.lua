@@ -18,7 +18,7 @@ return function(Caster: TextSource, Parameters: {[number]: string})
         return
     end
 
-    local Level = Parameters[3] and tonumber(Parameters[3]) or math.random(5, 75)
+    local Level = math.clamp(Parameters[3] and tonumber(Parameters[3]) or math.random(5, 75), 1, 99)
     local ItemExists = ArtifactsDatabase:Get(ItemName);
     if not ItemExists then
         return;

@@ -17,7 +17,7 @@ return {
 
 	Piece_Descriptions = {
 		Two_Piece = "Affliction Aptitude +30",
-		Four_Piece = "When character swaps into battle, affliction facility is increased by 30% for 15s. If affliction burst is triggered during this period, deal an extra 15% Affliction Damage for 17s, effect does not stack.",
+		Four_Piece = "When character swaps into battle, affliction facility is increased by 30% for 15s. If affliction burst is triggered during this period, deal an extra 20% Affliction Damage for 17s, effect does not stack.",
 	},
 
 } :: Types.Artifact_Data

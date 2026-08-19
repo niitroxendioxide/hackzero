@@ -34,6 +34,11 @@ return {
 			NishikiBuff = 138936674868049,
 			Concentration = 74265874608316, 
 			DragonBall = 103566142143666,
+			Wish = 125296707421117,
+			DatenM1Buff = 124128239376300,
+			Rupture = 108597656195585,
+			FourLeafBuff = 4954055102,
+			CursedEnergy = 75945980457392,
 		},
 
 		Values = {

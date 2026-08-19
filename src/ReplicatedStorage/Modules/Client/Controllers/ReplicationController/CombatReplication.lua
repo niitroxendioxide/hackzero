@@ -350,7 +350,7 @@ function Controller:ChangeEffect(Buffer: buffer)
 	local UserId = Players.LocalPlayer:GetAttribute("ReplicationId")
 	local RepId = buffer.readu8(Buffer, 1)
 	local AgentId = buffer.readu8(Buffer, 2)
-	local Amount = buffer.readu8(Buffer, 3)
+	local Amount = buffer.readi8(Buffer, 3)
 	local Restart = (buffer.readu8(Buffer, 4) == 1)
 	local Tag = buffer.readstring(Buffer, 5, buffer.len(Buffer) - 5)
 

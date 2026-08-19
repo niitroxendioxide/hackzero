@@ -30,6 +30,14 @@ export type ProcessEventData = {
 	SkillId: number?,
 	Total_Damage: number?,
 	Burst: boolean?,
+	SkillUniqueToken: any,
+	Multipliers: {
+		Damage: number,
+		Daze: number,
+		Affliction: number,
+		Stun: number,
+		Affliction_Buildup: number,
+	}
 }
 
 export type HitProcessState = "Before" | "After"
@@ -262,6 +270,7 @@ export type EffectParameters = {
 	Hide: boolean,
 	Base_Amount: number?,
 	Limit: number?,
+	RemovesAll: boolean,
 }
 export type EffectObject = {
 	Remove: () -> (), 
@@ -490,9 +499,9 @@ export type ServerAgentClass = {
 
 	--[[
 		Remove an agent buff effect
-		@param Tag The tag to find and delete
+		@param Id The id to find and delete
 	]]
-	RemoveEffect: (self: ServerAgentClass, Tag: string) -> (),
+	RemoveEffect: (self: ServerAgentClass, Id: number) -> (),
 }
 
 export type AgentItemsClass = {

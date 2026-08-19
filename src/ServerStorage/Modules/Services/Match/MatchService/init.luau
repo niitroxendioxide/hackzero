@@ -63,7 +63,6 @@ function Service:Init()
         Success_Loading = Service:CreateMap(MissionData.Stage, MissionData.Act)
     elseif MissionData.Type == 'ChaosControl' then
         Success_Loading = Service:CreateMap(MissionData.Stage)
-        
     end
 
     if not Success_Loading then
@@ -104,10 +103,14 @@ end
 
 function Service:End(Won: boolean)
     if not Service.__Active_Match or not Service.__Active_Match:IsFinished() then
+        print('finished?!')
+
         return
     end
 
     ---
+    print('hey whats up')
+
     local IsCustomMission = Service.__Mission_Data ~= nil
     local StageActData = if IsCustomMission then Service.__Mission_Data else StageDatabase:GetAct(Service.__Current_Stage, Service.__Current_Act)
 
@@ -236,10 +239,10 @@ function Service:Begin(Stage: string, Act: string)
         return
     end
 
-    local Extra = MissionData.Type == 'Mission' and Data or Act
+    local Extra = MissionData.Type == 'Expedition' and Act or Data
     local Marker_Data = Map:SetupMarkers(Data.Markers)
-    local MissionClass = MissionClass.new(MissionData.Type, Stage, Extra)
-    Map:AssignCurrentMission(MissionClass)
+    local MissionObject = MissionClass.new(MissionData.Type, Stage, Extra)
+    Map:AssignCurrentMission(MissionObject)
 
     NPCService.__Stage = Stage
     NPCService.__Act = Act
@@ -250,7 +253,7 @@ function Service:Begin(Stage: string, Act: string)
 
     Service.__Current_Stage = Stage
     Service.__Current_Act = Act
-    Service.__Active_Match = MissionClass;
+    Service.__Active_Match = MissionObject;
 
     if MissionData.Type == 'ChaosControl' then
         local WaveCount = 0;
@@ -266,14 +269,18 @@ function Service:Begin(Stage: string, Act: string)
     Network:FireForAll("Match", GameEnum.MatchEvents.MatchBegin, ClientPayloadData)
 
 
-    MissionClass:Begin()
+    --if MissionData.Type == 'ChaosControl' then
+        print('So here, i have to somehow, trigger the basepart??')
+    --else
+        MissionObject:Begin()
+    --end
 
     --
     for _, Player in AllPlayers do
         local FirstAgent = AgentService:GetCurrentCharacter(Player)
-        local CompanionId = TeleportService:GetPlayerCompanionFromData(Player)
+        --local CompanionId = TeleportService:GetPlayerCompanionFromData(Player)
         local CompData = DataService:GetCompanions(Player, function(Companion): boolean 
-            return Companion.__Id == CompanionId  
+            return true
         end, true)
 
         if CompData ~= nil then
@@ -286,13 +293,13 @@ function Service:Begin(Stage: string, Act: string)
         for Key, Value in Values do
             local IsAddition = typeof(Value) == 'number' and (string.sub(Key, #Key, #Key) == "+")
             local CorrectedKey = IsAddition and string.sub(Key, 1, #Key - 1) or Key
-            local CorrectedValue = IsAddition and (MissionClass:GetProgressValue(CorrectedKey) or 0) + Value or Value
+            local CorrectedValue = IsAddition and (MissionObject:GetProgressValue(CorrectedKey) or 0) + Value or Value
 
-            MissionClass:SetProgressValue(CorrectedKey, CorrectedValue)
+            MissionObject:SetProgressValue(CorrectedKey, CorrectedValue)
         end
     end)
 
-    MissionClass.Finished:Once(function(State: boolean)
+    MissionObject.Finished:Once(function(State: boolean)
         Service:End(State)
     end)
 

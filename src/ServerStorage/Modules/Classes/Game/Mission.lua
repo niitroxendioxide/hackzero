@@ -47,7 +47,7 @@ MissionClass.__index = MissionClass
     @param 'Act', can also be 'Data', for custom missions.
 
 --]]
-MissionClass.new = function(Type: string, Stage: string, Extra: string | {}): Types.MissionClass
+MissionClass.new = function(Type: string, Stage: string, Extra: string | {}, ...): Types.MissionClass
     local self = setmetatable({}, MissionClass)
     self.Finished = Signal.new()
 
@@ -61,7 +61,7 @@ MissionClass.new = function(Type: string, Stage: string, Extra: string | {}): Ty
     self.__Hooks = StageHandlers:Get(Stage, Extra) or Mock
 
     if (Type == 'ChaosControl' or Type == 'Mission') then
-        self.__Is_Custom_Data = true
+        self.__Mission_Type = Type
         self.__Custom_Data = Extra
     end
 
@@ -99,16 +99,21 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
     
     ---
     local EventData;
-    local IsCustom = false;
+    local IsCustom = true;
     if Trigger and Trigger:HasTag("CustomObject") then
-        IsCustom = true;
         EventData = MapCache:GetTriggerData(Event)
-    elseif self.__Is_Custom_Data then
-        IsCustom = true;
-        local Guide = self.__Custom_Data.Guide[Event]
+    elseif self.__Mission_Type == 'Mission' then
+        if self.__Custom_Data.Guide then
+           local Guide = self.__Custom_Data.Guide[Event]
 
-        EventData = Guide
+            EventData = Guide 
+        else
+            EventData = self.__Custom_Data
+        end
+    ---elseif self.__Mission_Type == 'ChaosControl' then
+
     else
+        IsCustom = false;
         EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
     end
 
@@ -133,7 +138,7 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
     -- Start event
     local EventObject;
     if IsCustom then
-        EventObject = EventClass.new(EventData, nil, Event)
+        EventObject = EventClass.new(EventData, self.__Mission_Type, Event)
     else
         EventObject = EventClass.new(self.__Stage, self.__Act, Event :: string)
     end
@@ -177,8 +182,7 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
             end
         end
 
-        if Next_Stage == "End" then
-            print('Should end the mission.')
+        if (Next_Stage == "End" or Next_Stage == nil) then
             self:Finish()
 
             return
@@ -200,8 +204,8 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
     end
 
     local Success, IsGoallessEvent = EventObject:Start(Trigger)
-    if Success == false and not IsGoallessEvent then
-        warn('Error on event: ', Event)
+    if Success == false and not (IsGoallessEvent == true) then
+        warn('Error on event: ', Event, "Errorcode:", IsGoallessEvent)
     end
 end
 
@@ -223,7 +227,7 @@ function MissionClass.ObtainMissionRank(self: Types.MissionClass, Won: boolean)
         return 'X'
     end
     
-    if self.__Is_Custom_Data then
+    if self.__Mission_Type ~= nil then
         local EventData = self.__Custom_Data;
         local Completion = EventData.Completion;
         if Completion and typeof(Completion.Handler) == 'function' then

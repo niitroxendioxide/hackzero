@@ -174,6 +174,12 @@ function Ability:Play(Caster: Types.AgentClass, _key, State, Ctx)
 
 		end},
 
+		{0.75, function()
+			if M1_Count == 2 then
+				Ability:Effect("Slash", Caster, 87.864, CFrame.new(-1.526, -0.385, -3.966), false, 1.25)
+			end
+		end},
+
 		{1, function()
 			Caster:LookAtTarget(Ctx.Target)
 			if M1_Count == 3 then
@@ -189,8 +195,13 @@ function Ability:Play(Caster: Types.AgentClass, _key, State, Ctx)
 			break
 		end
 
+		local HitboxSize = Ability:FromData("HitboxSize")
+		if i == 2.1 then
+			HitboxSize = vector.create(11, 4, 9)
+		end
+
 		Ability:UseAttackData(Sequence, Caster, TickData, {
-			Size = Ability:FromData("HitboxSize"),
+			Size = HitboxSize,
 			Offset = Ability:FromData("HitboxOffset"),
 
 			Hit_Function = function(Target)

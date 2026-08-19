@@ -16,7 +16,7 @@ return {
 
 	Piece_Descriptions = {
 		Two_Piece = "Daze +6%, Attack +120",
-		Four_Piece = "When EX Special hits an enemy, obtain 1 'Resonance' stack, each providing +3 Daze, when 3 are obtained. Next EX Special will deal double the daze, consuming all 3 charges, cooldown of 7s.",
+		Four_Piece = "When EX Special hits an enemy, obtain 1 'Resonance' stack, each providing +4 Daze, when 3 are obtained. Next EX Special will deal double the daze, consuming all 3 charges, cooldown of 7s.",
 	},
 
 } :: Types.Artifact_Data

@@ -44,6 +44,7 @@ ArtifactObject:OnHitProcess("After", function(Data, PieceCount: number): (number
 				Time = 20,
 				Type = 'Affliction_Aptitude',
 				Value = 50,
+				
 			})
 
 			Caster:AddEffect({
@@ -51,6 +52,7 @@ ArtifactObject:OnHitProcess("After", function(Data, PieceCount: number): (number
 				Time = 20,
 				Type = 'LA_Blunt%',
 				Value = 15,
+				Hide = true,
 			})
 		else
 			Caster:ChangeEffect('DragonBall', AddedEffect);

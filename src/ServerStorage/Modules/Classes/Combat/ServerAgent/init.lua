@@ -7,6 +7,7 @@ local RunService = game:GetService('RunService')
 local Classes = ServerStorage.Modules.Classes
 local Shared = ReplicatedStorage.Modules.Shared
 
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local ArtifactsFetcher = require(ServerStorage.Modules.Libraries.ArtifactsFetcher)
 local Movesets = require(ServerStorage.Modules.Libraries.Movesets)
 local Ping = require(ServerStorage.Modules.Libraries.Ping)
@@ -438,7 +439,7 @@ end
 
 
 -- # Interacting
-function ServerAgentClass:TakeDamage(Amount: number)
+function ServerAgentClass.TakeDamage(self: Types.ServerAgentClass, Amount: number)
 	self.__Status:Damage(Amount)
 
 	if not self.__Status:IsAlive() then
@@ -447,6 +448,9 @@ function ServerAgentClass:TakeDamage(Amount: number)
 		self:Stop()
 	else
 		Replicator:DamageAgent(self, Amount)
+
+		local Gear = self:GetGearManager()
+		Gear:RunEventHooks(GameEnum.ArtifactEvents.AgentHurt, {Agent = self})
 	end
 
 	return
@@ -516,7 +520,10 @@ function ServerAgentClass.AddEffect(self: Types.ServerAgentClass, EffectParams: 
 
 	local Effect = self.__Status:AddEffect(EffectParams)
 
-	Replicator:AddEffect(self, EffectParams)
+	--if not(EffectParams.Hide and EffectParams.Type and string.match(EffectParams.Type :: string, "LA_")) then
+		Replicator:AddEffect(self, EffectParams)
+	--end
+
 
 	return Effect
 end

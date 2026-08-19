@@ -6,6 +6,7 @@ local Assets = ReplicatedStorage.Assets
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local AudioLib = require(Client.Libraries.Audio)
 local Types = require(Shared.Types)
 local Effects = require(Shared.Utility.Effects)
@@ -39,6 +40,10 @@ return function(
 		print("Not found effect")
 
 		return
+	end
+
+	if typeof(Enemy) == 'number' then
+		Enemy = Enemies:GetEnemy(Enemy)
 	end
 
 	local Offset = Data.Offset or CFrame.new()
@@ -84,7 +89,7 @@ return function(
 
 	Effects:Emit(Object)
 
-	task.delay(3/60, function()
+	task.delay(6/60, function()
 		for _, Particle in Object:GetDescendants() do
 			if Particle:IsA("ParticleEmitter") then
 				local Time = Particle.TimeScale

@@ -376,7 +376,7 @@ function Service:GetStageData(): MatchData
             local TotalEnemies = 0;
             for Wave, WaveData in Data.Enemies do
                 for _, EnemySpawnData in WaveData do
-                TotalEnemies += EnemySpawnData.Amount; 
+                    TotalEnemies += EnemySpawnData.Amount; 
                 end
             end
 

@@ -35,7 +35,7 @@ return table.freeze({
             },
             Enemies = {
                 [1] = {
-                    {Amount = 6, Level = 50, Name = 'Sorcerer'}
+                    {Amount = 1, Level = 70, Name = 'Sorcerer'}
                 },
             },
         }--]]
@@ -47,33 +47,39 @@ return table.freeze({
     --- PASSIVE, EASY, MEDIUM, HARD, EXTREME
     DIFFICULTY = 'HARD', 
     USE_BORROW = true, -- whether to replace agents with lvl 60 max
-    BORROWED_AGENT_LEVEL = 60,
+    BORROWED_AGENT_LEVEL = 1,
     CHARACTERS_INVINCIBLE = false,
     STUDIO_ENERGY_MULT = 25,
     STUDIO_HIT_ENERGY_MULT = 1,
 
     TEST_COMPANION = '8bdc68f8-cb56-4576-a193-689bb87043df',
     TEST_AGENTS = {
+        'Chihiro',
         'Goku',
-        'Sasuke',
-        'Jotaro3',
+        'Naruto'
     },
 
     --REPLACE_AFFLICTION = 'Ice',
     TEST_AGENT_ARTIFACTS = {
         Goku = {
+            'FourLeafGrimoire',
+            'FourLeafGrimoire',
+            'FourLeafGrimoire',
+            'FourLeafGrimoire',
             'DragonBall',
             'DragonBall',
-            'DragonBall',
-            'DragonBall',
-            'DatensekiFragment',
-            'DatensekiFragment',
+        },
+        Sasuke = {
+            'Sharingan',
+            'Sharingan',
+            'Sharingan',
+            'Sharingan',
         },
         Chihiro = {
-            'HanafudaEarrings',
-            'HanafudaEarrings',
-            'HanafudaEarrings',
-            'HanafudaEarrings',
+            'VivreCard',
+            'VivreCard',
+            'VivreCard',
+            'VivreCard',
             'DatensekiFragment',
             'DatensekiFragment',
         },

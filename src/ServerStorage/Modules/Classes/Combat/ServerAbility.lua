@@ -384,33 +384,31 @@ local function KnockEnemy(_: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enem
 	Replicator:Knockback(Enemy, Direction, Power, Time)
 end
 
-local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Data: Types.HitEnemyData, SkillId: number)
+local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Data: Types.HitEnemyData, SkillId: number, CasterUniqueUseToken: any)
 	local AgentPivot = Agent:GetPivot()
 	-- local EnemyPivot = Enemy:GetPivot()
 
 	--
-	local Validated, Dealt_Damage, EnemyDied, Critical, Affliction, Affliction_Fill, Burst_Damage, Affliction_Triggered = DamageLibrary:Deal(Agent, Enemy, Data, SkillId)
+	local Validated, Dealt_Damage, EnemyDied, Critical, Affliction, Affliction_Fill, Burst_Damage, Affliction_Triggered = DamageLibrary:Deal(Agent, Enemy, Data, SkillId, CasterUniqueUseToken)
 	if not Validated then
 		return;
 	end
 	
-	local Dealt_Daze, Is_Dazed = DamageLibrary:Daze(Agent, Enemy, Data.Daze)
+	local Dealt_Daze, Is_Dazed = DamageLibrary:Daze(Agent, Enemy, Data.Daze, SkillId)
+	local EnergyAmount = DamageLibrary:CalculateEnergyForHit(Enemy, Dealt_Damage)
 
 	if Enemy.__Status:IsKnocked() then
 		Enemy:Rotate(Agent:GetPivot().Position)
 	end
 
 	--
-	local PercentDealt = (Dealt_Damage / Enemy.__Status:GetStat('Max_Health'))
-	local Total = math.min(Dealt_Damage / 3000, 1)
-	local EnergyAmount = Random.new():NextNumber(0.75 + (PercentDealt*2), 3 + (PercentDealt*2)) * Total
-	EnergyAmount *= (RunService:IsStudio() and settings.STUDIO_HIT_ENERGY_MULT) or 1
-
+	
 	if not Data.DontChargeEnergy then
 		Agent:GiveEnergy(EnergyAmount)
 	end
 
 	if not Data.DontChargeUlt then
+		local PercentDealt = (Dealt_Damage / Enemy.__Status:GetStat('Max_Health'))
 		local UltBarCharged = 10 * PercentDealt
 		if Affliction_Triggered then
 			UltBarCharged *= 1.25;
@@ -549,7 +547,9 @@ function ServerAbilityClass:Hit(Perpetrator: any, Target: any, Data: Types.HitEn
 
 		Result = HitAgent(Perpetrator, Target, Data)
 	elseif IsEnemy then
-		Result = HitEnemy(Perpetrator, Target, Data, self.__Skill_Type)
+		local OnCastUniqueToken = self:Get(Perpetrator, 'CasterUniqueUseToken')
+
+		Result = HitEnemy(Perpetrator, Target, Data, self.__Skill_Type, OnCastUniqueToken)
 	else
 		Result = HitStructure(Perpetrator, Target, Data)
 	end

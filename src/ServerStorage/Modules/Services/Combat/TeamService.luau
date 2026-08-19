@@ -9,6 +9,7 @@ local Classes = Modules.Classes
 local Services = Modules.Services
 
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Network = require(ReplicatedStorage.Modules.Shared.Network)
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
 local ServerAgentClass = require(Classes.Combat.ServerAgent)
@@ -51,12 +52,20 @@ function Service:Create(Player: Player)
 
         local ArtifactIds = Table:WriteValues(AgentDataClass.Artifacts)
 
+        local Ids = {}
         if settings.USE_BORROW and settings.TEST_AGENT_ARTIFACTS[AgentData.Name] then
+            local ArtifactDataToSend = {}
+            
             for SlotId, ArtifactName in settings.TEST_AGENT_ARTIFACTS[AgentData.Name] do
                 local NewArtifact = PlayerArtifactData.randomize(ArtifactName, 'Mythical', 90, SlotId)  
 
                 AgentInstance:BindArtifact(NewArtifact:ToData())
+                table.insert(Ids, NewArtifact.__Id)
+
+                table.insert(ArtifactDataToSend, NewArtifact:Compress())
             end
+
+            Network:FireForAll("ItemData", GameEnum.ItemDataEvent.AddNewArtifacts, ArtifactDataToSend)
         end
 
         if #ArtifactIds > 0 then
@@ -73,7 +82,7 @@ function Service:Create(Player: Player)
 
         AgentInstance:Init(Player)
         AgentInstance:AddTag("Invulnerability", 5)
-        AgentService:AddAgent(Player, AgentInstance)
+        AgentService:AddAgent(Player, AgentInstance, nil, Ids)
 
         if index == 1 then
             AgentInstance:SetActive(true)

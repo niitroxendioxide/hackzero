@@ -93,7 +93,7 @@ function LocalData:SetCompanionData(Data: {Companions.ClientCompanionData})
 end
 
 function LocalData:GetAllCompanions(): {Companions.ClientCompanionData}
-    return LocalData.__Cache['Companions']
+    return LocalData.__Cache['Companions'] or {}
 end
 
 --
@@ -106,7 +106,7 @@ function LocalData:SetArtifacts(Data: {Types.PlayerArtifactData})
 end
 
 function LocalData:GetArtifactById(Id: string): Types.PlayerArtifactData?
-    for _, Artifact in LocalData.__Cache['Artifacts'] do
+    for _, Artifact in (LocalData.__Cache['Artifacts'] or {}) do
         if Artifact.Id == Id then
             return Artifact
         end
@@ -116,7 +116,7 @@ function LocalData:GetArtifactById(Id: string): Types.PlayerArtifactData?
 end
 
 function LocalData:EditArtifact(Artifact: Types.PlayerArtifactData): ()
-    for key, SavedArtifact in LocalData.__Cache['Artifacts'] do
+    for key, SavedArtifact in (LocalData.__Cache['Artifacts'] or {}) do
         if SavedArtifact.Id == Artifact.Id then
             LocalData.__Cache['Artifacts'][key] = Artifact
 

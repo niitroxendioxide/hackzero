@@ -130,6 +130,7 @@ function Math:CalculateStatsForAgent(AgentName: string, Level: number, Drive, Ar
 
     Math:ApplyPercents(StatBuffs, AgentStats)
 
+
     return StatBuffs
 end
 
