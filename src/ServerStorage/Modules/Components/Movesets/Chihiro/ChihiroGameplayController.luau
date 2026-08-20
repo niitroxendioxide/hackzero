@@ -28,7 +28,6 @@ function Controller:AddUltimateCharge(Caster: AgentTypes.ServerAgentClass, Amoun
     --
     Caster:UpdateMeter('AkaCharge', Amount)
     Controller.__Cache[Caster] = math.clamp(Controller.__Cache[Caster] + Amount, 0, Maximum)
-    
 end
 
 function Controller:MarkSpecialHit(Caster: AgentTypes.ServerAgentClass, Target: AbilityTypes.ServerEnemy, Limit: number)
@@ -101,6 +100,10 @@ end
 
 function Controller:UseUltimateCharge(Caster: AgentTypes.ServerAgentClass): number
     local StoredAmount = Controller.__Cache[Caster]
+    if StoredAmount == nil then
+        StoredAmount = 0;
+    end
+
     Caster:UpdateMeter('AkaCharge', -StoredAmount)
 
     Controller.__Cache[Caster] = 0

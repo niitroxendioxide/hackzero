@@ -2,7 +2,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 
 local Shared = ReplicatedStorage.Modules.Shared
-local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Statics = require(Shared.Database.Statics)
 
 local SAME_ATTACKER = 1.25

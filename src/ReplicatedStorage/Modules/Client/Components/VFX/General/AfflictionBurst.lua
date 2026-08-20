@@ -46,13 +46,40 @@ local Handlers = {
 		EnergyOrbs:PivotTo(Target:GetModel():GetPivot())
 		Effects:Weld(EnergyOrbs.PrimaryPart, Target:GetModel().PrimaryPart)
 
+		local Thread = task.delay(10, function()
+			Cache[Target]()
+		end)
+
 		Cache[Target] = function()
 			Effects:Toggle(EnergyOrbs, false)
 
 			Cache[Target] = nil
-		end
 
-		task.delay(10, Cache[Target])
+			if Thread ~= coroutine.running() then
+				task.cancel(Thread)
+			end
+		end
+	end,
+
+	[GameEnum.Afflictions.Fire] = function(Target: AbilityTypes.ClientEnemy)
+		local AfflictionAssets = Assets.Effects.General.Combat.Afflictions
+		local BurningAura = Effects:Create(AfflictionAssets.Burn, 18)
+		BurningAura:PivotTo(Target:GetModel():GetPivot())
+		Effects:Weld(BurningAura.PrimaryPart, Target:GetModel().PrimaryPart)
+
+		local Thread = task.delay(15, function()
+			Cache[Target]()
+		end)
+
+		Cache[Target] = function()
+			Effects:Toggle(BurningAura, false)
+
+			Cache[Target] = nil
+
+			if Thread ~= coroutine.running() then
+				task.cancel(Thread)
+			end
+		end
 	end,
 
 	[GameEnum.Afflictions.Ice] = function(Target: AbilityTypes.ClientEnemy, Shatter: boolean?, Time)
@@ -128,7 +155,6 @@ return function(Target: Types.GenericClass, Element: number, ...)
 		Affliction = Affliction_Name, 
 		VanishTime = 2, 
 		Burst = true, 
-		--ForceStroke = true 
 	})
 
 	if Cache[Target] then

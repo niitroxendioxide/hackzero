@@ -148,6 +148,7 @@ function EventClass.SetBarrierCollision(self: Types.EventClass, State: boolean)
             Object.CanQuery = false
             continue
         end
+
         Object.CanQuery = State
     end
 
@@ -177,10 +178,10 @@ function EventClass.CreateEventAreaModel(self: Types.EventClass, Trigger: BasePa
     local Size = (Trigger:GetAttribute("AreaSize") or (Trigger.Size * SIZE_K)) :: Vector3
     local BaseOffset = CFrame.new(Trigger:GetAttribute("AreaOffset") or Vector3.new()) :: CFrame
     local Sizes = {
-        Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
-        Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, Size.Z/2 - 1),
-        Vector3.new(1, Size.Y, Size.Z + 1), CFrame.new(-Size.X/2 - 1, 0, 0),
-        Vector3.new(1, Size.Y, Size.Z + 1), CFrame.new(Size.X/2 - 1, 0, 0)
+        Vector3.new(Size.X + 1, Size.Y + 15, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
+        Vector3.new(Size.X + 1, Size.Y + 15, 1), CFrame.new(0, 0, Size.Z/2 - 1),
+        Vector3.new(1, Size.Y + 15, Size.Z + 1), CFrame.new(-Size.X/2 - 1, 0, 0),
+        Vector3.new(1, Size.Y + 15, Size.Z + 1), CFrame.new(Size.X/2 - 1, 0, 0)
     }
 
     local Parent = workspace.Camera:FindFirstChild("Area_Colliders") or Instance.new("Folder")

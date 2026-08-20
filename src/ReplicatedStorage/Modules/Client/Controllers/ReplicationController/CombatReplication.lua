@@ -87,28 +87,34 @@ end
 
 function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 	local State = buffer.readu8(Buffer, 1) == 1
-	local RepId = buffer.readu8(Buffer, 2) -- use this for yk.. the stuff!
+	local RepId = buffer.readu8(Buffer, 2)
 
-	if Colliders[TriggerObject] then
-		if not State then
-			Effects:Play("Barrier", TriggerObject.Name..'barrier', Colliders[TriggerObject], TriggerObject.Position, false)
-
-			for _, Agent in Characters:GetCharacters(RepId) do
-				Agent:SetLimitArea(nil)
-				Agent:SetColliderGroupEnabled(Colliders[TriggerObject], false)
-			end
-
-			for _, Obj in Colliders[TriggerObject] do
-				Obj:Destroy()
-			end
-
-			Colliders[TriggerObject] = nil
+	if not State then
+		if not Colliders[TriggerObject] then
+			return;
 		end
 
+		for _, Agent in Characters:GetCharacters(RepId) do
+			Agent:SetLimitArea(nil)
+			Agent:SetColliderGroupEnabled(Colliders[TriggerObject], false)
+		end
+
+		for _, Obj in Colliders[TriggerObject] do
+			Obj:Destroy()
+		end
+
+		Effects:Play("Barrier", TriggerObject.Name..'barrier', Colliders[TriggerObject], TriggerObject.Position, false)
+
+		Colliders[TriggerObject] = nil
 		return
+	elseif State and Colliders[TriggerObject] then
+		for _, Agent in Characters:GetCharacters(RepId) do
+			Agent:SetLimitArea(TriggerObject)
+			Agent:SetColliderGroupEnabled(Colliders[TriggerObject], true)
+		end
 	end
 
-	if not TriggerObject then
+	if not TriggerObject or Colliders[TriggerObject] then
 		return
 	end
 
@@ -117,17 +123,17 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 	local BaseOffset = CFrame.new(TriggerObject:GetAttribute("AreaOffset") or Vector3.new()) :: CFrame
 
     local Sizes = {
-        Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
-        Vector3.new(Size.X + 1, Size.Y, 1), CFrame.new(0, 0, Size.Z/2 - 1),
-        Vector3.new(1, Size.Y, Size.Z + 1), CFrame.new(-Size.X/2 - 1, 0, 0),
-        Vector3.new(1, Size.Y, Size.Z + 1), CFrame.new(Size.X/2 - 1, 0, 0)
+        Vector3.new(Size.X + 1, Size.Y+15, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
+        Vector3.new(Size.X + 1, Size.Y+15, 1), CFrame.new(0, 0, Size.Z/2 - 1),
+        Vector3.new(1, Size.Y+15, Size.Z + 1), CFrame.new(-Size.X/2 - 1, 0, 0),
+        Vector3.new(1, Size.Y+15, Size.Z + 1), CFrame.new(Size.X/2 - 1, 0, 0)
     }
 
 	Colliders[TriggerObject] = {}
 
 	local Parent = workspace.Camera:FindFirstChild("Area_Colliders") or Instance.new("Folder")
 	Parent.Name = "Area_Colliders"
-	Parent.Parent = workspace.Camera
+	Parent.Parent = workspace
 
 	for i = 1, #Sizes, 2 do
         local PartSize = Sizes[i]
@@ -259,6 +265,34 @@ function Controller:DamageAgent(Buffer: buffer)
 
 	--
 	Effects:Play('Indicator', ActiveAgent, {Affliction = 'Enemy', Crit = false, Number = math.floor(Damage)})
+
+	return ActiveAgent
+end
+
+
+function Controller:HealAgent(Buffer: buffer)
+	local Agent = buffer.readu8(Buffer, 1)
+	local PlayerId = buffer.readu8(Buffer, 2)
+	local CurrentHealth = buffer.readf32(Buffer, 3)
+
+	local ActiveAgent = Characters:GetAgent(PlayerId, Agent)
+	if not ActiveAgent then
+		return;
+	end
+
+	local PrevHp = ActiveAgent:GetHealth()
+	local HealedBy = math.max(math.floor(CurrentHealth - PrevHp), 1);
+
+	ActiveAgent:SetHealth(CurrentHealth)
+
+	if PlayerId == Players.LocalPlayer:GetAttribute("ReplicationId") then
+		local Health, Max = ActiveAgent:GetHealth()
+
+		InterfaceStates.Health[Agent]:set(Health / Max)
+	end
+
+	--
+	Effects:Play('Indicator', ActiveAgent, {Affliction = 'Heal', Crit = true, Text = `+{HealedBy}`})
 
 	return ActiveAgent
 end

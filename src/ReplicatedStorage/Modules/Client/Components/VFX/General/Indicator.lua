@@ -17,6 +17,8 @@ local White = Color3.new(1, 1, 1)
 local Gradients = {
 	['Fire'] = {Color3.fromRGB(255, 149, 0), Sequence{Key(0, Color3.fromRGB(255, 186, 48)), Key(1, Color3.new(1))}},
 
+	['Heal'] = {Color3.fromRGB(145, 255, 93), Sequence{Key(0, Color3.fromRGB(237, 255, 215)), Key(1, Color3.new(0.266667, 0.564706, 0.301961))}},
+
 	['Ice'] = {Color3.fromRGB(164, 231, 255), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(28, 96, 255))}},
 
 	['Water'] = {Color3.fromRGB(164, 231, 255), Sequence{Key(0, White), Key(0.5, White), Key(1, Color3.fromRGB(28, 96, 255))}},

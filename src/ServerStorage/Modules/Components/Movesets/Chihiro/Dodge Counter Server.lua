@@ -5,6 +5,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
+local ChihiroGameplayController = require(ServerStorage.Modules.Components.Movesets.Chihiro.ChihiroGameplayController)
 local AbilityService = require(ServerStorage.Modules.Services.Combat.AbilityService)
 local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Classes.Combat.ServerAbility)
@@ -24,6 +25,8 @@ function Ability:Play(Caster, _, _, Context)
     ---
     local SkillLevel = Caster:GetSkillLevel(self.__Name)
     local HitData = Ability:FromData("Hit", nil, SkillLevel)
+
+    ChihiroGameplayController:AddUltimateCharge(Caster, 150 + (15 * SkillLevel), 10_000)
 
     local OneHit = false
 

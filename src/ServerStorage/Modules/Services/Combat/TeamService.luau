@@ -51,13 +51,13 @@ function Service:Create(Player: Player)
         end
 
         local ArtifactIds = Table:WriteValues(AgentDataClass.Artifacts)
-
         local Ids = {}
+
         if settings.USE_BORROW and settings.TEST_AGENT_ARTIFACTS[AgentData.Name] then
             local ArtifactDataToSend = {}
             
             for SlotId, ArtifactName in settings.TEST_AGENT_ARTIFACTS[AgentData.Name] do
-                local NewArtifact = PlayerArtifactData.randomize(ArtifactName, 'Mythical', 90, SlotId)  
+                local NewArtifact = PlayerArtifactData.randomize(ArtifactName, nil, (settings.BORROWED_AGENT_LEVEL), SlotId)  
 
                 AgentInstance:BindArtifact(NewArtifact:ToData())
                 table.insert(Ids, NewArtifact.__Id)

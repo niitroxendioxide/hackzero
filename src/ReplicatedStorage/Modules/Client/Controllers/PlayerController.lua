@@ -80,6 +80,22 @@ function Controller:Init(): ()
 		end
 	end)
 
+	RunService.Heartbeat:Connect(function(rawDelta: number)
+		for _, Data in CharacterLibrary.__Player_Data do
+			for Id, Agent in Data.List do
+				if Data.Active == Id then
+					local Player = Agent.__Player_Assigned;
+					local PlayerCharacter = Player.Character;
+					if PlayerCharacter then
+						PlayerCharacter:PivotTo(Agent:GetPivot())
+					end
+				end
+
+				Agent:Update(rawDelta)
+			end
+		end
+	end)
+
 	RunService:BindToRenderStep('PlayerControllerMainLoop', Enum.RenderPriority.Camera.Value, function(Delta: number)
 		if not FightEnabled then
 			local Character = Player.Character
@@ -143,7 +159,6 @@ function Controller:Init(): ()
 			UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 		end
 
-		-- !selene: ignore
 		debug.profilebegin('Camera')
 
 		workspace.CurrentCamera.CameraSubject = CurrentCharacter.__Character.Humanoid
@@ -170,11 +185,8 @@ function Controller:Init(): ()
 				CurrentCharacter:Look(Direction.Unit)
 				CurrentCharacter:Move()
 			else
-				--Debugger:DebugLine("Character Stopped", `Character stopped with: CanAction({CanAction}), NotInCutscene({not CutscenesLibrary:IsInCutscene()}), Over0({Direction.Magnitude <= 0})`, 2)
 				CurrentCharacter:Stop()
 			end
-
-			Player.Character:PivotTo(CurrentCharacter:GetPivot())
 
 			CurrentCharacter.__Swapped = false
 		else

@@ -12,7 +12,7 @@ function HitStop:Apply(Agent: any, Sequence: any, AnimTrack: AnimationTrack, Dur
     end
 
     if ActiveHitStops[Agent] then
-        if ActiveHitStops[Agent].Thread ~= coroutine.running() then
+        if typeof(ActiveHitStops[Agent].Thread) == 'thread' and ActiveHitStops[Agent].Thread ~= coroutine.running() then
             task.cancel(ActiveHitStops[Agent].Thread)
         end
 

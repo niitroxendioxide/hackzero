@@ -85,7 +85,7 @@ function CreateTrail(Caster, Angle: number, Time: number)
             local Period = (os.clock() - Since) / Time
             local AltAlph = TweenService:GetValue(Period, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 
-            Current += Delta * math.pi * 2
+            Current += Delta * math.tau
             Radius = math.lerp(5, 0, AltAlph)
 
             TrailObj.CFrame = Caster:GetModel():GetPivot() * CFrame.new(math.cos(Current) * Radius, math.sin(Current) * Radius, Z)

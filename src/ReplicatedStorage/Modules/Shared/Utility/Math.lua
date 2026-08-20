@@ -14,12 +14,14 @@ function Math:ApplyPercents(StatsTable: { [string]: number }, AgentStats: {})
     for StatBuffName, StatBuffValue in StatsTable do
         if string.match(StatBuffName, "%%") then
             local StatRaw = string.gsub(StatBuffName, "%%", "")
+            local BaseValue = AgentStats[StatRaw] or 1
+            local ValuePercent = (StatBuffValue / 100)
 
-            local AddedPercentBoost = (AgentStats[StatRaw] or 1) * (StatBuffValue / 100)
+            local AddedPercentBoost = BaseValue * ValuePercent
             if not StatsTable[StatRaw] then
                 StatsTable[StatRaw] = 0
             end
-
+            
             StatsTable[StatRaw] += AddedPercentBoost
             StatsTable[StatBuffName] = nil
         end
@@ -129,7 +131,6 @@ function Math:CalculateStatsForAgent(AgentName: string, Level: number, Drive, Ar
     end
 
     Math:ApplyPercents(StatBuffs, AgentStats)
-
 
     return StatBuffs
 end

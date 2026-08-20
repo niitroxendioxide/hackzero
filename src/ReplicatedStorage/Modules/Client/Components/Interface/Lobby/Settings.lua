@@ -161,6 +161,7 @@ function Component:Init()
 
     local Tabs = MainFrame.Settings.TabList:GetChildren()
     table.remove(Tabs, table.find(Tabs, MainFrame.Settings.TabList.UIListLayout))
+    table.remove(Tabs, table.find(Tabs, MainFrame.Settings.TabList.UIPadding))
 
     local RandomTab = Tabs[math.random(1, #Tabs)]
     HighlightOption(MainFrame.Settings.TabList, RandomTab)

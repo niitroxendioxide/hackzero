@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local UIEffects = require(ReplicatedStorage.Modules.Client.Utility.UIEffects)
 local Data = require(Shared.Types.Data)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Settings = require(Client.Packages.Settings)
@@ -29,7 +30,7 @@ local function BufferTableToArtifact(Table: {})
     local Equipped = buffer.readu8(BufferObj, 4)
 
     local MainStatKey = GameEnum.KeyLookup(GameEnum.MainStats, buffer.readu8(BufferObj, 5))
-    local MainStatValue = buffer.readu8(BufferObj, 6)
+    local MainStatValue = buffer.readu16(BufferObj, 6) / 10
 
     local ArtifactData: Types.PlayerArtifactData = {
         Id = Id,
@@ -46,7 +47,7 @@ local function BufferTableToArtifact(Table: {})
 
     -- edit the substats
     local SubStats = {}
-    for i = 7, 13, 2 do
+    for i = 8, 13, 2 do
         local Key = buffer.readu8(BufferObj, i)
         local Count = buffer.readu8(BufferObj, i + 1)
         local SubStatName = GameEnum.KeyLookup(GameEnum.SubStats, Key)
@@ -110,6 +111,12 @@ function Controller:Init()
         end
     end)
 
+    Network:On("SellEvent", function(Type: number, Payload: {}): ()
+        if Type == GameEnum.SellEvent.SellArtifacts then
+            Controller:RemoveArtifacts(Payload)
+        end
+    end)
+
     Network:On("UpdateAgent", function(Type: number, Payload: {}): ()
         if Type == GameEnum.BuildEvent.UpdateArtifactSlot then
             Controller:UpdateArtifactState(Payload)
@@ -138,6 +145,14 @@ function Controller:Init()
         if InLobbyComponent then
             InLobbyComponent:Refresh();
         end
+    end)
+
+    Network:On("ServerError", function(ErrorCode: string)
+        if typeof(ErrorCode) ~= 'string' then
+            return
+        end
+
+        UIEffects:DisplayErrorMessage(ErrorCode, 3)
     end)
 
     Network:On("SharedData", function(Player: Player, Data: {})
@@ -170,6 +185,23 @@ function Controller:Init()
         --
         Network:Fire("SharedData")
     end)
+end
+
+function Controller:RemoveArtifacts(Payload: {})
+    local AllArtifacts = LocalData:GetArtifacts() :: { Types.PlayerArtifactData }
+
+    for Idx = #AllArtifacts, 1, -1 do
+        if table.find(Payload, AllArtifacts[Idx].Id) then 
+            table.remove(AllArtifacts, Idx)
+        end
+    end
+
+    local Inventory = InterfaceController:GetComponent("Inventory")
+    if not Inventory then
+        return
+    end
+
+    Inventory:WipeItems(Payload)
 end
 
 function Controller:LevelAgent(Payload: {})

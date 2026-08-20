@@ -5,11 +5,45 @@ local HttpService = game:GetService("HttpService")
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local Types = require(Shared.Types)
 local GameEnum = require(Shared.GameEnum)
 local ArtifactDatabase = require(Database.Artifacts)
 local CharacterDatabase = require(Database.Characters)
 --local ArtifactDatabase = require(Database.Artifacts)
+
+const ArtifactStats = require(Database.ArtifactStats)
+const SlotStats = {
+    'Health',
+    'Attack',
+    'Defense'
+}
+
+--
+local function DecideMainStatValue(MainStat: string, ArtifactLevel: number, ArtifactTier: number)
+    if ArtifactStats[MainStat] and ArtifactStats[MainStat][ArtifactTier] then
+        local Min, Max = ArtifactStats[MainStat][ArtifactTier].Min, ArtifactStats[MainStat][ArtifactTier].Max;
+
+        return math.lerp(Min, Max, ArtifactLevel / 99)
+    end
+
+    return 0
+end
+
+local function RandomizeRarity()
+    local Rarities = Statics.Artifact_Rarities;
+    local Number = Random.new():NextNumber(0, 100);
+
+    if Number < Rarities.Mythical then
+        return 'Mythical'
+    elseif Number < Rarities.Legendary then
+        return 'Legendary'
+    elseif Number < Rarities.Epic then
+        return 'Epic'
+    end
+
+    return 'Rare'
+end
 
 --
 local PlayerArtifactDataClass = {}
@@ -32,16 +66,34 @@ function PlayerArtifactDataClass.new(ArtifactData: Types.PlayerArtifactData, Age
     return self
 end
 
-function PlayerArtifactDataClass.randomize(Name: string, Tier: string, Level: number, GivenSlot: number?)
+function PlayerArtifactDataClass.randomize(Name: string, Tier: string?, Level: number, GivenSlot: number?)
     local Generator = Random.new()
 
     --
+    Tier = Tier or RandomizeRarity()
+
     local Slot = GivenSlot or Generator:NextInteger(1, 6)
     local ArtifactLevel = math.clamp(math.floor(Generator:NextNumber(0.75, 1.25) * Level), 1, 99)
-    local SubStatAmount = (5 - GameEnum.Tiers[Tier]) - Generator:NextInteger(0, 1)
+    local SubStatAmount = math.max((5 - GameEnum.Tiers[Tier]) - math.round(Generator:NextNumber(0, 0.6)), 1)
     local TotalBoosts = math.ceil((ArtifactLevel / 15) * 2)
 
-    local MainStat = GameEnum:Random('MainStats')
+
+    local MainStat: string = nil;
+    if SlotStats[Slot] ~= nil then
+        MainStat = SlotStats[Slot];
+    else
+        local MainStatChoices = {}
+        for Key in GameEnum.MainStats do
+            if table.find(SlotStats, Key) then
+                continue
+            end
+
+            table.insert(MainStatChoices, Key)
+        end
+
+        MainStat = MainStatChoices[math.random(1, #MainStatChoices)]
+    end
+
 
     local SubStats = {}
     local StatKeys = {}
@@ -73,7 +125,7 @@ function PlayerArtifactDataClass.randomize(Name: string, Tier: string, Level: nu
         Name = Name,
         Slot = Slot,
         Stats = {
-            Main_Stat = {[MainStat] = 30} :: Types.MainStat,
+            Main_Stat = {[MainStat] = DecideMainStatValue(MainStat, Level, GameEnum.Tiers[Tier])} :: Types.MainStat,
             Sub_Stats = SubStats :: Types.Substats,
         },
         Level = ArtifactLevel,
@@ -88,7 +140,7 @@ function PlayerArtifactDataClass.GetMainStat(self: Types.PlayerArtifactDataClass
 end
 
 function PlayerArtifactDataClass.Compress(self: Types.PlayerArtifactDataClass): {string | buffer}
-    local BufferObj = buffer.create(15)
+    local BufferObj = buffer.create(16)
     local ArtifactId = ArtifactDatabase:GetIdFor(self.__Name) :: number
     if ArtifactId == nil then
         return false;
@@ -102,9 +154,9 @@ function PlayerArtifactDataClass.Compress(self: Types.PlayerArtifactDataClass): 
 
     local MainStatName, MainStatValue = self:GetMainStat()
     buffer.writeu8(BufferObj, 5, GameEnum.MainStats[MainStatName])
-    buffer.writeu8(BufferObj, 6, MainStatValue)
+    buffer.writeu16(BufferObj, 6, MainStatValue * 10)
 
-    local currentIndex = 7;
+    local currentIndex = 8;
     for StatName, StatValue in self.__Stats.Sub_Stats do
         local Key = GameEnum.SubStats[StatName]
 

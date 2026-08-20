@@ -17,6 +17,10 @@ local UndodgeableHighlightColor = Color3.new(255)
 ---
 return function(Enemy: Types.EnemyClass, CanBeDodged: boolean)
 	--
+	if not Enemy or not Enemy:GetModel() or not Enemy:GetModel():FindFirstChild('HumanoidRootPart') then
+		return
+	end
+
 	local Object = Effects:Create(Assets.Effects.General.Combat[CanBeDodged and 'Dodgeable' or 'Undodgeable'], 2.5)
 	Object.CFrame = Enemy:GetModel().HumanoidRootPart.CFrame * CFrame.new(0, 0.65, 0)
 	Effects:Weld(Object, Enemy:GetModel().PrimaryPart :: BasePart)

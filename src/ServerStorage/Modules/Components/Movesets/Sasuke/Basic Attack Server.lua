@@ -156,13 +156,13 @@ function Ability:Play(Caster: Types.Caster, _, State, Context): ()
 			Offset = Ability:FromData("HitboxOffset"),
 
 			Hit_Function = function(Target)
-				if i == 2.1 then
+				--[[if i == 2.1 then
 					BaseHitData.Knockback = {
 						vector.create(0, 0, 1),
 						24,
 						0.4,
 					}
-				end
+				end]]
 
 				Ability:Hit(Caster, Target, BaseHitData)
 			end

@@ -14,8 +14,8 @@ return table.freeze({
             Act = 'Intro',
         },
         DATA = {
-            --[[MissionId = 'LeafVillage_P01',
-            Difficulty = 'EASY',]]
+            --MissionId = 'LeafVillage_P01',
+            --Difficulty = 'EASY',
             ChaosControlData = {
                 Type = 'DailyImprovement',
                 Node = 1,
@@ -45,9 +45,9 @@ return table.freeze({
 
 
     --- PASSIVE, EASY, MEDIUM, HARD, EXTREME
-    DIFFICULTY = 'HARD', 
+    DIFFICULTY = 'EASY', 
     USE_BORROW = true, -- whether to replace agents with lvl 60 max
-    BORROWED_AGENT_LEVEL = 1,
+    BORROWED_AGENT_LEVEL = 60,
     CHARACTERS_INVINCIBLE = false,
     STUDIO_ENERGY_MULT = 25,
     STUDIO_HIT_ENERGY_MULT = 1,
@@ -55,11 +55,11 @@ return table.freeze({
     TEST_COMPANION = '8bdc68f8-cb56-4576-a193-689bb87043df',
     TEST_AGENTS = {
         'Chihiro',
-        'Goku',
-        'Naruto'
+        'Sasuke',
+        --'Goku'
     },
 
-    --REPLACE_AFFLICTION = 'Ice',
+    REPLACE_AFFLICTION = 'Ice',
     TEST_AGENT_ARTIFACTS = {
         Goku = {
             'FourLeafGrimoire',
@@ -70,16 +70,16 @@ return table.freeze({
             'DragonBall',
         },
         Sasuke = {
-            'Sharingan',
-            'Sharingan',
-            'Sharingan',
-            'Sharingan',
+            'StoneMask',
+            'StoneMask',
+            'StoneMask',
+            'StoneMask',
         },
         Chihiro = {
-            'VivreCard',
-            'VivreCard',
-            'VivreCard',
-            'VivreCard',
+            'CorpCapsule',
+            'CorpCapsule',
+            'CorpCapsule',
+            'CorpCapsule',
             'DatensekiFragment',
             'DatensekiFragment',
         },

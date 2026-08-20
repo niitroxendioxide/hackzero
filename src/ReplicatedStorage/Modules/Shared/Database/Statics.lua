@@ -132,17 +132,17 @@ return {
 	},
 
 	SubStatIncreases = {
-		["Health%"] = {3, 2, 1},
-		["Health"] = {112, 79, 39},
-		["Attack"] = {26, 18, 11},
-		["Attack%"] = {3, 2 ,1},
-		["Defense"] = {20, 12, 8},
-		["Defense%"] = {5, 3, 1},
-		["Critical_Rate"] = {2.4, 1.6, .8},
-		["Critical_Damage"] = {5, 3, 1},
-		["Penetration"] = {9, 6, 3},
-		["Affliction_Aptitude"] = {9, 6, 3},
-		["Daze"] = {6, 4, 2},
+		["Health%"] = {4, 3, 2, 1},
+		["Health"] = {150, 112, 79, 39},
+		["Attack"] = {32, 26, 18, 11},
+		["Attack%"] = {4, 3, 2 ,1},
+		["Defense"] = {32, 20, 12, 8},
+		["Defense%"] = {6, 5, 3, 1},
+		["Critical_Rate"] = {3, 2.4, 1.6, .8},
+		["Critical_Damage"] = {7, 5, 3, 1},
+		["Penetration"] = {14, 9, 6, 3},
+		["Affliction_Aptitude"] = {12, 9, 6, 3},
+		["Daze"] = {8, 6, 4, 2},
 	},
 
 	Dodge_Active_Time = 0.5,
@@ -223,6 +223,12 @@ return {
 		}
 	},
 
+	Artifact_Rarities = {
+		Mythical = 0.5,
+		Legendary = 5,
+		Epic = 40,
+	},
+
 	--
 	Difficulty_Targetting_Priorities = {
 		PASSIVE = {
@@ -232,22 +238,22 @@ return {
 
 		EASY = {
 			SAME_ATTACKER = 7.5,
-			DIFFERENT_ATTACKER = 6.75,
+			DIFFERENT_ATTACKER = 5.25,
 		},
 
 		MEDIUM = {
 			SAME_ATTACKER = 5.25,
-			DIFFERENT_ATTACKER = 4.5,
+			DIFFERENT_ATTACKER = 3.5,
 		},
 
 		HARD = {
 			SAME_ATTACKER = 3.5,
-			DIFFERENT_ATTACKER = 2.75,
+			DIFFERENT_ATTACKER = 1.75,
 		},
 
 		EXTREME = {
-			SAME_ATTACKER = 1.25,
-			DIFFERENT_ATTACKER = 1,
+			SAME_ATTACKER = 1.5,
+			DIFFERENT_ATTACKER = .75,
 		},
 	},
 }

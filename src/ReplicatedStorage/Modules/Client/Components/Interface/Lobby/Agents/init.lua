@@ -15,6 +15,7 @@ local World = workspace:FindFirstChild("World")
 
 local Effects = require(ReplicatedStorage.Modules.Client.Libraries.Effects)
 local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
+local ItemNameGen = require(ReplicatedStorage.Modules.Client.Utility.ItemNameGen)
 local Artifacts = require(ReplicatedStorage.Modules.Shared.Database.Artifacts)
 local Icons = require(ReplicatedStorage.Modules.Shared.Database.Icons)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
@@ -748,6 +749,7 @@ function Component:ShowArtifactInfo(ArtifactId: string?)
 
     DataFrame.ArtifactName.Text = Artifact.Name
     DataFrame.Level.Text = `Level: {Artifact.Level}`
+    DataFrame.ItemName.Text = ItemNameGen(ArtifactId);
 
     DataFrame.EquippedData.Visible = Artifact.Equipped ~= nil
     DataFrame.Equip.Label.Text = Artifact.Equipped and 'Switch' or 'Equip'
@@ -761,19 +763,26 @@ function Component:ShowArtifactInfo(ArtifactId: string?)
 
     local MainStatName = next(Artifact.Stats.Main_Stat)
     DataFrame.MainStat.MainName.Text = string.gsub(MainStatName, '_', ' ')
-    DataFrame.MainStat.Value.Text = tostring(Artifact.Stats.Main_Stat[MainStatName])..(if MainStatName:find('%%') then '%' else '')
+    local MainStatValue = Artifact.Stats.Main_Stat[MainStatName]
+    local Rounded = math.round(MainStatValue * 10) / 10
+
+    local StatText = (Rounded % 1 == 0)
+        and string.format("%d", Rounded)
+        or string.format("%.1f", Rounded)
+
+    DataFrame.MainStat.Value.Text = StatText .. (if MainStatName:find('%%') then '%' else '')
 
     for StatName, TotalUpgrades in Artifact.Stats.Sub_Stats do
         local PerUpg = Statics.SubStatIncreases[StatName]
         local Tick = PerUpg and PerUpg[Artifact.Tier] or 0
-        local Extras = TotalUpgrades - 1
 
+        print(PerUpg, TotalUpgrades, StatName)
         local Value = Tick * TotalUpgrades
         local NewAsset = Assets.Interface.Agents.Items.ArtifactSubStat:Clone()
         NewAsset.SubName.Text = string.gsub(StatName, '_', " ")
         NewAsset.Value.Text = Value
-        NewAsset.Amount.Visible = Extras > 0
-        NewAsset.Amount.Text = '+'..Extras
+        NewAsset.Amount.Visible = true
+        NewAsset.Amount.Text = '+'..TotalUpgrades
         NewAsset.Parent = DataFrame.SubStatList
     end
 end
@@ -801,6 +810,7 @@ function Component:ShowDriveInfo(DriveId: string?)
     local Drive = LocalData:GetDriveById(DriveId)
     local DriveData = DrivesDatabase:GetDriveData(Drive.Name)
 
+    DataFrame.ItemName.Text = ItemNameGen(DriveId);
     DataFrame.ArtifactName.Text = DriveData.Name
     DataFrame.Level.Text = Drive.Level < 60 and `<b>Lvl.</b> {Drive.Level} / 60` or 'MAX.'
 

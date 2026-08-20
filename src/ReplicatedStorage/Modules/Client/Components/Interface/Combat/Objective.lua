@@ -96,6 +96,13 @@ function Component:CreateEvent(Event: string)
     Frame.Mission.Visible = true
     Frame.Waves.Visible = false
 
+    local Enabled = false; for _, v in EventData.Goal do 
+        Enabled=true 
+        break 
+    end
+
+    if not Enabled then return end
+
     local Values = EventStates:New(Event, EventData.Goal)
     local Object = Assets.Combat.Objective.GoalObject:Clone()
     Object.Label.Text = EventData.Objective
@@ -107,8 +114,9 @@ function Component:CreateEvent(Event: string)
     local function updateText()
         local result = string.gsub(EventData.Objective, "{objective%[(%w+)%]}", function(key)
             local Value = EventStates:Get(Event, key, false)
+            local Returned = `{Value}/{EventData.Goal[key]}` or "["..key.." not found]"
 
-            return `{Value}/{EventData.Goal[key]}` or "["..key.." not found]"
+            return Returned
         end)
 
         if not Object:FindFirstChild('Label') then return end

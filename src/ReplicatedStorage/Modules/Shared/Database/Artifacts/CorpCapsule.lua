@@ -19,8 +19,7 @@ return {
 
 	Piece_Descriptions = {
 		Two_Piece = "DEF +120, HP +200",
-		Four_Piece = [[DEF +25, HP +800. Passive Effect: Regen some of your health passively throughout fights. 
-        Every time you hit a dodge counter, regen 5% extra energy, and apply a 10% Speed boost to all the team for 5s]],
+		Four_Piece = [[DEF +25, HP +800. Hitting a target with Dodge Counter will produce 1 'CC Capsule', up to a limit of 8. Each 'CC Capsule' will provide a defense boost, upon casting any Quick Assist, deal extra damage based on Capsules Stacked, and obtain temporary health regen, effect does not stack.]],
 	},
 
 } :: Types.Artifact_Data

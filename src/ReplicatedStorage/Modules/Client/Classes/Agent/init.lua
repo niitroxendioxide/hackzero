@@ -235,9 +235,9 @@ function AgentClass:Init(PlayerId: number)
 
 	self:SetMaxHealth(self:GetStat("Health"), true)
 
-	self.__Main_Thread = RunService.Heartbeat:Connect(function(Delta: number)
+	--[[self.__Main_Thread = RunService.Heartbeat:Connect(function(Delta: number)
 		self:Update(Delta)
-	end)
+	end)]]
 
 	return self.__Character:Init()
 end
@@ -300,6 +300,10 @@ end
 
 function AgentClass:GetKey(...)
 	return self.__Character:GetKey(...)
+end
+
+function AgentClass:SetHealth(Amount)
+	return self.__Status:SetHealth(Amount)
 end
 
 function AgentClass:SetKey(...)

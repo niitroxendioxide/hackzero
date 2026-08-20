@@ -39,6 +39,9 @@ return {
 			Rupture = 108597656195585,
 			FourLeafBuff = 4954055102,
 			CursedEnergy = 75945980457392,
+			Will = 93244904714403,
+			StoneMask = 88065452906939,
+			DefCapsule = 89284312751935,
 		},
 
 		Values = {

@@ -60,7 +60,7 @@ return function(
 
             local Clock = 0
             while true do
-                Clock += (task.wait() * math.pi * 2)
+                Clock += (task.wait() * math.tau)
 
                 local Angle = math.sin(Clock)
                 local Sz = 7 + Angle

@@ -51,7 +51,7 @@ return {
             },
 
             GrassArea = {
-                Objective = "Stop the Anima-affected bandits {objective[KillEnemies]}/5",
+                Objective = "Stop the Anima-affected bandits {objective[KillEnemies]}",
                 Goal = {
                     ['KillEnemies'] = 4,
                 },
@@ -85,7 +85,7 @@ return {
             },
 
             Entrance = {
-                Objective = "Stop the Anima-affected bandits {objective[KillEnemies]}/5",
+                Objective = "Stop the Anima-affected bandits {objective[KillEnemies]}",
                 Goal = {
                     ['KillEnemies'] = 10,
                 },

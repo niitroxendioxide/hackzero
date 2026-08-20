@@ -73,11 +73,6 @@ function Component:Init()
 	--
 	local Color = Scope:Value(Color3.fromRGB(104, 133, 152))
 
-	local EnergySprings = {
-		Scope:Spring(InterfaceStates.Energy[1], 15, .8),
-		Scope:Spring(InterfaceStates.Energy[2], 15, .8),
-		Scope:Spring(InterfaceStates.Energy[3], 15, .8),
-	}
 	local HealthSprings = {
 		Scope:Spring(InterfaceStates.Health[1], 30, .8),
 		Scope:Spring(InterfaceStates.Health[2], 30, .8),
@@ -302,32 +297,33 @@ function Component:Init()
 	--
 	table.insert(Scope, RunService.Heartbeat:Connect(function(_: number)
 		local CurrentAgent, CurrentId = CharacterLibrary:GetCurrent(ReplicationId())
-		local CurrentEnergySpring = EnergySprings[CurrentId :: number]
+		local CurrentEnergyValue = InterfaceStates.Energy[CurrentId :: number]
 
-		if not CurrentEnergySpring or not CurrentAgent or not CurrentId then
+		if  not CurrentAgent or not CurrentId then
 			return;
 		end
 
+		local EnergyPeekValue = peek(CurrentEnergyValue)
 		local HealthValue, Max_Health = CurrentAgent:GetHealth()
-		local EnergySize = math.clamp(peek(CurrentEnergySpring) / 100, 0, 1)
+		local EnergySize = math.clamp(EnergyPeekValue / 100, 0, 1)
 		local HealthSize = math.clamp(peek(HealthSprings[CurrentId]), 0, 1)
 
 		--
 		local Needed_Energy = GetEnergyNeededById(CurrentId :: number)
-		if peek(CurrentEnergySpring) > Needed_Energy then
+		if EnergyPeekValue > Needed_Energy then
 			Color:set(FULL_COLOR)
 		else
 			Color:set(NOT_COLOR)
 		end
 
-		Info.EnergyPercent.Text = math.floor(peek(InterfaceStates.Energy[CurrentId])).."%"
+		Info.EnergyPercent.Text = math.floor(EnergyPeekValue).."%"
 		Info.HealthCount.Text = `{math.floor(HealthValue)} / {math.floor(Max_Health)}`
 
 		local EnergyMain = Meters.Energy.Main
 		local HealthMain = Meters.Health.Main
 
 		EnergyMain.ImageColor3 = peek(ColorSpring)
-		EnergyMain.UIGradient.Offset = Vector2.new(-0.8 + EnergySize, 0)
+		EffectUtil:Tween(EnergyMain.UIGradient, { 0.15, 'Sine' }, { Offset = Vector2.new(-0.8 + EnergySize, 0) })
 		HealthMain.UIGradient.Offset = Vector2.new(math.min(-0.8 + HealthSize, 0.2), 0)
 
 		--

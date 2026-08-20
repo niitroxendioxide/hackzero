@@ -44,6 +44,10 @@ function StatusClass.SetMaxHealth(self: Types.AgentStatusClass, Amount: number, 
 	end
 end
 
+function StatusClass.SetHealth(self: Types.AgentStatusClass, Amount: number)
+	self.__Health = math.clamp(Amount, 0, self.__Max_Health)
+end
+
 function StatusClass.Update(self: Types.AgentStatusClass, delta: number)
 	local Energy_Regen_Rate = self:GetStat('Energy_Regeneration')
 	local Boost_Rate = (1 + self:GetStatEffects('Energy_Regeneration')) * (RunService:IsStudio() and STUDIO_ENERGY_MULT or 1)

@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 local Services = Modules.Services
 
+local Agents = require(ServerStorage.Modules.Libraries.Agents)
 local MapCache = require(ServerStorage.Modules.Libraries.MapCache)
 local Mock = require(Shared.Utility.Mock)
 local Types = require(Shared.Types.Stages)
@@ -145,18 +146,27 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
 
     if EventData.Global then
         local Rng = Random.new()
-        local Area = GetTrigger(EventData.EventPlace);
+        local Area = Trigger or GetTrigger(EventData.EventPlace);
+        local ColliderParams = OverlapParams.new()
+        ColliderParams.FilterType = Enum.RaycastFilterType.Include;
 
         for _, Player in PlayersLibrary:GetAll() do
+            EventObject:AddPlayer(Player)
+
             if Area then
+                local ActiveAgent = Agents:GetCurrentActive(Player:GetBase():GetAttribute('ReplicationId') :: number)
+                ColliderParams.FilterDescendantsInstances = {ActiveAgent:GetHitbox()}
+
+                if workspace:GetPartsInPart(Area, ColliderParams) then
+                    continue
+                end
+
                 local Size = Area.Size
                 local Spot = Area:GetPivot()
-                local Offset = CFrame.new(Rng:NextInteger(-Size.X/2, Size.X/2), 0, Rng:NextInteger(-Size.Z/2, Size.Z/2))
+                local Offset = CFrame.new(Rng:NextNumber(-Size.X/2, Size.X/2), 0, Rng:NextNumber(-Size.Z/2, Size.Z/2))
 
                 AgentService:SnapTo(Player:GetBase(), Spot * Offset)
             end
-
-            EventObject:AddPlayer(Player)
         end
     else
         for _, Player in Players do

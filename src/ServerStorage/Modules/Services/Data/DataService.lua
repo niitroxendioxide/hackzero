@@ -29,10 +29,16 @@ local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 local PlayerCompanionDataClass = require(Classes.Data.PlayerCompanionData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("adding_new_artifacts", ProfileTemplate)
+local DataStore = ProfileStore.New("newartifactencoding", ProfileTemplate)
 
 --
-local ReplicatedKeys = {"Gems", "Money"}
+const ITEM_COUNT_LIMIT = {
+    ARTIFACTS = 1024,
+    ITEMS = 1024,
+    DRIVES = 512,
+}
+
+const ReplicatedKeys = {"Gems", "Money"}
 local Service = {
     __Profiles = {} :: {[Player]: typeof(ProfileStore:StartSessionAsync())},
     __Agents = {},
@@ -40,7 +46,7 @@ local Service = {
     __Drives = {},
     __Items = {},
     __Companions = {},
-
+    __Item_Counts = {} :: {[Player]: { Artifacts: number, Items: number, Drives: number }} ,
 }
 
 -- [[ | PRIVATE FUNCTIONS | ]]
@@ -66,6 +72,7 @@ end
 function Service:Init()
     Network.new('ItemData', 'Event')
     Network.new("DataFetchRequest", "Event")
+    Network.new('ServerError', 'Event')
 
     -- Binding
     Network:On("DataFetchRequest", function(Player: Player, Type: string)
@@ -91,7 +98,6 @@ function Service:Init()
                 warn('no stage data :v')
             end
 
-            print(Stages)
             Network:Fire("DataFetchRequest", Player, GameEnum.FetchRequests.Stages, Stages)
         elseif Type == GameEnum.FetchRequests.Companions then
             local Companions = Service:FetchCompanions(Player)
@@ -279,6 +285,11 @@ function Service:AddPlayer(Player: Player)
 
         if Player.Parent == Players then
             Service.__Profiles[Player] = RetrievedProfile
+            Service.__Item_Counts[Player] = {
+                Artifacts = 0,
+                Items = 0,
+                Drives = 0,
+            }
 
             Service:SetupAgents(Player)
             Service:SetupArtifacts(Player)
@@ -478,7 +489,10 @@ function Service:SetupArtifacts(Player: Player): ()
         end
 
         local Class = PlayerArtifactDataClass.new(Artifact, Agent)
-        Service:AddArtifact(Player, Class)
+        local Success, ErrorMessage = Service:AddArtifact(Player, Class)
+        if not Success then
+            error("Artifact could not be added.", ErrorMessage)
+        end
     end
 end
 
@@ -574,7 +588,7 @@ function Service:SavePlayerData(Player: Player)
     end
 end
 
-function Service:AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass): ()
+function Service:AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataClass): (boolean, string?)
     local PlayerData = Service:GetDataFor(Player)
     local ArtifactData = Artifact:ToData()
 
@@ -582,9 +596,49 @@ function Service:AddArtifact(Player: Player, Artifact: Types.PlayerArtifactDataC
         Service.__Artifacts[Player] = {}
     end
 
+    if Service.__Item_Counts[Player] ~= nil then
+        if Service.__Item_Counts[Player].Artifacts >= ITEM_COUNT_LIMIT.ARTIFACTS then
+            return false
+        end
+
+        Service.__Item_Counts[Player].Artifacts += 1;
+    else
+        return false, 'Player Item Counts not initialized.'
+    end
+
+    --print("Player has:", Service.__Item_Counts[Player].Artifacts, "artifacts.")
+
+    ---
     PlayerData.Items.Artifacts[Artifact.__Id] = ArtifactData
     Service.__Artifacts[Player][Artifact.__Id] = Artifact
+
+    return true
 end
+
+--[[
+    function for each artifact
+
+    @param Player The player whose artifacts need to be accessed
+    @param Function
+]]
+function Service:ForEachArtifact<T>(Player: Player, fn: ((Artifact: Types.PlayerArtifactDataClass) -> ())): ()
+    for _, Artifact in (Service.__Artifacts[Player] or {}) do
+        fn(Artifact)
+    end
+end
+
+--[[
+    function for each drive
+
+    @param Player The player whose drive need to be accessed
+    @param Function
+]]
+function Service:ForEachDrive<T>(Player: Player, fn: ((Drive: Types.PlayerDriveDataClass) -> ())): ()
+    for _, Artifact in (Service.__Drives[Player] or {}) do
+        fn(Artifact)
+    end
+end
+
 
 --[[
     Returns a list if the amount of items is >1, else it returns a singular one.
@@ -617,6 +671,63 @@ function Service:GetArtifacts<T>(Player: Player, Filter: ((Artifact: Types.Playe
     return Artifacts
 end
 
+--[[
+    Removes artifacts inside a list of given ids
+
+    @param Player The player whose artifacts are to be deleted
+    @param List the id of artifacts to delete
+]]
+function Service:DeleteArtifacts(Player: Player, IDList: {}): boolean
+    local PlayerData = Service:GetDataFor(Player);
+    if not PlayerData then
+        return false;
+    end
+
+    for _, Id in IDList do
+        if not PlayerData.Items.Artifacts[Id] then
+            print(Id, 'doesn\'t exist.')
+
+            continue
+        end
+
+        PlayerData.Items.Artifacts[Id] = nil
+        if Service.__Artifacts[Player] and Service.__Artifacts[Player][Id] then
+            Service.__Artifacts[Player][Id] = nil
+        end
+    end
+
+    return true
+end
+
+--[[
+    Removes drives inside a list of given ids
+
+    @param Player The player whose drives are to be deleted
+    @param List the id of drives to delete
+]]
+function Service:DeleteDrives(Player: Player, IDList: {}): boolean
+    local PlayerData = Service:GetDataFor(Player);
+    if not PlayerData then
+        return false;
+    end
+
+    for _, Id in IDList do
+        if not PlayerData.Items.Drives[Id] then
+            print(Id, 'doesn\'t exist.')
+
+            continue
+        end
+
+        PlayerData.Items.Drives[Id] = nil
+        if Service.__Drives[Player] and Service.__Drives[Player][Id] then
+            Service.__Drives[Player][Id] = nil
+        end
+    end
+
+    return true
+end
+
+
 ---
 function Service:GetDrives<T>(Player: Player, Filter: ((Drive: Types.PlayerDriveDataClass) -> (boolean))?, First: boolean?): T | {Types.PlayerDriveDataClass}
     local Drives = {}
@@ -645,15 +756,27 @@ function Service:GetDrives<T>(Player: Player, Filter: ((Drive: Types.PlayerDrive
     return Drives
 end
 
-function Service:AddDrive(Player: Player, Drive: Types.PlayerDriveDataClass)
+function Service:AddDrive(Player: Player, Drive: Types.PlayerDriveDataClass): (boolean, string)
     local PlayerData = Service:GetDataFor(Player)
 
     if Service.__Drives[Player] == nil then
         Service.__Drives[Player] = {}
     end
 
+    if Service.__Item_Counts[Player] then
+        if Service.__Item_Counts[Player].Drives >= ITEM_COUNT_LIMIT.ARTIFACTS then
+            return false
+        end
+
+        Service.__Item_Counts[Player].Drives += 1;
+    else
+        return false, 'Player Item Counts not initialized.'
+    end
+
     Service.__Drives[Player][Drive.__Id] = Drive
     PlayerData.Items.Drives[Drive.__Id] = Drive:ToData()
+
+    return true
 end
 
 function Service:SetupDrives(Player: Player)
@@ -672,14 +795,26 @@ function Service:SetupDrives(Player: Player)
 end
 
 
-function Service:SaveItem(Player: Player, Item: DataTypes.PlayerItemDataClass)
+function Service:SaveItem(Player: Player, Item: DataTypes.PlayerItemDataClass): (boolean, string?)
     local PlayerData = Service:GetDataFor(Player)
     if not Service.__Items[Player] then
         Service.__Items[Player] = {}
     end
 
+    if Service.__Item_Counts[Player] then
+        if Service.__Item_Counts[Player].Items >= ITEM_COUNT_LIMIT.ARTIFACTS then
+            return false
+        end
+
+        Service.__Item_Counts[Player].Items += 1;
+    else
+        return false, 'Player Item Counts not initialized.'
+    end
+
     PlayerData.Items.Progress[Item.__Name] = Item:ToData()
     Service.__Items[Player][Item.__Name] = Item
+
+    return true
 end
 
 function Service:GetItem(Player: Player, ItemName: string, CreateIfDoesntExist: boolean?)

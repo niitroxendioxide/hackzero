@@ -76,18 +76,6 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	local Crit_Rate = Agent:GetStat('Critical_Rate')
 	local Is_Critical = RNG:NextNumber(0, 100) <= Crit_Rate
 
-	AgentGear:RunHitProcesses("Before", {
-		Agent = Agent,
-		Target = Enemy,
-		Multipliers = Multipliers,
-		SkillId = CasterSkillId,
-		SkillUniqueToken = SkillUniqueToken,
-		Critical = Is_Critical,
-	})
-
-	local HitType = Data.HitType or 'None'
-
-	-- Agent
 	local AgentData = Characters:GetCharacterData(Agent.Name, true)
 	local AgentAffliction = 'None';
 	if AgentData and AgentData.Element then
@@ -99,6 +87,19 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 		Data.Affliction = settings.REPLACE_AFFLICTION
 	end
 
+	AgentGear:RunHitProcesses("Before", {
+		Agent = Agent,
+		Target = Enemy,
+		Element = Data.Affliction,
+		Multipliers = Multipliers,
+		SkillId = CasterSkillId,
+		SkillUniqueToken = SkillUniqueToken,
+		Critical = Is_Critical,
+	})
+
+	local HitType = Data.HitType or 'None'
+
+	-- Agent
 	local Attack = Agent:GetStat('Attack')
 	local Affliction_Boost = 1 + Agent:GetStat('DMG_' .. Data.Affliction)
 	local Affliction_Damage = 1 + Agent:GetStat('Affliction_Damage')

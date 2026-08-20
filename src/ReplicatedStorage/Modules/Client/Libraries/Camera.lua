@@ -45,6 +45,10 @@ local Camera = {
 	__Enemies_Blocking_Vision = {},
 }
 
+local function SmoothAlpha(Rate: number, Delta: number): number
+    return 1 - math.exp(-Rate * Delta)
+end
+
 function Camera:ResetZoom()
 	if Camera.__ZoomThread ~= nil and Camera.__ZoomThread ~= coroutine.running() then
 		task.cancel(Camera.__ZoomThread)
@@ -229,7 +233,7 @@ function Camera:Update(delta: number)
 		return
 	end
 
-	Camera.__Current_Zoom = math.lerp(Camera.__Current_Zoom, Camera.__Zoom, delta * 12)
+	Camera.__Current_Zoom = math.lerp(Camera.__Current_Zoom, Camera.__Zoom, SmoothAlpha(12, delta))
 
 	local ZoomValue = Camera.__Current_Zoom
 	local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
@@ -248,7 +252,7 @@ function Camera:Update(delta: number)
 
 	CameraPosition = Goal + Settings.Offset
 
-	Camera.__Position = Camera.__Position:Lerp(CameraPosition, delta * Camera.__Delta)
+	Camera.__Position = Camera.__Position:Lerp(CameraPosition, SmoothAlpha(Camera.__Delta, delta))
 
 	local SubCamOffset = CFrame.new()
 	local Factor = 45;
@@ -275,7 +279,7 @@ function Camera:Update(delta: number)
 		local Value = LookAtPart and 75 or 70
 		CameraObject.FieldOfView = Value
 	end
-	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, delta * Factor)
+	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, SmoothAlpha(Factor, delta))
 
 	--[[
 	---

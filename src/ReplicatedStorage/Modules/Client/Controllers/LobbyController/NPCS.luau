@@ -99,7 +99,7 @@ function Update(NPC: Character, Delta: number): ()
         local CanStartMoving = IsOver > NPC.UntilNext
         if not CanStartMoving then return end
 
-        NPC.Direction = CFrame.Angles(0, RNG:NextNumber(-math.pi * 2, math.pi * 2), 0).LookVector
+        NPC.Direction = CFrame.Angles(0, RNG:NextNumber(-math.tau, math.tau), 0).LookVector
 
         NPC.MoveStarted = os.clock()
         NPC.UntilNext = RNG:NextNumber(3, 5)
@@ -145,7 +145,7 @@ function NewCharacter(): Character?
 
     local BaseCF = CFrame.new(0, 3, 0)  -- (BaseChar:FindFirstChild("HumanoidRootPart") :: BasePart):GetPivot()
     local RandomId = HttpService:GenerateGUID(false)
-    local DirCF = BaseCF * CFrame.Angles(0, RNG:NextNumber(-math.pi * 2, math.pi * 2), 0)
+    local DirCF = BaseCF * CFrame.Angles(0, RNG:NextNumber(-math.tau, math.tau), 0)
     local Len = RNG:NextInteger(MIN_SPAWN_RANGE, MAX_SPAWN_RANGE)
 
     local BasePos = DirCF * CFrame.new(0, 0, -Len)

@@ -268,12 +268,7 @@ function Service:Begin(Stage: string, Act: string)
 
     Network:FireForAll("Match", GameEnum.MatchEvents.MatchBegin, ClientPayloadData)
 
-
-    --if MissionData.Type == 'ChaosControl' then
-        print('So here, i have to somehow, trigger the basepart??')
-    --else
-        MissionObject:Begin()
-    --end
+    MissionObject:Begin()
 
     --
     for _, Player in AllPlayers do

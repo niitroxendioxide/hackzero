@@ -41,6 +41,7 @@ return {
 		DisplayDamage = 51,
 		Knockback = 52,
 		DamageAgent = 53,
+		HealAgent = 100,
 		FillAffliction = 54,
 		ResetAffliction = 55,
 		DazeEnemy = 56,
@@ -337,6 +338,10 @@ return {
 		LevelCompanion = 8,
 	},
 
+	SellEvent = {
+		SellArtifacts = 1,
+	},
+
 	ChangeEvents = {
 		Add = 1,
 		Remove = 2,
@@ -398,6 +403,9 @@ return {
 		["Pen_Ratio"] = 6,
 		["Affliction_Aptitude"] = 7,
 		["Daze%"] = 9,
+		["Health"] = 10,
+		["Defense"] = 11,
+		["Attack"]  = 12,
 	},
 
 	MainStatsAllowed = {

@@ -30,7 +30,6 @@ return function(
 
 	Effects:CleanUp(Highlight, 1 / 5)
 
-	task.wait(1 / 30)
 
 	if Caster.__Player_Assigned == Players.LocalPlayer then
 		local CC = Instance.new("ColorCorrectionEffect")

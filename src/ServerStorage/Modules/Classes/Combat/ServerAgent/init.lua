@@ -461,7 +461,10 @@ function ServerAgentClass:IsAlive()
 end
 
 function ServerAgentClass:Heal(...)
-	return self.__Status:Heal(...)
+	local _Result = self.__Status:Heal(...)
+
+	local Health = self:GetHealth()
+	Replicator:HealAgent(self, Health)
 end
 
 function ServerAgentClass:SetMaxHealth(Amount: number, Fill: boolean)

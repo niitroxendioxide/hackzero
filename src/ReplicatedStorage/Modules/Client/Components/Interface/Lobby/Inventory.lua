@@ -8,7 +8,9 @@ local Database = Shared.Database
 
 local Assets = ReplicatedStorage.Assets
 
+local ItemNameGen = require(ReplicatedStorage.Modules.Client.Utility.ItemNameGen)
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Network = require(ReplicatedStorage.Modules.Shared.Network)
 local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
 local String = require(ReplicatedStorage.Modules.Shared.Utility.String)
 local Types = require(Shared.Types)
@@ -28,6 +30,11 @@ local Component = ComponentClass.new("Inventory", "Lobby")
 local States = {
     __Selected_Item = nil,
     ClosingConnection = nil,
+    InSellMode = false,
+    SellingItems = {},
+
+    IsConfirming = false,
+    LastConfirmClick = os.clock()
 }
 local TypeFilters = {"Artifact", "Drive", "Item"}
 local Filters = {}
@@ -43,6 +50,39 @@ local GetChipNameFromString = function(Name: string)
     end
 
     return string.gsub(Name, 'Chip', '')
+end
+
+local function SellItems()
+    Network:Fire("SellEvent", GameEnum.SellEvent.SellArtifacts, States.SellingItems)
+end
+
+local function ToggleSellMode(ForceState: boolean?)
+    local MainFrame = Component:GetFrame()
+    local InventoryFrame = MainFrame.InventoryFrame
+
+    if States.InSellMode or (ForceState == false) then
+        States.InSellMode = false;
+        
+        for _, ItemId in States.SellingItems do
+            local ItemObj = InventoryFrame.ItemList:FindFirstChild(ItemId)
+            if ItemObj then
+                ItemObj.Design.Selling.Visible = false
+            end
+        end
+
+        States.SellingItems = {}
+    else
+        States.InSellMode = true;
+        
+        local ItemObj = InventoryFrame.ItemList:FindFirstChild(States.__Selected_Item or '')
+        if ItemObj then
+            table.insert(States.SellingItems, States.__Selected_Item)
+            ItemObj.Design.Selling.Visible = true
+        end
+    end
+
+    InventoryFrame.CancelButton.Visible = States.InSellMode
+    InventoryFrame.ConfirmSell.Visible = States.InSellMode
 end
 
 local function ShowItemInfo(ItemId: string?)
@@ -94,6 +134,8 @@ local function ShowItemInfo(ItemId: string?)
         local Exp = DataFrame.DriveData.Exp;
         Exp.Fill.Size = UDim2.fromScale(0, 1);
         EffectUtil:Tween(Exp.Fill, { 0.3, 'Quad' }, {Size = UDim2.fromScale(ItemInfo.Level / 60, 1)})
+        DataFrame.ItemNickname.Visible = true
+        DataFrame.ItemNickname.Text = ItemNameGen(ItemId)
 
         DataFrame.ItemInfo.ItemDescription.Text = `<b>Passive Effect:</b> {(OtherData.Passive_Description or "")}`
         DataFrame.ItemInfo.ItemDescription.Position = UDim2.fromScale(0.486, 0.931)
@@ -102,7 +144,9 @@ local function ShowItemInfo(ItemId: string?)
         DataFrame.ItemInfo.Icon.Visible = false
         DataFrame.DriveData.Visible = false
         DataFrame.ArtifactData.Visible = true
+        DataFrame.ItemNickname.Visible = true
         DataFrame.ItemInfo.ItemCount.Visible = false
+        DataFrame.ItemNickname.Text = ItemNameGen(ItemId)
 
         DataFrame.ArtifactData.Level.Text = `Lv. {ItemInfo.Level}`;
         DataFrame.ArtifactData.Slot.Text = `Slot. {ItemInfo.Slot}`;
@@ -114,6 +158,7 @@ local function ShowItemInfo(ItemId: string?)
         DataFrame.ItemInfo.ItemDescription.Position = UDim2.fromScale(0.486, 0.931)
         --
     else
+        DataFrame.ItemNickname.Visible = false
         DataFrame.DriveData.Visible = false
         DataFrame.ArtifactData.Visible = false
         DataFrame.ItemInfo.Visible = true
@@ -232,6 +277,7 @@ local function CreateFilterBtn(Name: string)
     end)
 end
 
+local SellableItems = { Artifact = true, }
 local ItemSelectedThread: thread = nil;
 local function SelectItem(ItemId: string)
     if ItemSelectedThread then
@@ -252,9 +298,21 @@ local function SelectItem(ItemId: string)
 
     local Design = ItemObject.Design;
 
+    if SellableItems[ItemObject.Type.Value] then
+        local IsInSellList = table.find(States.SellingItems, ItemId)
+        if IsInSellList then
+            Design.Selling.Visible = false;
+            table.remove(States.SellingItems, IsInSellList)
+        elseif States.InSellMode then
+            Design.Selling.Visible = true;
+            table.insert(States.SellingItems, ItemId)
+        end
+    end
+
     if ItemId == States.__Selected_Item then
         Design.Selected.Visible = false
         States.__Selected_Item = nil
+        Design.Selling.Visible = false;
 
         ShowItemInfo(nil)
 
@@ -287,11 +345,27 @@ local function SelectItem(ItemId: string)
             local Delta = task.wait();
 
             Angle += 450 * Delta
+            if not Design or not Design:FindFirstChild('Selected') then
+                break
+            end
+
             Design.Selected.UIStroke.Thickness = 0.04 + math.sin(math.rad(Angle)) * 0.015
         end
     end)
 
     ShowItemInfo(ItemId)
+end
+
+local function DeleteItems(IdList: string)
+    local MainFrame = Component:GetFrame()
+    local InventoryFrame = MainFrame.InventoryFrame
+
+    for _, ItemID in IdList do
+        local ItemObj = InventoryFrame.ItemList:FindFirstChild(ItemID)
+        if ItemObj then
+            ItemObj:Destroy()
+        end
+    end
 end
 
 local OrderTypes = {
@@ -358,7 +432,7 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
         else
             ObjectDesign.ItemIcon.Visible = false
             ObjectDesign.ItemName.Visible = true
-            ObjectDesign.ItemName.Text = (ItemInfo.Name or ItemData.Name)
+            ObjectDesign.ItemName.Text = ((ItemInfo or {}).Name or (ItemData or {}).Name or "Unknown ID")
         end
     else
         ObjectDesign.DriveIcon.Visible = false
@@ -379,7 +453,7 @@ local function CreateItem(ItemId: string, Type: 'Drive' | 'Artifact' | 'Item', I
         else
             ObjectDesign.ItemIcon.Visible = false
             ObjectDesign.ItemName.Visible = true
-            ObjectDesign.ItemName.Text = (ItemInfo.Name or ItemData.Name)
+            ObjectDesign.ItemName.Text = ((ItemInfo or {}).Name or (ItemData or {}).Name or "Unknown ID")
         end
     end
 
@@ -414,8 +488,9 @@ function CreateDrivesAndArtifacts()
         CreateItem(Drive.Id, 'Drive', Drive)
 
         Count += 1;
-        if Count > 35 then
+        if Count > 3 then
             Count = 0
+
             task.wait()
         end
     end
@@ -428,7 +503,7 @@ function CreateDrivesAndArtifacts()
         CreateItem(Artifact.Id, 'Artifact', Artifact)
 
         Count += 1;
-        if Count > 35 then
+        if Count > 3 then
             Count = 0
             task.wait()
         end
@@ -441,7 +516,7 @@ local function CreateAllItems()
         CreateItem(Item.Name, 'Item', Item)
 
         Count += 1;
-        if Count > 35 then
+        if Count > 3 then
             Count = 0
             task.wait()
         end
@@ -559,6 +634,106 @@ function Component:Init()
         EffectUtil:Tween(UpgradeButtonFrame.MidStroke, { 0.3, 'Sine' }, {Color = Color3.fromRGB(38, 38, 38)})
         EffectUtil:Tween(UIScale, { 0.25, 'Quart' }, {Scale = 1})
     end)
+
+    --
+    local SellButtonFrame = MainFrame.InventoryFrame.Data.ArtifactData.Sell
+    local FavButtonFrame = MainFrame.InventoryFrame.Data.ArtifactData.Favorite
+    local Colors = {Color3.fromRGB(158, 20, 20), Color3.fromRGB(255, 211, 79)}
+
+    for i, ButtonFrame in {SellButtonFrame, FavButtonFrame} do
+        local BaseColor = ButtonFrame.MidStroke.Color;
+        ButtonFrame.Button.MouseButton1Click:Connect(function()
+            ButtonFrame.UIScale.Scale = 0.8
+            ButtonFrame.UIStroke.Color = Color3.new(1, 1, 1)
+            ButtonFrame.UIStroke.Thickness = 0.09
+            EffectUtil:Tween(ButtonFrame.UIScale, { 0.25, 'Back' }, {Scale = 1})
+            EffectUtil:Tween(ButtonFrame.UIStroke, { 0.45, 'Sine' }, {Color = Color3.new(0, 0, 0), Thickness = 0.05})
+
+            if i == 1 then
+                ToggleSellMode()
+            end
+        end)
+
+        ButtonFrame.Button.MouseEnter:Connect(function()
+            EffectUtil:Tween(ButtonFrame.MidStroke, { 0.3, 'Sine' }, {Color = Color3.new(1, 1, 1):Lerp(BaseColor, 0.75)})
+            EffectUtil:Tween(ButtonFrame.UIShadow, { 0.3, 'Sine' }, {Color = Colors[i]})
+            EffectUtil:Tween(ButtonFrame.UIScale, { 0.25, 'Quart' }, {Scale = 1.1})
+        end)
+        
+        ButtonFrame.Button.MouseLeave:Connect(function()
+            EffectUtil:Tween(ButtonFrame.MidStroke, { 0.3, 'Sine' }, {Color = BaseColor})
+            EffectUtil:Tween(ButtonFrame.UIShadow, { 0.3, 'Sine' }, {Color = Color3.new()})
+            EffectUtil:Tween(ButtonFrame.UIScale, { 0.25, 'Quart' }, {Scale = 1})
+        end)
+    end
+
+    ---
+    ToggleSellMode(false)
+
+    local CancelSellButton = MainFrame.InventoryFrame.CancelButton
+    local ConfirmSellButton = MainFrame.InventoryFrame.ConfirmSell
+    ConfirmSellButton.Button.MouseButton1Click:Connect(function()
+        if (os.clock() -  States.LastConfirmClick) < 1 / 10 then
+            return
+        end
+
+        ConfirmSellButton.UIScale.Scale = 0.8
+        ConfirmSellButton.UIStroke.Color = Color3.new(1, 0.423529, 0.423529)
+        ConfirmSellButton.UIStroke.Thickness = 0.09
+        EffectUtil:Tween(ConfirmSellButton.UIScale, { 0.25, 'Back' }, {Scale = 1})
+        EffectUtil:Tween(ConfirmSellButton.UIStroke, { 0.45, 'Sine' }, {Color = Color3.new(0, 0, 0), Thickness = 0.05})
+
+        if States.IsConfirming then
+            States.IsConfirming = false;
+            ConfirmSellButton.Label.Text = 'Sell'
+
+            SellItems()
+            ToggleSellMode(false)
+        else
+            ConfirmSellButton.Label.Text = 'Are you sure?'
+            States.IsConfirming = true
+
+        end
+    end)
+
+    CancelSellButton.Button.MouseButton1Click:Connect(function()
+        ToggleSellMode(false)
+        ConfirmSellButton.Label.Text = 'Sell'
+        States.IsConfirming = false
+        
+        CancelSellButton.UIScale.Scale = 0.8
+        CancelSellButton.UIStroke.Color = Color3.new(0.784314, 0.776471, 0.776471)
+        CancelSellButton.UIStroke.Thickness = 0.09
+        EffectUtil:Tween(CancelSellButton.UIScale, { 0.25, 'Back' }, {Scale = 1})
+        EffectUtil:Tween(CancelSellButton.UIStroke, { 0.45, 'Sine' }, {Color = Color3.new(0, 0, 0), Thickness = 0.05})
+    end)
+
+    CancelSellButton.Button.MouseEnter:Connect(function()
+        EffectUtil:Tween(CancelSellButton.MidStroke, { 0.3, 'Sine' }, {Color = Color3.new(0.847059, 0.847059, 0.847059)})
+        EffectUtil:Tween(CancelSellButton.UIScale, { 0.25, 'Quart' }, {Scale = 1.1})
+    end)
+    
+    CancelSellButton.Button.MouseLeave:Connect(function()
+        EffectUtil:Tween(CancelSellButton.MidStroke, { 0.3, 'Sine' }, {Color = Color3.fromRGB(58, 58, 58)})
+        EffectUtil:Tween(CancelSellButton.UIScale, { 0.25, 'Quart' }, {Scale = 1})
+    end)
+
+    ConfirmSellButton.Button.MouseEnter:Connect(function()
+        EffectUtil:Tween(ConfirmSellButton.MidStroke, { 0.3, 'Sine' }, {Color = Color3.new(0.694118, 0.145098, 0.145098)})
+        EffectUtil:Tween(ConfirmSellButton.UIScale, { 0.25, 'Quart' }, {Scale = 1.1})
+    end)
+    
+    ConfirmSellButton.Button.MouseLeave:Connect(function()
+        EffectUtil:Tween(ConfirmSellButton.MidStroke, { 0.3, 'Sine' }, {Color = Color3.fromRGB(58, 9, 9)})
+        EffectUtil:Tween(ConfirmSellButton.UIScale, { 0.25, 'Quart' }, {Scale = 1})
+    end)
+
+    ---
+
+end
+
+function Component:WipeItems(List: { string })
+    return DeleteItems(List)
 end
 
 return Component :: Types.UIComponent

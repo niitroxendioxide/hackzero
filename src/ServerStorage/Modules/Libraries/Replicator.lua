@@ -500,6 +500,19 @@ function Replicator:DamageAgent(Agent: AgentTypes.ServerAgentClass, Damage: numb
 	Network:FireForAll('Replicate', Object)
 end
 
+function Replicator:HealAgent(Agent: AgentTypes.ServerAgentClass, CurrentHealth: number)
+	local RepId = Agent.__Player_Assigned:GetAttribute("ReplicationId")
+	local AgentIndex = table.find(Agents:GetAll(RepId), Agent)
+
+	local Object = buffer.create(7)
+	buffer.writeu8(Object, 0, GameEnum.Replication.HealAgent)
+	buffer.writeu8(Object, 1, AgentIndex)
+	buffer.writeu8(Object, 2, RepId)
+	buffer.writef32(Object, 3, CurrentHealth)
+
+	Network:FireForAll('Replicate', Object)
+end
+
 function Replicator:KillAgent(Agent: AgentTypes.ServerAgentClass, Damage: number)
 	local RepId = Agent.__Player_Assigned:GetAttribute("ReplicationId")
 	local AgentIndex = table.find(Agents:GetAll(RepId), Agent)
