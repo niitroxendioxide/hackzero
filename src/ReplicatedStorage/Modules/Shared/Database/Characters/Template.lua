@@ -40,10 +40,12 @@ return {
 	Moveset_Data = {
 		['Basic Attack'] = {
 			Base = {
-				Cooldown = .35,
+				Cooldown = .01,
 				Attack_State_Time = 0.35,
 				Speed = 1,
 				Animation_Speed = 1,
+				Walk_Time = 0.15,
+				Range = 100,
 				Hit = {
 					Damage = 50,
 					HitType = 'Blunt',
@@ -65,6 +67,7 @@ return {
 				Cooldown = .3,
 				Speed = 1,
 				Animation_Speed = 1,
+				Release = false,
 			},
 
 			Upgrades = {},

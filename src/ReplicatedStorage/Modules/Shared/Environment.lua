@@ -4,4 +4,6 @@ return {
 	
 	DISPLAY_COLLIDERS = false,
 	DISPLAY_AGENT_HITBOXES = false,
+
+	REPLACE_M1_INPUT_WITH = '',
 }

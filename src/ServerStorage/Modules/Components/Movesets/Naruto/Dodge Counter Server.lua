@@ -15,8 +15,8 @@ function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
 
 	local AttackStateTime = Ability:FromData("Attack_State_Time")
     local HitboxSize = Ability:FromData("HitboxSize")
-	local HitboxOffset = Ability:FromData("HitboxOffset")
     local HitData = Ability:FromData("Hit", nil, Caster:GetSkillLevel(self.__Name))
+    local ShurikenHitData = Ability:FromData("ShurikenHit", nil, Caster:GetSkillLevel(self.__Name))
 
     Ability:Begin(Caster, {
         {0, function()
@@ -24,10 +24,21 @@ function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
             Caster:Walk(0.25, 0.45)
         end},
         
-        {0.27, function()
-			Ability:CreateHitbox(Caster, HitboxOffset, HitboxSize, function(Enemy)
-                Ability:Hit(Caster, Enemy, HitData)
-			end)
+        {0.33, function()
+			local Projectile; do
+                Projectile = Ability:CreateMovingHitbox(Caster, Caster:GetPivot(), vector.create(4, 4, 6), 80, 1.25, function(Target)
+                    Projectile:Destroy()
+
+                    Ability:Hit(Caster, Target, ShurikenHitData)
+
+                    task.delay((.45 / 1.1), function()
+                        local Offset = Caster:GetPivot():ToObjectSpace(Target:GetPivot()).Position
+                        Ability:CreateHitbox(Caster, Offset, HitboxSize, function(HitTarget)
+                            Ability:Hit(Caster, HitTarget, HitData)
+                        end)
+                    end)
+                end)
+			end
 		end},
     })
 end

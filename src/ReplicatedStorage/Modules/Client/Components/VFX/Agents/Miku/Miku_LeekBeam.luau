@@ -125,6 +125,14 @@ return function(
     local Model = Caster:GetModel()
     local LeekModel = Model:FindFirstChild("Leek")
 
+    if State == nil then
+        if Cache[Caster] then
+            Effects:Toggle(Cache[Caster], false)
+            Effects:CleanUp(Cache[Caster], 1)
+
+            Cache[Caster] = nil
+        end
+    end
 
     ---
     if State == true then

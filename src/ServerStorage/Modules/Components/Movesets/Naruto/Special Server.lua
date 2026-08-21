@@ -14,38 +14,48 @@ local Ability = AbilityClass.new()
 function Ability:Play(Caster: Types.Caster, _, _, Context:{ read M1_Count: number }): ()
 
 	local Attack_Time = Ability:FromData("Attack_State_Time")
+	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
+	local HitData = Ability:FromData("Hit", nil, SkillLevel)
+	local BackHit = Ability:FromData("BackHit", nil, SkillLevel)
+	local SecondHit = Ability:FromData("SecondHit", nil, SkillLevel)
 
-	local TargetHit = false
-	local BaseCFrame = nil;
-	local Range = Ability:FromData("Clone_Range")
-	local HitData = Ability:FromData("Hit")
+
+	local Marked = {}
+	local function AssignClone(Target)
+		if Marked[Target] then
+			return;
+		end
+
+		Marked[Target] = true
+	end
+
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState('Attacking', Attack_Time)
 		end},
 
-		{0.225, function()
-			BaseCFrame = Caster:GetPivot()
+		{0, 0.9, function()
+			Caster:LookAtTarget(Context.Target)
 		end},
 
-		{0.275, 0.455, function(self)
-			if TargetHit then
-				return
-			end
-
-			local Alpha = (self.__currentTime - 0.275) / 0.18
-			local Offset = CFrame.new(0, 0, -1):Lerp(CFrame.new(0, 0, -(Range + 2)), Alpha)
-			local OffsetFromBase = Caster:GetPivot():ToObjectSpace(BaseCFrame) 
-
-			Ability:CreateHitbox(Caster, (OffsetFromBase * Offset).Position, vector.create(6, 6, 4), function(Enemy)
-				TargetHit = true
-
-				Ability:Stun(Enemy, 0.4)
-
-				task.delay(0.4, function()
-					Ability:Hit(Caster, Enemy, HitData)
-				end)
+		{0.4, function(self)
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -5), vector.create(6, 6, 6), function(Enemy: Types.ServerEnemy)
+				Ability:Hit(Caster, Enemy, HitData)
+				AssignClone(Enemy)
 			end)
+		end},
+
+		{0.9, function(self)
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -8), vector.create(6, 6, 8), function(Enemy: Types.ServerEnemy)
+				Ability:Hit(Caster, Enemy, SecondHit)
+				AssignClone(Enemy)
+			end)
+		end},
+
+		{1.55, function()
+			for Target in Marked do
+				Ability:Hit(Caster, Target, BackHit)
+			end
 		end}
 	})
 end

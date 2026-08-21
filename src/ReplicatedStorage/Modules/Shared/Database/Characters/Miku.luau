@@ -40,6 +40,10 @@ return {
         Defense = 2,
 	},
 
+	ImportantStats = {
+		'Attack',
+	},
+
 	Moveset_Data = {
 		['Basic Attack'] = {
 			Base = {

@@ -292,7 +292,9 @@ function Controller:HealAgent(Buffer: buffer)
 	end
 
 	--
-	Effects:Play('Indicator', ActiveAgent, {Affliction = 'Heal', Crit = true, Text = `+{HealedBy}`})
+	if ActiveAgent.__Character.__Appearance.__Visible then
+		Effects:Play('Indicator', ActiveAgent, {Affliction = 'Heal', Crit = true, Text = `+{HealedBy}`})
+	end
 
 	return ActiveAgent
 end

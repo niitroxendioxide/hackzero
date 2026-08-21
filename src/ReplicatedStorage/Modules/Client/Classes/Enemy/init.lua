@@ -63,6 +63,10 @@ function EnemyClass:Destroy()
 	self.__Appearance:Destroy()
 end
 
+function EnemyClass:IsAlive()
+	return self.__Status:IsAlive()
+end
+
 function EnemyClass:IsAirborne()
 	return self.__Appearance:IsRaised()
 end

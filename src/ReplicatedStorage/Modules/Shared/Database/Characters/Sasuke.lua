@@ -3,7 +3,7 @@ return {
 	Nickname = 'Sazuki',
 	Element = 'Fire',
 	Role = 'Attack',
-	Tier = "Legendary",
+	Tier = "Mythical",
 	Faction = "Team 7",
 
 	
@@ -77,12 +77,12 @@ return {
 				Attack_Data = {
 					-- The "?" symbol means it can be there or not.
 					-- Movement Moment, Hit time, Endlag, Movement Time?, Movement Strength?, Movement Linear?
-					[1]   = {0.217, .267, .7, 0.2, 1.35},
-					[1.1] = {0.55, 0.633, 0, 0.2,},
-					[2]   = {0.267, .33, 1.02, 0.15, 1.35},
-					[2.1] = {0.7, 0.767, 0, .233, 1.25},
-					[3]   = {0.217, .267, 1.1, 0.175, 1.15},
-					[3.1] = {0.633, 0, 0, .366, -1.75},
+					[1]   = {0.217, .267, .425, 0.2, 1.35},
+					[2] = {0.133, 0.175, .325, 0.125, 1.25},
+					[3]   = {0.267, .33, 1.02, 0.15, 1.35},
+					[3.1] = {0.7, 0.767, 0, .233, 1.25},
+					[4]   = {0.217, .267, 1.1, 0.175, 1.15},
+					[4.1] = {0.72, 0, 0, .28, -1.9},
 				},
 
 				HitboxSize = vector.create(8, 5, 9),
@@ -111,19 +111,19 @@ return {
 
 				Damage = {
 					[1] = 70,
-					[1.1] = 90,
-					[2] = 130,
-					[2.1] = 180,
-					[3] = 110,
-					[3.1] = 61,
+					[2] = 90,
+					[3] = 130,
+					[3.1] = 180,
+					[4] = 110,
+					[4.1] = 61,
 				},
 				Daze = {
 					[1] = 15,
-					[1.1] = 22,
-					[2] = 6,
-					[2.1] = 23,
-					[3] = 45,
-					[3.1] = 6,
+					[2] = 22,
+					[3] = 6,
+					[3.1] = 23,
+					[4] = 45,
+					[4.1] = 6,
 				}
 			},
 			Upgrade = {
@@ -133,19 +133,19 @@ return {
 				},
 				Damage = {
 					[1] = 1.5,
-					[1.1] = 2,
-					[2] = 2.5,
-					[2.1] = 3.5,
-					[3] = 2,
-					[3.1] = 0.75,
+					[2] = 2,
+					[3] = 2.5,
+					[3.1] = 3.5,
+					[4] = 2,
+					[4.1] = 0.75,
 				},
 				Daze = {
 					[1] = 0.75,
-					[1.1] = 1,
-					[2] = 0.2,
-					[2.1] = 0.35,
-					[3] = 0.5,
-					[3.1] = 0.2,
+					[2] = 1,
+					[3] = 0.2,
+					[3.1] = 0.35,
+					[4] = 0.5,
+					[4.1] = 0.2,
 				}
 			},
 		},
@@ -175,9 +175,11 @@ return {
 		['Dodge Counter'] = {
 			Base = {
 				Cooldown = 1,
-				Attack_State_Time = 1.5,
+				Attack_State_Time = 2.4,
 				Speed = 1,
+				Range = 45,
 				Animation_Speed = 1,
+				HitFrequency = 1 / 15,
 
 				Hit = {
 					Stun = 0.35,
@@ -198,16 +200,46 @@ return {
 					Damage = 240,
 					HitType = "Blunt",
 					Daze = 25,
-					Affliction_Buildup = 32,
+					Affliction_Buildup = 25,
 					Affliction = "Physical",
 					Knockback = {
 						vector.create(0, 0, 1),
 						20,
 						0.1,
 					}
+				},
+
+				FireHit = {
+					Stun = 0.15,
+					Damage = 45,
+					HitType = "Blunt",
+					Daze = 2,
+					Affliction_Buildup = 32,
+					Affliction = "Fire",
+					Knockback = {
+						vector.create(0, 0, 1),
+						4,
+						0.1,
+					}
 				}
 			},
-			Upgrade = {},
+			Upgrade = {
+				PunchHit = {
+					Damage = 3,
+					Daze = 0.25,
+				},
+
+				FireHit = {
+					Damage = 2.25,
+					Affliction_Buildup = 2,
+					Daze = 0.1,
+				},
+
+				Hit = {
+					Damage = 1.5,
+					Daze = 0.5,
+				}
+			},
 		},
 
 		['EX Special'] = {

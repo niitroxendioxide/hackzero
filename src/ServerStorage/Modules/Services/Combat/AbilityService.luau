@@ -205,6 +205,10 @@ function Service:Init()
 	--MovesetLibrary:Init()
 	AgentService.AgentAdded:Connect(function(NewAgent: AgentTypes.ServerAgentClass)
 		local Moveset = MovesetLibrary:Get(NewAgent.Name)
+		if not Moveset then
+			return;
+		end
+
 		local PassiveManager = Moveset:GetPassiveManager()
 
 		if PassiveManager ~= nil and PassiveManager.Init then
@@ -597,7 +601,7 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 end
 
 function Service:GetMoveset(Name: string): AbilityTypes.MovesetClass
-	return MovesetLibrary:Get(Name) or Service:GetMoveset("Goku")
+	return MovesetLibrary:Get(Name, 'Template')
 end
 
 return Service

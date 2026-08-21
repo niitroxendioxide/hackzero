@@ -49,17 +49,17 @@ return table.freeze({
     USE_BORROW = true, -- whether to replace agents with lvl 60 max
     BORROWED_AGENT_LEVEL = 60,
     CHARACTERS_INVINCIBLE = false,
-    STUDIO_ENERGY_MULT = 25,
+    STUDIO_ENERGY_MULT = 0.5,
     STUDIO_HIT_ENERGY_MULT = 1,
 
     TEST_COMPANION = '8bdc68f8-cb56-4576-a193-689bb87043df',
     TEST_AGENTS = {
-        'Chihiro',
-        'Sasuke',
-        --'Goku'
+        'Kakashi',
+        'Goku',
+        'Miku',
     },
 
-    REPLACE_AFFLICTION = 'Ice',
+    --REPLACE_AFFLICTION = 'Fire',
     TEST_AGENT_ARTIFACTS = {
         Goku = {
             'FourLeafGrimoire',
@@ -70,10 +70,12 @@ return table.freeze({
             'DragonBall',
         },
         Sasuke = {
-            'StoneMask',
-            'StoneMask',
-            'StoneMask',
-            'StoneMask',
+            'Sharingan',
+            'Sharingan',
+            'Sharingan',
+            'Sharingan',
+            'FourLeafGrimoire',
+            'FourLeafGrimoire',
         },
         Chihiro = {
             'CorpCapsule',

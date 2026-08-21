@@ -106,28 +106,69 @@ return {
 			Base = {
 				Speed = 1,
 				Animation_Speed = 1,
-				Attack_State_Time = .55,
+				Attack_State_Time = 1,
 				Clone_Range = 20,
-				Range = 23, 
+				Range = 45, 
 				Required_Energy = 45,
 
 				Hit = {
 					DontChargeEnergy = true,
 					HitType = 'Blunt',
+					Stun = .45,
+					Daze = 91,
+					Damage = 137,
+					Affliction_Buildup = 15,
+					Affliction = 'Physical',
+					Knockback = {
+						vector.create(0, 0, 1),
+						8,
+						0.2,
+					},
+				},
+
+				SecondHit = {
+					DontChargeEnergy = true,
+					HitType = 'Blunt',
+					Stun = .45,
+					Daze = 107,
+					Damage = 257,
+					Affliction_Buildup = 15,
+					Affliction = 'Physical',
+					Knockback = {
+						vector.create(0, 0, 1),
+						30,
+						0.4,
+					},
+				},
+
+				BackHit = {
+					DontChargeEnergy = true,
+					HitType = 'Blunt',
 					Stun = 1,
-					Daze = 220,
-					Damage = 164,
+					Daze = 175,
+					Damage = 150,
 					Affliction_Buildup = 15,
 					Affliction = 'Physical',
 					Knockback = {
 						vector.create(0, 0, -1),
-						22,
+						24,
 						0.3,
 					},
 				},
 			},
 			Upgrade = {
-
+				Hit = {
+					Daze = 3,
+					Damage = 1,
+				},
+				SecondHit = {
+					Daze = 1,
+					Damage = 2.25,
+				},
+				BackHit = {
+					Daze = 4,
+					Damage = 2,
+				}
 			},
 		},
 
@@ -227,22 +268,34 @@ return {
 				Animation_Speed = 1,
 				Attack_State_Time = 0.65,
 				
-				Range = 30,
+				Range = 75,
 				HitboxOffset = vector.create(0, 0, -8),
 				HitboxSize = vector.create(8, 8, 11),
+
+				ShurikenHit = {
+					HitType = 'Slash',
+					Stun = .35,
+					Daze = 65,
+					Damage = 175,
+					Affliction_Buildup = 32,
+					Affliction = 'Wind',
+					Knockback = {
+						vector.create(0, 0, 1),
+						10,
+						0.2,
+					},
+				},
 
 				Hit = {
 					HitType = 'Blunt',
 					Stun = .85,
-					HitsAirborne = true,
-					Airborne = true,
-					Daze = 120,
-					Damage = 45,
+					Daze = 140,
+					Damage = 92,
 					Affliction_Buildup = 55,
-					Affliction = 'Wind',
+					Affliction = 'Physical',
 					Knockback = {
 						vector.create(0, 0, 1),
-						7,
+						17,
 						0.2,
 					},
 				},

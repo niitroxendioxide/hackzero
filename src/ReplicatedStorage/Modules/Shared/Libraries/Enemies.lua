@@ -1,5 +1,6 @@
 --
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(Shared.Types)
@@ -129,7 +130,70 @@ function EnemyLibrary:GetNearestEnemy(
 		return Selected, EnemyLibrary:GetEnemy(Selected)
 	end
 
-	return nil, nil
+	return 0, nil
+end
+
+function EnemyLibrary:GetCameraFirstEnemy(Point: Vector3, MaxDistance: number, to_Exclude: {}?, filter: ((Enemy: any) -> (number))?): (number?, Types.EnemyClass?)
+	if not RunService:IsClient() then
+		return 0, nil;
+	end
+
+	MaxDistance = MaxDistance or math.huge
+	local Exclude = to_Exclude or {}
+	local Params = RaycastParams.new()
+	Params.FilterDescendantsInstances = {workspace.World.Entities:FindFirstChild("Destructibles")}
+	Params.FilterType = Enum.RaycastFilterType.Include
+	
+	local Direction = workspace.CurrentCamera.CFrame.LookVector;
+	local FovAngle = 120;
+
+	local FlatDirection = vector.normalize(Direction * vector.create(1, 0, 1))
+    local HalfFovCos = math.cos(math.rad((FovAngle) * 0.5))
+
+	local Options = {}
+	for Key, Enemy in EnemyLibrary:GetAll() do
+		if table.find(Exclude, Enemy) then
+			continue
+		end
+
+		local LookAt = CFrame.lookAt(Point, Enemy:GetPivot().Position)
+		local DirectionToEnemy = vector.normalize(LookAt.LookVector * vector.create(1, 0, 1))
+		local DistanceToEnemy = (Point - Enemy:GetPivot().Position).Magnitude;
+		local DotProd = vector.dot(FlatDirection, DirectionToEnemy);
+
+		if DotProd < HalfFovCos then
+			continue
+		end
+
+		local LookAtRay = workspace:Raycast(Point, DirectionToEnemy * DistanceToEnemy, Params)
+		if LookAtRay then
+			continue
+		end
+
+		if typeof(filter) == 'function' then
+			if DistanceToEnemy <= MaxDistance then
+				Options[Enemy] = filter(Enemy) * DistanceToEnemy
+			end
+			
+			continue
+		end
+
+		local isAirborne = Enemy.__Appearance and Enemy.__Appearance:GetAddedHeight() > 0
+
+		if DistanceToEnemy < MaxDistance then
+			Options[Enemy] = DistanceToEnemy * (1 + (1 - DotProd) * 2) * (isAirborne and 0.75 or 1)
+		end
+	end
+
+	local Chosen, CurrentWeight = next(Options)
+	for Enemy, Weight in Options do
+		if Weight < CurrentWeight then
+			CurrentWeight = Weight
+			Chosen = Enemy
+		end
+	end
+
+	return (if Chosen then Chosen:GetId() else 0), Chosen
 end
 
 function EnemyLibrary:GetHitboxes()

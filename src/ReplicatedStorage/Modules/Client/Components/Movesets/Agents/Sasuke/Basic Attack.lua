@@ -74,7 +74,7 @@ local function HandleShurikenBarrage(Caster: Types.AgentClass, Target: Types.Cli
 
 			local ConfigData = Ability:FromData("ShurikenConfigs", Batch)
 			ShootShurikensWithData(Caster, ConfigData)
-		elseif Batch < 1 and (os.clock() - Started >= (.233 / EditedSpeed)) then
+		elseif Batch < 1 and (os.clock() - Started >= (.325 / EditedSpeed)) then
 			Batch = 1
 			DelayedTime = 0.3
 			DelayedOrigin = os.clock()
@@ -113,14 +113,11 @@ local function HandleShurikenBarrage(Caster: Types.AgentClass, Target: Types.Cli
 end
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
-	Ability:Increase(Agent, 'Count', {Limit = 3})
+	Ability:Increase(Agent, 'Count', {Limit = 4})
 end)
 
 function Ability:Play(Caster: Types.AgentClass, _key, State, Ctx)
 	local M1_Count = Ability:Get(Caster, 'Count')
-	if Ctx.IsSignal then
-		print('Running SASUKE BASIC ATTACK! State:', State)
-	end
 
 	if State == 'Begin' then
 		local ShouldContinue = HandleShurikenBarrage(Caster, Ctx.Target)
@@ -161,29 +158,29 @@ function Ability:Play(Caster: Types.AgentClass, _key, State, Ctx)
 		{0.567, function()
 			Caster:LookAtTarget(Ctx.Target)
 
-			if M1_Count == 3 then
+			if M1_Count == 4 then
 				Ability:Effect("Goku_M1_5", Caster, 0.4, true)
 			end
 		end},
 		
-		{0.65, function()
+		{0.15, function()
 			Caster:LookAtTarget(Ctx.Target)
-			if M1_Count == 1 then
+			if M1_Count == 2 then
 				Ability:Effect("Sasuke_M1", Caster, CFrame.new(0.042, -0.032, -3.885) * CFrame.Angles(0, math.rad(-11.25), 0))
 			end
 
 		end},
 
 		{0.75, function()
-			if M1_Count == 2 then
+			if M1_Count == 3 then
 				Ability:Effect("Slash", Caster, 87.864, CFrame.new(-1.526, -0.385, -3.966), false, 1.25)
 			end
 		end},
 
 		{1, function()
 			Caster:LookAtTarget(Ctx.Target)
-			if M1_Count == 3 then
-				Ability:Effect("KunaiProjectile", Caster, 75, 1, ShurikenSize, true)
+			if M1_Count == 4 then
+				Ability:Effect("KunaiProjectile", Caster, 150, 1, ShurikenSize, true)
 			end
 		end},
 	}, true)
@@ -196,7 +193,7 @@ function Ability:Play(Caster: Types.AgentClass, _key, State, Ctx)
 		end
 
 		local HitboxSize = Ability:FromData("HitboxSize")
-		if i == 2.1 then
+		if i == 3.1 then
 			HitboxSize = vector.create(11, 4, 9)
 		end
 

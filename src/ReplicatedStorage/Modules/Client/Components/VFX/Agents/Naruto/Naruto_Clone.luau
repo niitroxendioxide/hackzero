@@ -32,6 +32,7 @@ end
 return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, AnimationData: {
     Id: string, Object: Animation, Speed: number, Weight: number, CFrameTween: {any}, NoSmokeOut: boolean,
     Rasengan: {number},
+    FollowTarget: Types.ClientEnemy,
 }?): ()
     if Caster == true then
         if AnimationData.Id and Cache[AnimationData.Id] then
@@ -66,10 +67,12 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
     else 
         ModelClone:PivotTo(Caster:GetPivot() * Offset)
 
-        if AnimationData.Follow then
+        if AnimationData.Follow or AnimationData.FollowTarget then
             FollowThread = task.spawn(function()
                 while true do
-                    ModelClone:PivotTo(Caster:GetPivot() * Offset)
+                    local FollowedTarget = AnimationData.FollowTarget or Caster
+
+                    ModelClone:PivotTo(FollowedTarget:GetPivot() * Offset)
 
                     task.wait()
                 end
@@ -106,13 +109,24 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
 
     local Thread = task.delay(.05, function()
         SmokeEffect:PivotTo(ModelClone.Torso.CFrame)
-        Effects:Emit(SmokeEffect, true)
+
+        if not AnimationData.NoSmokeWeld then
+            SmokeEffect.Massless = true
+            SmokeEffect.Anchored = false
+            Effects:Weld(SmokeEffect, ModelClone.PrimaryPart)
+        end
+
+        if not AnimationData.NoSmokeIn then
+            Effects:Emit(SmokeEffect, true)
+        end
 
         task.wait(Time)
 
         if FollowThread then
             task.cancel(FollowThread)
         end
+
+        SmokeEffect.Anchored = true;
 
         if not AnimationData.NoSmokeOut then
             SmokeEffect:PivotTo(ModelClone.Torso.CFrame)

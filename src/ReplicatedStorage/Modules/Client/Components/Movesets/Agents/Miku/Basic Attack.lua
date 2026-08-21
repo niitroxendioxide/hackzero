@@ -107,4 +107,8 @@ function Ability:Play(Agent, _, _, Context)
 	Sequence:Start()
 end
 
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeCancel, function(Agent)
+	Ability:Effect("Miku_LeekBeam", Agent)
+end)
+
 return Ability

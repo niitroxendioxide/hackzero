@@ -36,6 +36,10 @@ function Ability:Play(Caster: Types.GenericClass)
 			Ability:Save(Caster, 'M1_Track', Track)
 		end,},
 
+		{.15, function()
+			Caster:Walk(.15, .75, false)
+		end,},
+
 		{.18, function()
 			Ability:CreateHitbox(Caster, Vector3.zAxis*-3, Vector3.one * 5, function(Target: Types.EnemyClass)
 				Ability:Hit(Caster, Target, {})

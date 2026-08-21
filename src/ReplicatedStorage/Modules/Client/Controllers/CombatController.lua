@@ -2,7 +2,6 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService('Players')
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
@@ -10,6 +9,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Camera = require(ReplicatedStorage.Modules.Client.Libraries.Camera)
 local Replicator = require(ReplicatedStorage.Modules.Client.Libraries.Replicator)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local Environment = require(ReplicatedStorage.Modules.Shared.Environment)
 local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
 local World = require(ReplicatedStorage.Modules.Shared.World)
@@ -61,7 +61,7 @@ function Controller:Init()
 		local CurrentDodgeData = Controller.CurrentDodgeData
 		local TimeSinceLast = (os.clock() - CurrentDodgeData.LastAdded)
 		local Added = 0
-		if TimeSinceLast > 1.5 then
+		if TimeSinceLast > .85 then
 			CurrentDodgeData.LastAdded = os.clock()
 			Added += 1
 		end
@@ -137,11 +137,12 @@ function Controller:Init()
 		Inputs:Bind(Key, {
 			Release = true,
 			Callback = function(State: 'Begin' | 'End')
-				--[[if Key == 'Basic_Attack' then
-					Key = 'Quick_Assist'
-				end]]
+				local UsedKey = Key
+				if Key == 'Basic_Attack' and #Environment.REPLACE_M1_INPUT_WITH > 3 then
+					UsedKey = Environment.REPLACE_M1_INPUT_WITH
+				end
 
-				Controller:HandleInput(Key, State)
+				Controller:HandleInput(UsedKey, State)
 			end,
 		})
 	end
@@ -279,6 +280,10 @@ function Controller:HandleInput(Key: string, State: string)
 
 	if (os.clock() - Controller.__Last_Use_Key[Key][State]) < (1 / 8) then
 		return
+	end
+
+	if Key == 'Dodge' and not (State == 'Begin') then
+		return;
 	end
 
 	Controller.__Last_Use_Key[Key][State] = os.clock()

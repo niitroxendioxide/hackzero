@@ -108,7 +108,7 @@ end
 function EnemyMovement:CreateCollider()
 	self.__Collider = Instance.new('Part')
 	self.__Collider.CFrame = CFrame.new(self.__Position)
-	self.__Collider.Size = Vector3.new(6, 4, 4)
+	self.__Collider.Size = Vector3.new(6, 3, 3)
 	self.__Collider.Color = RunService:IsServer() and Color3.new(1) or Color3.new(0, 1)
 	self.__Collider.CanCollide = false
 	self.__Collider.Anchored = true
@@ -119,7 +119,7 @@ function EnemyMovement:CreateCollider()
 	if DEBUG_ENEMY_POSITIONS and RunService:IsServer() then
 		self.__debug_collider = Instance.new('Part')
 		self.__debug_collider.CFrame = CFrame.new(self.__Position)
-		self.__debug_collider.Size = Vector3.new(7, 1, 1)
+		self.__debug_collider.Size = Vector3.new(7, 2.5, 2.5)
 		self.__debug_collider.Color = Color3.new(1, 0.172549, 0.172549)
 		self.__debug_collider.CanCollide = false
 		self.__debug_collider.Anchored = true
@@ -138,7 +138,7 @@ function EnemyMovement:CreateCollider()
 
 	self.__Enemy_Collider = Instance.new('Part')
 	self.__Enemy_Collider.CFrame = CFrame.new(self.__Position)-- * CFrame.Angles(0, 0, math.pi/2)
-	self.__Enemy_Collider.Size = Vector3.new(6, 3, 3)
+	self.__Enemy_Collider.Size = Vector3.new(6, 2.5, 2.5)
 	self.__Enemy_Collider.Color = Color3.new(0, 0, 1)
 	self.__Enemy_Collider.CanCollide = false
 	self.__Enemy_Collider.Anchored = false
@@ -255,6 +255,10 @@ function EnemyMovement:Update(Delta: number)
 
 	if self.__Collider and self.__debug_collider then
 		self.__debug_collider.CFrame = self.__Collider.CFrame
+	end
+
+	if RunService:IsClient() then
+		self.__Enemy_Collider.Transparency = RunService:IsClient() and Environment.DISPLAY_COLLIDERS and 0.75 or 1
 	end
 end
 

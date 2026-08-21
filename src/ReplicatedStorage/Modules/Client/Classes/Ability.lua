@@ -6,9 +6,9 @@ local RunService = game:GetService("RunService")
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
-local TargetStates = require(ReplicatedStorage.Modules.Client.States.Targets)
-local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
-local World = require(ReplicatedStorage.Modules.Shared.World)
+local TargetStates = require(Client.States.Targets)
+local _Debugger = require(Shared.Utility.Debugger)
+local World = require(Shared.World)
 local AnimLibrary = require(Client.Libraries.Animation)
 
 local Effects = require(Client.Libraries.Effects)
@@ -198,7 +198,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 			self:__run_hooks(GameEnum.AbilityHooks.BeforeReleaseConnection, Agent)
 		end
 
-		local Range = self:FromData("Range", nil, nil, 15)
+		local Range = self:FromData("Range", nil, nil, 50)
 		local IsBasicAttack = self.__Name == 'Basic_Attack'
 		local LookAtEnemy = self:FromData('NoAutoTrack') ~= true
 		local EnemyId, Enemy;
@@ -210,7 +210,7 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 				if self.__Target_Finder then
 					EnemyId, Enemy = self.__Target_Finder(Agent);
 				else
-					EnemyId, Enemy = Enemies:GetNearestEnemy(Agent:GetPivot().Position, Range, true)
+					EnemyId, Enemy = Enemies:GetCameraFirstEnemy(Agent:GetPivot().Position, Range) --Enemies:GetNearestEnemy(Agent:GetPivot().Position, Range, true)
 				end
 			end
 
@@ -321,13 +321,18 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 	--
 	local Model = Data.Model or Agent:GetModel()
 	local Type = tostring(Agent):match('AgentClass') and 'Characters.' or 'Enemies.'
-	local TrackObject = AnimLibrary:GetAnim(Type..Track)
+	local TrackObject = Track
+	if typeof(TrackObject) == 'string' then
+		TrackObject = AnimLibrary:GetAnim(Type..Track)
+	end
+
 	if TrackObject == nil and Type == 'Characters.' then
 		TrackObject = AnimLibrary:GetMovementAnim(Agent.Name, Type..Track)
 	end
 
 	local AnimTrack = AnimLibrary:Play(Model, TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
 	if not AnimTrack then
+		print('No was found for:', Track)
 		return
 	end
 	AnimLibrary:StopTracksWithTag(Model, Data.State or "Attacking")

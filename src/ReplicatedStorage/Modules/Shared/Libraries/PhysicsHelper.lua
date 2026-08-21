@@ -21,7 +21,7 @@ function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir:
 			local Direction = (CFrame.lookAlong(OriginPoint.Position, MovementDir) * CFrame.Angles(0, Angle, 0)).LookVector * Length
 			local Result = workspace:Raycast(OriginPoint.Position, Direction, Params)
 
-			if (Env.PROJECT_COLLISIONS and RunService:IsClient()() and RunService:IsStudio()) then
+			if (Env.PROJECT_COLLISIONS and RunService:IsClient() and RunService:IsStudio()) then
 				local Part = Instance.new("Part")
 				Part.Color = Result and Color3.new(0, 1) or Color3.new(1)
 				Part.Anchored = true

@@ -400,6 +400,10 @@ function EffectUtil:CreateRocks(RaycastResult: RaycastResult, Size: Vector3 | ve
 end
 
 function EffectUtil:RecolorSmoke(RaycastResult: RaycastResult, Particles: {Instance | ParticleEmitter})
+	if RaycastResult == nil then
+		return;
+	end
+	
 	local HasColor = pcall(function(...)
 		return RaycastResult.Color == nil;
 	end)
@@ -526,7 +530,7 @@ function EffectUtil:Quad(p0, p1, p2, t)
 end
 
 
-type CamShakePreset = "Bump" 
+export type CamShakePreset = "Bump" 
 | "Hit" 
 | "Explosion" 
 | "BlowUp" 
@@ -538,6 +542,7 @@ type CamShakePreset = "Bump"
 | "Shoot" 
 | "Earthquake"
 | "Terrified"
+
 function EffectUtil:ShakeCamera(Preset: CamShakePreset)
 	local IsCameraShakeEnabled = Settings:Get("CameraShake", "Graphics");
 	if not IsCameraShakeEnabled then

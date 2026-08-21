@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService("RunService")
 
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
@@ -81,6 +82,10 @@ function IngameMenu:Init()
                 local PageName = Button.Name .. 'Page'
                 PageLayout:JumpTo(MainFrame.Pages[PageName])
             end)
+
+            --if Button.Name == 'Environment' and RunService:IsStudio() then
+                Button.Visible = true
+            --end
         end
     end
 

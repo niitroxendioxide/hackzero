@@ -22,9 +22,9 @@ function Ability:Play(Caster: Types.Caster): ()
 
 		{0.25, function()
 			if SasukeGameplayController:HasConnectedThreads(Caster) then
+				Ability:Effect("Sasuke_Thread", {Caster, 0, 3}, true)
 				SasukeGameplayController:UseEnemyConnectedThreads(Caster, function(Target)  
 					local Time = ((Caster:GetPivot().Position - Target:GetPivot().Position).Magnitude / 45) * 0.35
-					Ability:Effect("Sasuke_Thread", {Caster, Target:GetId(), 3}, true)
 					Target:SetWorldSpeed(0, 0.2 + Time)
 
 					task.wait(0.15 + Time)

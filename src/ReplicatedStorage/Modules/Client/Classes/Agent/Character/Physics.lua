@@ -300,6 +300,7 @@ function PhysicsClass:Update(Delta: number)
 	end
 
 	self.__Collider:PivotTo(self:GetPivot())
+	self.__Collider.Transparency = Environment.DISPLAY_AGENT_HITBOXES and 0.25 or 1
 end
 
 --

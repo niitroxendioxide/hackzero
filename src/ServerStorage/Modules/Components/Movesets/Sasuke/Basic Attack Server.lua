@@ -147,7 +147,7 @@ function Ability:Play(Caster: Types.Caster, _, State, Context): ()
 		BaseHitData.Damage = Ability:FromData("Damage", i, SkillLevel)
 		BaseHitData.Daze = Ability:FromData("Daze", i, SkillLevel)
 		local HitboxSize = Ability:FromData("HitboxSize")
-		if i == 2.1 then
+		if i == 3.1 then
 			HitboxSize = vector.create(11, 4, 9)
 		end
 
@@ -156,21 +156,13 @@ function Ability:Play(Caster: Types.Caster, _, State, Context): ()
 			Offset = Ability:FromData("HitboxOffset"),
 
 			Hit_Function = function(Target)
-				--[[if i == 2.1 then
-					BaseHitData.Knockback = {
-						vector.create(0, 0, 1),
-						24,
-						0.4,
-					}
-				end]]
-
 				Ability:Hit(Caster, Target, BaseHitData)
 			end
 		})
 
-		if i == 3.1 then
+		if i == 4.1 then
 			Sequence:Add(1, function()
-				local Object; Object = Ability:CreateMovingHitbox(Caster, Caster:GetPivot(), ShurikenSize, 95, 1, function(Target)
+				local Object; Object = Ability:CreateMovingHitbox(Caster, Caster:GetPivot(), ShurikenSize, 150, 1, function(Target)
 					SasukeGameplayController:ConnectThread(Target, Caster)
 					Object:Destroy()
 

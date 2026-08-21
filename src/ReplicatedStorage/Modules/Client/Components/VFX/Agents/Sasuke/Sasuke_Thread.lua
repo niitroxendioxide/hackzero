@@ -87,47 +87,62 @@ return function(Caster: Types.AgentClass, EnemyId: number, Type: number, fn): ()
 
     -- Lit up
     elseif Type == 3 then
-        local Object = Cache[Caster][EnemyId]
+        local LowestTime = math.huge
+        for EnemyId, Object in Cache[Caster] do
+            Cache[Caster][EnemyId] = nil
 
-        Cache[Caster][EnemyId] = nil
+            local ClosedEnemyObject = Enemies:GetEnemy(EnemyId)
 
-        local EndAttachment = Object.Connection.Attachment1;
-        local BaseCFrame = Object.Connection.Attachment0.WorldCFrame;
-        local WorldCF = EndAttachment.WorldCFrame;
-        EndAttachment.Parent = workspace
-        EndAttachment.WorldCFrame = Object.Connection.Attachment0.WorldCFrame;
+            local EndAttachment = Object.Connection.Attachment1;
+            local BaseCFrame = Object.Connection.Attachment0.WorldCFrame;
+            local WorldCF = EndAttachment.WorldCFrame;
+            EndAttachment.Parent = workspace
+            EndAttachment.WorldCFrame = Object.Connection.Attachment0.WorldCFrame;
 
-        local Distance = (BaseCFrame.Position - WorldCF.Position).Magnitude
-        local StartCf = CFrame.lookAt(BaseCFrame.Position, WorldCF.Position) * CFrame.new(0, 0, -3)
-        local MidPoint = StartCf * CFrame.new(0, 0, -(Distance/2 - 3))
+            local Distance = (BaseCFrame.Position - WorldCF.Position).Magnitude
+            local StartCf = CFrame.lookAt(BaseCFrame.Position, WorldCF.Position) * CFrame.new(0, 0, -3)
+            local MidPoint = StartCf * CFrame.new(0, 0, -(Distance/2 - 3))
+            local Time = (Distance / 45) * 0.35
 
-        Object.FireTrail.CurveSize0 = math.random(-6, 7)
-        Object.FireTrail.CurveSize1 = math.random(-6, 7)
-        Object.FireTrail.Width0 = 0.5
-        Object.FireTrail.Width1 = 0
+            if Time < LowestTime then
+                LowestTime = Time
+            end
 
-        Effects:Tween(Object.FireTrail, { 0.25, 'Back' }, {Width0 = 0.25, Width1 = 0.25})
-        Effects:Tween(Object.FireTrail, { 0.65, 'Elastic' }, {CurveSize0 = 0, CurveSize1 = 0})
-        Effects:Tween(Object.Connection, { 0.25, 'Quart' }, {Width0 = 0, Width1 = 0})
-        Effects:Tween(EndAttachment, { 0.2, 'Cubic' }, {WorldCFrame = WorldCF})
-        
-        task.wait(0.15)
+            task.spawn(function()
+                Object.FireTrail.CurveSize0 = math.random(-6, 7)
+                Object.FireTrail.CurveSize1 = math.random(-6, 7)
+                Object.FireTrail.Width0 = 0.5
+                Object.FireTrail.Width1 = 0
 
-        local Time = (Distance / 45) * 0.35
-        local FirePart = Effects:Create(VFXAssets.FirePart, 10)
-        FirePart.Size *= vector.zero
-        FirePart:PivotTo(StartCf)
+                Effects:Tween(Object.FireTrail, { 0.25, 'Back' }, {Width0 = 0.25, Width1 = 0.25})
+                Effects:Tween(Object.FireTrail, { 0.65, 'Elastic' }, {CurveSize0 = 0, CurveSize1 = 0})
+                Effects:Tween(Object.Connection, { 0.25, 'Quart' }, {Width0 = 0, Width1 = 0})
+                Effects:Tween(EndAttachment, { 0.2, 'Cubic' }, {WorldCFrame = WorldCF})
+                
+                task.wait(0.15)
 
-        Effects:Tween(FirePart, {Time, 'Linear'}, {CFrame = MidPoint, Size = vector.create(0.01, 0.01, Distance)})
+                local FirePart = Effects:Create(VFXAssets.FirePart, 10)
+                FirePart.Size *= vector.zero
+                FirePart:PivotTo(StartCf)
 
-        task.wait(Time)
-        Effects:Toggle(FirePart, false)
-        Effects:Tween(Object.FireTrail, {0.3, 'Sine'}, {Width0 = 0, Width1 = 0})
-        Effects:CleanUp(Object, 2)
+                Effects:Tween(FirePart, {Time, 'Linear'}, {CFrame = MidPoint, Size = vector.create(0.01, 0.01, Distance)})
 
-        --Library:Play("Sasuke_FireExplosion", EnemyObject:GetPivot())
+                task.wait(Time)
+                Effects:Toggle(FirePart, false)
+                Effects:Tween(Object.FireTrail, {0.3, 'Sine'}, {Width0 = 0, Width1 = 0})
+                Effects:CleanUp(Object, 2)
 
-        EnemyObject:Hit()
+                Library:Play("Sasuke_FireExplosion", ClosedEnemyObject:GetPivot())
+
+                ClosedEnemyObject:Hit()
+            end)
+        end
+
+        if LowestTime < 5 then
+            task.wait(LowestTime + 0.15)
+
+            Effects:ShakeCamera("BlowUp")
+        end
     end
 
 end

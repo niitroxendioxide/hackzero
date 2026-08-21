@@ -737,6 +737,7 @@ function Component:ShowArtifactInfo(ArtifactId: string?)
     end
 
     local Artifact = LocalData:GetArtifactById(ArtifactId)
+    local DbArtifact = Artifacts:Get(Artifact.Name)
 
     if not DataFrame.Visible then
         DataFrame.Position = UDim2.fromScale(0.4, 0.548)
@@ -747,7 +748,7 @@ function Component:ShowArtifactInfo(ArtifactId: string?)
 
     Component:ShowDriveInfo(nil)
 
-    DataFrame.ArtifactName.Text = Artifact.Name
+    DataFrame.ArtifactName.Text = (DbArtifact and DbArtifact.Name) or Artifact.Name
     DataFrame.Level.Text = `Level: {Artifact.Level}`
     DataFrame.ItemName.Text = ItemNameGen(ArtifactId);
 
@@ -776,7 +777,6 @@ function Component:ShowArtifactInfo(ArtifactId: string?)
         local PerUpg = Statics.SubStatIncreases[StatName]
         local Tick = PerUpg and PerUpg[Artifact.Tier] or 0
 
-        print(PerUpg, TotalUpgrades, StatName)
         local Value = Tick * TotalUpgrades
         local NewAsset = Assets.Interface.Agents.Items.ArtifactSubStat:Clone()
         NewAsset.SubName.Text = string.gsub(StatName, '_', " ")

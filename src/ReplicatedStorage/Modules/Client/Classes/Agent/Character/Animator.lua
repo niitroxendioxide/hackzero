@@ -156,7 +156,6 @@ function AnimatorClass:Update(delta: number)
 				Track_Object:AdjustWeight(1)
 			elseif self.__Character:GetState() ~= State and Passed_Time > Time and Moving then
 				local lerpedWeight = math.max(1 - 1 * ((Passed_Time - Time) / 0.2), NON_ZERO)
-
 				Track_Object:AdjustWeight(lerpedWeight)
 			end
 		end
@@ -173,8 +172,8 @@ function AnimatorClass:Update(delta: number)
 	end
 
 	if Dash then
-		local Timeleft = .5
-		local ExpectedWeight = (Moving and Dash.TimePosition > .19) or (not Dash.IsPlaying)
+		local Timeleft = Dash.Length
+		local ExpectedWeight = (Moving and Dash.TimePosition > .35) or (not Dash.IsPlaying)
 		local LoweredWeight = 1 - math.max(Dash.TimePosition - Dash.Length * (1 - Timeleft), 0) / Dash.Length * Timeleft
 
 		Dash:AdjustWeight(ExpectedWeight and NON_ZERO or LoweredWeight)

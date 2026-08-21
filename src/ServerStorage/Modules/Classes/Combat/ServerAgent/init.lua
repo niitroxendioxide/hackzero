@@ -104,8 +104,9 @@ function ServerAgentClass.Hit(self: Types.ServerAgentClass, Caster: Types.Enemy,
 	local CurrentSkill = self:GetCurrentSkill()
 	if CurrentSkill then
 		local Moveset = Movesets:Get(self.Name)
-
-		Moveset:CancelSkill(CurrentSkill, self, {ClientInstruction = true})
+		if Moveset then
+			Moveset:CancelSkill(CurrentSkill, self, {ClientInstruction = true})
+		end
 	end
 
 	self.__Last_Hit_Caster = Caster:GetId()
