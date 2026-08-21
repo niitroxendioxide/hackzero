@@ -226,7 +226,7 @@ function Service:Begin(Stage: string, Act: string)
 
     local Difficulty = RunService:IsStudio() and settings.DIFFICULTY or GameEnum.Difficulties.Easy
     if Stage == 'Training' and not RunService:IsStudio() then
-        Difficulty = GameEnum.Difficulties.Hard
+        Difficulty = GameEnum.Difficulties.Easy
     end
 
     Targets:SetDifficulty(Difficulty)
