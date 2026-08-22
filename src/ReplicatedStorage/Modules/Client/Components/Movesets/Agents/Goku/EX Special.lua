@@ -101,83 +101,43 @@ local function Default(Caster: Types.Caster, Target: Types.ClientEnemy, Attack: 
 			Ability:Effect("Goku_DestructoDisk", Caster, false, DiskTime, DiskSpeed)
 		end)
 	end
-	
 end
 
-local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, EnemiesToCycle: {[any]: any})
-	--
-	Attack:Add(0, function()
-		local AttackTime = 0.6 + math.max(#EnemiesToCycle - 1, 0) * 0.25
-		Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime, true)
+function ModeVersion(Caster: Types.Caster, Target: Types.ClientEnemy, Attack: Types.Sequence)
+	if (Target == nil) or (not Target:IsAirborne()) then
+		Default(Caster, Target, Attack)
+	else
+		local AttackTime = Ability:FromData('AngrykamehamehaTime')
 
-		Ability:PlayAnimation(Caster, 'Goku.Abilities.Special.EX_Slam', {
-			Active_Time = 0.65,
-			Fade = 0.1,
-			Weight = 1,
-			Speed = 1,
-		})
-	end)
-
-	Attack:Add(0.35, function()
-		Ability:Effect("Goku_GroundSlam", Caster)
-	end)
-
-	--
-	local HitEffectData = Ability:FromData("Hit_Effect_Data")
-	local Center = Caster:GetPivot().Position
-
-	for idx = 1, #EnemiesToCycle do
-		local EnemyObject = Enemies:GetEnemy(EnemiesToCycle[idx])
-		local Start = (idx - 1) * 0.25
-
-		local Anim_Id_Random = math.random(1, 3)
-		Attack:Add(0.75 + Start, function()
-			if idx == 1 then
-				Ability:Effect("Teleport", Caster)
+		Attack:Add(0, function()
+			local Track = 'Goku.Abilities.Special.EX_AngryKamehameha'
+			local Res = Ability:MatchAirborneHeights(Caster, Target, 1.5, false, 0.175);
+			if Res == GameEnum.AirborneMatchState.Raised then
+				Ability:Effect("Goku_RaiseVfx", Caster)
 			end
 
-			local EnemyPosition = EnemyObject:GetPivot()
-			local Direction = CFrame.lookAt(EnemyPosition.Position, Center).LookVector
-			
-			local LerpGoal = CFrame.lookAlong(EnemyPosition.Position - Direction*6, Direction)
-			Ability:MatchAirborneHeights(Caster, EnemyObject, 0.75, true)
-			Caster:PivotTo(LerpGoal)
-			Ability:Effect("Teleport", Caster)
-
-			Ability:PlayAnimation(Caster, 'Goku.Abilities.Special.EX_Mode_'..Anim_Id_Random, {
-				Active_Time = 0.75,
-				Fade = 0.1,
-				Weight = 1,
-				Speed = 1,
+			Ability:PlayAnimation(Caster, Track, {
+				Active_Time = 1,
 			})
+			
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime, true)
 		end)
 
-		Attack:Add(0.85 + Start, function()
-			if Anim_Id_Random > 1 then
-				Ability:Effect("Goku_M1_1", Caster)
-			else
-				Ability:Effect("Goku_M1_4", Caster, 2)
-			end
-		end)
-
-		Attack:Add(0.9 + Start, function()
-			Ability:Hit(Caster, EnemyObject, {EffectData = HitEffectData})
+		Attack:Add(0.533, function()
+			Ability:Effect("Kamehameha_Beam", Caster, true, CFrame.new(-0.001, 0.321, -3.025), { Time = 0.6, Speed = .45, Length = 75 }, -172)
 		end)
 	end
-
 end
 
 function Ability:Play(Caster: Types.Caster, _, _, Context: {[any]: any})
 	--
-	local EnemiesToCycle = if #EnemyList > 0 then EnemyList 
-		elseif Context.Buffer ~= nil and (typeof(Context.Buffer[1]) == 'table' and #Context.Buffer[1] > 0) then Context.Buffer[1] 
-		else {}
+	--
 
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
 	local Attack = Ability:Begin(Caster, {}, true);
 
 	if InMode then
-		ModeVersion(Caster, Attack, EnemiesToCycle)
+		ModeVersion(Caster, Context.Target, Attack) -- ModeVersion(Caster, Attack, EnemiesToCycle)
 	else
 		Default(Caster, Context.Target, Attack)
 	end

@@ -30,5 +30,5 @@ return function(
         end
     end
 
-    ClonedModel:PivotTo(ClonedModel:GetPivot() * Offset)
+    ClonedModel:PivotTo(Caster:GetModel():GetPivot() * Offset)
 end

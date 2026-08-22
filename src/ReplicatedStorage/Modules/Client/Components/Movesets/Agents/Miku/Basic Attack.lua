@@ -51,6 +51,12 @@ function Ability:Play(Agent, _, _, Context)
 			end
 		end,},
 
+		{0, Attack_Time, function()
+			if Context.Target then
+				Agent:LookAtTarget(Context.Target)
+			end
+		end},
+
 		{0.15, function()
 			if M1_Count == 2 then
 				Ability:Effect("Miku_LeekBeam", Agent, true)

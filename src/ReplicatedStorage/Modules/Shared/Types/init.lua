@@ -12,24 +12,18 @@ export type Tier = 'Epic' | 'Legendary' | 'Mythical' | 'Common'
 
 -- [[ Character Controlling ]]
 export type Rig = Model & {
-	Humanoid: Humanoid,
+	Humanoid: Humanoid & {Animator: Animator},
 
+	Parts: Model?,
 	HumanoidRootPart: BasePart,
-	LeftUpperArm: BasePart,
-	LeftLowerArm: BasePart,
-	LeftHand: BasePart,
-	RightUpperArm: BasePart,
-	RightLowerArm: BasePart,
-	RightHand: BasePart,
-	LowerTorso: BasePart,
-	UpperTorso: BasePart,
-	Head: BasePart,
-	LeftUpperLeg: BasePart,
-	LeftLowerLeg: BasePart,
-	LeftFoot: BasePart,
-	RightUpperLeg: BasePart,
-	RightLowerLeg: BasePart,
-	RightFoot: BasePart,
+	['Left Arm']: BasePart,
+	['Right Arm']: BasePart,
+	['Left Leg']: BasePart,
+	['Right Leg']: BasePart,
+	['Head']: BasePart,
+	['Torso']: BasePart,
+
+	[string]: Instance,
 }
 
 export type AppearanceController = {
@@ -54,8 +48,8 @@ export type AppearanceController = {
 	Land: (self: AppearanceController) -> (),
 	GetAddedHeight: (self: AppearanceController) -> (number),
 
-	GetModel: (self: AppearanceController) -> (Model),
-	CloneModel: (self: AppearanceController) -> (Model),
+	GetModel: (self: AppearanceController) -> (Rig),
+	CloneModel: (self: AppearanceController) -> (Rig),
 
 	BindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),
 	UnbindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),
@@ -157,7 +151,7 @@ export type StateEffect = {
 	Started: number,
 }
 
-export type State = 'Idle' | 'Attacking' | 'Dashing' | 'Stunned' | 'Frozen' | 'Airborne'
+export type State = 'Idle' | 'Attacking' | 'Dashing' | 'Stunned' | 'Frozen' | 'Airborne' | 'TrueStun'
 export type StatesClass = {
 	__Effects: {},
 	__Character: string,
@@ -189,7 +183,7 @@ export type GenericClass = {
 	RemoveTag: (self: GenericClass, Tag: string) -> (),
 	HasTag: (self: GenericClass, Tag: string) -> (boolean),
 
-	GetModel: (self: GenericClass) -> Model,
+	GetModel: (self: GenericClass) -> Rig,
 	GetUltBar: (self: GenericClass) -> number,
 	GetSkillLevel: (self: GenericClass, Name: string) -> (number),
 
@@ -333,7 +327,7 @@ export type EnemyClass = {
 
 	Hit: (self: EnemyClass) -> (),
 	GetStat: (self: EnemyClass, Stat: Stat) -> (number),
-	GetModel: (self: EnemyClass) -> Model,
+	GetModel: (self: EnemyClass) -> Rig,
 	GetState: (self: EnemyClass) -> State,
 	GetPivot: (self: EnemyClass) -> CFrame,
 	GetHitbox: (self: EnemyClass) -> BasePart,
@@ -376,6 +370,7 @@ export type ServerEnemyClass = {
 	SetWorldSpeed: (self: ServerEnemyClass, Speed: number, Time: number) -> (),
 
 	IsFrozen: (self: ServerEnemyClass) -> (boolean),
+	IsTrueStun: (self: ServerEnemyClass) -> (boolean),
 	IsAbilityMoving: (self: ServerEnemyClass) -> (boolean),
 	IsGrabbed: (self: ServerEnemyClass)  -> (boolean),
 	IsAlive: (self: ServerEnemyClass)  -> (boolean),
@@ -383,6 +378,7 @@ export type ServerEnemyClass = {
 	Init: (self: ServerEnemyClass, Key: number) -> (),
 	Move: (self: ServerEnemyClass, Direction: Vector3 | vector) -> (),
 	Stun: (self: ServerEnemyClass, Time: number, is_airborne: boolean?) -> (),
+	ApplyTrueStun: (self: ServerEnemyClass, Duration: number) -> (),
 
 	GetStat: (self: ServerEnemyClass, Stat: Stat) -> number,
 	GetHealth: (self: ServerEnemyClass) -> number,

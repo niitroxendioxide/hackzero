@@ -232,6 +232,10 @@ export type AbilityHitInfo = {
 export type InputState = 'Begin' | 'End'
 export type SkillContext = {IsSignal: boolean?, Target: Agents.Enemy?, M1_Count: number?, Buffer: { any }}
 export type ServerAbilityClass = {
+	--[[
+		Identical to .__Name, other one is just deprecated (not like i'll change it.)
+	]]
+	Name: string,
 	__Name: string,
 	__Skill_Type: number,
 	__Cache: {},

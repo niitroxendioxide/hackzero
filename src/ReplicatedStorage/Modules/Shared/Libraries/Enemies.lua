@@ -151,6 +151,7 @@ function EnemyLibrary:GetCameraFirstEnemy(Point: Vector3, MaxDistance: number, t
     local HalfFovCos = math.cos(math.rad((FovAngle) * 0.5))
 
 	local Options = {}
+	local FallOffOptions = {}
 	for Key, Enemy in EnemyLibrary:GetAll() do
 		if table.find(Exclude, Enemy) then
 			continue
@@ -162,6 +163,10 @@ function EnemyLibrary:GetCameraFirstEnemy(Point: Vector3, MaxDistance: number, t
 		local DotProd = vector.dot(FlatDirection, DirectionToEnemy);
 
 		if DotProd < HalfFovCos then
+			if (DistanceToEnemy < MaxDistance) then
+				FallOffOptions[Enemy] = DistanceToEnemy;
+			end
+
 			continue
 		end
 
@@ -190,6 +195,16 @@ function EnemyLibrary:GetCameraFirstEnemy(Point: Vector3, MaxDistance: number, t
 		if Weight < CurrentWeight then
 			CurrentWeight = Weight
 			Chosen = Enemy
+		end
+	end
+
+	if Chosen == nil then
+		Chosen, CurrentWeight = next(FallOffOptions)
+		for Enemy, Weight in FallOffOptions do
+			if Weight < CurrentWeight then
+				CurrentWeight = Weight
+				Chosen = Enemy
+			end
 		end
 	end
 

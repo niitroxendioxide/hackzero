@@ -5,7 +5,7 @@ local Assets = ReplicatedStorage.Assets.Effects.Agents
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local Types = require(Shared.Types.Abilities)
+
 local Effects = require(Shared.Utility.Effects)
 local Enemies = require(Shared.Libraries.Enemies)
 local AnimLibrary = require(Client.Libraries.Animation)
@@ -40,8 +40,8 @@ return function(
     local Highlight = Instance.new("Highlight")
     Highlight.FillColor = Color3.fromRGB(94, 255, 244)
     Highlight.OutlineColor = Color3.fromRGB(8, 255, 218)
-    Highlight.OutlineTransparency = 0
-    Highlight.FillTransparency = 0.75
+    Highlight.OutlineTransparency = 0.5
+    Highlight.FillTransparency = 0.9
     Highlight.DepthMode = Enum.HighlightDepthMode.Occluded
     Highlight.Parent = Model
 

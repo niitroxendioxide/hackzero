@@ -5,7 +5,6 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
-local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
 local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Classes.Combat.ServerAbility)
@@ -87,66 +86,45 @@ local function Default(Caster: Types.Caster, Target: Types.ServerEnemy, Attack: 
 	end
 end
 
-local function ModeVersion(Caster: Types.Caster, Attack: Types.Sequence, Buffer: { [number]: { number } })
-	local EnemyIds = Buffer[1]
-	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
-
-	local Center = Caster:GetPivot().Position
-	local Hit_Data = Ability:FromData('Hit_Mode', nil, SkillLevel)
-
-	local AttackTime = Ability:FromData('Attack_State_Time', 1);
-	if typeof(Buffer[1]) == 'number' then
-		AttackTime = 0.75
+local function ModeVersion(Caster: Types.Caster, Target: Types.ServerEnemy, Attack: Types.Sequence)
+	if not Target or not Target:IsAirborne() then
+		Default(Caster, Target, Attack)
 	else
-		AttackTime = 0.6 + math.max(#Buffer[1] - 1, 0) * 0.25
-	end
+		local AttackTime = Ability:FromData('AngrykamehamehaTime')
+		local AngryKameHit = Ability:FromData("AngryKameHit")
+		local HitFreq = Ability:FromData('Angry_Kame_Hit_Frequency')
+		local HitTags = {}
 
-	Attack:Add(0, function()
-		Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime, true)
-	end)
-	--
-	Attack:After(function()
-		for _, Effect in Ability:FromData("SSJ2Buff") do
-			Caster:AddEffect(Effect)
-		end
-	end)
-
-	--
-	local ModeDebuff = Ability:FromData('ModeEnemyDebuff')
-	for i, EnemyId in EnemyIds do
-		local EnemyObject = Enemies:GetEnemy(EnemyId)
-		if (EnemyObject:GetPivot().Position - Caster:GetPivot().Position).Magnitude > 25 then
-			continue
-		end
-
-		Attack:Add(0.35, function()
-			local Slam = Ability:FromData('Slam_Hit_Mode', nil, SkillLevel)
-			Slam.Stun += (i - 1) * 0.3
-
-			Ability:Hit(Caster, EnemyObject, Slam)
-			EnemyObject:AddEffect(ModeDebuff)
+		Attack:Add(0, function()
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, AttackTime, true)
 		end)
 
-		Attack:Add(0.9 + (i-1) * 0.25, function()
-			Hit_Data.Knockback = {
-				EnemyObject:GetPivot():VectorToObjectSpace(CFrame.lookAt(EnemyObject:GetPivot().Position, Center).LookVector),
-				25, -- strength
-				0.3 -- time
-			}
+		Attack:Add(0.5, 1.3, function(Sequence, Delta)
+			local Time = math.min((Sequence.__currentTime - 0.5) / 0.6, 1)
+			local Current_Hitbox_Size = vector.create(6, 6, Time * 75)
+			local Offset  = Vector3.zAxis * -(Current_Hitbox_Size.Z/2);
+			
+			Ability:CreateHitbox(Caster, Offset, Current_Hitbox_Size, function(Target: Types.ServerEnemy)
+				if HitTags[Target] then return end
+				HitTags[Target] = true
 
-			Ability:Hit(Caster, EnemyObject, Hit_Data)
+				task.delay(HitFreq, function()
+					HitTags[Target] = nil
+				end)
+				
+ 				Ability:Hit(Caster, Target, AngryKameHit)
+			end)
 		end)
 	end
-
 end
 
-function Ability:Play(Caster: Types.Caster, _, _, Context: { Buffer: {any | {number}} })
+function Ability:Play(Caster: Types.Caster, _, _, Context)
 	--
 	local InMode = Caster:GetEffect("GOKU_MODE_BUFF") ~= nil;
 	local Attack = Ability:Begin(Caster, {}, true);
 	
 	if InMode then
-		ModeVersion(Caster, Attack, Context.Buffer)
+		ModeVersion(Caster, Context.Target, Attack)
 	else
 		Default(Caster, Context.Target, Attack)
 	end

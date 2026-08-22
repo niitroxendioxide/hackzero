@@ -68,11 +68,16 @@ function Ability:Play(Caster: Types.Caster, _, State, Context): ()
 		if Count == 3 then
 			AttackData.Knockback = nil
 		end
+
 		Sequence:Add(AttackData[2], function()
 			Caster:LookAtTarget(Context.Enemy)
 			Ability:CreateHitbox(Caster, vector.create(0, 0, -HitboxSize.z/2), HitboxSize, function(Enemy) 
 				if not Hits[Enemy] then
-					MikuGameplayController:AddFanStateStack(Enemy, 6)
+					MikuGameplayController:AddFanStateStack(Enemy, 1)
+					
+					if Count ~= 3 then
+						Hits[Enemy] = true
+					end
 				end
 
 				Ability:Hit(Caster, Enemy, AttackHitData)

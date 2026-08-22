@@ -104,9 +104,10 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
         EffectsUtil:CleanUp(CC, 0.1)
     end
 
-    EffectsUtil:Weld(SuperSaiyanAura, AgentModel.PrimaryPart)
     SuperSaiyanAura:PivotTo(AgentModel:GetPivot())
     SuperSaiyanAura.Parent = workspace.World.Effects
+    
+    EffectsUtil:FollowWithAlignments(SuperSaiyanAura, AgentModel.Torso, math.huge, true)
 
     if not Settings:Get("AuraEffects", 'Graphics') then
         EffectsUtil:Toggle(SuperSaiyanAura, false, function(Object: Beam | Instance | ParticleEmitter): boolean  
@@ -151,7 +152,7 @@ function GokuUltimate:Sequence(Agent: AgentTypes.AgentClass)
     end
 
     --
-    AgentCache.__Threads[Agent] = task.delay(15, AgentCache.__Methods[Agent])
+    AgentCache.__Threads[Agent] = task.delay(33, AgentCache.__Methods[Agent])
 end
 
 return GokuUltimate

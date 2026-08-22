@@ -150,7 +150,7 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 
 	for i = 1, #NumberToString do
 		local Number = string.sub(NumberToString, i, i)
-		local X_Size = tonumber(Number) == nil and 0.07 or 0.1
+		local X_Size = tonumber(Number) == nil and 0.09 or 0.065
 		if IsText then 
 			X_Size = 0.09
 		end
@@ -166,7 +166,7 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 		Object.Parent = Indicator.Holder.Main
 
 		Object.UIStroke.Thickness = 0
-		Effects:Tween(Object.UIStroke, {.35, 'Quad'}, {Thickness = 0.12})
+		Effects:Tween(Object.UIStroke, {.175, 'Quad'}, {Thickness = 0.12})
 		if (Data.Critical or Burst) and not Data.ForceStroke then
 			Object.UIStroke.Color = White
 			Effects:Tween(Object.UIStroke, {.3}, {Color = Color3.fromRGB(115, 115, 115)})

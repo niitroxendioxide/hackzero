@@ -279,8 +279,17 @@ function ServerEnemy:IsAirborne()
 	return self:GetState() == 'Airborne'
 end
 
+function ServerEnemy.ApplyTrueStun(self: Types.ServerEnemyClass, Duration: number)
+	if self:IsTrueStun() then
+		return
+	end
+
+	self:Move(vector.zero);
+	self:SwitchState('TrueStun', Duration)
+end
+
 function ServerEnemy.Stun(self: Types.ServerEnemyClass, Time: number, is_airborne: boolean): ()
-	if self:IsFrozen() then
+	if self:IsFrozen() or self:IsTrueStun() then
 		return
 	end
 
@@ -407,7 +416,7 @@ function ServerEnemy.Move(self: Types.ServerEnemyClass, Direction: Vector3 | vec
 		return
 	end
 
-	if self:IsFrozen() then
+	if self:IsFrozen() or self:IsTrueStun() then
 		self.__Movement:Move(vector.zero)
 
 		return
@@ -533,8 +542,12 @@ function ServerEnemy:GetHealth()
 	return self.__Status:GetHealth()
 end
 
+function ServerEnemy:IsTrueStun()
+	return self:GetState() == 'TrueStun';
+end
+
 function ServerEnemy:Kill()
-	self:TakeDamage(9e24)
+	self:TakeDamage(9e99)
 end
 
 function ServerEnemy:TakeDaze(number: number)

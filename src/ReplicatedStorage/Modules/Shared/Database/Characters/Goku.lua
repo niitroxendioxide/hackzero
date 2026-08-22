@@ -214,7 +214,7 @@ return {
 				Walk_Time = 0.1,
 
 				Attack_State_Time = 0.5,
-				Animation_Speed = 1,				
+				Animation_Speed = 1,		
 
 				--
 				Sledge_Hammer_Effect = {
@@ -273,6 +273,8 @@ return {
 				Walk_Time = 5/60,
 				GroundExtraTime = 0.317,
 				DestructoDiskTime = 0.767,
+				AngrykamehamehaTime = 1.1,
+				Angry_Kame_Hit_Frequency = 1 / 15,
 
 				Knockback_Direction = Vector3.new(0, 0, 1),
 				Knockback_Strength = 3,
@@ -310,6 +312,23 @@ return {
 					Knockback = {
 						vector.create(0, 0, 1),
 						61,
+						0.2,
+					},
+				};
+
+				AngryKameHit = {
+					CanChainAttack = false,
+					Damage = 110;
+					Daze = 22;
+					Affliction_Buildup = 33;
+					Affliction = 'Energy';
+					HitType = 'Blunt';
+					Stun = .85;
+					Airborne = true;
+					HitsAirborne = true,
+					Knockback = {
+						vector.create(0, 0, 1),
+						10,
 						0.2,
 					},
 				};

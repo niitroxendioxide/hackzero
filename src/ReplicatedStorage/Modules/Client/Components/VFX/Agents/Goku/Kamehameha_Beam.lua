@@ -13,10 +13,17 @@ local Audio = require(Client.Libraries.Audio)
 
 local Cache = {}
 
-function Shoot(Caster)
-    local KameLength = 1.35;
-    local SizeSpeed = 1;
-    local Length = 100; 
+local function ShiftHue(Color: Color3, HueShift: number): Color3
+	local H, S, V = Color:ToHSV()
+	local NewHue = (H + HueShift) % 1
+	return Color3.fromHSV(NewHue, S, V)
+end
+
+function Shoot(Caster: Types.ClientAgent, Offset: CFrame?, Config: {}?, HueShift: number?)
+    Config = Config or {}
+    local KameLength = Config.Time or 1.35;
+    local SizeSpeed = Config.Speed or 1;
+    local Length = Config.Length or 100; 
 
     Audio:PlayFromDb('Effects/Goku/Kame_Blast', Caster:GetPivot().Position)
 
@@ -25,14 +32,37 @@ function Shoot(Caster)
     Highlight.OutlineTransparency = 1
     Highlight.FillTransparency = 0.75
     Highlight.DepthMode = Enum.HighlightDepthMode.Occluded
-    Highlight.Parent = Caster:GetAppearance():GetModel()
+    Highlight.Parent = Caster:GetModel()
 
     --
-    local At = Caster:GetPivot() * CFrame.new(0, 0.078, -4.41)
+    local BaseCF = CFrame.lookAlong(Caster:GetModel():GetPivot().Position, Caster:GetPivot().LookVector)
+    local At = BaseCF * (Offset or CFrame.new(0, 0.078, -4.41))
     local Beam = EffectUtil:Create(GokuAssets.Kamehameha.Beam, 2.5)
     local Aura = EffectUtil:Create(GokuAssets.Kamehameha.Aura, 2.5)
 
-    Aura:PivotTo(Caster:GetPivot())
+    if typeof(HueShift) == 'number' and (math.abs(HueShift :: number) > 0) then
+        HueShift = (HueShift / 360);
+
+        for _, Descendant in Beam:GetDescendants() do
+            if Descendant:IsA('BasePart') then
+                Descendant.Color = ShiftHue(Descendant.Color, HueShift)
+            elseif Descendant:IsA('Beam') or Descendant:IsA("ParticleEmitter") then
+                local NewValue = ShiftHue(Descendant.Color.Keypoints[1].Value, HueShift)
+                    
+                Descendant.Color = ColorSequence.new(NewValue)
+            end
+        end
+
+        for _, Descendant in Aura:GetDescendants() do
+            if Descendant:IsA('Beam') or Descendant:IsA("ParticleEmitter") then
+                local NewValue = ShiftHue(Descendant.Color.Keypoints[1].Value, HueShift)
+                    
+                Descendant.Color = ColorSequence.new(NewValue)
+            end
+        end
+    end
+
+    Aura:PivotTo(Caster:GetModel():GetPivot())
     Beam:PivotTo(At)
 
     for _, Ball in Beam.Ball:GetChildren() do
@@ -102,7 +132,7 @@ function Shoot(Caster)
         })
     end
 
-    local Cast = EffectUtil:CastMapRaycast(At, vector.create(0, -25))
+    local Cast = EffectUtil:CastMapRaycast(At, vector.create(0, -4.5))
     if Cast then
         Beam.GroundFX.Size *= vector.create(1, 1, 0)
         Beam.GroundFX.CFrame = CFrame.lookAlong(Cast.Position, At.LookVector)
@@ -111,7 +141,8 @@ function Shoot(Caster)
             Size = vector.create(Beam.GroundFX.Size.X, Beam.GroundFX.Size.Y, Length),
             CFrame = CFrame.lookAlong(Cast.Position, At.LookVector) * CFrame.new(0, 0, -Length/2)
         })
-
+    else
+        EffectUtil:Toggle(Beam.GroundFX, false)
     end
 
     --
@@ -199,7 +230,7 @@ local function GetBallCF(Caster: Types.Caster)
 end
 
 ---
-return function(Caster: Types.Caster, State: boolean): ()
+return function(Caster: Types.Caster, State: boolean, Offset: CFrame?, Config: {}, HueShift: number?): ()
     --
 
     if State then
@@ -208,7 +239,7 @@ return function(Caster: Types.Caster, State: boolean): ()
             Cache[Caster] = nil
         end
 
-        Shoot(Caster)
+        Shoot(Caster, Offset, Config, HueShift)
     else
         Cache[Caster] = Audio:PlayFromDb('Effects/Goku/Kame_Startup', Caster:GetPivot().Position)
 

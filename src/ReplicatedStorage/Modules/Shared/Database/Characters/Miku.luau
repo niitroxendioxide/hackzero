@@ -178,23 +178,30 @@ return {
 		['Dodge Counter'] = {
             Base = {
                 Cooldown = 0.2,
-                Attack_State_Time = 0.65,
+                Attack_State_Time = 1.5,
                 Speed = 1,
                 Animation_Speed = 1,
 
-				CustomVerify = true,
-
 				HitData = {
-					Damage = 450,
+					Damage = 375,
 					Daze = 175,
 					Affliction = "Ice",
 					Affliction_Buildup = 100,
 					HitType = "Blunt",
+					Knockback = {
+						vector.create(0, 0, 1),
+						18,
+						0.2
+					},
 				},
             },
 
 			Upgrade = {
-
+				HitData = {
+					Damage = 1,
+					Daze = 3,
+					Affliction_Buildup = 0.5,
+				}
 			}
         },
 

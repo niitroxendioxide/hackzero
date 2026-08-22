@@ -13,7 +13,7 @@ local MikuGameplayController = require(script.Parent.MikuGameplayController)
 local Ability = AbilityClass.new()
 
 function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
-	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
+	local SkillLevel = Caster:GetSkillLevel(Ability.Name)
 	local HitData = Ability:FromData("HitData", nil, SkillLevel)
 	local AttackStateTime = Ability:FromData("Attack_State_Time")
 
@@ -22,15 +22,24 @@ function Ability:Play(Caster: Types.ServerAgentClass, s, t, Context)
 			Caster:SwitchState("Attacking", AttackStateTime)
 		end},
 
-		{0.45, function()
+		{0, 1.1, function()
+			Caster:LookAtTarget(Context.Target)
 		end},
 
-		{0.85, function()
-			if Context.Target then
-				MikuGameplayController:AddFanStateStack(Context.Target, 6)
+		{0.767, function()
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -4.75), vector.one * 10, function(Enemy)
+				MikuGameplayController:AddFanStateStack(Context.Target, 2)
 
 				Ability:Hit(Caster, Context.Target, HitData)
-			end
+			end)
+		end},
+
+		{1.183, function()
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -13), vector.one * 10, function(Enemy)
+				MikuGameplayController:AddFanStateStack(Context.Target, 2)
+
+				Ability:Hit(Caster, Context.Target, HitData)
+			end)
 		end}
 	})
 end

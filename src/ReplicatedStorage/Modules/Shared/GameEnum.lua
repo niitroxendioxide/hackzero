@@ -223,7 +223,7 @@ return {
 		SWITCH_ASSIST_DODGE = 'DodgeAssistFollowup',
 	},
 
-	Agent_States = {"Attacking", "Dashing", "Idle", "Frozen", "Stunned", "Airborne"},
+	Agent_States = {"Attacking", "Dashing", "Idle", "Frozen", "Stunned", "Airborne", "TrueStun"},
 	PartyStates = {
 		Idle = 1,
 		Queueing = 2,

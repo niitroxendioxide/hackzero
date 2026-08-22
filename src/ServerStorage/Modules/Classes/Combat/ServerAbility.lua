@@ -41,6 +41,7 @@ function ServerAbilityClass.new(): Types.ServerAbilityClass
 
 	local self = setmetatable({}, ServerAbilityClass)
 	self.__Cache = {}
+	self.Name = ConvertedId;
 	self.__Name = ConvertedId
 	self.__Skill_Type = EnumVal
 	self.__Cooldown = Signal.new()
