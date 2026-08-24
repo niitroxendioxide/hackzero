@@ -19,6 +19,7 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
 	local Attack_State_Time = Ability:FromData("Attack_State_Time")
 	local Hit_Count = Ability:FromData('Hit_Count')
 	local Hit_Frequency = Ability:FromData('Hit_Frequency')
+	local Run_Time = Ability:FromData('Raikiri_Run_Time')
 	local Single_Hit = false;
 
 	local Track: AnimationTrack = nil;
@@ -33,10 +34,10 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
 		{0.4, function()
 			Track:Stop(0)
 			Track = Ability:PlayAnimation(Caster, "Kakashi.Abilities.Special.RaikiriRun", {Speed = 1.5, Fade = 0.15, Loop = true})
-			Caster:Walk(0.5, 1.3, true)
+			Caster:Walk(Run_Time, 0.9, true)
 		end},
 
-		{0.4, 0.9, function()
+		{0.4, 0.4 + Run_Time, function()
 			if Single_Hit then
 				return
 			end
@@ -67,6 +68,7 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
 						EffectData = {
 							HueShift = 190,
 							Highlight = true,
+							Weld = true,
 							HighlightColor = Color3.fromRGB(170, 251, 255)
 						}
 					})
@@ -76,10 +78,17 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
 			end)
 		end},
 
-		{1, function()
+		{0.4 + Run_Time, function()
 			if Track.IsPlaying then
 				Track:Stop(.15)
 			end
+
+			if not Single_Hit then
+				Caster:ImpulseForward(35 * 0.9, 0.75)
+				Caster:SwitchState(Types.CHARACTER_STATES.Attacking, 0.3)
+				Ability:PlayAnimation(Caster, "Kakashi.Abilities.Special.RaikiriRunStop", {Speed = 1, Fade = 0})
+			end
+
 			Ability:Effect("Kakashi_Raikiri", Caster, 'Delete')
 		end,},
 	})

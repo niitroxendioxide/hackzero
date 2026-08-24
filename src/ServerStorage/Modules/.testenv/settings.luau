@@ -49,7 +49,7 @@ return table.freeze({
     USE_BORROW = true, -- whether to replace agents with lvl 60 max
     BORROWED_AGENT_LEVEL = 60,
     CHARACTERS_INVINCIBLE = false,
-    STUDIO_ENERGY_MULT = 25,
+    STUDIO_ENERGY_MULT = 50,
     STUDIO_HIT_ENERGY_MULT = 1,
 
     TEST_COMPANION = '8bdc68f8-cb56-4576-a193-689bb87043df',
@@ -61,7 +61,7 @@ return table.freeze({
 
     --REPLACE_AFFLICTION = 'Fire',
     TEST_AGENT_ARTIFACTS = {
-        Goku = {
+        Kakashi = {
             'FourLeafGrimoire',
             'FourLeafGrimoire',
             'FourLeafGrimoire',

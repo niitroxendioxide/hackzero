@@ -326,6 +326,10 @@ function AgentClass:Walk(Time: number, Mod: number?, Linear: boolean?)
 		self.__Character.__Controller:RemoveForwardImpulse(self.__current_walking_object)
 	end
 
+	if Time <= 0 then
+		return
+	end
+
 	local Object = self:ImpulseForward(Speed * 1.5 * Mod, Time, Linear)
 	self.__current_walking_object = Object
 
@@ -337,6 +341,10 @@ function AgentClass:WalkBack(Time: number, Mod: number?, Linear: boolean)
 
 	if self.__current_walking_object then
 		self.__Character.__Controller:RemoveForwardImpulse(self.__current_walking_object)
+	end
+
+	if Time <= 0 then
+		return
 	end
 
 	local Speed = self.__Character.__States:GetSpeed(true)

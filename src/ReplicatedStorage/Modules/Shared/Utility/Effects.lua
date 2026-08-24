@@ -1,4 +1,5 @@
 --
+local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -284,6 +285,28 @@ function EffectUtil:Create<T>(Asset: T & Instance, Time: number?, Parent: Instan
 	local DeleteThread = EffectUtil:CleanUp(Cloned, Time or 100000)
 
 	return Cloned :: T, DeleteThread
+end
+
+function EffectUtil:ImpactFrame(Time: number, Contrast: number?, Saturation: number?, Brightness: number?, TintColor3: Color3?)
+	Time = Time or 1 / 12
+	
+	local ImpactFramesEnabled = Settings:Get('ImpactFrames', 'Graphics')
+	print(ImpactFramesEnabled)
+	if not ImpactFramesEnabled then
+		local h_cc = Instance.new("ColorCorrectionEffect")
+		EffectUtil:CleanUp(h_cc, Time)
+		return h_cc
+	end
+
+	local newCorrection = Instance.new("ColorCorrectionEffect")
+    newCorrection.Saturation = Saturation or -1.3
+    newCorrection.Contrast = Contrast or -2
+    newCorrection.Brightness = Brightness or 0
+    newCorrection.Parent = Lighting
+
+	EffectUtil:CleanUp(newCorrection, Time)
+
+	return newCorrection
 end
 
 local FACES = {

@@ -49,8 +49,15 @@ function ServerAbilityClass.new(): Types.ServerAbilityClass
 	self.__Hit = Signal.new()
 	self.__Ability_Data = {}
 	self.__Held = {}
+	self.__Cancel_Handler = nil
 
 	return self
+end
+
+function ServerAbilityClass.OnCancel(self: Types.ServerAbilityClass, Handler: (Caster: AgentTypes.ServerAgentClass) -> ())
+	if self.__Cancel_Handler == nil and typeof(Handler) == 'function' then
+		self.__Cancel_Handler = Handler
+	end
 end
 
 function ServerAbilityClass:Play(Agent: AgentTypes.ServerAgentClass)
@@ -692,6 +699,9 @@ function ServerAbilityClass.Cancel(self: Types.ServerAbilityClass, Caster: Agent
 	end
 
 	Caster:SwitchState("Idle", 0)
+	if typeof(self.__Cancel_Handler) == 'function' then
+		task.spawn(self.__Cancel_Handler, Caster)
+	end
 
 	local SkillId = GameEnum.Skills[self.__Name]
 	if not SkillId or Context.ClientInstruction == true then

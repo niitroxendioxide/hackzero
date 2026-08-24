@@ -249,6 +249,7 @@ export type ServerAbilityClass = {
 	Save: (self: ServerAbilityClass, Caster: any, Key: string, Value: any) -> (),
 	Get: (self: ServerAbilityClass, Caster: any, Key: string) -> any,
 	Increase: (self: ServerAbilityClass, Caster: any, Key: string, Data: {Rate: number, Limit: number}?) -> (),
+	OnCancel: (self: ServerAbilityClass, (Caster: ServerAgent) -> ()) -> (),
 
 	ForceRelease: (self: ServerAbilityClass, Caster: Caster) -> (),
 

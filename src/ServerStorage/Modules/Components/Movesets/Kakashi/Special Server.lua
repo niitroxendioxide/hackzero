@@ -13,6 +13,10 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 --
 local Ability = AbilityClass.new()
 
+Ability:OnCancel(function(Caster: Types.ServerAgent)
+	Caster:Walk(0, 1)
+end)
+
 function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 	local HitData = Table.CopyDeep(Ability:FromData("Hit", nil, SkillLevel))
@@ -20,6 +24,7 @@ function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
 	local Hit_Count = math.floor(Ability:FromData('Hit_Count', nil, SkillLevel + 1))
 	local Hit_Frequency = Ability:FromData('Hit_Frequency')
 	local Single_Hit = false;
+	local Run_Time = Ability:FromData('Raikiri_Run_Time')
 
 	Ability:Begin(Caster, {
 		{0, function()
@@ -27,11 +32,10 @@ function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
 		end},
 
 		{0.4, function()
-			Caster:Walk(0.5, 1, true)
-			
+			Caster:Walk(Run_Time, 0.9, true)
 		end},
 
-		{0.4, 0.9, function()
+		{0.4, 0.4 + Run_Time, function()
 			if Single_Hit then
 				return;
 			end
@@ -61,6 +65,13 @@ function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
 					task.wait(Hit_Frequency)
 				end
 			end)
+		end},
+
+		{0.4 + Run_Time, function()
+			if not Single_Hit then
+				Caster:ImpulseForward(35 * 0.9, 0.75)
+				Caster:SwitchState(Types.CHARACTER_STATES.Attacking, 0.3)
+			end
 		end}
 	})
 end

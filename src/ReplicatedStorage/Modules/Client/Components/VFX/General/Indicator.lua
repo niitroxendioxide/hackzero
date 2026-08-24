@@ -134,7 +134,10 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 		Indicator.Position = At:GetModel():GetPivot().Position
 		Indicator.Name = At:GetId()..'indicatorobj'
 
-		Effects:Tween(Indicator, {.4, 'Back'}, {Position = Indicator.Position + AdditionalPosition + Effects:RandomV3() * Effects:Random(0.8, 1.3)})
+		local sX, sZ = (math.random(1, 2) == 1 and -1 or 1), (math.random(1, 2) == 1 and -1 or 1)
+		local Offset = vector.create(Effects:Random(1.8, 4.75) * sX, 0, Effects:Random(1.8, 4.5) * sZ)
+
+		Effects:Tween(Indicator, {.4, 'Back'}, {Position = Indicator.Position + AdditionalPosition + Offset})
 	else
 		Indicator.Position = (typeof(At) == 'Vector3' and At or (At :: CFrame).Position) + AdditionalPosition
 	end

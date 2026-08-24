@@ -32,12 +32,7 @@ return function(
 
 
 	if Caster.__Player_Assigned == Players.LocalPlayer then
-		local CC = Instance.new("ColorCorrectionEffect")
-		CC.Contrast = -4;
-		CC.Saturation = -1;
-		CC.Parent = Lighting;
-	
-		Effects:CleanUp(CC, 1 / 10)
+		Effects:ImpactFrame(1 / 10, -4, -1)
 	end
 	
 	---

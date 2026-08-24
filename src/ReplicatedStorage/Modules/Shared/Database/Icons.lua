@@ -156,10 +156,10 @@ return {
 
 	Elements = {
 		Ice = PREFIX .. 108516110153642,
-		Fire = PREFIX .. 71851600908599,
-		Physical = PREFIX .. 135264772222943,
+		Fire = PREFIX .. 109029646273443,
+		Physical = PREFIX .. 89686819926304, -- PREFIX .. 135264772222943,
 		Water = PREFIX .. 89916641703745,
-		Electric = PREFIX .. 114411657809403,
+		Electric = PREFIX .. 94116916991739,
 		Energy = PREFIX .. 131830988316888,
 		Earth = PREFIX .. 108297083537522,
 		Wind = PREFIX .. 88351380181917,
@@ -179,14 +179,14 @@ return {
 
 			Physical = {
 				Main = White,
-				Meter = RGB(255, 205, 124),
+				Meter = RGB(255, 197, 147),
 				Gradient = Sequence{Key(0, White), Key(0.5, White), Key(1, RGB(98, 52, 0))}
 			},
 
 			Electric = {
 				Main = White,
-				Meter = RGB(53, 130, 255),
-				Gradient = Sequence{Key(0, RGB(0, 34, 255)), Key(0.337, RGB(24, 93, 255)), Key(0.628, RGB(5, 183, 255)), Key(1, White)}
+				Meter = RGB(32, 121, 255),
+				Gradient = Sequence{Key(0, White), Key(1, White)}
 			},
 
 			Wind = {
@@ -196,8 +196,8 @@ return {
 			},
 
 			Fire = {
-				Main = RGB(255, 255, 255), -- the icon
-				Meter = RGB(255, 81, 0), -- the circle
+				Main = White, -- the icon
+				Meter = RGB(255, 65, 32), -- the circle
 				Gradient = Sequence{Key(0, White), Key(1, White)}, -- icon gradient
 			},
 

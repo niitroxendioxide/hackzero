@@ -132,6 +132,9 @@ return {
 				Animation_Speed = 1,
 				Hit_Frequency = 0.05,
 				Hit_Count = 5,
+				Range = 100,
+				Raikiri_Run_Time = .5,
+				Required_Energy = 40,
 
 				Hit = {
 					Damage = 87,
@@ -153,7 +156,37 @@ return {
 				Hit = {
 					Damage = 2,
 					Daze = 0.2,
-					Affliction_Buildup = 3,
+					Affliction_Buildup = 2,
+				},
+			},
+		},
+
+		['EX Special'] = {
+			Base = {
+				Attack_State_Time = 2,
+				Speed = 1,
+				Range = 100,
+				Required_Energy = 40,
+				First_Run_Time = .5,
+				Second_Run_Time = .5,
+
+				Sosenko_Hit_Max = 6,
+				Sosenko_Hit_Frequency = 0.06,
+
+				Hit = {
+					Damage = 117,
+					Stun = 0.3,
+					Daze = 22,
+					Affliction = 'Electric',
+					Affliction_Buildup = 93,
+				},
+			},
+
+			Upgrade = {
+				Hit = {
+					Damage = 1.5,
+					Daze = 0.5,
+					Affliction_Buildup = 2.25,
 				},
 			},
 		}

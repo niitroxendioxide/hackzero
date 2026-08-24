@@ -32,15 +32,9 @@ return function(
     Highlight.OutlineColor = Color3.new(1, 1, 1)
     Highlight.OutlineTransparency = 1
 
-    local newCorrection = Instance.new("ColorCorrectionEffect")
-    newCorrection.Saturation = -1.3
-    newCorrection.Contrast = -2
-    newCorrection.Brightness = 0.05
-    newCorrection.Parent = Lighting
-
+    local newCorrection = Effects:ImpactFrame(1 / 12, -2, -1.3, 0.05)
     Effects:Tween(newCorrection, { 1 / 12 }, { Contrast = -2, Saturation = 0 })
 
-    Effects:CleanUp(newCorrection, 1 / 12)
     Effects:CleanUp(Highlight, 1 / 12)
 
     ---
