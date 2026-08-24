@@ -1,5 +1,6 @@
 return {
 	Display_Name = 'Genichi Sojo',
+	Is_Boss = true,
 
 	Appearance = {
 		Height = 3

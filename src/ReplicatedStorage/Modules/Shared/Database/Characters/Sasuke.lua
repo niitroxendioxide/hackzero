@@ -25,7 +25,7 @@ return {
 		Attack = 137,
 		Defense = 49,
 		Critical_Rate = 10, -- %
-		Critical_Damage = 20,
+		Critical_Damage = 35,
 		Penetration = 0,
 		Pen_Ratio = 0,
 		Daze = 90,
@@ -44,6 +44,7 @@ return {
 		Health = 122.75,
 		Attack = 6.7,
 		Defense = 9.12,
+		Critical_Damage = 0.15,
 	},
 
 	Moveset_Data = {

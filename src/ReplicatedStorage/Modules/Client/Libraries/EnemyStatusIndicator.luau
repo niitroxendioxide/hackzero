@@ -63,7 +63,7 @@ function Lib:UpdateDaze(Id: number, TotalDaze: number)
     Gui.Meters.StunPercent.Text = math.floor(DazeValue * 100)
     Gui.Meters.StunPercentBG.Text = Gui.Meters.StunPercent.Text
 
-    Gui.Meters.StunDamageBonus.Visible = IsDazed and DazeValue >= 1
+    Gui.Meters.StunDamageBonus.Visible = IsDazed and DazeValue >= 0.01
 
     local Mult = math.clamp((TotalDaze / Enemy:GetStat("Max_Daze")) / 0.25, 0, 1)
     if IsDazed then

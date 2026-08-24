@@ -495,7 +495,7 @@ function AbilityClass.Hit(self: Types.AbilityClass, Caster: any, Target: any, Da
 	local HitstopDuration = Data.HitstopDuration
 	local Sequence = self:Get(Caster, 'CurrentPlayerSequence')
 	local Animations = self:Get(Caster, "CurrentSkillSavedObjects")
-	local CancelHitDueToAirborne = (Target.__Appearance:GetAddedHeight() > 0 and not(Data.HitAirborne or Data.HitsAirborne))
+	local CancelHitDueToAirborne = (Target.__Appearance and Target.__Appearance:GetAddedHeight() > 0 and not(Data.HitAirborne or Data.HitsAirborne))
 	if CancelHitDueToAirborne then
 		return
 	end

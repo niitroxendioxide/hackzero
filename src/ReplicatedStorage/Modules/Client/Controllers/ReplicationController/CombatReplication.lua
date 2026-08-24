@@ -219,7 +219,7 @@ function Controller:DisplayDamage(Buffer: buffer)
 	local EnemyObject = Enemies:GetEnemy(EnemyId)
 
 	if EnemyObject == nil then
-		Type = 'Shatter'
+		--Type = 'Shatter'
 		EnemyObject = Enemies.__Last_Enemy_Pos[EnemyId]
 	else
 		EnemyOverheadGui:UpdateHealth(EnemyId, EnemyHealth)

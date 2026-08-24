@@ -2,10 +2,9 @@ return {
 	Display_Name = 'Ataque Zakashi',
 	Nickname = 'Zakashi',
 	Element = 'Electric',
-	Role = 'Attack',
+	Role = 'Affliction',
 	Tier = "Mythical",
 	Faction = "Team 7",
-
 	
 	IconGlowColor = Color3.fromRGB(51, 106, 245),
 
@@ -14,9 +13,8 @@ return {
 	},
 
 	ImportantStats = {
-		'Attack',
+		'Affliction_Aptitude',
         'Critical_Rate',
-		'Critical_Damage',
 	},
 
 	--
@@ -28,16 +26,16 @@ return {
 		Critical_Damage = 20,
 		Penetration = 0,
 		Pen_Ratio = 0,
-		Daze = 90,
+		Daze = 45,
 		Speed = 1,
 		Energy_Regeneration = 1.2,
-		Affliction_Aptitude = 25,
+		Affliction_Aptitude = 120,
 		Affliction_Facility = 11,
 
 		--
 		Walk_Speed = 10,
-		Jog_Speed = 24,
-		Sprint_Speed = 34,
+		Jog_Speed = 25,
+		Sprint_Speed = 36,
 	},
 
 	Level_Stats = {
@@ -125,6 +123,40 @@ return {
 				}
 			},
 		},
+
+		['Special'] = {
+			Base = {
+				Cooldown = 1,
+				Attack_State_Time = 1,
+				Speed = 1,
+				Animation_Speed = 1,
+				Hit_Frequency = 0.05,
+				Hit_Count = 5,
+
+				Hit = {
+					Damage = 87,
+					Stun = 0.275,
+					Daze = 17,
+					Affliction = 'Electric',
+					Affliction_Buildup = 90,
+				},
+
+				KnockbackData = {
+					vector.create(0, 0, 1),
+					12,
+					0.2
+				},
+			},
+
+			Upgrade = {
+				Hit_Count = 0.05,
+				Hit = {
+					Damage = 2,
+					Daze = 0.2,
+					Affliction_Buildup = 3,
+				},
+			},
+		}
 	},
 
 	Ascension_Data = {

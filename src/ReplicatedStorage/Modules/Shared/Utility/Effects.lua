@@ -277,7 +277,9 @@ function EffectUtil:Create<T>(Asset: T & Instance, Time: number?, Parent: Instan
 	end
 
 	local Cloned = (Asset :: Instance):Clone()
-	Cloned.Parent = Parent or Effects_Folder:FindFirstChild(Name)
+	if Parent ~= false then
+		Cloned.Parent = typeof(Parent) ~= 'nil' and Parent or Effects_Folder:FindFirstChild(Name)
+	end
 
 	local DeleteThread = EffectUtil:CleanUp(Cloned, Time or 100000)
 

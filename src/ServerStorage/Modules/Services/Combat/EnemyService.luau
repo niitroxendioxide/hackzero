@@ -85,6 +85,8 @@ function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string
 		return
 	end
 
+	print(Type, 'enemy spawned')
+
 	if Type == "any" then
 		local EnemyNames = EnemiesDatabase:GetAllEnemyNames()
 

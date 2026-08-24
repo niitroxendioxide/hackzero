@@ -114,7 +114,7 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 	local IsAgent = string.match(tostring(Agent), 'Agent')
 
 	if not(Context.IsSignal) and RunService:IsClient() and IsAgent then
-		if Type == "Special" and (Agent:GetEnergy() >= Info.Base.Required_Energy) then
+		if Type == "Special" and (Agent:GetEnergy() >= (Info.Base and Info.Base.Required_Energy or 1e10)) then
 			Type = "EX Special"
 
 			Info = self:GetInfoForSkill('EX Special')
