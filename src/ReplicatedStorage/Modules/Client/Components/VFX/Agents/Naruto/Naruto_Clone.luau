@@ -12,6 +12,7 @@ local AnimLib = require(Client.Libraries.Animation)
 local Effects = require(Shared.Utility.Effects)
 
 local EffectsLib = require(Client.Libraries.Effects)
+local InstanceCache = require(Client.Utility.Effects.InstanceCache)
 
 local Cache = {}
 
@@ -47,14 +48,21 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
     AnimationData = AnimationData or {}
 
     ---
+    local PoolId = Caster.__Player_Assigned.UserId .. "naruto_clone_pool"
     local NarutoVfx = Assets.Effects.Agents.Naruto
     local CasterAppearance = Caster:GetAppearance()
-    local ModelClone = CasterAppearance:CloneModel()
-    if ModelClone:FindFirstChildOfClass("Highlight") then
-        while ModelClone:FindFirstChildOfClass("Highlight") do
-            ModelClone:FindFirstChildOfClass("Highlight"):Destroy()
+    if not InstanceCache:DoesPoolExist(PoolId) then
+        local BaseModelClone = CasterAppearance:CloneModel()
+        if BaseModelClone:FindFirstChildOfClass("Highlight") then
+            while BaseModelClone:FindFirstChildOfClass("Highlight") do
+                BaseModelClone:FindFirstChildOfClass("Highlight"):Destroy()
+            end
         end
+
+        InstanceCache:CreatePoolFor(PoolId, BaseModelClone, 2, true)
     end
+
+    local ModelClone = InstanceCache:RetrieveFromPool(PoolId)
 
     ModelClone.PrimaryPart.Anchored = true
     ModelClone.Parent = Effects:GetParent(script.Name)
@@ -132,7 +140,8 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
             SmokeEffect:PivotTo(ModelClone.Torso.CFrame)
             Effects:Emit(SmokeEffect, true)
         end
-        ModelClone:Destroy()
+
+        InstanceCache:StoreInPool(PoolId, ModelClone)
     end)
 
     if AnimationData.Id == nil then
@@ -154,6 +163,6 @@ return function(Caster: Types.AgentClass, Time: number?, Offset: CFrame?, Animat
         end
 
         Effects:Emit(SmokeEffect, true)
-        ModelClone:Destroy()
+        InstanceCache:StoreInPool(PoolId, ModelClone)
     end
 end

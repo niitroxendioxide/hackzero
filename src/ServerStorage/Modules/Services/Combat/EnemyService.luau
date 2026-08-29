@@ -41,7 +41,9 @@ function Service:Init()
 	Service.EventEnemiesCleared = Signal.new();
 
 	local EnemyUpdateTime = os.clock()
-	RunService.Heartbeat:Connect(function(rawDelta: number)
+
+	-- (used to have native tag)
+	local function UpdateEnemies(rawDelta: number)
 		if (os.clock() - EnemyUpdateTime) < 1 / 24 then
 			return
 		end
@@ -52,7 +54,9 @@ function Service:Init()
 		for _, Enemy in Service.__EnemyCache do
 			Enemy:Update(Delta)
 		end
-	end)
+	end
+
+	RunService.Heartbeat:Connect(UpdateEnemies)
 end
 
 function Service:LoadEnemies(Player: Player)
@@ -84,8 +88,6 @@ function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string
 	if not EnemiesDatabase:GetEnemyData(Type) and Type ~= "any" then
 		return
 	end
-
-	print(Type, 'enemy spawned')
 
 	if Type == "any" then
 		local EnemyNames = EnemiesDatabase:GetAllEnemyNames()

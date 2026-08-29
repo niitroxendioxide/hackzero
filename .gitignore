@@ -42,5 +42,6 @@ luac.out
 
 # Wally and stuff
 .vscode
+wally.lock
 Packages
 
