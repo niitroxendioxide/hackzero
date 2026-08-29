@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local World = require(ReplicatedStorage.Modules.Shared.World)
 local Mock = require(Shared.Utility.Mock)
 local Settings = require(Client.Packages.Settings)
+local ForgeVFX = require(ReplicatedStorage.Packages.ForgeVFX)
 
 local Non_Effects = {'Indicator', 'EnemyStats', 'Barrier', 'Warning'}
 local Effects = {
@@ -27,6 +28,8 @@ function Effects:Init()
 			end
 		end
 	end
+
+	ForgeVFX:init();
 end
 
 function Effects:Play(Name: string, ...)

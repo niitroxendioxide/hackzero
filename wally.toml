@@ -1,5 +1,5 @@
 [package]
-name = ""--- just a name of the file pretty sure in the github
+name = "niitroxen/hackzero"
 version = "0.1.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
@@ -14,3 +14,4 @@ spr = "blackjackiee/spr@1.1.3"
 profileservice = "lipetos/profileservice@0.1.0"
 behaviortree3 = "lipetos/behaviortree3@0.1.0"
 simplepath = "lipetos/simplepath@0.1.2"
+ForgeVFX = "zilibobi/forge-vfx@2.4.0"

@@ -10,6 +10,7 @@ local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
 local Types = require(Shared.Types.Agents)
 local Effects = require(Shared.Utility.Effects)
 local LightningBolt = require(Client.Utility.Libraries.LightningBolt)
+local ForgeVFX = require(ReplicatedStorage.Packages.ForgeVFX)
 
 local Offset = CFrame.new(-0.013, -0.793, 0.033)
 local Cache = {}
@@ -64,7 +65,7 @@ end
 ---
 return function(Caster: Types.AgentClass, State: string, ...): ()
     local Args = {...}
-    
+
     local UseBothArms = Args[1]
     local KakashiVfx = Assets.Effects.Agents.Kakashi
     local Model = typeof(Caster) == 'Instance' and Caster:IsA("Model") and Caster or Caster:GetModel()
