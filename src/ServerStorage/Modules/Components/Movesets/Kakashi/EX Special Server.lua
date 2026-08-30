@@ -106,6 +106,7 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 				return	
 			end
 
+			Caster:Walk(0)
 			Caster:ImpulseForward(8, 0.75)
 			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, 0.3)
 			self:Destroy()

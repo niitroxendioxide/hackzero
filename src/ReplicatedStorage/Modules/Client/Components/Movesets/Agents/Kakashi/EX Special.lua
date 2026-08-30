@@ -148,6 +148,7 @@ const function CastSosenko(Caster: Types.ClientAgent, Context: Types.ClientSkill
 				Track:Stop(0.15)
 			end
 
+			Caster:Walk(0)
 			Caster:ImpulseForward(8, 0.75)
 			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, 0.3)
 			Ability:PlayAnimation(Caster, "Kakashi.Abilities.Special.RaikiriRunStop", {Speed = 1, Fade = 0})

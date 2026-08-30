@@ -78,6 +78,10 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
         CastEffect:PivotTo(Caster:GetModel():GetPivot());
         Effects:Emit(CastEffect, true)
 
+        local NewShockwave = Effects:Create(Effects.General.Shockwaves.SmallGroundWind, 2.25)
+        NewShockwave:PivotTo(Caster:GetModel():GetPivot() * CFrame.new(0, -2.5, -0.7))
+        ForgeVFX.emit(NewShockwave)
+
         local EffectsList = {}
         local ArmsToUse = {RightArm, if UseBothArms then LeftArm else nil};
         for _, Arm in ArmsToUse do
@@ -124,7 +128,7 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
 
                         local Cast = Effects:CastMapRaycast(BasePos + Offset, vector.create(0, -7))
                         if Cast then
-                            CreateBolt(Caster:GetModel(), Cast)
+                            --CreateBolt(Caster:GetModel(), Cast)
                         end
                     end
     

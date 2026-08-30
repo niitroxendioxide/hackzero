@@ -6,7 +6,13 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService('TweenService')
 
 --
-local EffectUtil = {}
+local EffectUtil = {
+	General = nil :: Folder?,
+}
+
+if RunService:IsClient() then
+	EffectUtil.General = ReplicatedStorage.Assets:WaitForChild("Effects"):WaitForChild("General")
+end
 
 local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
