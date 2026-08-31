@@ -108,7 +108,8 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
             table.insert(EffectsList, RaikiriVFX)
         end
         
-        local Thread = task.spawn(function()
+        Cache[Caster] = {VFX = EffectsList, Thread = nil, Active = true}
+        Cache[Caster].Thread = task.spawn(function()
             local Disabled = Settings:Get('DisableLightningEffects', 'Graphics');
             if Disabled then
                 return;
@@ -119,6 +120,11 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
             local Clock = os.clock()
 
             while true do
+                if Cache[Caster].Active == false then
+                    task.wait()
+                    continue
+                end
+
                 if (os.clock() - Clock) > (TimePer)  then
                     Clock = os.clock()
 
@@ -137,8 +143,6 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
                 task.wait()
             end
         end)
-
-        Cache[Caster] = {VFX = EffectsList, Thread = Thread}
     elseif State == 'Delete' then
         local Data = Cache[Caster]
         if not Data then
@@ -158,5 +162,25 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
         if typeof(Thread) == 'thread' and Thread ~= coroutine.running() then
             task.cancel(Thread)
         end
+    elseif State == 'PauseAndDelete' then
+        local WhichToDelete = Args[1]
+        local Data = Cache[Caster]
+        if not Data then
+            return
+        end
+
+        local Raikiris = Data.VFX
+        Data.Active = false;
+        if Raikiris[WhichToDelete] then
+            Effects:Toggle(Raikiris[WhichToDelete], false)
+            Effects:CleanUp(Raikiris[WhichToDelete], 0.5)
+        end
+    elseif State == 'Resume' then
+        local Data = Cache[Caster]
+        if not Data then
+            return
+        end
+
+        Data.Active = true;
     end
 end

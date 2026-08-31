@@ -102,7 +102,7 @@ return {
                     },
                     Enemies = {
                         [1] = {
-                            {Name = "Sorcerer", Amount = 4, Level = 60, Affected_Aura = false},
+                            {Name = "Sorcerer", Amount = 1, Level = 60, Affected_Aura = false},
                             --{Name = "SandShinobi", Amount = 1, Level = 60, Affected_Aura = true},
                         }
                     },

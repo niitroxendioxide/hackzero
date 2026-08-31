@@ -25,6 +25,7 @@ function Connect(Enemy: Types.Enemy, Caster: Types.ServerAgentClass, Offset: CFr
     local PlayerReplicationId = (Caster.__Player_Assigned:GetAttribute("ReplicationId") or 0)
     local AgentRelativeId = Agents:GetIdForPlayer(PlayerReplicationId, Caster)
 
+    Caster:SetEnemyCollisionState(false)
     Enemy:AddTag("Grabbed")
 
     local BufferObj = buffer.create(4)
@@ -40,8 +41,11 @@ function Disconnect(Enemy: Types.Enemy, Caster: Types.ServerAgentClass)
     local PlayerReplicationId = (Caster.__Player_Assigned:GetAttribute("ReplicationId") or 0)
     local AgentRelativeId = Agents:GetIdForPlayer(PlayerReplicationId, Caster)
 
-    
     Enemy:RemoveTag("Grabbed")
+
+    if (#Service:GetGrabbedEnemies(Caster) <= 0) then
+        Caster:SetEnemyCollisionState(true)
+    end
 
     local BufferObj = buffer.create(4)
     buffer.writeu8(BufferObj, 0, GameEnum.Replication.EndGrabEnemy)
@@ -56,7 +60,7 @@ function Service:GrabEnemy(Caster: Types.ServerAgentClass, Enemy: Types.Enemy, T
     local EnemyId = Enemy:GetId()
 
     if table.find(Service.__Enemies, EnemyId) then
-        return
+        return false
     end
 
     if Service.__Grabs[Caster] == nil then
@@ -75,14 +79,17 @@ function Service:GrabEnemy(Caster: Types.ServerAgentClass, Enemy: Types.Enemy, T
             table.remove(Service.__Enemies, Index);
         end
 
+        
         Service.__Grabs[Caster][EnemyId] = nil
 
         Enemy:SetGrabbedBy(nil, nil)
         Disconnect(Enemy, Caster)
     end)
+
+    return true
 end
 
-function Service:GetGrabbedEnemies(Caster: Types.ServerAgentClass, Enemy: Types.Enemy): { Types.Enemy }
+function Service:GetGrabbedEnemies(Caster: Types.ServerAgentClass): { Types.Enemy }
     local List = {};
 
     if not Service.__Grabs[Caster] then

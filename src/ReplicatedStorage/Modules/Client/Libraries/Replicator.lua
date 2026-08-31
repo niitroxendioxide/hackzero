@@ -125,7 +125,7 @@ function Controller:Replicate(Action: number, ...)
 end
 
 function Controller:GetPing(): number
-	return Controller.__Ping
+	return math.max(Controller.__Ping, 0)
 end
 
 return Controller

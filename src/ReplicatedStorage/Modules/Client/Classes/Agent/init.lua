@@ -157,6 +157,10 @@ function AgentClass:Kill()
 	task.delay(1, function()
 		self.__Locked = false
 	end)
+end	
+
+function AgentClass.SetEnemyCollisionState(self: AgentTypes.AgentClass, State: boolean)
+	self.__Character.__Controller:SetEnemyCollisionState(State);
 end
 
 function AgentClass:CanSwitch(): boolean

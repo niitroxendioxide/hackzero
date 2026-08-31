@@ -105,6 +105,7 @@ export type AgentClass =  {
 
 	LookAtTarget: (self: AgentClass, Target: ClientEnemy) -> (),
 	GetAppearance: (self: AgentClass) -> (Types.AppearanceController),
+	SetEnemyCollisionState: (self: AgentClass, State: boolean) -> (),
 
 	--[[
 		Wait for a replication server action, to occur
@@ -295,11 +296,13 @@ export type ServerCharacterClass = {
 	__Active: boolean,
 	__MovementAcceleration: number,
 	__Linear_Movements: {},
+	__Enemy_Collisions_Enabled: boolean,
 	__Forward_Velocities: {},
 
 	Name: string,
 	States: StatesClass,
 
+	SetEnemyCollisionState: (self: ServerCharacterClass, State: boolean) -> (),
 	Init: (self: ServerCharacterClass) -> (),
 
 	Stop: (self: ServerCharacterClass) -> (),
@@ -367,6 +370,7 @@ export type ServerAgentClass = {
 	Hit: (self: ServerAgentClass, Caster: Enemy, Time: number) -> (),
 	GetMarkedTarget: (self: ServerAgentClass) -> (AssistStruct?),
 	
+	SetEnemyCollisionState: (self: ServerAgentClass, State: boolean) -> (),
 	OnMeterUpdated: (self: ServerAgentClass, Meter: string, fn: (Id: number, Value: number, Percent: number) -> ()) -> (),
 	UpdateMeter: (self: ServerAgentClass, Name: string, Amount: number) -> (),
 	GetMeter: (self: ServerAgentClass, Name: string) -> (number, number),

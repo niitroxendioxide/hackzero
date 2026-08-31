@@ -13,7 +13,9 @@ local Effects = require(Client.Libraries.Effects)
 local EnemyOverheadGui = require(Client.Libraries.EnemyStatusIndicator)
 
 --
-local Controller = {}
+local Controller = {
+	GrabbedEnemies = {}
+}
 
 function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | number} })
 	local EnemyId = buffer.readu8(Buffer, 1)
@@ -169,6 +171,13 @@ function Controller:BeginGrabEnemy(Buffer: buffer, Offset: CFrame)
 		return;
 	end
 
+	if not Controller.GrabbedEnemies[BaseAgent] then
+		Controller.GrabbedEnemies[BaseAgent] = {}
+	end
+
+	table.insert(Controller.GrabbedEnemies[BaseAgent], EnemyObject)
+
+	BaseAgent:SetEnemyCollisionState(false)
 	EnemyObject:FollowAgentGrab(BaseAgent, Offset or CFrame.new())
 end
 
@@ -182,6 +191,16 @@ function Controller:EndGrabEnemy(Buffer)
 
 	if not EnemyObject or not BaseAgent then
 		return;
+	end
+	
+	local Index = table.find(Controller.GrabbedEnemies[BaseAgent], EnemyObject)
+	if Index then
+		table.remove(Controller.GrabbedEnemies[BaseAgent], Index)
+	end
+
+	local HasMore = #Controller.GrabbedEnemies[BaseAgent] > 0;
+	if not HasMore then
+		BaseAgent:SetEnemyCollisionState(true)
 	end
 	
 	EnemyObject:FollowAgentGrab(nil)

@@ -167,10 +167,15 @@ return function(At: Vector3 | Types.EnemyClass | CFrame, Data: Types.EffectAnyDa
 		Object.TextColor3 = Color[1]:Lerp(White, Burst and 0.15 or 0)
 		Object.UIGradient.Color = Color[2]
 		Object.ZIndex = #NumberToString - i
-		Object.Size = UDim2.fromScale(0, .39)
+		if Exists then
+			Object.UIStroke.Thickness = 0.15
+			Object.Size = UDim2.fromScale(X_Size * 1.5, .39)
+		else
+			Object.UIStroke.Thickness = 0
+			Object.Size = UDim2.fromScale(0, .39)
+		end
 		Object.Parent = Indicator.Holder.Main
 
-		Object.UIStroke.Thickness = 0
 		Effects:Tween(Object.UIStroke, {.175, 'Quad'}, {Thickness = 0.12})
 		if (Data.Critical or Burst) and not Data.ForceStroke then
 			Object.UIStroke.Color = White

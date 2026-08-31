@@ -33,6 +33,7 @@ function ServerCharacterClass.new(Name: string, Height: number): Types.ServerCha
 	self.__Normal = Vector3.yAxis
 	self.__Position = Spawn.Position + Vector3.new(0, self.__Height, 0)
 	self.__Rotation = Vector3.zAxis
+	self.__Enemy_Collisions_Enabled = true
 
 	self.__MovementVelocity = Vector3.zero
 	self.__SurfaceVelocity = Vector3.zero
@@ -48,6 +49,15 @@ function ServerCharacterClass.new(Name: string, Height: number): Types.ServerCha
 	self.__Added_Colliders = {}
 
 	return self
+end
+
+function ServerCharacterClass.SetEnemyCollisionState(self: Types.ServerCharacterClass, State: boolean)
+	if typeof(State) ~= 'boolean' then
+		warn('[SERVER] Cannot set the Enemy Collision State to a non-boolean value')
+		return
+	end
+
+	self.__Enemy_Collisions_Enabled = State;
 end
 
 function ServerCharacterClass:Init()
@@ -207,7 +217,9 @@ function ServerCharacterClass:Update(Delta: number)
 	local Velocity = self.__Velocity + AddOns
 
 	local Origin = self:GetPivot() * CFrame.new(0, 0, 1.5)
-	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
+	local EnemyCollisions = self.__Enemy_Collisions_Enabled 
+		and workspace:Spherecast(Origin.Position, 1.75, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
+	
 	if EnemyCollisions then
 		local Params = RaycastParams.new()
 		Params.FilterDescendantsInstances = {EnemyCollisions.Instance}

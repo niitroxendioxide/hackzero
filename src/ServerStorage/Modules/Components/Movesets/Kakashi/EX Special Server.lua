@@ -34,9 +34,57 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 
 	local Hit_Count = Ability:FromData('Sosenko_Hit_Max')
 	local Hit_Frequency = Ability:FromData('Sosenko_Hit_Frequency')
+	const Throw_Hit = Ability:FromData('Throw_Hit', nil, SkillLevel)
+	const SosenkoDashHit = Ability:FromData('Sosenko_Dash_Hit', nil, SkillLevel)
 
 	const Hit_Counts = {}
 	const Hit_Enemies = {}
+
+	local Off = nil
+	local SosenkoHitTarget = nil
+	local DashHitboxSize = Ability:FromData('Sosenko_Dash_Hitbox_Size')
+	local SosenkoSuccessfulHit = Ability:Begin(Caster, {
+		{0, function()
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, 1);
+		end},
+
+		{0.6, function()
+			if Ability:Get(Caster, 'GrabbedEnemy') == SosenkoHitTarget then
+				Ability:Save(Caster, 'GrabbedEnemy', nil)
+				GrabService:ForceStopGrab(SosenkoHitTarget)
+			end
+
+			Ability:Hit(Caster, SosenkoHitTarget, Throw_Hit)
+		end},
+
+		{0.85, function()
+
+		end},
+
+		{1.35, function()
+			local AttackOffset = CFrame.lookAt(Caster:GetPivot().Position, SosenkoHitTarget:GetPivot().Position) * CFrame.new(0, 0, -DashHitboxSize.z/2)
+			AttackOffset = (Caster:GetPivot():ToObjectSpace(AttackOffset)).Position
+
+			Off = AttackOffset
+
+			table.clear(Hit_Enemies)
+		end},
+
+		{1.4, 1.6, function()
+			Ability:CreateHitbox(Caster, Off, DashHitboxSize, function(NewTarget)
+				if Hit_Enemies[NewTarget] then
+					return
+				end
+
+				Hit_Enemies[NewTarget] = true;
+				task.delay(Hit_Frequency, function()
+					Hit_Enemies[NewTarget] = nil
+				end)
+
+				Ability:Hit(Caster, NewTarget, SosenkoDashHit)
+			end)
+		end}
+	}, true)
 
 	Ability:Begin(Caster, {
 		{0, function()
@@ -50,40 +98,19 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 		{0.4, 0.4 + First_Hit_Time, function(SequenceTime)
 			Ability:CreateHitbox(Caster, vector.create(0, 0, -3), vector.create(6, 4, 6), function(Enemy)
 				if not Grabbed_Enemy then
+					local CouldGrab = GrabService:GrabEnemy(Caster, Enemy, 1, CFrame.new(0, 0, -5.6))
+					if not CouldGrab then
+						return;
+					end
+
 					Grabbed_Enemy = true;
-					
-					local RemainingTime = (Total_Run_Time + 0.4) - SequenceTime.__currentTime
-					GrabService:GrabEnemy(Caster, Enemy, RemainingTime, CFrame.new(0, 0, -3.5))
+
+					Caster:Walk(0.5, 1.75)
 					Ability:Save(Caster, 'GrabbedEnemy', Enemy)
-
-					task.delay(RemainingTime, function()
-						if Ability:Get(Caster, 'GrabbedEnemy') == Enemy then
-							Ability:Save(Caster, 'GrabbedEnemy', nil)
-						end
-					end)
+					SosenkoHitTarget = Enemy;
+					SosenkoSuccessfulHit:Start()
 				end
 
-				if Hit_Enemies[Enemy] or (Hit_Counts[Enemy] or 0) >= Hit_Count then
-					return
-				end
-
-				Hit_Enemies[Enemy] = true;
-				Hit_Counts[Enemy] = (Hit_Counts[Enemy] or 0) + 1;
-
-				task.delay(Hit_Frequency, function()
-					Hit_Enemies[Enemy] = nil
-				end)
-
-				Ability:Hit(Caster, Enemy, HitData)
-			end)
-		end},
-
-		{0.41 + First_Hit_Time, 0.41 + Total_Run_Time, function()
-			if not Grabbed_Enemy then
-				return
-			end
-
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -3), vector.create(6, 7, 6), function(Enemy)
 				if Hit_Enemies[Enemy] or (Hit_Counts[Enemy] or 0) >= Hit_Count then
 					return
 				end

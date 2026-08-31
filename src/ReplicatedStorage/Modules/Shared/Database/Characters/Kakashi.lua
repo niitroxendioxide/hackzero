@@ -172,13 +172,36 @@ return {
 
 				Sosenko_Hit_Max = 6,
 				Sosenko_Hit_Frequency = 0.06,
+				Sosenko_Dash_Hitbox_Size = vector.create(9, 9, 55),
 
+
+				Throw_Hit = {
+					Damage = 45,
+					Daze = 5,
+					Stun = 0.85,
+					Affliction = 'Physical',
+					HitType = 'Blunt',
+					Knockback = {
+						vector.create(0, 0, 1),
+						80,
+						0.45
+					}
+				},
 				Hit = {
+					HitType = 'Slash',
 					Damage = 117,
 					Stun = 0.3,
 					Daze = 22,
 					Affliction = 'Electric',
 					Affliction_Buildup = 93,
+				},
+				Sosenko_Dash_Hit = {
+					HitType = 'Slash',
+					Damage = 370,
+					Stun = 0.45,
+					Daze = 27,
+					Affliction = 'Electric',
+					Affliction_Buildup = 112,
 				},
 			},
 
@@ -187,6 +210,11 @@ return {
 					Damage = 1.5,
 					Daze = 0.5,
 					Affliction_Buildup = 2.25,
+				},
+				Sosenko_Dash_Hit = {
+					Damage = 1.75,
+					Daze = 0.25,
+					Affliction_Buildup = 1,
 				},
 			},
 		}

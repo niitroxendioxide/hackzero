@@ -54,9 +54,9 @@ return table.freeze({
 
     TEST_COMPANION = '8bdc68f8-cb56-4576-a193-689bb87043df',
     TEST_AGENTS = {
-        'Naruto',
         'Kakashi',
-        'Lelouch',
+        'Naruto',
+        'Goku',
     },
 
     --REPLACE_AFFLICTION = 'Fire',

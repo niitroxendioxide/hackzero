@@ -27,6 +27,7 @@ function PhysicsClass.new(States: Types.StatesClass, Height: number, debug_t: bo
 	self.__Rotation = Vector3.zAxis
 	self.__DelayedPosition = self.__Position
 	self.__RotationGoal = Vector3.zAxis
+	self.__Enemy_Collisions_Enabled = true
 
 	self.__MovementVelocity = 0
 	self.__SurfaceVelocity = Vector3.zero
@@ -44,6 +45,15 @@ function PhysicsClass.new(States: Types.StatesClass, Height: number, debug_t: bo
 	-- >>
 
 	return self
+end
+
+function PhysicsClass.SetEnemyCollisionState(self, State: boolean)
+	if typeof(State) ~= 'boolean' then
+		warn('[CLIENT] Cannot set the Enemy Collision State to a non-boolean value')
+		return
+	end
+
+	self.__Enemy_Collisions_Enabled = State;
 end
 
 function PhysicsClass:Run()
@@ -234,7 +244,8 @@ function PhysicsClass:Update(Delta: number)
 
 	--
 	local Origin = self:GetPivot() * CFrame.new(0, 0, Collider.Size.Z/2)
-	local EnemyCollisions = workspace:Spherecast(Origin.Position, 1.8, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
+	local EnemyCollisions = self.__Enemy_Collisions_Enabled 
+		and workspace:Spherecast(Origin.Position, 1.8, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
 	if EnemyCollisions then
 		local Params = RaycastParams.new()
 		Params.FilterDescendantsInstances = {EnemyCollisions.Instance}

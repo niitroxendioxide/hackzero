@@ -57,6 +57,10 @@ function ServerAgentClass.new(Name: string, Level: number, Skills: {}, Ascension
 	return self
 end
 
+function ServerAgentClass.SetEnemyCollisionState(self: Types.ServerAgentClass, State: boolean)
+	self.__Character:SetEnemyCollisionState(State)
+end
+
 function ServerAgentClass.GetAscension(self: Types.ServerAgentClass)
 	return self.__Ascension;
 end
