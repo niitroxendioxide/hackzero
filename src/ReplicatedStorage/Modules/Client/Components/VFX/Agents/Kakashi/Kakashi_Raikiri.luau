@@ -100,7 +100,7 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
                 if Particle:IsA('ParticleEmitter') then
                     local TimeScale = Particle.TimeScale;
 
-                    Particle.TimeScale = 0;
+                    Particle.TimeScale = 0; 
                     Effects:Tween(Particle, { .15 }, {TimeScale = TimeScale})
                 end
             end
@@ -128,7 +128,7 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
 
                         local Cast = Effects:CastMapRaycast(BasePos + Offset, vector.create(0, -7))
                         if Cast then
-                            --CreateBolt(Caster:GetModel(), Cast)
+                            CreateBolt(Caster:GetModel(), Cast)
                         end
                     end
     
