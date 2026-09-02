@@ -144,8 +144,19 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 	})
 end
 
+const function Raiden(Caster: Types.ServerAgent, Context: Types.SkillContext)
+	
+end
+
 function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
-	CastSosenko(Caster, Context)
+	local IsRaiden = Context.Buffer[1] == true;
+	if IsRaiden then
+		Ability:Save(Caster, 'next_use_raiden', false)
+
+		Raiden(Caster, Context)
+	else
+		CastSosenko(Caster, Context)
+	end
 end
 
 return Ability

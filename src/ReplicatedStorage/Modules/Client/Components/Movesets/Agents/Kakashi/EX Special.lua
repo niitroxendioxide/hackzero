@@ -227,8 +227,28 @@ const function CastSosenko(Caster: Types.ClientAgent, Context: Types.ClientSkill
 	})
 end
 
+const function Raiden(Caster: Types.ClientAgent, Context: Types.ClientSkillContext)
+	
+end
+
+Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster)
+	local LastCast = Ability:Get(Caster, 'LastCast')
+
+	if (os.clock() - LastCast < 5) then
+		Ability:PushToContextBuffer(true)
+		Ability:Save(Caster, 'next_use_raiden', true)
+	end
+end)
+
 function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
-	CastSosenko(Caster, Context)
+	local IsRaiden = Ability:Get(Caster, 'next_use_raiden') == true
+	if IsRaiden then
+		Ability:Save(Caster, 'next_use_raiden', false)
+
+		Raiden(Caster, Context)
+	else
+		CastSosenko(Caster, Context)
+	end
 end
 
 return Ability
