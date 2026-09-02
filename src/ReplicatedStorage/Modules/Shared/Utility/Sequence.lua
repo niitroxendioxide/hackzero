@@ -145,6 +145,10 @@ function Sequence:Destroy()
 	self.__frames = {}
 end
 
+
+function Sequence:IsRunning()
+	return (self.__active == true);
+end
 -- Add a function after the sequence ends
 function Sequence:After(fn: (self: Sequence) -> ()): Sequence
 	assert(typeof(fn) == 'function', 'Invalid function given to play after sequence ends')

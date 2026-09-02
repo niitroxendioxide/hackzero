@@ -20,6 +20,12 @@ Ability:OnCancel(function(Caster: Types.ServerAgent)
 	if GrabbedEnemy then
 		GrabService:ForceStopGrab(GrabbedEnemy)
 	end
+
+	local Sequence = Ability:Get<<Types.Sequence>>(Caster, "SuccessfulHitSequence")
+	if Sequence then
+		Sequence:Destroy()
+		Ability:Save(Caster, "SuccessfulHitSequence", nil)
+	end
 end)
 
 const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContext)
@@ -57,21 +63,16 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 			Ability:Hit(Caster, SosenkoHitTarget, Throw_Hit)
 		end},
 
-		{0.85, function()
-
-		end},
-
 		{1.35, function()
 			local AttackOffset = CFrame.lookAt(Caster:GetPivot().Position, SosenkoHitTarget:GetPivot().Position) * CFrame.new(0, 0, -DashHitboxSize.z/2)
-			AttackOffset = (Caster:GetPivot():ToObjectSpace(AttackOffset)).Position
-
 			Off = AttackOffset
 
 			table.clear(Hit_Enemies)
 		end},
 
 		{1.4, 1.6, function()
-			Ability:CreateHitbox(Caster, Off, DashHitboxSize, function(NewTarget)
+			local LocalOffset = (Caster:GetPivot():ToObjectSpace(Off)).Position
+			Ability:CreateHitbox(Caster, LocalOffset, DashHitboxSize, function(NewTarget)
 				if Hit_Enemies[NewTarget] then
 					return
 				end
@@ -85,6 +86,8 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 			end)
 		end}
 	}, true)
+
+	Ability:Save(Caster, "SuccessfulHitSequence", SosenkoSuccessfulHit);
 
 	Ability:Begin(Caster, {
 		{0, function()

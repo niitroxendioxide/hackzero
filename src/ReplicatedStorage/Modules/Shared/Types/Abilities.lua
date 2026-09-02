@@ -12,6 +12,7 @@ export type Sequence = {
 	Pause: (self: Sequence) -> Sequence,
 	Destroy: (self: Sequence) -> (),
 	GetSpeed: (self: Sequence) -> (),
+	IsRunning: (self: Sequence) -> (boolean),
 
 	--
 	Update: (self: Sequence) -> (),

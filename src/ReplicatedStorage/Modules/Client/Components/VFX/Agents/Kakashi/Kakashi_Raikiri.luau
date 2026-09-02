@@ -15,7 +15,7 @@ local ForgeVFX = require(ReplicatedStorage.Packages.ForgeVFX)
 local Offset = CFrame.new(-0.013, -0.793, 0.033)
 local Cache = {}
 
-local function CreateBolt(CasterModel: Model, Ground: RaycastResult<BasePart> & {Color: Color3})
+--[[local function CreateBolt(CasterModel: Model, Ground: RaycastResult<BasePart> & {Color: Color3})
     local KakashiVFX = Assets.Effects.Agents.Kakashi
     local Color = Color3.fromRGB(112, 150, 255)
     local Parent = Effects:GetParent(script.Name)
@@ -60,7 +60,7 @@ local function CreateBolt(CasterModel: Model, Ground: RaycastResult<BasePart> & 
     
     Effects:CleanUp(Attachment, 5)
     Effects:CleanUp(A1, 5)
-end
+end]]
 
 ---
 return function(Caster: Types.AgentClass, State: string, ...): ()
@@ -134,7 +134,14 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
 
                         local Cast = Effects:CastMapRaycast(BasePos + Offset, vector.create(0, -7))
                         if Cast then
-                            CreateBolt(Caster:GetModel(), Cast)
+                            Effects:CreateLightningBolt({
+                                CasterModel = Caster:GetModel(),
+                                Ground = Cast,
+                                Color3 = Color3.fromRGB(112, 150, 255),
+                                SubpartColor = Color3.fromRGB(51, 78, 255),
+                                BoltCount = 27
+                            })
+                            --CreateBolt(Caster:GetModel(), Cast)
                         end
                     end
     

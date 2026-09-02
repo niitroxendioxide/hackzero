@@ -19,14 +19,21 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local Random_Number = Random.new()
 
-local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
 local Mock = require(Shared.Utility.Mock)
 local World = require(script.Parent.Parent.World)
-local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
---local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
-local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
-local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
-local CameraShaker = require(Client.Utility.Libraries.CameraShaker)
+local GameEnum = require(Shared.GameEnum)
+local Enemies = require(Shared.Libraries.Enemies)
+
+local Settings;
+local Characters;
+local CameraShaker;
+local LightningBolt;
+if RunService:IsClient() then
+	Settings = require(Client.Packages.Settings)
+	Characters = require(Client.Libraries.Characters)
+	CameraShaker = require(Client.Utility.Libraries.CameraShaker)
+	LightningBolt = require(Client.Utility.Libraries.LightningBolt)
+end
 
 local Effects_Folder = workspace:WaitForChild('World'):WaitForChild('Effects')
 local Assets = ReplicatedStorage.Assets.Effects
@@ -99,6 +106,13 @@ function EffectUtil:CustomTween(Object: Instance, Info: { number | string | bool
 	return task.spawn(DoTween)
 end
 
+--[[
+	@param Object Beam (the beam to fade out)
+	@param number Info[1] = Time
+	@param string Info[2] = Easing Style
+	@param string Info[3] = Easing Direction
+	@param bool Info[4] = Whether to defer or not the thread for fading out the beams.
+]]
 function EffectUtil:FadeOutBeams(Object: Beam, Info: { number | string | boolean })
 	local function DoTween()
 		local StartTime = os.clock();
@@ -131,7 +145,6 @@ function EffectUtil:FadeOutBeams(Object: Beam, Info: { number | string | boolean
 	end
 
 	if Info[4] then
-		print('non deferred')
 		DoTween()
 
 		return;
@@ -218,6 +231,85 @@ function EffectUtil:MultiClean(Objects: {any}, Time: number)
 	end
 end
 
+type LightningBoltCreationData = {
+	CasterModel: Model,
+	Ground: RaycastResult<BasePart> & { Color: Color3 },
+	A1Parent: Instance?,
+	A0Parent: Instance?,
+	LightningColor: Color3?,
+	SubpartColor: Color3?,
+	A1WorldPos: vector?,
+	A0WorldPos: vector?,
+	BoltCount: number | NumberRange,
+}
+
+function EffectUtil:CreateLightningBolt(Data: LightningBoltCreationData)
+	local Ground = Data.Ground;
+    local Color = Data.LightningColor or Color3.fromRGB(112, 150, 255);
+    local Parent = EffectUtil:GetParent()
+    
+    local A1 = Instance.new('Attachment')
+    A1.Name = 'LightningBoltAttachment'
+    A1.Position = vector.create(EffectUtil:Random(-0.5, 0.5), EffectUtil:Random(-1, 1), EffectUtil:Random(-0.5, 0.5))
+    A1.WorldAxis = EffectUtil:RandomV3()
+    A1.Parent = Data.CasterModel.PrimaryPart
+    
+    local Attachment = Instance.new('Attachment')
+    Attachment.WorldPosition = A1.WorldPosition
+    Attachment.WorldAxis = EffectUtil:RandomV3()
+    Attachment.Parent = workspace.Terrain
+
+	if Data.A0WorldPos then
+		Attachment.WorldPosition = Data.A0WorldPos
+	else
+		EffectUtil:Tween(Attachment, {.1}, {WorldPosition = Ground.Position})
+	end
+
+	if Data.A1WorldPos then
+		A1.WorldPosition = Data.A1WorldPos
+	end
+
+    if Data.Ground ~= nil then
+		local Floor = EffectUtil:Create(EffectUtil.General.FloorPart, 1.25)
+		Floor:PivotTo(CFrame.lookAlong(Ground.Position, Ground.Normal) * CFrame.Angles(-math.pi/2, 0, 0))
+		Floor.Parent = Parent
+
+		for _, v in Floor:GetDescendants() do
+			if v:HasTag('Recolorable') then
+				v.Color = ColorSequence.new(Data.SubpartColor or Color)
+			end
+		end
+
+		EffectUtil:RecolorSmoke(Ground, Floor:GetDescendants())
+
+		task.delay(.1, function()
+			EffectUtil:Emit(Floor, true)
+		end)
+
+		EffectUtil:CleanUp(Floor, 2.5)
+    end
+    
+    local CurveSize = 5.5
+    local Radius = {0.9, 2.25}
+    local RandomCurve = EffectUtil:Random(-CurveSize, CurveSize)
+	local BoltSegCount = if Data.BoltCount == nil then EffectUtil:Random(8, 14) else 
+		typeof(Data.BoltCount) == 'number' and Data.BoltCount or EffectUtil:Random(Data.BoltCount.Min, Data.BoltCount.Max)
+
+    local NewBolt = LightningBolt.new(A1, Attachment, BoltSegCount)
+    NewBolt.CurveSize0, NewBolt.CurveSize1 = RandomCurve, -RandomCurve
+    NewBolt.PulseSpeed = EffectUtil:Random(9, 24)
+    NewBolt.PulseLength = EffectUtil:Random(.75, 4)
+    NewBolt.ContractFrom = 0
+    NewBolt.MinRadius, NewBolt.MaxRadius = Radius[1], Radius[2]
+    NewBolt.Thickness = EffectUtil:Random(.15, .3)
+    NewBolt.Frequency = EffectUtil:Random(.2, .5)
+    NewBolt.Color = Color
+    NewBolt.Parent = Parent
+    
+    EffectUtil:CleanUp(Attachment, 5)
+    EffectUtil:CleanUp(A1, 5)
+end
+
 function EffectUtil:CastMapRaycast(from: Vector3 | vector | CFrame, dir: vector | Vector3, Params: RaycastParams): RaycastResult & {Color: Color3}
 	if not Params then
 		Params = RaycastParams.new()
@@ -254,8 +346,8 @@ function EffectUtil:RandomInt(min: number, max: number): (number)
 	return Random_Number:NextInteger(min, max)
 end
 
-function EffectUtil:RandomV3(): Vector3
-	return Random_Number:NextUnitVector()
+function EffectUtil:RandomV3(MaxExtraMagnitude: number): Vector3
+	return Random_Number:NextUnitVector() * EffectUtil:Random(0.999999, 1 + (MaxExtraMagnitude or 0))
 end
 
 function EffectUtil:RandomAngles()

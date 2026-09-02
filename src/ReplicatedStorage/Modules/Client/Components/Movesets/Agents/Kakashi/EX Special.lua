@@ -1,15 +1,14 @@
 --
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
-local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
-local Camera = require(ReplicatedStorage.Modules.Client.Libraries.Camera)
-local Replicator = require(ReplicatedStorage.Modules.Client.Libraries.Replicator)
-local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
+local Animation = require(Client.Libraries.Animation)
+local Camera = require(Client.Libraries.Camera)
+local Replicator = require(Client.Libraries.Replicator)
+local Effects = require(Shared.Utility.Effects)
 local GameEnum = require(Shared.GameEnum) 
 local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Client.Classes.Ability)
@@ -20,6 +19,12 @@ local Ability = AbilityClass.new()
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeCancel, function(Caster: Types.ClientAgent)
 	Ability:Effect("Kakashi_Raikiri", Caster, 'Delete')
 	Caster:Walk(0, 1)
+
+	local Sequence = Ability:Get<<Types.Sequence>>(Caster, "SuccessfulHitSequence")
+	if Sequence then
+		Sequence:Destroy()
+		Ability:Save(Caster, "SuccessfulHitSequence", nil)
+	end
 end)
 
 
@@ -97,24 +102,22 @@ const function CastSosenko(Caster: Types.ClientAgent, Context: Types.ClientSkill
 				EndCFrame = CFrame.lookAlong(Cast.Position - Cast.Normal * 2, Direction)
 			end
 
-			Ability:Save(Caster, 'OriginCFrame', Caster:GetPivot())
+			Ability:Save(Caster, 'OriginCFrame', CFrame.lookAlong(Pos, Direction))
 			Ability:Save(Caster, 'EndingCFrame', EndCFrame)
 			table.clear(Hit_Enemies)
 		end},
 
 		{1.4, function()
-			Ability:Effect('Kakashi_RaikiriDash', Caster)
-		end},
+			local CFBase = Ability:Get(Caster, "OriginCFrame")
+			Ability:Effect('Kakashi_RaikiriDash', Caster, '_', CFBase)
 
-		{1.38, 1.5, function(Sequence)
-			local Origin = Ability:Get(Caster, 'OriginCFrame')
 			local End = Ability:Get(Caster, 'EndingCFrame')
 
-			local Progress = math.min((Sequence.__currentTime - 1.38) / 0.1, 1)
-			local Alpha = TweenService:GetValue(Progress, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+			Caster:PivotTo(End)
+		end},
 
-			Caster:PivotTo(Origin:Lerp(End, Alpha))
-
+		{1.4, 1.6, function(Sequence)
+			local Origin = Ability:Get(Caster, 'OriginCFrame')
 			local Offset = Caster:GetPivot():ToObjectSpace(Origin * CFrame.new(0, 0, -DashHitboxSize.z/2)).Position
 			Ability:CreateHitbox(Caster, Offset, DashHitboxSize, function(NewEnemy)
 				if Hit_Enemies[NewEnemy] then
@@ -130,6 +133,8 @@ const function CastSosenko(Caster: Types.ClientAgent, Context: Types.ClientSkill
 			end)
 		end},
 	}, true)
+
+	Ability:Save(Caster, 'SuccessfulHitSequence', SuccessfulHitSequence)
 
 	Ability:Begin(Caster, {
 		{0, function()
