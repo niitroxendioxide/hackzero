@@ -45,12 +45,6 @@ return {
 	},
 
 	Moveset_Data = {
-		--[[
-			Lightning charges build from landing Electric hits. At 6 the meter is full and
-			Lightning Mode becomes available - holding Basic Attack enters it.
-			Wired up by TeamService (CreateMeter/OnMeterUpdated) -> AbilityService:TriggerMeterFullEvent
-			-> Kakashi/Passives.luau:OnPassiveFilled.
-		]]
 		['Passive'] = {
 			Meters = {
 				Lightning = {
@@ -62,7 +56,7 @@ return {
 			},
 		},
 
-		['Basic Attack'] = {
+		['Basic Attack'] = { 
 			Base = {
 				Cooldown = 0.01,
 				Attack_State_Time = 0.25,
@@ -70,11 +64,10 @@ return {
 				Animation_Speed = 1,
 				Range = 85,
 
-				-- Holding Basic Attack on a full Lightning meter enters Lightning Mode.
 				Release = true,
 				Lightning_Mode_Hold_Time = 0.4,
 				Lightning_Mode_Time = 20,
-				-- Steps that turn Electric while in Lightning Mode (moveset.md: first two punches + last kick).
+
 				Lightning_Mode_Steps = {
 					[1] = true,
 					[1.1] = true,
@@ -84,13 +77,7 @@ return {
 					Affliction = 'Electric',
 					Affliction_Buildup = 55,
 				},
-				-- Daze resistance shred applied by Lightning Mode basics.
-				Lightning_Mode_Daze_Shred = {
-					Tag = 'Kakashi_DazeShred',
-					Type = 'Daze_Resistance',
-					Value = -0.15,
-					Time = 8,
-				},
+				Lightning_Mode_Daze_Shred_Time = 8,
 
 				Attack_Data = {
 					-- The "?" symbol means it can be there or not.
@@ -395,10 +382,6 @@ return {
 			},
 		},
 
-		--[[
-			Default: 'Raikiri: Issen' - subs in with a dash into the first target.
-			Lightning Mode: Kagebunshin split into two lightning dogs, heavy buildup + paralyze.
-		]]
 		['Quick Assist'] = {
 			Base = {
 				Cooldown = 1,
@@ -427,7 +410,6 @@ return {
 					}
 				},
 
-				-- Lightning Mode variant: two dogs, one per clone
 				Dog_Count = 2,
 				Dog_Speed = 105,
 				Dog_Max_Time = 1.1,
@@ -443,12 +425,8 @@ return {
 					Affliction = 'Electric',
 					Affliction_Buildup = 165,
 				},
-				-- Electric buildup shred left on hit targets (moveset.md: faster buildup%).
-				Dog_Resistance_Shred = {
-					Tag = 'Kakashi_ElectricShred',
-					Value = -0.2,
-					Time = 10,
-				},
+
+				Dog_Resistance_Shred_Time = 10,
 			},
 
 			Upgrade = {

@@ -48,6 +48,7 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 	const Hit_Enemies = {}
 
 	local Off = nil
+	local Single_Hit = false
 	local SosenkoHitTarget = nil
 	local DashHitboxSize = Ability:FromData('Sosenko_Dash_Hitbox_Size')
 	local SosenkoSuccessfulHit = Ability:Begin(Caster, {
@@ -82,6 +83,11 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 				task.delay(Hit_Frequency, function()
 					Hit_Enemies[NewTarget] = nil
 				end)
+
+				if not Single_Hit then
+					Single_Hit = true
+					KakashiController:AddCharge(Caster, 1)
+				end
 
 				Ability:Hit(Caster, NewTarget, SosenkoDashHit)
 			end)
@@ -157,6 +163,7 @@ const function Raiden(Caster: Types.ServerAgent, Context: Types.SkillContext)
 	const Skill_Usage_Time = Start_Time + Run_Time + 0.3;
 	const Hit_List = {};
 	const Hit = {}
+	local Single_Hit = false;
 	
 	local Sequence = Ability:Begin(Caster, {
 		{0, function()
@@ -177,6 +184,11 @@ const function Raiden(Caster: Types.ServerAgent, Context: Types.SkillContext)
 					Hit_List[Target] = false;
 				end)
 
+				if not Single_Hit then
+					Single_Hit = true
+					KakashiController:AddCharge(Caster, 1)
+				end
+
 				local Cloned_Hit_Data = table.clone(Raiden_Hit)
 				if (Hit[Target] == nil or os.clock() - Hit[Target] > Hit_Frequency*2) then
 					Hit[Target] = os.clock();
@@ -189,9 +201,8 @@ const function Raiden(Caster: Types.ServerAgent, Context: Types.SkillContext)
 					Ability:Hit(Caster, Target, Cloned_Hit_Data)
 				end
 
-				-- The lightning blade paralyzes whatever it catches (moveset.md).
 				KakashiController:Paralyze(Target, Paralyze_Time, Caster)
-				KakashiController:AddCharge(Caster, 1)
+				
 			end)
 		end},
 
@@ -207,11 +218,6 @@ const function Raiden(Caster: Types.ServerAgent, Context: Types.SkillContext)
 	Sequence:Start()
 end
 
---[[
-	ROUGH DRAFT - Lightning Mode replaces Raiden with 'Raikiri: Denko Rensen': instead of the clone
-	and the lightning blade, Kakashi cuts through the target repeatedly while moving left and right.
-	The zig-zag is carried by the animation and the VFX, not by repositioning the character.
-]]
 const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContext)
 	const SkillLevel = Caster:GetSkillLevel(Ability.Name)
 	const HitData = Table.CopyDeep(Ability:FromData('Denko_Rensen_Hit', nil, SkillLevel))

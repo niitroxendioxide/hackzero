@@ -14,6 +14,7 @@ local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
 local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
+local Math = require(Shared.Utility.Math)
 local Trove = require(Shared.Utility.Trove)
 local Inputs = require(Client.Libraries.Inputs)
 local AgentClass = require(Client.Classes.Agent)
@@ -46,6 +47,10 @@ local Controller = {
 	__CurrentMovementVector = Vector3.zero,
 	__Dead = false,
 	__Shiftlock = false,
+	-- Last movement byte the server was told about. The render loop below is the
+	-- single place that decides whether we are moving, and it only sends when
+	-- this changes.
+	__LastMovementByte = nil :: number?,
 }
 
 function Controller:Init(): ()
@@ -207,6 +212,8 @@ function Controller:Init(): ()
 
 		debug.profileend()
 
+		Controller:ReplicateMovementState(CurrentCharacter)
+
 		local At = CurrentCharacter:GetPivot()
 
 		Replicator:Replicate(GameEnum.Replication.Rotate, CurrentCharacter:GetRotation())
@@ -217,6 +224,34 @@ function Controller:Init(): ()
 			CurrentCharacter.__ServerLocation = At
 		end)
 	end)
+end
+
+--[[
+	Tell the server about our movement state, but only when it actually changes.
+
+	Previously Move/Stop were fired from the raw movement keybinds while the
+	render loop decided movement from a stricter set of conditions (cutscene,
+	Movlock, Switching, Attacking, alive). The two disagreed, and the server
+	acted on the keybind version -- moving characters that were not moving.
+	Reading the agent back after the loop's own Move()/Stop() call makes the
+	packet a report of what happened rather than a guess.
+]]
+function Controller:ReplicateMovementState(CurrentCharacter: AgentTypes.AgentClass)
+	local _, AgentId = CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId"))
+	if not AgentId then
+		return
+	end
+
+	local Moving = CurrentCharacter:IsMoving() == true
+	local Byte = Math:EncodeMovementByte(AgentId, Moving, CurrentCharacter:GetKey('Sprint') == true, CurrentCharacter:GetKey('Jog') == true)
+
+	if Byte == Controller.__LastMovementByte then
+		return
+	end
+
+	Controller.__LastMovementByte = Byte
+
+	Replicator:Replicate(Moving and GameEnum.Replication.Move or GameEnum.Replication.Stop)
 end
 
 function Controller:AddAgent(Name: string)
@@ -252,12 +287,6 @@ function Controller:SetupKeybinds()
 					Controller.__HeldKeys[Key] = false
 					Controller.__CurrentMovementVector -= Direction
 				end
-
-				if Controller:GetCurrentMovementDirection().Magnitude > 0 then
-					Replicator:Replicate(GameEnum.Replication.Move)
-				else
-					Replicator:Replicate(GameEnum.Replication.Stop)
-				end
 			end,
 		})
 	end
@@ -277,12 +306,6 @@ function Controller:SetupKeybinds()
 				MovementVector = Vector3.zero
 			end
 
-			if MovementVector.Magnitude > 0 then
-				Replicator:Replicate(GameEnum.Replication.Move)
-			else
-				Replicator:Replicate(GameEnum.Replication.Stop)
-			end
-
 			Controller.__CurrentMovementVector = Vector3.new(MovementVector.X, 0, -MovementVector.Y)
 
 		end
@@ -291,27 +314,17 @@ function Controller:SetupKeybinds()
 	Inputs:Bind('Jog', {
 		Release = false,
 		Callback = function(_: 'Begin' | 'End')
-			local State = false
 			Controller:ForCharacters(function(Character)
 				Character:SetKey('Jog')
-				State = Character:GetKey('Jog')
 			end)
-
-			Replicator:Replicate(GameEnum.Replication.KeySwitch, GameEnum.Agent_Keys.Jog, State)
 		end,
 	})
 
 	Inputs:Bind('Sprint', {
 		Release = false,
 		Callback = function(_: 'Begin' | 'End')
-			local CanRun = true
-			if not (CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId")) :: AgentTypes.AgentClass):GetKey('Jog') then
-				CanRun = false
-				Replicator:Replicate(GameEnum.Replication.KeySwitch, GameEnum.Agent_Keys.Jog, true)
-			end
-
-			--
-			local State = false
+			-- Sprint implies Jog: from a standing stop the first press turns on
+			-- Jog and is otherwise swallowed.
 			Controller:ForCharacters(function(Character)
 				if not Character:GetKey('Jog') then
 					Character:SetKey('Jog')
@@ -320,12 +333,7 @@ function Controller:SetupKeybinds()
 				end
 
 				Character:SetKey('Sprint')
-				State = Character:GetKey('Sprint')
 			end)
-
-			if CanRun then
-				Replicator:Replicate(GameEnum.Replication.KeySwitch,  GameEnum.Agent_Keys.Sprint, State)
-			end
 		end,
 	})
 

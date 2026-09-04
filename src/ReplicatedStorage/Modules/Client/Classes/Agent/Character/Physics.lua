@@ -7,6 +7,8 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local Environment = require(ReplicatedStorage.Modules.Shared.Environment)
 local PhysicsHelper = require(Shared.Libraries.PhysicsHelper)
+local Statics = require(Shared.Database.Statics)
+local Math = require(Shared.Utility.Math)
 local World = require(Shared.World)
 local Types = require(Shared.Types)
 --local Signal = require(Shared.Utility.Signal)
@@ -25,7 +27,10 @@ function PhysicsClass.new(States: Types.StatesClass, Height: number, debug_t: bo
 	self.__Normal = Vector3.yAxis
 	self.__Position = WorldSpawn.Position + Vector3.new(0, self.__Height, 0)
 	self.__Rotation = Vector3.zAxis
-	self.__DelayedPosition = self.__Position
+	-- Cosmetic error left over from a smoothed server correction. __Position is
+	-- always the authoritative value; this offset is what keeps the render from
+	-- jumping, and it decays to zero every frame in Update.
+	self.__CorrectionOffset = Vector3.zero
 	self.__RotationGoal = Vector3.zAxis
 	self.__Enemy_Collisions_Enabled = true
 
@@ -120,8 +125,71 @@ function PhysicsClass:RemoveForwardImpulse(Obj: {})
 	end
 end
 
+--[[
+	Every velocity contribution summed, matching ServerCharacterClass.GetTotalVelocity
+	so both sides extrapolate a position the same way.
+]]
+--[[
+	True while a dash/knockback impulse is decaying. Callers use this to skip
+	position extrapolation: the velocity is large and changing fast, so
+	projecting it forward magnifies any timing difference between the two
+	simulations rather than correcting for it.
+]]
+function PhysicsClass:HasActiveImpulse(): boolean
+	return #self.__Forward_Velocities > 0 or #self.__Linear_Movements > 0
+end
+
+function PhysicsClass:GetTotalVelocity(): Vector3
+	local MovementVelocity = (self.__MovementVelocity * self.__MovementAcceleration * self.__Rotation.Unit * self.__States:GetVelocityMod())
+	local Velocity = self.__Velocity + self:GetAdditionalVelocities()
+
+	return (MovementVelocity + Velocity + self.__SurfaceVelocity + self.__LastMovementVelocity)
+end
+
 function PhysicsClass:GetPivot()
-	return CFrame.lookAlong(self.__Position, self.__Rotation, Vector3.yAxis)
+	return CFrame.lookAlong(self.__Position + self.__CorrectionOffset, self.__Rotation, Vector3.yAxis)
+end
+
+--[[
+	Apply a position correction received from the server.
+
+	Unlike PivotTo, which is an unconditional teleport, this decides what the
+	correction actually deserves:
+
+	  * closer than Replication_Ignore_Distance -- discarded. Sub stud noise is
+	    not worth moving the character for, and correcting it is what made
+	    remote agents jitter.
+	  * further than Replication_Snap_Distance -- a real teleport (a switch, an
+	    ability, a respawn). Applied instantly, as it should be.
+	  * anything between -- the authoritative position is taken, but the visual
+	    error is parked in __CorrectionOffset and bled off over the next few
+	    frames, so the agent slides into place instead of popping.
+
+	@return true when the correction was a hard snap
+]]
+function PhysicsClass:CorrectTo(To: CFrame): boolean
+	assert(typeof(To) == 'CFrame', 'Not a CFrame')
+
+	local Rendered = self.__Position + self.__CorrectionOffset
+	local Distance = (To.Position - Rendered).Magnitude
+
+	if Distance <= Statics.Replication_Ignore_Distance then
+		return false
+	end
+
+	if Distance >= Statics.Replication_Snap_Distance then
+		self.__CorrectionOffset = Vector3.zero
+		self:PivotTo(To)
+
+		return true
+	end
+
+	self.__Normal = To.UpVector
+	self.__Position = To.Position
+	self.__RotationGoal = To.LookVector
+	self.__CorrectionOffset = Rendered - To.Position
+
+	return false
 end
 
 function PhysicsClass:PivotTo(To: CFrame)
@@ -223,7 +291,29 @@ function PhysicsClass:Update(Delta: number)
 	local MovementVelocity = (self.__MovementVelocity * self.__MovementAcceleration * self.__Rotation.Unit * self.__States:GetVelocityMod())
 	self.__LastMovementVelocity -= self:CalculateVelocityDeceleration(self.__LastMovementVelocity, 3) * CurrentWorldSpeed * Delta
 	self.__Velocity -= TotalSpeedDeceleration * CurrentWorldSpeed * Delta
-	self.__Rotation = self.__Rotation:Lerp(self.__RotationGoal, 1) --Delta * 24
+	-- Deliberately instant, do NOT lerp this.
+	--
+	-- ServerCharacterClass:Rotate has no smoothing at all (it assigns __Rotation
+	-- directly), and both sims derive MovementVelocity from __Rotation.Unit and
+	-- capture ApplyForwardImpulse's direction from it. Easing it here and not
+	-- there makes a dash fly in a different direction on each machine.
+	--
+	-- The visual smoothing lives one layer up, in the AlignOrientation that welds
+	-- the model to the collider (Appearance:JoinTo / SetRotationResponsiveness),
+	-- where it cannot desync the simulation.
+	self.__Rotation = self.__RotationGoal
+
+	if self.__CorrectionOffset.Magnitude > 0 then
+		self.__CorrectionOffset = self.__CorrectionOffset:Lerp(Vector3.zero, Math:SmoothAlpha(Statics.Replication_Correction_Rate, Delta))
+
+		if self.__CorrectionOffset.Magnitude < 1e-3 then
+			self.__CorrectionOffset = Vector3.zero
+		end
+
+		if Collider then
+			Collider:PivotTo(self:GetPivot())
+		end
+	end
 
 	local AddOns = self:GetAdditionalVelocities()
 	local Velocity = self.__Velocity + AddOns

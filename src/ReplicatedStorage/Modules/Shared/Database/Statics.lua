@@ -77,7 +77,20 @@ return {
 	Max_Player_Level = 100,
 	Max_Character_Level = 60,
 	Max_Companion_Level = 70,
-	Max_Team_Size = 5,
+	-- Single source of truth for team size. The agent id rides in a 2 bit field
+	-- of the movement byte (Math:EncodeMovementByte), so this cannot exceed 4
+	-- without widening that field.
+	Max_Team_Size = 3,
+
+	-- Replication smoothing. A correction closer than Ignore is discarded as
+	-- noise, one further than Snap is applied instantly as a real teleport, and
+	-- anything between is absorbed into a decaying visual offset.
+	Replication_Ignore_Distance = 0.5,
+	Replication_Snap_Distance = 18,
+	Replication_Correction_Rate = 14,
+	-- Ping is clamped before extrapolating a received position, so a spike
+	-- cannot fling a remote agent across the map.
+	Replication_Max_Extrapolation = 0.35,
 
 	-- Summoning
 	SummonCost = 160,

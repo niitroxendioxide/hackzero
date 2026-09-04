@@ -70,11 +70,23 @@ type SkillLevels = {
 	Special: number,
 }
 
-export type AssistStruct = {
-	TargetId: number,
-	Accepted: Signal<nil>,
+--[[
+	A marked enemy: the target an assist/chain prompt is oriented around
+
+	Mirrored on the client (Client.Libraries.Characters.__Marked) so both sides
+	feed AssistUtil:CalculateSwitchCFrame the same inputs and land in the same
+	place. Accepted only exists server side, where the switch resolves the prompt.
+]]
+export type MarkedEnemyStruct = {
+	TargetId: number?,
+	AssistCharacterId: number?,
 	Time: number,
+	Deadline: number?,
+	Accepted: Signal<nil>?,
 }
+
+-- @deprecated but used for previous call instances
+export type AssistStruct = MarkedEnemyStruct
 
 export type AgentClass = {
 	Name: string,
@@ -314,7 +326,7 @@ export type ServerAgentClass = {
 		@param TargetId Number id for enemy
 		@param Time how long prompt lasts
 	]]
-	MarkTarget: (self: ServerAgentClass, TargetId: number?, Time: number?) -> (AssistStruct),
+	MarkTarget: (self: ServerAgentClass, TargetId: number?, Time: number?, AssistCharacterId: number?) -> (AssistStruct?),
 
 	--[[
 		Not to be confused with ApplyImpulse. This method applies an impulse that keeps aiming forward the rest of the velocity, so if you change your direction, you'll still move with the force given

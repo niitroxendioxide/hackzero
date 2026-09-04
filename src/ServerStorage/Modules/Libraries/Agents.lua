@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Types = require(ReplicatedStorage.Modules.Shared.Types.Agents)
+local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 
 --
 local Agents = {
@@ -13,7 +14,7 @@ function Agents:Add(UserId: number, Agent)
 		Agents.__Players[UserId] = {}
 	end
 
-	if #Agents.__Players[UserId] + 1 > 3 then
+	if #Agents.__Players[UserId] + 1 > Statics.Max_Team_Size then
 		return warn('Too many characters bro!')
 	end
 

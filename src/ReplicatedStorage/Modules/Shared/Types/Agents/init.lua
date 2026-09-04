@@ -1,8 +1,4 @@
 --
--- Agent-domain types, split into submodules (Common/Status/Movement/Core) to keep each file
--- single-domain. This file re-exports everything so `require(Shared.Types.Agents)` keeps
--- working unchanged everywhere it's already used - Rojo resolves a folder with an init.lua
--- to this module, so external requires don't need to change.
 local Common = require(script.Common)
 local Status = require(script.Status)
 local Movement = require(script.Movement)
@@ -32,6 +28,7 @@ export type ProcessEventData = Core.ProcessEventData
 export type HitProcessState = Core.HitProcessState
 export type AgentArtifactClass = Core.AgentArtifactClass
 export type DriveObject = Core.DriveObject
+export type MarkedEnemyStruct = Core.MarkedEnemyStruct
 export type AssistStruct = Core.AssistStruct
 export type AgentClass = Core.AgentClass
 export type ServerAgentClass = Core.ServerAgentClass

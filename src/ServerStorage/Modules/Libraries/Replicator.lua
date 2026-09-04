@@ -117,11 +117,17 @@ function Replicator:RemoveAgent(Player: Player, Name: string)
 	Network:FireForAll('Replicate', Object)
 end
 
-function Replicator:Move(Player: Player, Target: Player?)
-	local Object = buffer.create(2)
+--[[
+	Move and Stop are the same 3 byte packet with the Moving bit flipped. The
+	movement byte names the agent and carries its speed keys, so a receiver
+	applies it to the agent the sender meant rather than to whichever agent it
+	currently believes is active.
+]]
+function Replicator:Move(Player: Player, MovementByte: number, Target: Player?)
+	local Object = buffer.create(3)
 	buffer.writeu8(Object, 0, GameEnum.Replication.Move)
 	buffer.writeu8(Object, 1,  Player:GetAttribute("ReplicationId") :: number)
-
+	buffer.writeu8(Object, 2, MovementByte)
 
 	if Target then
 		Network:Fire('ReliableReplication', Target, Object)
@@ -137,37 +143,41 @@ function Replicator:PivotTo(Agent: AgentTypes.ServerAgentClass, At: CFrame, Targ
 
 	local PlayerPing = math.floor(Ping:Get(Player) * 1000)
 
-	local Object = buffer.create(15)
+	local Object = buffer.create(17)
 	buffer.writeu8(Object, 0, GameEnum.Replication.PivotTo)
 	buffer.writeu8(Object, 1, RepId :: number)
 	buffer.writeu8(Object, 2, AgentId)
-	buffer.writef32(Object, 3, At.X)
-	buffer.writef32(Object, 7, At.Z)
-	buffer.writei16(Object, 11, At.Y * 100)
-	buffer.writeu16(Object, 13, PlayerPing)
+	Math:EncodeCFrame(At, Object, 3)
+	buffer.writeu16(Object, 15, PlayerPing)
 
 	if Target then
-		Network:Fire('Replicate', Target, Object, At)
+		Network:Fire('Replicate', Target, Object)
 	else
-		Network:FireForAllBut(Player, 'Replicate', Object, At)
+		Network:FireForAllBut(Player, 'Replicate', Object)
 	end
 end
 
-function Replicator:Stop(Player: Player)
-	local Object = buffer.create(2)
+function Replicator:Stop(Player: Player, MovementByte: number, Target: Player?)
+	local Object = buffer.create(3)
 	buffer.writeu8(Object, 0, GameEnum.Replication.Stop)
 	buffer.writeu8(Object, 1,  Player:GetAttribute("ReplicationId") :: number)
+	buffer.writeu8(Object, 2, MovementByte)
 
-	Network:FireForAllBut(Player, 'ReliableReplication', Object)
+	if Target then
+		Network:Fire('ReliableReplication', Target, Object)
+	else
+		Network:FireForAllBut(Player, 'ReliableReplication', Object)
+	end
 end
 
-function Replicator:Rotate(Player: Player, Direction: Vector3, Target: Player?)
+function Replicator:Rotate(Player: Player, AgentId: number, Direction: Vector3, Target: Player?)
 	local Angle = math.deg(math.atan2(Direction.X, Direction.Z))
 
-	local Object = buffer.create(4)
+	local Object = buffer.create(5)
 	buffer.writeu8(Object, 0, GameEnum.Replication.Rotate)
-	buffer.writei16(Object, 1, Angle * 180)
-	buffer.writeu8(Object, 3,  Player:GetAttribute("ReplicationId") :: number)
+	buffer.writeu8(Object, 1,  Player:GetAttribute("ReplicationId") :: number)
+	buffer.writeu8(Object, 2, AgentId)
+	buffer.writei16(Object, 3, Angle * 180)
 
 	if Target then
 		Network:Fire('ReliableReplication', Target, Object)
@@ -226,14 +236,26 @@ function Replicator:SyncVelocities(Player: Player, Target: Player, ...)
 	Network:Fire('Replicate', Target, Object, ...)
 end
 
-function Replicator:CharacterSwitch(Player: Player, Index: number, Direction: number, TargetId: number)
-	local Object = buffer.create(4)
+--[[
+	Broadcast a resolved character switch.
+
+	Carries the destination CFrame so receivers never have to reproduce the
+	server's random draws, and goes to everyone *including* the owner: for them
+	it is a correction against what they already predicted, which CorrectTo
+	discards when the prediction was right.
+
+	Reliable, because a dropped switch would leave the owner and the server
+	permanently disagreeing about which agent is active.
+]]
+function Replicator:CharacterSwitch(Player: Player, Index: number, TargetId: number?, At: CFrame)
+	local Object = buffer.create(16)
 	buffer.writeu8(Object, 0, GameEnum.Replication.CharacterSwitch)
 	buffer.writeu8(Object, 1, Index)
 	buffer.writeu8(Object, 2,  Player:GetAttribute("ReplicationId") :: number)
 	buffer.writeu8(Object, 3, TargetId or 0)
+	Math:EncodeCFrame(At, Object, 4)
 
-	Network:FireForAllBut(Player, 'Replicate', Object)
+	Network:FireForAll('ReliableReplication', Object)
 end
 
 function Replicator:SetColliderArea(Player: Player, State: boolean, Trigger)

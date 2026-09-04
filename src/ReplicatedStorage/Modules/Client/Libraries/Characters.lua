@@ -18,22 +18,25 @@ local InterfaceStates = require(Client.Packages.InterfaceStates)
 --
 local Characters = {
 	__Player_Data = {} :: {[number]: {Active: number, List: {AgentTypes.AgentClass}}},
-	__Targets = {},
-	__Target_Threads = {},
-	__SwitchTo = 0,
+	-- Client mirror of ServerAgentClass.__Current_Target, so both sides feed
+	-- AssistUtil:CalculateSwitchCFrame the same target and land in the same spot.
+	__Marked = {} :: {[Player]: AgentTypes.MarkedEnemyStruct},
+	__Marked_Threads = {} :: {[Player]: thread},
 	__Current_Hitting_Target = 0,
-	
+
 	SwitchedToAssist = Signal.new(),
 }
 
 local Switch_Threads = {}
 
-function Characters:QueueNextSwitchTo(Id: number)
-	Characters.__SwitchTo = Id or 0;
+function Characters:GetMarkedTarget(Player: Player): AgentTypes.MarkedEnemyStruct?
+	return Characters.__Marked[Player]
 end
 
-function Characters:GetCharacterTarget(Player: Player)
-	return Characters.__Targets[Player]
+function Characters:GetCharacterTarget(Player: Player): number?
+	local Marked = Characters.__Marked[Player]
+
+	return Marked and Marked.TargetId or nil
 end
 
 function Characters:GetCharacterFromHitbox(Hitbox: BasePart)
@@ -48,40 +51,79 @@ function Characters:GetCharacterFromHitbox(Hitbox: BasePart)
 	return;
 end
 
-function Characters:SetCharacterTarget(Player: Player, Id: number, Time: number)
-	if Characters.__Target_Threads[Player] then
-		task.cancel(Characters.__Target_Threads[Player])
+--[[
+	Mirror of ServerAgentClass:MarkTarget. Records both the enemy to orient the
+	switch around and the agent the prompt wants switched in, so an assist swap
+	predicts identically to what the server computes.
+
+	Passing a nil TargetId (or a non positive Time) clears the mark and its
+	expiry thread.
+]]
+function Characters:MarkTarget(Player: Player, TargetId: number?, Time: number?, AssistCharacterId: number?)
+	if Characters.__Marked_Threads[Player] then
+		task.cancel(Characters.__Marked_Threads[Player])
+		Characters.__Marked_Threads[Player] = nil
 	end
 
-	if (Time or 0) <= 0 then
-		Characters.__Targets[Player] = nil
-		Characters.__Target_Threads[Player] = nil
-		
+	if TargetId == nil or (Time or 0) <= 0 then
+		Characters.__Marked[Player] = nil
+
 		return
-	else
-		Characters.__Targets[Player] = Id
 	end
 
-	Characters.__Target_Threads[Player] = task.delay(Time, function()
-		Characters.__Targets[Player] = nil
-		Characters.__Target_Threads[Player] = nil
+	Characters.__Marked[Player] = {
+		TargetId = TargetId,
+		AssistCharacterId = AssistCharacterId,
+		Time = Time :: number,
+		Deadline = os.clock() + (Time :: number),
+	}
+
+	Characters.__Marked_Threads[Player] = task.delay(Time, function()
+		Characters.__Marked[Player] = nil
+		Characters.__Marked_Threads[Player] = nil
 	end)
 end
 
-function Characters:Switch(ReplicationId: number, Direction: number, EnemyTargetId: number)
+--[[
+	Local (predicted) switch for the player who owns this client.
+
+	Returns the seed it rolled alongside the result, and the caller must send
+	that seed to the server in the CharacterSwitch packet: the server recomputes
+	the destination with AssistUtil and only agrees with this prediction if it
+	draws from an identically seeded Random.
+
+	@return Result, NewIndex, Seed
+]]
+function Characters:Switch(ReplicationId: number, Direction: number, EnemyTargetId: number?, ForceRotate: boolean?)
 	Characters:Build(ReplicationId)
 
 	--
 	Direction = math.sign(Direction)
 
+	local Seed = math.random(0, 255)
 	local CurrentCharacter = Characters:GetCurrent(ReplicationId)
 	local Data = Characters.__Player_Data[ReplicationId]
-	local TargetObject = EnemyTargetId and Enemies:GetEnemy(EnemyTargetId)
-	local NewCFrame = AssistUtil:CalculateSwitchCFrame(Data.List[Data.Active], Direction, TargetObject)
+	local PreviousAgent = Data.List[Data.Active]
 
-	if Characters.__SwitchTo > 0 then
-		Data.Active = Characters.__SwitchTo
-		Characters.__SwitchTo = 0
+	local IsLocal = Players.LocalPlayer:GetAttribute("ReplicationId") == ReplicationId
+	local Marked = IsLocal and Characters.__Marked[Players.LocalPlayer] or nil
+
+	-- Same precedence the server applies: a live mark outranks whatever the
+	-- caller passed, in both directions. Resolving this only on forward swaps
+	-- (as the caller used to) made a backward swap during a prompt compute
+	-- without a target while the server computed with one.
+	local TargetObject = EnemyTargetId and Enemies:GetEnemy(EnemyTargetId) or nil
+	if Marked and Marked.TargetId then
+		TargetObject = Enemies:GetEnemy(Marked.TargetId)
+	end
+
+	local NewCFrame = AssistUtil:CalculateSwitchCFrame(PreviousAgent, Direction, TargetObject, ForceRotate, Seed)
+
+	PreviousAgent:Stop()
+
+	if Marked and (Marked.AssistCharacterId or 0) > 0 then
+		Data.Active = Marked.AssistCharacterId :: number
+		Characters:MarkTarget(Players.LocalPlayer, nil)
 		Characters.SwitchedToAssist:Fire()
 	else
 		if Data.Active + Direction > #Data.List then
@@ -112,22 +154,27 @@ function Characters:Switch(ReplicationId: number, Direction: number, EnemyTarget
 	local CurrentAgentDataId = Data.Active
 	local Result = Characters:HandleSwitchFor(ReplicationId, CurrentCharacter, NewCFrame, false, TargetObject ~= nil)
 
-	return Result, CurrentAgentDataId
+	return Result, CurrentAgentDataId, Seed
 end
 
-function Characters:SwitchToIndex(RepId: number, Idx: number, EnemyTargetId: number?): boolean
+--[[
+	Switch driven by the server's CharacterSwitch broadcast. The destination is
+	decoded from the packet rather than recomputed, so a remote client never has
+	to reproduce the server's random draws.
+]]
+function Characters:SwitchToIndex(RepId: number, Idx: number, At: CFrame, HasTarget: boolean?): boolean
 	local Data = Characters.__Player_Data[RepId]
+	if not Data or not Data.List[Idx] then
+		return false
+	end
 
 	local Previous = Characters:GetCurrent(RepId)
-	local TargetObject = EnemyTargetId and Enemies:GetEnemy(EnemyTargetId)
-	local NewCFrame = AssistUtil:CalculateSwitchCFrame(Data.List[Data.Active], 1, TargetObject)
+	Previous:Stop()
 
 	Data.Active = Idx
 
 	--
-	local Result = Characters:HandleSwitchFor(RepId, Previous, NewCFrame, true, TargetObject ~= nil)
-
-	return Result
+	return Characters:HandleSwitchFor(RepId, Previous, At, true, HasTarget)
 end
 
 function Characters:HandleSwitchFor(RepId: number, Previous: Types.AgentClass, At: CFrame, Snap: boolean?, HasTarget: boolean?)

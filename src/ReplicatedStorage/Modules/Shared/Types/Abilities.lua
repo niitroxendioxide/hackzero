@@ -90,7 +90,7 @@ export type AbilityClass = {
 	Get: <T>(self: AbilityClass, Agent: Caster, Key: string) -> T,
 	Increase: (self: AbilityClass, Agent: Caster, Key: string, Data: {Rate: number, Limit: number}?) -> (),
 
-	Play: (self: AbilityClass, Agent: Caster, Type: string, State: 'Begin' | 'End', Context: ClientSkillContext) -> (),
+	Play: (self: AbilityClass, Agent: Caster, Type: string, State: 'Begin' | 'Release', Context: ClientSkillContext) -> (),
 
 
 	--[[

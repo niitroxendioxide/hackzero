@@ -155,7 +155,7 @@ export type State = 'Idle' | 'Attacking' | 'Dashing' | 'Stunned' | 'Frozen' | 'A
 export type StatesClass = {
 	__Effects: {},
 	__Character: string,
-	__Keys: {Running: boolean, Sprinting: boolean},
+	__Keys: {Sprint: boolean, Jog: boolean},
 	__State: State,
 	__Last_Change: number,
 
@@ -243,6 +243,8 @@ export type AscensionData = {
 	},
 }
 
+export type EnemyTierLevel = "Boss" | "Elite" | "Normal"
+
 export type CharacterData = {
 	Display_Name: string,
 	Nickname: string,
@@ -253,6 +255,7 @@ export type CharacterData = {
 	NotOnBanner: boolean?,
 	Model: string?,
 	IconGlowColor: Color3?,
+	EnemyTier: EnemyTierLevel?,
 
 	Appearance: CharacterAppearanceData,
 

@@ -240,8 +240,9 @@ function Controller:HandleInput(Key: string, State: string)
 		if InputType ~= nil then
 			local LocalPlayerId = Players.LocalPlayer:GetAttribute('ReplicationId') :: number
 			local Direction = InputType == 1 and -1 or 1
-			local TargetObject = Enemies:GetEnemy(Controller.__Chain_Attack_Prompt.Target)
-			local Result, NewAgentId = Characters:Switch(LocalPlayerId, Direction, TargetObject, true)
+			local TargetId = Controller.__Chain_Attack_Prompt.Target
+			local TargetObject = Enemies:GetEnemy(TargetId)
+			local Result, NewAgentId, Seed = Characters:Switch(LocalPlayerId, Direction, TargetId, true)
 			if not Result then
 				Replicator:Replicate(GameEnum.Replication.CancelChainAttack)
 
@@ -255,7 +256,7 @@ function Controller:HandleInput(Key: string, State: string)
 			local Context = {Target = TargetObject}
 
 			CharacterMoveset:Begin('Chain_Attack', NewAgentObj, Context)
-			Replicator:Replicate(GameEnum.Replication.UseChainAttack, NewAgentId, Direction, NewAgentObj:GetRotation())
+			Replicator:Replicate(GameEnum.Replication.UseChainAttack, NewAgentId, Seed, NewAgentObj:GetRotation(), Direction, true)
 		else
 			Replicator:Replicate(GameEnum.Replication.CancelChainAttack)
 		end

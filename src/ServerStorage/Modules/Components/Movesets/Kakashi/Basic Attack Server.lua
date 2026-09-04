@@ -5,38 +5,47 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
-local Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
-local Types = require(Shared.Types)
+local Table = require(Shared.Utility.Table)
+local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 local KakashiController = require(script.Parent.KakashiGameplayController)
 
 --
 local Ability = AbilityClass.new()
 
---[[
-    Holding Basic Attack with a full Lightning meter enters Lightning Mode.
-    Authoritative here; the client half only plays the effect.
-]]
-const function TryEnterLightningMode(Caster: Types.GenericClass): boolean
-	const Hold_Time = Ability:FromData('Lightning_Mode_Hold_Time')
-	const Began = Ability:Get(Caster, 'HoldStart') or 0
-	const Was_Held = (os.clock() - Began) >= Hold_Time
+const function TryEnterLightningMode(Caster: Types.ServerAgent): boolean
+	Ability:Save(Caster, 'SkillHeld', true)
 
-	if not Was_Held or not KakashiController:IsReady(Caster) then
-		return false
+	const Hold_Time = Ability:FromData('Lightning_Mode_Hold_Time')
+	const HoldStart = os.clock();
+		
+	Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Hold_Time)
+
+	while (Ability:Get(Caster, "SkillHeld") == true) do
+		const Was_Held = (os.clock() - HoldStart) >= Hold_Time
+
+		if Was_Held then
+			KakashiController:EnterLightningMode(Caster, Ability:FromData('Lightning_Mode_Time'))
+
+			return true
+		elseif not KakashiController:IsReady(Caster) then
+			break;
+		end
+
+		task.wait()
 	end
 
-	return KakashiController:EnterLightningMode(Caster, Ability:FromData('Lightning_Mode_Time'))
+	return false
 end
 
-function Ability:Play(Caster: Types.GenericClass, _, State, Ctx): ()
+function Ability:Play(Caster: Types.ServerAgent, _, State, Ctx): ()
 	if State == 'Release' then
-		TryEnterLightningMode(Caster)
+		Ability:Save(Caster, 'SkillHeld', false)
 
 		return
+	elseif KakashiController:IsReady(Caster) then
+		TryEnterLightningMode(Caster);
 	end
-
-	Ability:Save(Caster, 'HoldStart', os.clock())
 
 	local M1_Count = Ctx.M1_Count
 	if not(M1_Count) then
@@ -46,14 +55,10 @@ function Ability:Play(Caster: Types.GenericClass, _, State, Ctx): ()
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
 	local HitData = Table.CopyDeep(Ability:FromData("Hit"))
 
-	--[[
-		In Lightning Mode the first two punches and the last kick turn Electric and shave the
-		target's daze resistance (moveset.md).
-	]]
 	const In_Lightning_Mode = KakashiController:IsLightningMode(Caster)
 	const Electric_Steps = Ability:FromData('Lightning_Mode_Steps')
 	const Electric_Hit = Ability:FromData('Lightning_Mode_Hit')
-	const Daze_Shred = Ability:FromData('Lightning_Mode_Daze_Shred')
+	const Daze_Shred_Time = Ability:FromData('Lightning_Mode_Daze_Shred_Time')
 
 	local Sequence = Ability:Begin(Caster, {}, true)
 
@@ -88,7 +93,7 @@ function Ability:Play(Caster: Types.GenericClass, _, State, Ctx): ()
 				Ability:Hit(Caster, Target, HitData)
 
 				if Is_Electric_Step then
-					KakashiController:ShredResistance(Target, Daze_Shred)
+					KakashiController:ShredResistance(Target, Daze_Shred_Time)
 				elseif HitData.Affliction == 'Electric' then
 					KakashiController:AddCharge(Caster, 1)
 				end

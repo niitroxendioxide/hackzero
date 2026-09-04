@@ -83,7 +83,7 @@ const function RaijuTsuigaPair(Caster: Types.ServerAgent, Context: Types.SkillCo
 	const Dog_Max_Time = Ability:FromData('Dog_Max_Time')
 	const Dog_Size = Ability:FromData('Dog_Size')
 	const Dog_Spread = Ability:FromData('Dog_Spread')
-	const Shred_Data = Ability:FromData('Dog_Resistance_Shred')
+	const Dog_Daze_Shred_Time = Ability:FromData('Dog_Resistance_Shred_Time')
 
 	Ability:Begin(Caster, {
 		{0, function()
@@ -96,12 +96,11 @@ const function RaijuTsuigaPair(Caster: Types.ServerAgent, Context: Types.SkillCo
 
 		{Startup_Time, function()
 			for Index = 1, Dog_Count do
-				-- Spread the dogs left/right of the caster, one per clone.
 				const Side = (Index % 2 == 0) and 1 or -1
 				const Origin = Caster:GetPivot() * CFrame.new(Dog_Spread * Side, -1, -3)
 				const Hit_List = {}
 
-				Ability:CreateMovingHitbox(Caster, Origin, Dog_Size, Dog_Speed, Dog_Max_Time, function(Enemy)
+				local Projectile = Ability:CreateMovingHitbox(Caster, Origin, Dog_Size, Dog_Speed, Dog_Max_Time, function(Enemy)
 					if Hit_List[Enemy] then
 						return
 					end
@@ -110,8 +109,10 @@ const function RaijuTsuigaPair(Caster: Types.ServerAgent, Context: Types.SkillCo
 
 					Ability:Hit(Caster, Enemy, DogHit)
 					KakashiController:Paralyze(Enemy, Paralyze_Time, Caster)
-					KakashiController:ShredResistance(Enemy, Shred_Data)
+					KakashiController:ShredResistance(Enemy, Dog_Daze_Shred_Time)
 				end)
+
+				Projectile:Debug()
 			end
 
 			KakashiController:AddCharge(Caster, 1)

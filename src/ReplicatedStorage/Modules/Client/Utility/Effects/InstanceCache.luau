@@ -109,6 +109,12 @@ function InstanceCache:StoreInPool(PoolId: string, Object: Instance)
     Object:PivotTo(CFrame.new(0, 2500, 0))
     table.insert(Pool.Items, Object);
 
+    if (Object:IsA('Model')) and typeof(Object.PrimaryPart) == 'Instance' then
+        Object.PrimaryPart.Anchored = true;
+    elseif Object:IsA('BasePart') then
+        Object.Anchored = true;
+    end
+
     ---
     if Object:GetAttribute('PoolBorrowed') ~= true then
         return;

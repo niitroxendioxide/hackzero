@@ -300,14 +300,22 @@ function AgentClass:GetRotation(): any
 	return self.__Character.__Controller.__Rotation
 end
 
-function AgentClass:SyncVelocities(LM, SV, MV, V)
+--[[
+	Adopt the server's velocity state, in the order the server sends it.
+
+	The arguments used to be rotated once by the caller and again here, which
+	landed Velocity in __LastMovementVelocity and vice versa. MovementVelocity is
+	deliberately absent: it is a Vector3 on the server but a scalar on the client
+	(it is rebuilt each frame from the speed keys and the facing), so there is
+	nothing meaningful to copy across.
+]]
+function AgentClass:SyncVelocities(Velocity, LastMovementVelocity, SurfaceVelocity)
 	local Character = self.__Character;
 	local Controller = Character.__Controller;
 
-	Controller.__Velocity = LM or Controller.__Velocity
-	Controller.__SurfaceVelocity = SV or Controller.__SurfaceVelocity
-	Controller.__MovementVelocity = MV or Controller.__MovementVelocity
-	Controller.__LastMovementVelocity = V or Controller.__LastMovementVelocity
+	Controller.__Velocity = Velocity or Controller.__Velocity
+	Controller.__LastMovementVelocity = LastMovementVelocity or Controller.__LastMovementVelocity
+	Controller.__SurfaceVelocity = SurfaceVelocity or Controller.__SurfaceVelocity
 end
 
 function AgentClass:GetPivot(Server: boolean)
@@ -377,6 +385,10 @@ end
 
 function AgentClass:PivotTo(...)
 	return self.__Character:PivotTo(...)
+end
+
+function AgentClass:CorrectTo(...)
+	return self.__Character:CorrectTo(...)
 end
 
 function AgentClass:ApplyImpulse(...)

@@ -6,23 +6,43 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
+local Math = require(Shared.Utility.Math)
 local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters)
 
 --
 local Controller = {
 	__LastRotationValue = Vector3.zAxis,
 	__LastUpdate = os.clock(),
-	__ReplicationFrequency = 1/2,
+	__ReplicationFrequency = 1/12,
 	__Ping = 0,
 }
 
+
+local function GetMovementByte(): number?
+	local Agent, AgentId = Characters:GetCurrent(Player:GetAttribute("ReplicationId"))
+	if not Agent or not AgentId then
+		return nil
+	end
+
+	return Math:EncodeMovementByte(AgentId, Agent:IsMoving(), Agent:GetKey("Sprint") == true, Agent:GetKey("Jog") == true)
+end
+
+--[[
+	Args: {NewIndex, Seed, Rotation, Direction, ForceRotate}
+]]
 function EncodeRotation(Args): buffer
 	local Vec = Args[3].Unit
 	local Angle = math.deg(math.atan2(Vec.X, Vec.Z))
 
-	local Buffer = buffer.create(4)
+	local Flags = 0
+	if (Args[4] or 1) < 0 then Flags = bit32.bor(Flags, 0x01) end
+	if Args[5] == true then Flags = bit32.bor(Flags, 0x02) end
+
+	local Buffer = buffer.create(6)
 	buffer.writeu8(Buffer, 1, Args[1])
 	buffer.writei16(Buffer, 2, Angle * 180)
+	buffer.writeu8(Buffer, 4, Args[2] or 0)
+	buffer.writeu8(Buffer, 5, Flags)
 
 	table.clear(Args)
 
@@ -33,12 +53,16 @@ function Controller:Replicate(Action: number, ...)
 	local Args = table.pack(...)
 	local EventName = 'Replicate';
 	local Buffer
-	if Action == GameEnum.Replication.Move then
-		local Agent = Characters:GetCurrent(Player:GetAttribute("ReplicationId"))
+	if Action == GameEnum.Replication.Move or Action == GameEnum.Replication.Stop then
+		local MovementByte = GetMovementByte()
+		if MovementByte == nil then
+			return
+		end
 
-		Buffer = buffer.create(3)
-		buffer.writeu8(Buffer, 1, Agent:GetKey("Sprint") == true and 1 or 0)
-		buffer.writeu8(Buffer, 2, Agent:GetKey("Jog") == true and 1 or 0)
+		Buffer = buffer.create(2)
+		buffer.writeu8(Buffer, 1, MovementByte)
+
+		Args = {}
 	elseif Action == GameEnum.Replication.MatchAirborne then
 		local Time = Args[1]
 
@@ -46,8 +70,6 @@ function Controller:Replicate(Action: number, ...)
 		Args = {}
 		Buffer = buffer.create(3);
 		buffer.writeu16(Buffer, 1, Time * 100);
-	elseif Action == GameEnum.Replication.Stop then
-		Buffer = buffer.create(1)
 	elseif Action == GameEnum.Replication.KeySwitch then
 		Buffer = buffer.create(2)
 		local Key = Args[1]
@@ -63,11 +85,17 @@ function Controller:Replicate(Action: number, ...)
 
 		Controller.__LastRotationValue = Rotation
 
+		local MovementByte = GetMovementByte()
+		if MovementByte == nil then
+			return
+		end
+
 		local Vec = Args[1].Unit
 		local Angle = math.atan2(Vec.X, Vec.Z)
 
-		Buffer = buffer.create(3)
-		buffer.writei16(Buffer, 1, Angle * 5133)
+		Buffer = buffer.create(4)
+		buffer.writeu8(Buffer, 1, MovementByte)
+		buffer.writei16(Buffer, 2, Angle * 5133)
 
 		Args = {}
 	elseif Action == GameEnum.Replication.PivotTo then
@@ -77,15 +105,21 @@ function Controller:Replicate(Action: number, ...)
 
 		Controller.__LastUpdate = os.clock()
 
+		local MovementByte = GetMovementByte()
+		if MovementByte == nil then
+			return
+		end
+
 		local At = Args[1]
-		Buffer = buffer.create(12)
-		buffer.writef32(Buffer, 2, At.X)
-		buffer.writef32(Buffer, 6, At.Z)
-		buffer.writei16(Buffer, 10, At.Y * 100)
+		Buffer = buffer.create(14)
+		buffer.writeu8(Buffer, 1, MovementByte)
+		Math:EncodeCFrame(At, Buffer, 2)
 
 		Args = {}
 	elseif Action == GameEnum.Replication.CharacterSwitch then
 		Buffer = EncodeRotation(Args)
+
+		EventName = 'ReliableReplication'
 	elseif Action == GameEnum.Replication.UseChainAttack then
 		Buffer = EncodeRotation(Args)
 
@@ -127,5 +161,10 @@ end
 function Controller:GetPing(): number
 	return math.max(Controller.__Ping, 0)
 end
+
+function Controller:GetPingMillis(): number
+	return math.max(Controller.__Ping / 1000, 0)
+end
+
 
 return Controller
