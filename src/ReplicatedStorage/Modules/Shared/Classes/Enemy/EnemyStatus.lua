@@ -144,18 +144,26 @@ function EnemyStatus:Heal(Amount: number)
 end
 
 function EnemyStatus:GetDamageTakenMultiplier()
-	return 1
+	local BaseDamageTakenMultiplier = 1;
+
+	return BaseDamageTakenMultiplier;
 end
 
 function EnemyStatus:GetResistanceMultiplier()
-	return .15
+	local BaseResistanceMultiplier = .15;
+
+	return BaseResistanceMultiplier
 end
 
-function EnemyStatus:GetElementMultiplier(Element: Types.Element)
+function EnemyStatus.GetElementMultiplier(self: Types.EnemyStatus, Element: Types.Element)
 	local IsInWeakness = table.find(self.__Stats.Weakness, Element)
 	local IsInStrengths = table.find(self.__Stats.Strength, Element)
-	
-	return (IsInWeakness and ElementDatabase.Weakness_Multiplier) or (IsInStrengths and ElementDatabase.Strength_Multiplier) or 1
+
+	local BaseMultiplier = (IsInWeakness and ElementDatabase.Weakness_Multiplier) or (IsInStrengths and ElementDatabase.Strength_Multiplier) or 1;
+	local Multipliers = self:GetStat('Affliction_Resistance') or 0
+	local Total = (BaseMultiplier) / math.max(1 + Multipliers, 0.001)
+
+	return Total
 end
 
 function EnemyStatus:FillAffliction(Type: string, Amount: number): ()

@@ -33,7 +33,7 @@ local Replicator = require(Client.Libraries.Replicator)
 local AbilityClass = {} :: {[string]: (self: Types.AbilityClass, any) -> any, new: () -> Types.AbilityClass}
 AbilityClass.__index = AbilityClass
 
-function AbilityClass.new(Holdable: boolean): Types.AbilityClass
+function AbilityClass.new(): Types.AbilityClass
 	local Dir = string.split(debug.info(2, 's'), '.')
 
 	local self = setmetatable({}, AbilityClass)
@@ -43,7 +43,6 @@ function AbilityClass.new(Holdable: boolean): Types.AbilityClass
 
 	self.__Active_Sequences = {}
 	self.__Cache = {}
-	self.__Holdable = Holdable
 	self.__Signal = Signal.new()
 	self.__Cooldown = Signal.new()
 	self.__Ability_Data = {}

@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
+local Statics = require(Shared.Database.Statics)
 local Companion = require(Client.Classes.Companion)
 local Companions = require(Client.Libraries.Companions)
 local CompanionsDatabase = require(Shared.Database.Companions)
@@ -157,23 +158,26 @@ function Controller:RemoveAgent(Buffer: buffer)
 end
 
 function Controller:Rotate(Buffer: buffer)
-	local Angle = math.rad(buffer.readi16(Buffer, 1) / 180)
+	local UserId = buffer.readu8(Buffer, 1)
+	local AgentId = buffer.readu8(Buffer, 2)
+	local Angle = math.rad(buffer.readi16(Buffer, 3) / 180)
 	local X, Z = math.sin(Angle), math.cos(Angle)
-	local Rebuilt = Vector3.new(X, 0, Z)
 
-	local UserId = buffer.readu8(Buffer, 3)
-	local Character = CharacterLibrary:GetCurrent(UserId)
+	local Character = CharacterLibrary:GetAgent(UserId, AgentId)
+	if not Character then
+		return
+	end
 
-	Character:Look(Rebuilt, true, true)
+	-- Not instant: remote headings ease in via the rotation lerp in Physics
+	-- rather than snapping. Bypass still set so an attacking agent still turns.
+	Character:Look(Vector3.new(X, 0, Z), false, true)
 end
 
 function Controller:PivotTo(Buffer: buffer)
 	local UserId = buffer.readu8(Buffer, 1)
 	local AgentId = buffer.readu8(Buffer, 2)
-	local X, Z = buffer.readf32(Buffer, 3), buffer.readf32(Buffer, 7)
-	local Y = buffer.readi16(Buffer, 11) / 100
-	local Vector = Vector3.new(X, Y, Z)
-	local Ping = (buffer.readu16(Buffer, 13) / 1000)
+	local At = Math:DecodeCFrame(Buffer, 3)
+	local Ping = buffer.readu16(Buffer, 15) / 1000
 
 	local Character = CharacterLibrary:GetAgent(UserId, AgentId)
 	if not Character then
@@ -184,8 +188,29 @@ function Controller:PivotTo(Buffer: buffer)
 		Character:MarkServerAction(GameEnum.Replication.PivotTo)
 	end
 
-	Character:PivotTo(CFrame.lookAlong(Vector, Character.__Character.__Controller.__Rotation), true)
-	Character:Update(Ping)
+	--[[
+		The packet describes where the sender was a round trip ago, so aim the
+		correction at where they are now.
+
+		The velocity used is our own local simulation of this agent, not the
+		sender's -- the packet carries no velocity, and the local sim already
+		knows the movement state because Move/Stop/Rotate arrive reliably. That
+		works while the sim is confident, but it cuts both ways: a wrong local
+		velocity makes extrapolation worse than none at all. So it is skipped
+		while a dash or knockback impulse is decaying, which is exactly when the
+		velocity is large, changing fast, and most likely to differ between the
+		two machines.
+
+		Ping is clamped so a spike cannot fling the agent across the map.
+	]]
+	local Controller_ = Character.__Character.__Controller
+	local Target = At.Position
+
+	if not Controller_:HasActiveImpulse() then
+		Target += Controller_:GetTotalVelocity() * math.clamp(Ping, 0, Statics.Replication_Max_Extrapolation)
+	end
+
+	Character:CorrectTo(CFrame.lookAlong(Target, At.LookVector))
 end
 
 function Controller:KeySwitch(Buffer: buffer, Value: boolean)
@@ -205,20 +230,36 @@ function Controller:KeySwitch(Buffer: buffer, Value: boolean)
 	end
 end
 
-function Controller:Move(Buffer: buffer)
+--[[
+	Move and Stop are the same packet with the Moving bit flipped: the movement
+	byte says which agent it is about and what its speed keys are, so a packet
+	that crosses a character switch still lands on the agent the sender meant.
+]]
+local function ApplyMovementByte(Buffer: buffer)
 	local UserId = buffer.readu8(Buffer, 1)
+	local AgentId, Moving, Sprint, Jog = Math:DecodeMovementByte(buffer.readu8(Buffer, 2))
 
-	local Character = CharacterLibrary:GetCurrent(UserId)
+	local Character = CharacterLibrary:GetAgent(UserId, AgentId)
+	if not Character then
+		return
+	end
 
-	Character:Move()
+	Character:SetKey('Sprint', Sprint)
+	Character:SetKey('Jog', Jog)
+
+	if Moving then
+		Character:Move()
+	else
+		Character:Stop()
+	end
+end
+
+function Controller:Move(Buffer: buffer)
+	ApplyMovementByte(Buffer)
 end
 
 function Controller:Stop(Buffer: buffer)
-	local UserId = buffer.readu8(Buffer, 1)
-
-	for _, Character in CharacterLibrary:GetCharacters(UserId) do
-		Character:Stop()
-	end
+	ApplyMovementByte(Buffer)
 end
 
 function Controller:ClearPlayerData(Buffer: buffer)
@@ -227,7 +268,7 @@ function Controller:ClearPlayerData(Buffer: buffer)
 	CharacterLibrary:RemoveAll(Id)
 end
 
-function Controller:SyncVelocities(Buffer: buffer, V, LM, SV, MV)
+function Controller:SyncVelocities(Buffer: buffer, Velocity, LastMovementVelocity, SurfaceVelocity)
 	local UserId = buffer.readu8(Buffer, 1)
 
 	local CurrentCharacter = CharacterLibrary:GetCurrent(UserId)
@@ -235,18 +276,42 @@ function Controller:SyncVelocities(Buffer: buffer, V, LM, SV, MV)
 		return;
 	end
 
-	CurrentCharacter:SyncVelocities(LM, SV, MV, V)
+	CurrentCharacter:SyncVelocities(Velocity, LastMovementVelocity, SurfaceVelocity)
 end
 
+--[[
+	The server resolves the switch destination and ships it in the packet, so a
+	receiving client never has to reproduce the server's random draws.
+
+	The owner gets this broadcast too: for them it is a correction against what
+	they already predicted, and CorrectTo discards it when the prediction was
+	right (the normal case now that the seed travels with the request).
+]]
 function Controller:CharacterSwitch(Buffer: buffer)
 	local Index = buffer.readu8(Buffer, 1)
 	local UserId = buffer.readu8(Buffer, 2)
 	local EnemyTargetId = buffer.readu8(Buffer, 3)
+	local At = Math:DecodeCFrame(Buffer, 4)
 
 	local Previous = CharacterLibrary:GetCurrent(UserId)
+	if not Previous then
+		return
+	end
+
 	local Moving = Previous:IsMoving()
 
-	CharacterLibrary:SwitchToIndex(UserId, Index, EnemyTargetId)
+	if IsOwnId(UserId) then
+		local Current = CharacterLibrary:GetAgent(UserId, Index)
+
+		-- Already switched locally; only reconcile the position.
+		if Current and CharacterLibrary:GetCurrent(UserId) == Current then
+			Current:CorrectTo(At)
+
+			return
+		end
+	end
+
+	CharacterLibrary:SwitchToIndex(UserId, Index, At, EnemyTargetId > 0)
 
 	if Moving then
 		local Current = CharacterLibrary:GetCurrent(UserId)

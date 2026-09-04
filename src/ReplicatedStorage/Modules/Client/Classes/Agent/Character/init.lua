@@ -115,6 +115,15 @@ function CharacterClass:PivotTo(At: CFrame, IgnoreModel: boolean?): ()
 end
 
 
+--[[
+	Smoothed counterpart to PivotTo, for positions coming from the server.
+	Never touches the visual model directly -- the physics controller absorbs
+	the error and the model follows its collider.
+]]
+function CharacterClass:CorrectTo(At: CFrame): boolean
+	return self.__Controller:CorrectTo(At)
+end
+
 function CharacterClass:Look(Direction: Vector3, ...)
 	if Direction.Magnitude <= 0 then
 		return

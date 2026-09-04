@@ -324,11 +324,7 @@ const function Raiden(Caster: Types.ClientAgent, Context: Types.ClientSkillConte
 	Sequence:Start()
 end
 
---[[
-	ROUGH DRAFT - Lightning Mode replaces Raiden with 'Raikiri: Denko Rensen': no clone and no
-	lightning blade, Kakashi just cuts through the target repeatedly while moving left and right.
-	The zig-zag is sold by the animation and the dash VFX. Client half is feel only.
-]]
+
 const function DenkoRensen(Caster: Types.ClientAgent, Context: Types.ClientSkillContext)
 	const Startup_Time = Ability:FromData('Denko_Rensen_Startup_Time')
 	const Dash_Count = Ability:FromData('Denko_Rensen_Dash_Count')
@@ -391,10 +387,14 @@ end
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster)
 	local LastCast = Ability:Get(Caster, 'LastCast') or 0
+	local IsSecondUse = Ability:Get(Caster, 'SecondUse')
 
-	if (os.clock() - LastCast < 5) then
-		Ability:PushToContextBuffer(true)
+	if IsSecondUse then
+		
+	elseif (os.clock() - LastCast < 5) and IsSecondUse then
 		Ability:Save(Caster, 'next_use_raiden', true)
+		Ability:Save(Caster, 'SecondUse', true)
+		Ability:PushToContextBuffer(true)
 	end
 end)
 
@@ -405,7 +405,6 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
 	if IsRaiden then
 		Ability:Save(Caster, 'next_use_raiden', false)
 
-		-- In Lightning Mode the follow-up becomes Denko Rensen instead of Raiden (moveset.md).
 		if Caster:HasTag('LightningMode') then
 			DenkoRensen(Caster, Context)
 		else

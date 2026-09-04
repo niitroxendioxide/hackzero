@@ -27,7 +27,7 @@ function Ability:Play(Agent: Types.AgentClass, Key: string)
 	local Localplr = Plr:GetAttribute("ReplicationId")
 	local TargetId = Direction == 1 and CharacterLibrary:GetCharacterTarget(Plr) or nil
 
-	local SuccessSwitching, NewIndex = CharacterLibrary:Switch(Localplr, Direction, TargetId)
+	local SuccessSwitching, NewIndex, Seed = CharacterLibrary:Switch(Localplr, Direction, TargetId)
 	if not SuccessSwitching then
 		return
 	end
@@ -44,7 +44,7 @@ function Ability:Play(Agent: Types.AgentClass, Key: string)
 		NewAgent:AddTag('Switching', 0.45)
 	end
 
-	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, NewIndex, nil, NewAgent:GetRotation())
+	Replicator:Replicate(GameEnum.Replication.CharacterSwitch, NewIndex, Seed, NewAgent:GetRotation(), Direction, false)
 end
 
 return Ability

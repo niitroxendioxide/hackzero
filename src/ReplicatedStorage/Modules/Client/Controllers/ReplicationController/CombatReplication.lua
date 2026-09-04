@@ -427,14 +427,15 @@ function Controller:PromptAssist(Buffer: buffer)
 		return
 	end
 
-	Characters:QueueNextSwitchTo(AgentId)
-	Characters:SetCharacterTarget(Players.LocalPlayer, EnemyTargetId, Time)
+	-- One struct carries both halves of the prompt (which enemy to orient
+	-- around, which agent to switch in), mirroring the server's marked target
+	-- so the predicted switch position matches the authoritative one.
+	Characters:MarkTarget(Players.LocalPlayer, EnemyTargetId, Time, AgentId)
 	Moveset:PopUpAgent(Agent.Name)
 
 	local Switched = false;
 	local Connection = Characters.SwitchedToAssist:Once(function()
 		Switched = true
-		Characters:SetCharacterTarget(Players.LocalPlayer, nil)
 		Moveset:DeletePopUp()
 	end)
 
@@ -444,7 +445,7 @@ function Controller:PromptAssist(Buffer: buffer)
 	end
 
 	Connection:Disconnect()
-	Characters:QueueNextSwitchTo(0)
+	Characters:MarkTarget(Players.LocalPlayer, nil)
 	Moveset:DeletePopUp()
 end
 

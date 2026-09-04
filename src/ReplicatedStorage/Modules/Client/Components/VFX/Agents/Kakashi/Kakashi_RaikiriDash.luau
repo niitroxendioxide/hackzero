@@ -48,7 +48,12 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
         --- DashVFX
         local Beams = Effects:Create(KakashiVfx.DashVFX.Beams, 5);
         Beams:PivotTo(EndCFrame * CFrame.new(0, 0, ForwardAt/2));
+        Effects:Emit(Beams)
 
+        --- Bolt VFX
+        
+
+        ---
         for _, Asset: Instance in Beams:GetDescendants() do
             if Asset:IsA('Beam') then
                 local W0, W1 = Asset.Width0, Asset.Width1

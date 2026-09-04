@@ -37,7 +37,7 @@ const function RaijuTsuiga(Caster: Types.ClientAgent, Context: Types.ClientSkill
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Attack_State_Time)
-			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.DodgeCounter.RaijuTsuiga', {Fade = 0.1})
+			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Shared.RaijuTsuiga', {Fade = 0.1})
 
 			if Context.Target then
 				Caster:LookAtTarget(Context.Target)
@@ -46,6 +46,8 @@ const function RaijuTsuiga(Caster: Types.ClientAgent, Context: Types.ClientSkill
 
 		{Startup_Time, function()
 			Ability:Effect('Kakashi_RaijuTsuiga', Caster, 'Create', Dog_Max_Time)
+
+			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Shared.RaijuTsuigaLoop', {Fade = 0.1})
 
 			Ability:CreateHitbox(Caster, vector.create(0, 0, -14), vector.create(9, 7, 28), function(Enemy)
 				Ability:Hit(Caster, Enemy, {

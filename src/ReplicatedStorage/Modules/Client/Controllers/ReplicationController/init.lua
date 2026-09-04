@@ -63,7 +63,7 @@ function Controller:ConnectPing()
 			Controller.__Ping = Receive + Sent
 			Replicator.__Ping = Controller.__Ping
 
-			task.wait(.25)
+			task.wait( 1 / 15 )
 		end
 	end)
 end

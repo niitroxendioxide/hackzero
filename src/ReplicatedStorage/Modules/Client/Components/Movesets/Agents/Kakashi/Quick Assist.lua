@@ -48,11 +48,13 @@ const function RaikiriIssen(Caster: Types.ClientAgent, Context: Types.ClientSkil
 			if Context.Target then
 				Caster:LookAtTarget(Context.Target)
 			end
+
+			Ability:Effect('Kakashi_RaikiriDash', Caster, 'Charge')
 		end},
 
 		{Startup_Time, function()
+			Ability:Effect('Kakashi_RaikiriDash', Caster, '', Caster:GetPivot())
 			Caster:Walk(Dash_Time, Dash_Power, true)
-			Ability:Effect('Kakashi_RaikiriDash', Caster, 'Charge')
 		end},
 
 		{Startup_Time, Startup_Time + Dash_Time, function()
@@ -95,7 +97,7 @@ const function RaijuTsuigaPair(Caster: Types.ClientAgent, Context: Types.ClientS
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Attack_State_Time)
-			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.QuickAssist.Kagebunshin', {Fade = 0.1})
+			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Shared.RaijuTsuiga', {Fade = 0.1})
 
 			if Context.Target then
 				Caster:LookAtTarget(Context.Target)
@@ -103,6 +105,7 @@ const function RaijuTsuigaPair(Caster: Types.ClientAgent, Context: Types.ClientS
 		end},
 
 		{Startup_Time, function()
+			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Shared.RaijuTsuigaLoop', {Fade = 0.1})
 			Ability:Effect('Kakashi_RaijuTsuiga', Caster, 'Create', Dog_Count, Dog_Spread, Dog_Max_Time)
 
 			Ability:CreateHitbox(Caster, vector.create(0, 0, -16), vector.create(24, 7, 32), function(Enemy)

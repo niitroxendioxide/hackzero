@@ -454,8 +454,10 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 		return
 	end
 
+	-- AgentToSwitch is an agent, CurId a number, so this guard never fired. What
+	-- it means is "there is nobody else to switch to".
 	local EnemyExists = Enemies:GetEnemy(AgentPerpetratorId)
-	if not EnemyExists or AgentToSwitch == CurId then
+	if not EnemyExists or AgentToSwitch == nil or AgentToSwitch == CasterAgent then
 		return
 	end
 
@@ -467,7 +469,13 @@ function Service:PromptAssist(CasterAgent: AgentTypes.ServerAgentClass, Time: nu
 	end
 
 	local Player = CasterAgent.__Player_Assigned
-	local Prompt = CasterAgent:MarkTarget(AgentPerpetratorId, Time, AgentIdToSwitch)
+
+	-- AgentIdToSwitch indexes the alive-only list, but the switch packet and the
+	-- client both speak roster indices, so mark with the roster id. Marking with
+	-- the alive index meant that as soon as one agent died, the AssistCharacterId
+	-- check on accept could never match and Quick Assist silently never fired.
+	local RosterIdToSwitch = AgentLibrary:GetIdForPlayer(ReplicationId, AgentToSwitch)
+	local Prompt = CasterAgent:MarkTarget(AgentPerpetratorId, Time, RosterIdToSwitch)
 	Replicator:PromptAssist(Player, AgentToSwitch, Time, AgentPerpetratorId)
 
 	local Thread = task.delay(Time, function()

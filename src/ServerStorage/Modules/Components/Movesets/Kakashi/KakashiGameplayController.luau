@@ -22,16 +22,13 @@ local Replicator = require(Libraries.Replicator)
 ---
 const METER_NAME = 'Lightning';
 const LIGHTNING_MODE_TIME = 20;
+const PARALYZE_STAT = 'Affliction_Resistance';
 const PARALYZE_TAG = 'Paralyzed';
 const PARALYZE_TIME = 2.5;
-
---[[
-    Paralyze shreds resistance by shredding Critical_Defense, mirroring how Ice.luau's Frostbite
-    debuff works. The moveset doc asks for "resistance to all elemental attacks is reduced", which
-    wants EnemyStatus:GetResistanceMultiplier() to account for stat effects - it currently returns
-    a hardcoded .15 and ignores them, so that part is not wired up yet (Enemy-side change).
-]]
 const PARALYZE_RESISTANCE_SHRED = -0.15;
+const DAZE_SHRED_RESISTANCE_TAG = "KkResShred";
+const DAZE_SHRED_RESISTANCE_STAT = "Daze_Resistance";
+const DAZE_SHRED_RESISTANCE_VAL = -0.05;
 
 ---
 local Kakashi = {
@@ -68,10 +65,6 @@ function Kakashi:IsLightningMode(Caster: Types.ServerAgentClass): boolean
     return Kakashi.__Lightning_Mode[Caster] == true
 end
 
---[[
-    Enter Lightning Mode. Tags the agent (replicated, so the client halves of the abilities can
-    branch on HasTag) and drains the meter when it runs out.
-]]
 function Kakashi:EnterLightningMode(Caster: Types.ServerAgentClass, Time: number?)
     if not Kakashi:IsReady(Caster) then
         return false
@@ -103,7 +96,6 @@ function Kakashi:ExitLightningMode(Caster: Types.ServerAgentClass)
     Kakashi.__Lightning_Mode[Caster] = nil
     Kakashi.__Mode_Threads[Caster] = nil
 
-    -- Over-drain so the meter is guaranteed empty, the way Sasuke's Sharingan does it.
     Caster:UpdateMeter(METER_NAME, -99)
     Caster:RemoveTag('LightningMode')
 
@@ -111,11 +103,10 @@ function Kakashi:ExitLightningMode(Caster: Types.ServerAgentClass)
 end
 
 --[[ # Paralyze ]]
-
 function Kakashi:IsBoss(Enemy: Types.Enemy): boolean
     const Data = EnemyDatabase:GetEnemyData(Enemy.__Name)
 
-    return (Data ~= nil and Data.Is_Boss == true)
+    return (Data ~= nil and (Data.EnemyTier == "Boss" or Data.Is_Boss == true))
 end
 
 function Kakashi:IsParalyzed(Enemy: Types.Enemy): boolean
@@ -145,7 +136,7 @@ function Kakashi:Paralyze(Enemy: Types.Enemy, Time: number?, _Caster: Types.Serv
 
     Enemy:AddEffect({
         Tag = PARALYZE_TAG,
-        Type = 'Critical_Defense',
+        Type = PARALYZE_STAT,
         Value = PARALYZE_RESISTANCE_SHRED,
         Time = Duration,
     })
@@ -159,20 +150,20 @@ end
 
     @param Data {Tag, Type?, Value, Time} - Type defaults to Critical_Defense, matching Frostbite.
 ]]
-function Kakashi:ShredResistance(Enemy: Types.Enemy, Data: {Tag: string, Type: string?, Value: number, Time: number})
+function Kakashi:ShredResistance(Enemy: Types.Enemy, Time: number)
     if tostring(Enemy) ~= 'EnemyClass' then
         return
     end
 
-    if Enemy:GetEffect(Data.Tag) then
-        Enemy:RemoveEffect(Data.Tag)
+    if Enemy:GetEffect(DAZE_SHRED_RESISTANCE_TAG) then
+        Enemy:RemoveEffect(DAZE_SHRED_RESISTANCE_TAG)
     end
 
     Enemy:AddEffect({
-        Tag = Data.Tag,
-        Type = Data.Type or 'Critical_Defense',
-        Value = Data.Value,
-        Time = Data.Time,
+        Tag = DAZE_SHRED_RESISTANCE_TAG,
+        Type = DAZE_SHRED_RESISTANCE_STAT,
+        Value = DAZE_SHRED_RESISTANCE_VAL,
+        Time = Time,
     })
 end
 
