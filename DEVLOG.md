@@ -1,0 +1,68 @@
+# Devlog
+
+## 2026-09-04 — `type_impl`
+
+### Types: `Shared/Types/Agents.lua` split into submodules
+
+Became a folder module, so every existing `require(Shared.Types.Agents)` resolves unchanged:
+
+- `Types/Agents/Common.lua` — base re-exports, `Enemy` / `ClientEnemy`
+- `Types/Agents/Status.lua` — `AgentStatusClass`, `AgentMeter`, effects
+- `Types/Agents/Movement.lua` — `ServerCharacterClass`
+- `Types/Agents/Core.lua` — `AgentClass` / `ServerAgentClass` + the gear/artifact domain
+- `Types/Agents/init.lua` — aggregator, re-exports everything
+
+Core and Gear stayed in one file on purpose: `ServerAgentClass.__Items/__Gear` and
+`ProcessEventData.Agent` reference each other, and Roblox `require` hard-errors on cyclic modules.
+
+Drift fixed against the real implementations: `ServerCharacterClass` gained 6 state fields and 6
+methods and had `Rotate` corrected from zero-arg to `(Angle: Vector3)`; `AgentClass` gained `__Tags`
+and 13 methods; `ServerAgentClass` gained `__Tags` and 8; `AgentStatusClass` gained
+`SetMaxHealth`/`SetHealth`; `ServerGearManager`/`ClientGearManager`'s `AddGear`/`RemoveGear` now
+declare their real `boolean` return.
+
+`Sequence` was declared twice, differently, in `Types/Abilities.lua` and `Utility/Sequence.lua`, and
+neither matched the implementation (7 missing fields, 3 missing methods). `Sequence.lua` is now the
+single source of truth and `Abilities.lua` aliases it.
+
+### Kakashi: Raiden knockback sent enemies sideways
+
+`HitEnemy` calls `Enemy:Rotate(AgentPivot.Position)` immediately before `KnockEnemy`, and
+`ServerEnemy:Knockback` resolves the direction in the target's frame — so a direction pre-converted
+at hit time gets decoded against a *different* rotation and comes out rotated. That auto-rotate is
+why every other move works with a constant `(0,0,1)`.
+
+Raiden now uses the world-aligned knockback flag (`Raiden_Knockback[4] = true`) and passes
+`Caster:GetPivot().LookVector`, launching along the dash axis. Also fixed a reversed staleness check
+(`Hit[Target] - os.clock()` is always negative) that limited knockback to a target's first hit.
+
+### Kakashi: kit built out from `moveset.md`
+
+Rough drafts — real structure and damage wiring, placeholder animations/VFX:
+
+- **Dodge Counter** — Raiju Tsuiga lightning dog + Paralyze; Lightning Mode swaps to Shishi Rendan → Raikiri slam
+- **Quick Assist** — Raikiri: Issen; Lightning Mode swaps to twin lightning dogs
+- **Chain Attack** — Raikiri: Denko Rensen
+- **Ultimate** — Raikiri: Sōraishin
+- **Passives + KakashiGameplayController** — Lightning charge meter (6), Lightning Mode, Paralyze
+- **`Interface/Combat/Main/Lightning.lua`** — meter UI
+- Lightning Mode branches added to Basic Attack and EX Special (Denko Rensen replacing Raiden)
+
+Movement is animation/offset-driven — the zig-zags do **not** reposition the character via CFrame.
+
+### Still open
+
+- **Client/server desync**, most visible on Quick Assist: Goku lands on the wrong side client-side,
+  correct side server-side. Next task.
+- **Electric affliction is a no-op** — `Components/Afflictions/` has only `Ice.luau`, and
+  `Statics.Affliction_Tick_Damage` defines only Energy/Fire, so Electric bursts do nothing.
+- **Paralyze's resistance shred is half-wired** — `EnemyStatus:GetResistanceMultiplier()` returns a
+  hardcoded `.15` and ignores stat effects, so the shred goes through `Critical_Defense` instead.
+- Kakashi's animation assets, VFX modules (`Kakashi_RaijuTsuiga`, `Kakashi_RaikiriSlam`,
+  `Kakashi_LightningMode`, `Kakashi_Paralyze`, `Kakashi_LightningReady`) and the
+  `Assets.Interface.Agents.Kakashi.Lightning` template don't exist yet.
+- Kakashi.lua uses `Upgrade` but the client `FromData` reads only `Upgrades`, so client-side level
+  scaling silently no-ops (client and server disagree on Special's `Hit_Count` at higher levels).
+- `GameEnum.AbilityHooks.BeforeReleaseConnection` and `BeforeCancel` are both `2`.
+- selene 0.25.0 can't parse `const`, so moveset files can't be linted; `selene.toml`'s `[files]` key
+  is also rejected by that version.

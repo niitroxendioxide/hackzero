@@ -326,17 +326,19 @@ end
 
 --[[
 	ROUGH DRAFT - Lightning Mode replaces Raiden with 'Raikiri: Denko Rensen': no clone and no
-	lightning blade, Kakashi just cuts through the target in a zig-zag. Client half is feel only.
+	lightning blade, Kakashi just cuts through the target repeatedly while moving left and right.
+	The zig-zag is sold by the animation and the dash VFX. Client half is feel only.
 ]]
 const function DenkoRensen(Caster: Types.ClientAgent, Context: Types.ClientSkillContext)
 	const Startup_Time = Ability:FromData('Denko_Rensen_Startup_Time')
 	const Dash_Count = Ability:FromData('Denko_Rensen_Dash_Count')
 	const Dash_Time = Ability:FromData('Denko_Rensen_Dash_Time')
 	const Dash_Power = Ability:FromData('Denko_Rensen_Dash_Power')
-	const Side_Offset = Ability:FromData('Denko_Rensen_Side_Offset')
 	const Hitbox_Size = Ability:FromData('Denko_Rensen_Hitbox_Size')
 
-	const Skill_Usage_Time = Startup_Time + (Dash_Count * Dash_Time) + 0.3;
+	const Total_Time = Dash_Count * Dash_Time
+	const Skill_Usage_Time = Startup_Time + Total_Time + 0.3;
+	local LastHit = 0;
 	local Track: AnimationTrack = nil;
 
 	local Sequence = Ability:Begin(Caster, {
@@ -351,33 +353,28 @@ const function DenkoRensen(Caster: Types.ClientAgent, Context: Types.ClientSkill
 		end},
 
 		{Startup_Time, function()
-			for Index = 1, Dash_Count do
-				const Side = (Index % 2 == 0) and 1 or -1
-				const Origin = Caster:GetPivot()
+			Caster:Walk(Total_Time, Dash_Power, true)
+		end},
 
-				if Context.Target then
-					Caster:PivotTo(Context.Target:GetPivot() * CFrame.new(Side_Offset * Side, 0, 6))
-					Caster:LookAtTarget(Context.Target)
-				end
-
-				Caster:Walk(Dash_Time, Dash_Power, true)
-
-				Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Special.DenkoRensenPass', {Fade = 0})
-				Ability:Effect('Kakashi_RaikiriDash', Caster, '_', Origin)
-
-				Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
-					Ability:Hit(Caster, Enemy, {
-						NoHitStop = (Index ~= Dash_Count),
-						EffectData = {
-							HueShift = 175,
-							Highlight = true,
-							HighlightColor = Color3.fromRGB(117, 150, 244),
-						},
-					})
-				end)
-
-				task.wait(Dash_Time)
+		{Startup_Time, Startup_Time + Total_Time, function()
+			if (os.clock() - LastHit) < Dash_Time then
+				return
 			end
+
+			LastHit = os.clock()
+
+			Ability:Effect('Kakashi_RaikiriDash', Caster, '_', Caster:GetPivot())
+
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+				Ability:Hit(Caster, Enemy, {
+					NoHitStop = true,
+					EffectData = {
+						HueShift = 175,
+						Highlight = true,
+						HighlightColor = Color3.fromRGB(117, 150, 244),
+					},
+				})
+			end)
 		end},
 	}, true)
 

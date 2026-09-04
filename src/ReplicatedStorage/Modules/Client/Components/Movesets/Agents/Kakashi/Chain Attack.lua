@@ -32,9 +32,11 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
 	const Dash_Count = Ability:FromData('Dash_Count')
 	const Dash_Time = Ability:FromData('Dash_Time')
 	const Dash_Power = Ability:FromData('Dash_Power')
-	const Side_Offset = Ability:FromData('Side_Offset')
 	const Hitbox_Size = Ability:FromData('Hitbox_Size')
 
+	-- The zig-zag is sold by the animation and the dash VFX, not by moving the character around.
+	const Total_Time = Dash_Count * Dash_Time
+	local LastHit = 0;
 	local Track: AnimationTrack = nil;
 
 	Ability:Begin(Caster, {
@@ -49,31 +51,30 @@ function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
 		end},
 
 		{Startup_Time, function()
-			for Index = 1, Dash_Count do
-				const Side = (Index % 2 == 0) and 1 or -1
-				const Origin = Caster:GetPivot()
+			Caster:Walk(Total_Time, Dash_Power, true)
+		end},
 
-				if Context.Target then
-					const TargetPivot = Context.Target:GetPivot()
-
-					Caster:PivotTo(TargetPivot * CFrame.new(Side_Offset * Side, 0, 6))
-					Caster:LookAtTarget(Context.Target)
-				end
-
-				Caster:Walk(Dash_Time, Dash_Power, true)
-
-				Ability:PlayAnimation(Caster, 'Kakashi.Abilities.ChainAttack.DenkoRensenPass', {Fade = 0})
-				Ability:Effect('Kakashi_RaikiriDash', Caster, '_', Origin)
-
-				Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
-					Ability:Hit(Caster, Enemy, {
-						NoHitStop = (Index ~= Dash_Count),
-						EffectData = HIT_EFFECT_DATA,
-					})
-				end)
-
-				task.wait(Dash_Time)
+		{Startup_Time, Startup_Time + Total_Time, function()
+			if (os.clock() - LastHit) < Dash_Time then
+				return
 			end
+
+			LastHit = os.clock()
+
+			Ability:Effect('Kakashi_RaikiriDash', Caster, '_', Caster:GetPivot())
+
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+				Ability:Hit(Caster, Enemy, {
+					NoHitStop = true,
+					EffectData = HIT_EFFECT_DATA,
+				})
+			end)
+		end},
+
+		{Startup_Time + Total_Time, function()
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+				Ability:Hit(Caster, Enemy, {EffectData = HIT_EFFECT_DATA})
+			end)
 		end},
 
 		{Attack_State_Time, function()

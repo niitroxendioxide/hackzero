@@ -34,8 +34,14 @@ function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
 	const Dash_Count = Ability:FromData('Dash_Count')
 	const Dash_Time = Ability:FromData('Dash_Time')
 	const Dash_Power = Ability:FromData('Dash_Power')
-	const Side_Offset = Ability:FromData('Side_Offset')
 	const Hitbox_Size = Ability:FromData('Hitbox_Size')
+
+	--[[
+		The zig-zag itself is carried by the animation and the VFX, so this only has to walk
+		forward and land a hit per pass - no CFrame repositioning.
+	]]
+	const Total_Time = Dash_Count * Dash_Time
+	local LastHit = 0;
 
 	Ability:Begin(Caster, {
 		{0, function()
@@ -47,29 +53,26 @@ function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
 		end},
 
 		{Startup_Time, function()
-			--[[
-				Each pass reappears on the opposite side of the target and cuts back through it.
-				Teleporting rather than running keeps the server in step with the client's zig-zag.
-			]]
-			for Index = 1, Dash_Count do
-				const Side = (Index % 2 == 0) and 1 or -1
-				const IsFinal = (Index == Dash_Count)
+			Caster:Walk(Total_Time, Dash_Power, true)
+		end},
 
-				if Context.Target then
-					const TargetPivot = Context.Target:GetPivot()
-
-					Caster:PivotTo(TargetPivot * CFrame.new(Side_Offset * Side, 0, 6))
-					Caster:LookAtTarget(Context.Target)
-				end
-
-				Caster:Walk(Dash_Time, Dash_Power, true)
-
-				Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
-					Ability:Hit(Caster, Enemy, IsFinal and FinalHitData or HitData)
-				end)
-
-				task.wait(Dash_Time)
+		{Startup_Time, Startup_Time + Total_Time, function()
+			if (os.clock() - LastHit) < Dash_Time then
+				return
 			end
+
+			LastHit = os.clock()
+
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+				Ability:Hit(Caster, Enemy, HitData)
+			end)
+		end},
+
+		{Startup_Time + Total_Time, function()
+			-- Heavier closing pass.
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+				Ability:Hit(Caster, Enemy, FinalHitData)
+			end)
 
 			KakashiController:AddCharge(Caster, 1)
 		end},
