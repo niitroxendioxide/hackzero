@@ -152,6 +152,12 @@ game:GetService("RunService").Heartbeat:Connect(function ()
 			local ColorOffsetSpeed = ThisBranch.ColorOffsetSpeed
 			local contractf = 1 - ThisBranch.ContractFrom
 			local PrevPoint, bezier0 = p0, p0
+
+			if (not ThisBranch.Parent:IsDescendantOf(workspace)) then
+				ThisBranch:Destroy()
+
+				continue
+			end
 			
 			if timePassed < (PulseLength + 1) / PulseSpeed then
 				

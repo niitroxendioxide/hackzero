@@ -3,27 +3,53 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService('RunService')
 local World = require(ReplicatedStorage.Modules.Shared.World)
 
-export type SequenceFrame = {number | (self: Sequence) -> ()}
+-- A frame is either {Time, Handler} (fires once at Time) or {Start_Time, End_Time, Handler}
+-- (fires every Update between Start_Time and End_Time) - see Sequence:Update below.
+export type SequenceFrame = {number | (self: Sequence, delta: number) -> ()}
 export type SequenceFrames = {SequenceFrame}
 export type Sequence = {
 	__cache: {[any]: any},
 	__frames: SequenceFrames,
 	__name: string,
+	__currentTime: number,
+	__runContext: (fn: (...any) -> (), ...any) -> (),
+	__speed: number,
+	__active: boolean,
+	__onFinish: {(self: Sequence) -> ()},
+	__playedFrames: {number},
+	__framePlayCount: {[number]: number},
+	__onWorldSpeedChange: {(WorldSpeed: number) -> ()},
 
 	--
-	Start: (self: Sequence) -> Sequence,
+	Start: (self: Sequence) -> Sequence?,
 	Pause: (self: Sequence) -> Sequence,
 	Destroy: (self: Sequence) -> (),
-	GetSpeed: (self: Sequence) -> (),
+	GetSpeed: (self: Sequence) -> (number),
+	SetSpeed: (self: Sequence, Speed: number) -> (),
+	IsRunning: (self: Sequence) -> (boolean),
+	--[[
+		Length (in seconds) of the longest frame currently in the sequence.
+	]]
+	GetLength: (self: Sequence) -> (number),
 
 	--
-	Update: (self: Sequence) -> (),
+	Update: (self: Sequence, delta: number) -> (),
+	--[[
+		Add a frame to the sequence: either (Time, Handler) to fire once, or (Start_Time, End_Time, Handler)
+		to fire on every Update while __currentTime is within range.
+	]]
+	Add: ((self: Sequence, Time: number, fn: (self: Sequence, delta: number) -> ()) -> ())
+		& ((self: Sequence, Start_Time: number, End_Time: number, fn: (self: Sequence, delta: number, PlayCount: number) -> ()) -> ()),
 
 	--[[
 		Runs immediately after the last frame of the sequence, regardless of its length, if the sequence is modified mid-run, this function will then run after the new last frame.
 		@param function The handler that runs the post-sequence function
 	]]
 	After: (self: Sequence, fn: (self: Sequence) -> ()) -> Sequence,
+	--[[
+		Registers a handler that runs whenever the World is mid-speed-tween, receiving the current world speed.
+	]]
+	OnWorldSpeedChange: (self: Sequence, fn: (WorldSpeed: number) -> ()) -> (),
 }
 
 --
@@ -96,6 +122,13 @@ function Sequence:Update(delta: number)
 
 	for key, frameData in self.__frames do
 		if table.find(self.__playedFrames, key) then continue end
+
+		if (typeof(frameData[1]) ~= 'number') then
+			warn(`Removed entry for sequence: {self}. Invalid entry, did you forget time?`)
+			table.remove(self.__frames, key);
+
+			continue
+		end
 
 		if self.__currentTime >= frameData[1] then
 			local secondKey = frameData[2]

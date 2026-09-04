@@ -181,6 +181,10 @@ function EnemyMovement:Knockback(Velocity: Vector3, Time: number)
 		table.remove(self.__Velocities, table.find(self.__Velocities, Object))
 	end)}
 
+	if Environment.PROJECT_IMPULSES then
+		PhysicsHelper:DrawForceLine(self.__Position, Direction.Unit, Direction.Magnitude, Time)
+	end
+
 	table.insert(self.__Velocities, Object)
 
 	return Object

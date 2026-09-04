@@ -14,7 +14,10 @@ function AnimationLibrary:GetAnim(Path: string)
 	local Object = Animations
 
 	for i = 1, #Split - 1 do
-		Object = Object[Split[i]]
+		Object = Object:FindFirstChild(Split[i])
+		if Object == nil then
+			return
+		end
 	end
 
 	return Object:FindFirstChild(Split[#Split])
@@ -120,6 +123,8 @@ function AnimationLibrary:GetTrackWithTag(Character: Model, Tag: string): {Anima
 			return Track
 		end
 	end
+
+	return;
 end
 
 

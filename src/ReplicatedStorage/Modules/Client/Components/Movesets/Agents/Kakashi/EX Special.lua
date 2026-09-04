@@ -25,6 +25,12 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeCancel, function(Caster: Types.C
 		Sequence:Destroy()
 		Ability:Save(Caster, "SuccessfulHitSequence", nil)
 	end
+
+	---
+	local IsUsingRaiden = Ability:Get(Caster, 'using_raiden');
+	if IsUsingRaiden then
+		Ability:Effect("Kakashi_Raiden", Caster, 'Delete');
+	end
 end)
 
 
@@ -134,6 +140,9 @@ const function CastSosenko(Caster: Types.ClientAgent, Context: Types.ClientSkill
 		end},
 	}, true)
 
+	SuccessfulHitSequence:After(function(self: Types.Sequence)
+		Ability:Save(Caster, 'LastCast', os.clock())
+	end)
 	Ability:Save(Caster, 'SuccessfulHitSequence', SuccessfulHitSequence)
 
 	Ability:Begin(Caster, {
@@ -224,15 +233,167 @@ const function CastSosenko(Caster: Types.ClientAgent, Context: Types.ClientSkill
 
 			self:Destroy()
 		end,},
-	})
+	}):After(function(self: Types.Sequence)
+		Ability:Save(Caster, 'LastCast', os.clock())
+	end)
 end
 
 const function Raiden(Caster: Types.ClientAgent, Context: Types.ClientSkillContext)
+	const Run_Time = Ability:FromData('Raiden_Run_Time')
+	const Run_Power = Ability:FromData('Raiden_Run_Power')
+	const Start_Time = Ability:FromData('Raiden_Startup_Time')
+	const Hit_Frequency = Ability:FromData('Raiden_Hit_Frequency')
+	const Allow_Full_Control = Ability:FromData('Raiden_Full_Control')
 	
+	const Skill_Usage_Time = Start_Time + Run_Time + 0.3;
+	const Effect_Data = {
+		NoCameraShake = false,
+		NoHitStop = true,
+		EffectData = {
+			HueShift = 170,
+			Highlight = true,
+			HighlightColor = Color3.fromRGB(117, 150, 244),
+		}
+	}
+
+	const Hit = {}
+	const Hit_List = {}
+	local Track : AnimationTrack = nil;
+	local Sequence = Ability:Begin(Caster, {
+		{0, function()
+			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Special.Raiden.FlipL', {})
+			Ability:Save(Caster, 'using_raiden', true);
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Skill_Usage_Time);
+
+			Ability:Effect("Kakashi_Raiden", Caster, 'Create', Start_Time);
+
+			Caster:SetEnemyCollisionState(false, 5);
+			Caster:Walk(0.35, -1.25)
+
+			if Caster:IsLocalPlayerOwner() then
+				Camera:DisableOffset()
+			end
+		end},
+
+		{Start_Time, function()
+			Track:Stop(0.15)
+			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Special.Raiden.Left', {
+				Loop = true,
+			})
+			Caster:Walk(Run_Time, Run_Power, true);
+		end},
+
+		{Start_Time, Start_Time + Run_Time, function()
+			if (Allow_Full_Control == true) and (Caster:IsLocalPlayerOwner()) then
+				Caster:Look(Camera:HorizontalVector(), true, true);
+			end
+
+			Ability:CreateHitbox(Caster, vector.zero, vector.create(21, 4, 6), function(Target)
+				if (Hit_List[Target]) then return end;
+				Hit_List[Target] = true;
+
+				task.delay(Hit_Frequency, function()
+					Hit_List[Target] = false;
+				end)
+
+				if not Hit[Target] then
+					Ability:Hit(Caster, Target, {
+						Track = 'Characters.Kakashi.Abilities.Special.Raiden.Hit',
+						NoCameraShake = Effect_Data.NoCameraShake,
+						NoHitStop = Effect_Data.NoHitStop,
+						EffectData = Effect_Data.EffectData,
+					})
+				else
+					Ability:Hit(Caster, Target, Effect_Data)
+				end
+			end)
+		end},
+
+		{Start_Time + Run_Time, function()
+			Track:Stop(0);
+		end}
+	}, true)
+
+	Sequence:After(function(self: Types.Sequence)
+		Camera:EnableOffset()
+		Caster:SetEnemyCollisionState(true, 5);
+		Ability:Save(Caster, 'using_raiden', false);
+		Ability:Effect("Kakashi_Raiden", Caster, 'Delete');
+	end)
+
+	Sequence:Start()
+end
+
+--[[
+	ROUGH DRAFT - Lightning Mode replaces Raiden with 'Raikiri: Denko Rensen': no clone and no
+	lightning blade, Kakashi just cuts through the target in a zig-zag. Client half is feel only.
+]]
+const function DenkoRensen(Caster: Types.ClientAgent, Context: Types.ClientSkillContext)
+	const Startup_Time = Ability:FromData('Denko_Rensen_Startup_Time')
+	const Dash_Count = Ability:FromData('Denko_Rensen_Dash_Count')
+	const Dash_Time = Ability:FromData('Denko_Rensen_Dash_Time')
+	const Dash_Power = Ability:FromData('Denko_Rensen_Dash_Power')
+	const Side_Offset = Ability:FromData('Denko_Rensen_Side_Offset')
+	const Hitbox_Size = Ability:FromData('Denko_Rensen_Hitbox_Size')
+
+	const Skill_Usage_Time = Startup_Time + (Dash_Count * Dash_Time) + 0.3;
+	local Track: AnimationTrack = nil;
+
+	local Sequence = Ability:Begin(Caster, {
+		{0, function()
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Skill_Usage_Time)
+			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Special.DenkoRensenBegin', {Fade = 0.1})
+			Ability:Effect('Kakashi_Raikiri', Caster, 'Charge', true)
+
+			if Context.Target then
+				Caster:LookAtTarget(Context.Target)
+			end
+		end},
+
+		{Startup_Time, function()
+			for Index = 1, Dash_Count do
+				const Side = (Index % 2 == 0) and 1 or -1
+				const Origin = Caster:GetPivot()
+
+				if Context.Target then
+					Caster:PivotTo(Context.Target:GetPivot() * CFrame.new(Side_Offset * Side, 0, 6))
+					Caster:LookAtTarget(Context.Target)
+				end
+
+				Caster:Walk(Dash_Time, Dash_Power, true)
+
+				Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Special.DenkoRensenPass', {Fade = 0})
+				Ability:Effect('Kakashi_RaikiriDash', Caster, '_', Origin)
+
+				Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+					Ability:Hit(Caster, Enemy, {
+						NoHitStop = (Index ~= Dash_Count),
+						EffectData = {
+							HueShift = 175,
+							Highlight = true,
+							HighlightColor = Color3.fromRGB(117, 150, 244),
+						},
+					})
+				end)
+
+				task.wait(Dash_Time)
+			end
+		end},
+	}, true)
+
+	Sequence:After(function(_self: Types.Sequence)
+		if Track and Track.IsPlaying then
+			Track:Stop(0.15)
+		end
+
+		Ability:Effect('Kakashi_Raikiri', Caster, 'Delete')
+	end)
+
+	Sequence:Start()
 end
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster)
-	local LastCast = Ability:Get(Caster, 'LastCast')
+	local LastCast = Ability:Get(Caster, 'LastCast') or 0
 
 	if (os.clock() - LastCast < 5) then
 		Ability:PushToContextBuffer(true)
@@ -242,10 +403,17 @@ end)
 
 function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
 	local IsRaiden = Ability:Get(Caster, 'next_use_raiden') == true
+	Ability:Save(Caster, 'LastCast', os.clock())
+
 	if IsRaiden then
 		Ability:Save(Caster, 'next_use_raiden', false)
 
-		Raiden(Caster, Context)
+		-- In Lightning Mode the follow-up becomes Denko Rensen instead of Raiden (moveset.md).
+		if Caster:HasTag('LightningMode') then
+			DenkoRensen(Caster, Context)
+		else
+			Raiden(Caster, Context)
+		end
 	else
 		CastSosenko(Caster, Context)
 	end

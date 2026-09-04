@@ -387,9 +387,10 @@ local function KnockEnemy(_: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enem
 	local Direction = KnockbackData[1]
 	local Power = KnockbackData[2]
 	local Time = KnockbackData[3]
+	local WorldRelative = KnockbackData[4] == true;
 
-	Enemy:Knockback(Direction, Power, Time)
-	Replicator:Knockback(Enemy, Direction, Power, Time)
+	Enemy:Knockback(Direction, Power, Time, WorldRelative)
+	Replicator:Knockback(Enemy, Direction, Power, Time, WorldRelative)
 end
 
 local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Data: Types.HitEnemyData, SkillId: number, CasterUniqueUseToken: any)
@@ -444,7 +445,9 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 		Enemy:Stun(Data.Stun, Data.Airborne)
 	end
 
-	Enemy:Rotate(AgentPivot.Position)
+	if not Data.NoRotate then
+		Enemy:Rotate(AgentPivot.Position)
+	end
 
 	if Enemy:TimeSinceLastPivot() > 0.5 then
 		Enemy:PivotTo(Enemy:GetPivot())

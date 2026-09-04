@@ -227,6 +227,11 @@ function PhysicsClass:Update(Delta: number)
 
 	local AddOns = self:GetAdditionalVelocities()
 	local Velocity = self.__Velocity + AddOns
+	local TempIsMoving = (MovementVelocity + Velocity + self.__SurfaceVelocity + self.__LastMovementVelocity).Magnitude > 0
+
+	if (TempIsMoving == false) then
+		return;
+	end
 
 	if Environment.PROJECT_IMPULSES then
 		if self.__destroyed_thing then
@@ -244,7 +249,8 @@ function PhysicsClass:Update(Delta: number)
 
 	--
 	local Origin = self:GetPivot() * CFrame.new(0, 0, Collider.Size.Z/2)
-	local EnemyCollisions = self.__Enemy_Collisions_Enabled 
+
+	local EnemyCollisions = (self.__Enemy_Collisions_Enabled == true)
 		and workspace:Spherecast(Origin.Position, 1.8, Origin.LookVector * 3, World:GetEnemyColliderParams() :: RaycastParams)
 	if EnemyCollisions then
 		local Params = RaycastParams.new()
@@ -269,7 +275,7 @@ function PhysicsClass:Update(Delta: number)
 		local Extra = math.atan(self.__Normal:Dot(Vector3.yAxis)) + World.StepHeight
 		local HeightExtra = self.__Height + Extra
 		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -HeightExtra, AddedColliderParams)
-		local Collision = PhysicsHelper:CalculateCharacterCollisions(Origin, TotalDisplacement, Delta, self.__Added_Colliders)
+		local Collision = PhysicsHelper:CalculateCharacterCollisions(Origin, TotalDisplacement, Delta, self.__Added_Colliders, self.__Enemy_Collisions_Enabled)
 		local NoCollide = (not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1)
 
 		if CanReachFloor and (CanReachFloor.Position.Y - (self.__Position.Y - self.__Height)) < World.StepHeight then

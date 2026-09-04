@@ -165,6 +165,11 @@ return {
 			Time = 0.75,
 			Ticks = 20,
 		},
+
+		Electric = {
+			Time = 1,
+			Ticks = 15,
+		},
 	} :: { [string]:  {Time: number, Ticks: number} },
 
 

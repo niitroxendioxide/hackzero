@@ -327,8 +327,11 @@ function ServerEnemy:PivotTo(Pivot: CFrame)
 	self.__Movement:PivotTo(Pivot)
 end
 
-function ServerEnemy:Knockback(Dir: Vector3, Pow: number, Time: number)
+function ServerEnemy:Knockback(Dir: Vector3, Pow: number, Time: number, WorldRelative: boolean)
 	local Velocity = self:GetPivot():VectorToWorldSpace(Dir) * Pow
+	if WorldRelative then
+		Velocity = vector.normalize(Dir :: vector) * Pow;
+	end
 
 	return self.__Movement:Knockback(Velocity, Time)
 end

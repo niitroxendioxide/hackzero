@@ -221,7 +221,7 @@ export type BoundKeybind = {
 }
 
 -- [[ DATA ]]
-export type Role = 'Attack' | 'Element' | 'Support' | 'Stun'
+export type Role = 'Attack' | 'Affliction' | 'Support' | 'Stun'
 export type Stat = 'Daze_Resistance' | 'Speed' | 'Max_Health' | 'Max_Daze' | 'Health' | 'Attack' | 'Defense'
 | 'Critical_Rate' | 'Critical_Damage' | 'Penetration' | 'Pen_Ratio' | 'Daze' | 'Energy_Regeneration' | 'Affliction_Aptitude' | 'Affliction_Facility'
 | 'Stun%' | 'LA_Blunt%' | 'LA_Slash%' | 'Blunt%' | 'Slash%' | "Critical_Defense" | "Affliction_Damage"
@@ -252,12 +252,16 @@ export type CharacterData = {
 	Faction: string,
 	NotOnBanner: boolean?,
 	Model: string?,
+	IconGlowColor: Color3?,
 
 	Appearance: CharacterAppearanceData,
 
 	Stats: CharacterStats,
 	Level_Stats: {[Stat]: number},
 	Moveset_Data: MovesetInfo,
+
+	ImportantStats: {string}?,
+
 	Ascension_Data: {
 		[number]: AscensionData,
 	},

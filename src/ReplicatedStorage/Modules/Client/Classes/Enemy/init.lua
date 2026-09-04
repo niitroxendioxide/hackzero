@@ -288,8 +288,15 @@ function EnemyClass:Update(Delta: number)
 	self.__Movement:Update(Delta)
 end
 
-function EnemyClass:Knockback(Dir: Vector3, Pow: number, Time: number)
+function EnemyClass:Knockback(Dir: Vector3, Pow: number, Time: number, WorldRelative: boolean?)
+	if Dir.Magnitude <= 0 then
+		return;
+	end
+
 	local Velocity = self:GetPivot():VectorToWorldSpace(Dir) * Pow
+	if WorldRelative then
+		Velocity = vector.normalize(Dir :: vector) * Pow;
+	end
 
 	return self.__Movement:Knockback(Velocity, Time)
 end

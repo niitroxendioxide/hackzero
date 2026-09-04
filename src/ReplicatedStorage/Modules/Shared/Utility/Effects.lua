@@ -236,33 +236,48 @@ type LightningBoltCreationData = {
 	Ground: RaycastResult<BasePart> & { Color: Color3 },
 	A1Parent: Instance?,
 	A0Parent: Instance?,
+	A1Instance: Instance?,
+	A0Instance: Instance?,
 	LightningColor: Color3?,
 	SubpartColor: Color3?,
 	A1WorldPos: vector?,
 	A0WorldPos: vector?,
 	BoltCount: number | NumberRange,
+	CurveSize: number,
+	Parent: Instance?,
+
+	--[[
+		Default: 
+		* Min 0.9
+		* Max 2.25
+	]]
+	Radius: NumberRange,
 }
 
 function EffectUtil:CreateLightningBolt(Data: LightningBoltCreationData)
 	local Ground = Data.Ground;
     local Color = Data.LightningColor or Color3.fromRGB(112, 150, 255);
-    local Parent = EffectUtil:GetParent()
+    local Parent = Data.Parent or EffectUtil:GetParent()
     
-    local A1 = Instance.new('Attachment')
-    A1.Name = 'LightningBoltAttachment'
-    A1.Position = vector.create(EffectUtil:Random(-0.5, 0.5), EffectUtil:Random(-1, 1), EffectUtil:Random(-0.5, 0.5))
-    A1.WorldAxis = EffectUtil:RandomV3()
-    A1.Parent = Data.CasterModel.PrimaryPart
+    local A1 = Data.A1Instance;
+	if A1 == nil then
+		A1 = Instance.new('Attachment')
+		A1.Name = 'LightningBoltAttachment'
+		A1.Position = vector.create(EffectUtil:Random(-0.5, 0.5), EffectUtil:Random(-1, 1), EffectUtil:Random(-0.5, 0.5))
+		A1.WorldAxis = EffectUtil:RandomV3()
+		A1.Parent = Data.CasterModel.PrimaryPart
+	end
     
-    local Attachment = Instance.new('Attachment')
-    Attachment.WorldPosition = A1.WorldPosition
-    Attachment.WorldAxis = EffectUtil:RandomV3()
-    Attachment.Parent = workspace.Terrain
+    local Attachment = Data.A0Instance;
+	if Attachment == nil then
+		Attachment = Instance.new('Attachment')
+		Attachment.WorldPosition = A1.WorldPosition
+		Attachment.WorldAxis = EffectUtil:RandomV3()
+		Attachment.Parent = workspace.Terrain
+	end
 
 	if Data.A0WorldPos then
 		Attachment.WorldPosition = Data.A0WorldPos
-	else
-		EffectUtil:Tween(Attachment, {.1}, {WorldPosition = Ground.Position})
 	end
 
 	if Data.A1WorldPos then
@@ -270,6 +285,10 @@ function EffectUtil:CreateLightningBolt(Data: LightningBoltCreationData)
 	end
 
     if Data.Ground ~= nil then
+		if Data.A0WorldPos ~= nil then
+			EffectUtil:Tween(Attachment, {.1}, {WorldPosition = Ground.Position})
+		end
+
 		local Floor = EffectUtil:Create(EffectUtil.General.FloorPart, 1.25)
 		Floor:PivotTo(CFrame.lookAlong(Ground.Position, Ground.Normal) * CFrame.Angles(-math.pi/2, 0, 0))
 		Floor.Parent = Parent
@@ -289,8 +308,8 @@ function EffectUtil:CreateLightningBolt(Data: LightningBoltCreationData)
 		EffectUtil:CleanUp(Floor, 2.5)
     end
     
-    local CurveSize = 5.5
-    local Radius = {0.9, 2.25}
+    local CurveSize = Data.CurveSize or 5.5
+    local Radius = typeof(NumberRange) == 'NumberRange' and {NumberRange.Min, NumberRange.Max} or {0.9, 2.25}
     local RandomCurve = EffectUtil:Random(-CurveSize, CurveSize)
 	local BoltSegCount = if Data.BoltCount == nil then EffectUtil:Random(8, 14) else 
 		typeof(Data.BoltCount) == 'number' and Data.BoltCount or EffectUtil:Random(Data.BoltCount.Min, Data.BoltCount.Max)

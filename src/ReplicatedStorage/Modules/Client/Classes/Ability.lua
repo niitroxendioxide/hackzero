@@ -330,11 +330,18 @@ function AbilityClass:PlayAnimation(Agent: AgentTypes.AgentClass, Track: string,
 		TrackObject = AnimLibrary:GetMovementAnim(Agent.Name, Type..Track)
 	end
 
+	if TrackObject == nil then
+		print('No track object found for:', Track)
+
+		return
+	end
+
 	local AnimTrack = AnimLibrary:Play(Model, TrackObject, Data.Fade or 0, Data.Weight or 1, Data.Speed or 1)
 	if not AnimTrack then
 		print('No was found for:', Track)
 		return
 	end
+
 	AnimLibrary:StopTracksWithTag(Model, Data.State or "Attacking")
 
 	AnimTrack:SetAttribute('BaseSpeed', Data.Speed);

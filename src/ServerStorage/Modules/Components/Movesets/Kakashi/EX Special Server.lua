@@ -9,6 +9,7 @@ const GrabService = require(ServerStorage.Modules.Services.Combat.GrabService)
 const Table = require(ReplicatedStorage.Modules.Shared.Utility.Table)
 const Types = require(Shared.Types.Abilities)
 const AbilityClass = require(Classes.Combat.ServerAbility)
+const KakashiController = require(script.Parent.KakashiGameplayController)
 
 --
 const Ability = AbilityClass.new()
@@ -145,15 +146,131 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 end
 
 const function Raiden(Caster: Types.ServerAgent, Context: Types.SkillContext)
+	const Run_Time = Ability:FromData('Raiden_Run_Time')
+	const Run_Power = Ability:FromData('Raiden_Run_Power')
+	const Start_Time = Ability:FromData('Raiden_Startup_Time')
+	const Hit_Frequency = Ability:FromData('Raiden_Hit_Frequency')
+	const Raiden_Hit = Ability:FromData('Raiden_Hit', nil, Caster:GetSkillLevel(Ability.Name))
+	const Raiden_Knockback = table.clone(Ability:FromData("Raiden_Knockback"))
+	const Paralyze_Time = Ability:FromData('Raiden_Paralyze_Time')
+
+	const Skill_Usage_Time = Start_Time + Run_Time + 0.3;
+	const Hit_List = {};
+	const Hit = {}
 	
+	local Sequence = Ability:Begin(Caster, {
+		{0, function()
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Skill_Usage_Time)
+			Caster:Walk(0.35, -1.25)
+		end},
+
+		{Start_Time, function()
+			Caster:Walk(Run_Time, Run_Power, true);
+		end},
+
+		{Start_Time, Start_Time + Run_Time, function()
+			Ability:CreateHitbox(Caster, vector.zero, vector.create(21, 4, 6), function(Target)
+				if (Hit_List[Target]) then return end;
+				Hit_List[Target] = true;
+
+				task.delay(Hit_Frequency, function()
+					Hit_List[Target] = false;
+				end)
+
+				local Cloned_Hit_Data = table.clone(Raiden_Hit)
+				if (Hit[Target] == nil or os.clock() - Hit[Target] > Hit_Frequency*2) then
+					Hit[Target] = os.clock();
+
+					Raiden_Knockback[1] = Caster:GetPivot().LookVector
+					Cloned_Hit_Data.Knockback = Raiden_Knockback
+
+					Ability:Hit(Caster, Target, Cloned_Hit_Data)
+				else
+					Ability:Hit(Caster, Target, Cloned_Hit_Data)
+				end
+
+				-- The lightning blade paralyzes whatever it catches (moveset.md).
+				KakashiController:Paralyze(Target, Paralyze_Time, Caster)
+				KakashiController:AddCharge(Caster, 1)
+			end)
+		end},
+
+		{Start_Time + Run_Time, function()
+		
+		end}
+	}, true);
+
+	Sequence:After(function(self: Types.Sequence)
+		Ability:Save(Caster, 'using_raiden', false);
+	end)
+
+	Sequence:Start()
+end
+
+--[[
+	ROUGH DRAFT - Lightning Mode replaces Raiden with 'Raikiri: Denko Rensen': instead of the clone
+	and the lightning blade, Kakashi cuts through the target in a zig-zag.
+]]
+const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContext)
+	const SkillLevel = Caster:GetSkillLevel(Ability.Name)
+	const HitData = Table.CopyDeep(Ability:FromData('Denko_Rensen_Hit', nil, SkillLevel))
+
+	const Startup_Time = Ability:FromData('Denko_Rensen_Startup_Time')
+	const Dash_Count = Ability:FromData('Denko_Rensen_Dash_Count')
+	const Dash_Time = Ability:FromData('Denko_Rensen_Dash_Time')
+	const Dash_Power = Ability:FromData('Denko_Rensen_Dash_Power')
+	const Side_Offset = Ability:FromData('Denko_Rensen_Side_Offset')
+	const Hitbox_Size = Ability:FromData('Denko_Rensen_Hitbox_Size')
+
+	const Skill_Usage_Time = Startup_Time + (Dash_Count * Dash_Time) + 0.3;
+
+	local Sequence = Ability:Begin(Caster, {
+		{0, function()
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Skill_Usage_Time)
+
+			if Context.Target then
+				Caster:LookAtTarget(Context.Target)
+			end
+		end},
+
+		{Startup_Time, function()
+			for Index = 1, Dash_Count do
+				const Side = (Index % 2 == 0) and 1 or -1
+
+				if Context.Target then
+					Caster:PivotTo(Context.Target:GetPivot() * CFrame.new(Side_Offset * Side, 0, 6))
+					Caster:LookAtTarget(Context.Target)
+				end
+
+				Caster:Walk(Dash_Time, Dash_Power, true)
+
+				Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+					Ability:Hit(Caster, Enemy, HitData)
+				end)
+
+				task.wait(Dash_Time)
+			end
+		end},
+	}, true);
+
+	Sequence:After(function(_self: Types.Sequence)
+		Ability:Save(Caster, 'using_raiden', false);
+	end)
+
+	Sequence:Start()
 end
 
 function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
-	local IsRaiden = Context.Buffer[1] == true;
+	const IsRaiden = Context.Buffer[1] == true;
 	if IsRaiden then
 		Ability:Save(Caster, 'next_use_raiden', false)
 
-		Raiden(Caster, Context)
+		-- In Lightning Mode the follow-up becomes Denko Rensen instead of Raiden (moveset.md).
+		if KakashiController:IsLightningMode(Caster) then
+			DenkoRensen(Caster, Context)
+		else
+			Raiden(Caster, Context)
+		end
 	else
 		CastSosenko(Caster, Context)
 	end
