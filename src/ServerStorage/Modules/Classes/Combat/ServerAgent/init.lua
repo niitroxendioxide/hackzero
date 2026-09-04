@@ -40,6 +40,7 @@ function ServerAgentClass.new(Name: string, Level: number, Skills: {}, Ascension
 		table.freeze(Skills :: {})
 	end
 
+	
 	self.__Tags = {}
 	self.__Level = Level
 	self.__User = -125
@@ -49,6 +50,7 @@ function ServerAgentClass.new(Name: string, Level: number, Skills: {}, Ascension
 	self.__Meter_updates = {}
 	self.__Last_Hit_Time = os.clock()
 	self.__Last_Skill_Cast = os.clock()
+	self.__Current_Collision_Priority = math.huge;
 	self.__Character = MovementClass.new(Name, Appearance.Height)
 	self.__Status = AgentStatus.new(CharacterDatabase:GetStatsAtLevel(Name, Level))
 	self.__Items = AgentItems.new(self)
@@ -57,7 +59,17 @@ function ServerAgentClass.new(Name: string, Level: number, Skills: {}, Ascension
 	return self
 end
 
-function ServerAgentClass.SetEnemyCollisionState(self: Types.ServerAgentClass, State: boolean)
+function ServerAgentClass.SetEnemyCollisionState(self: Types.ServerAgentClass, State: boolean, Priority: number, Force: boolean)
+	if (typeof(Priority) ~= "number") then
+		warn("You must pass in a priority to 'Agent:SetENemyCollisionState(bool[State], number[Priority], bool[Force, default=false])'")
+		return
+	end
+
+	if (self.__Current_Collision_Priority < Priority) and not Force then
+		return
+	end
+
+	self.__Current_Collision_Priority = State and math.huge or Priority;
 	self.__Character:SetEnemyCollisionState(State)
 end
 

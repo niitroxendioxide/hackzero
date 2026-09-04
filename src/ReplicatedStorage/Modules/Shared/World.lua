@@ -85,7 +85,7 @@ function World:GetEntityMapParams(Overlap: boolean?): OverlapParams | RaycastPar
 	return Params
 end
 
-function World:GetCollisionParams(Overlap: boolean?, Groups: {}?): OverlapParams | RaycastParams
+function World:GetCollisionParams(Overlap: boolean?, Groups: {}?, IncludeEnemies: boolean): OverlapParams | RaycastParams
 	local List = {WorldFolder.Map}
 	for Obj in (Groups or {}) :: {} do
 		table.insert(List, Obj)
@@ -96,7 +96,7 @@ function World:GetCollisionParams(Overlap: boolean?, Groups: {}?): OverlapParams
 	ParamsNew.FilterDescendantsInstances = {
 		List,
 		WorldFolder.Entities:FindFirstChild("Destructibles"),
-		WorldFolder.Entities.Colliders, Camera:FindFirstChild('Enemy_Collisions'),
+		if IncludeEnemies then WorldFolder.Entities.Colliders else nil, if IncludeEnemies then Camera:FindFirstChild('Enemy_Collisions') else nil,
 		Camera:FindFirstChild("Destructibles"),
 	}
 

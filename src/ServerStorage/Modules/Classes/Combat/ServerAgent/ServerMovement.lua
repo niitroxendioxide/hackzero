@@ -125,7 +125,7 @@ function ServerCharacterClass:PivotTo(To: CFrame)
 	self.__Rotation = To.LookVector
 end
 
-function ServerCharacterClass:CalculateVelocityDeceleration(Velocity: Vector3, AirMod: number)
+function ServerCharacterClass.CalculateVelocityDeceleration(self: Types.ServerCharacterClass, Velocity: Vector3, AirMod: number)
 	AirMod = AirMod or 1
 
 	local AirFriction = World:GetAirFriction()
@@ -135,7 +135,7 @@ function ServerCharacterClass:CalculateVelocityDeceleration(Velocity: Vector3, A
 end
 
 
-function ServerCharacterClass:GetAdditionalVelocities()
+function ServerCharacterClass.GetAdditionalVelocities(self: Types.ServerCharacterClass)
 	local Total = Vector3.zero
 
 	for _, Object in self.__Linear_Movements do
@@ -149,14 +149,14 @@ function ServerCharacterClass:GetAdditionalVelocities()
 	return Total
 end
 
-function ServerCharacterClass:ApplyForwardImpulse(Power: number, FadeOutTime: number, Linear: boolean?)
+function ServerCharacterClass.ApplyForwardImpulse(self: Types.ServerCharacterClass, Power: number, FadeOutTime: number, Linear: boolean?)
 	local Object = {self.__Rotation * Power, Power, FadeOutTime, os.clock(), Linear}
 	table.insert(self.__Forward_Velocities, Object)
 
 	return Object
 end
 
-function ServerCharacterClass:RemoveForwardImpulse(Obj: {})
+function ServerCharacterClass.RemoveForwardImpulse(self: Types.ServerCharacterClass, Obj: {})
 	local Index = table.find(self.__Forward_Velocities, Obj)
 	if Index then
 		table.remove(self.__Forward_Velocities, Index)
@@ -175,7 +175,7 @@ function ServerCharacterClass:AddLinearMovement(Velocity: Vector3, Time: number)
 	return Object
 end
 
-function ServerCharacterClass:GetTotalVelocity(): Vector3
+function ServerCharacterClass.GetTotalVelocity(self: Types.ServerCharacterClass): Vector3
 	local MovementVelocity = (self.__MovementVelocity * self.__MovementAcceleration * self.__Rotation.Unit * self.States:GetVelocityMod())
 	local Velocity = self.__Velocity + self:GetAdditionalVelocities()
 
@@ -183,7 +183,7 @@ function ServerCharacterClass:GetTotalVelocity(): Vector3
 	return (MovementVelocity + Velocity + self.__SurfaceVelocity + self.__LastMovementVelocity)
 end
 
-function ServerCharacterClass:Update(Delta: number)
+function ServerCharacterClass.Update(self: Types.ServerCharacterClass, Delta: number)
 	local TotalSpeedDeceleration =  self:CalculateVelocityDeceleration(self.__Velocity, .5)
 	local CurrentWorldSpeed = World:GetSpeed()
 
@@ -242,7 +242,7 @@ function ServerCharacterClass:Update(Delta: number)
 		local AddedColliderParams = World:GetMapParams(false, self.__Added_Colliders) :: RaycastParams
 		local CollisionParams = World:GetCollisionParams(nil, self.__Added_Colliders) :: RaycastParams
 		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -HeightExtra, AddedColliderParams)
-		local Collision = PhysicsHelper:CalculateCharacterCollisions(Origin, TotalDisplacement, Delta, self.__Added_Colliders)
+		local Collision = PhysicsHelper:CalculateCharacterCollisions(Origin, TotalDisplacement, Delta, self.__Added_Colliders, self.__Enemy_Collisions_Enabled)
 		local NoCollide = not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1
 
 		if CanReachFloor and (CanReachFloor.Position.Y - (self.__Position.Y - self.__Height)) < World.StepHeight then
@@ -289,7 +289,7 @@ function ServerCharacterClass:ApplyImpulse(Velocity: Vector3)
 	self.__Velocity += Velocity
 end
 
-function ServerCharacterClass:CreateCollider()
+function ServerCharacterClass.CreateCollider(self: Types.ServerCharacterClass)
 	if self.__Collider then
 		self.__Collider:Destroy()
 	end
@@ -308,11 +308,11 @@ function ServerCharacterClass:CreateCollider()
 	self.__Collider = Collider
 end
 
-function ServerCharacterClass:IsMoving()
+function ServerCharacterClass.IsMoving(self: Types.ServerCharacterClass)
 	return self.__Moving
 end
 
-function ServerCharacterClass:GetState()
+function ServerCharacterClass.GetState(self: Types.ServerCharacterClass)
 	return self.States:GetState()
 end
 

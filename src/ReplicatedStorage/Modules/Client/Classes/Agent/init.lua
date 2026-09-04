@@ -38,11 +38,13 @@ function AgentClass.new(Name: string, Level: number, Skills: {}): AgentTypes.Age
 	self.__Look_Marked = false
 	self.__Skill_Thread = nil
 	self.__Limit_Area = nil
+	self.__Player_Assigned = nil;
 	self.__Character = CharacterClass.new(Name)
 	self.__Items = ItemsClass.new(self)
 	self.__Gear = ClientGearClass.new()
 	self.__Server_Action_Buffer = {};
 	self.__Listener_Count = 0;
+	self.__Current_Collision_Priority = math.huge;
 
 	return self
 end
@@ -51,6 +53,10 @@ function AgentClass.IsActive(self : AgentTypes.AgentClass)
 	local obtainedActiveAgent = Characters:GetCurrent(self.PlayerId)
 
 	return (obtainedActiveAgent == self)
+end
+
+function AgentClass.IsLocalPlayerOwner(self: AgentTypes.AgentClass)
+	return Players.LocalPlayer == self.__Player_Assigned
 end
 
 function AgentClass.GetAppearance(self: AgentTypes.AgentClass)
@@ -159,7 +165,17 @@ function AgentClass:Kill()
 	end)
 end	
 
-function AgentClass.SetEnemyCollisionState(self: AgentTypes.AgentClass, State: boolean)
+function AgentClass.SetEnemyCollisionState(self: AgentTypes.AgentClass, State: boolean, Priority: number, Force: boolean?)
+	if (typeof(Priority) ~= "number") then
+		warn("You must pass in a priority to 'Agent:SetENemyCollisionState(bool[State], number[Priority], bool[Force, default=false])'")
+		return
+	end
+
+	if (self.__Current_Collision_Priority < Priority) and not Force then
+		return
+	end
+
+	self.__Current_Collision_Priority = State and math.huge or Priority;
 	self.__Character.__Controller:SetEnemyCollisionState(State);
 end
 

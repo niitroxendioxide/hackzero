@@ -316,6 +316,7 @@ function Controller:Knockback(Buffer: buffer, Direction: Vector3)
 	local EnemyId = buffer.readu8(Buffer, 1)
 	local Strength = buffer.readu8(Buffer, 2)
 	local Time = buffer.readu8(Buffer, 3) / 10
+	local IsWorldRelative = buffer.readu8(Buffer, 4) == 1
 
 	local EnemyObject = Enemies:GetEnemy(EnemyId)
 
@@ -323,7 +324,7 @@ function Controller:Knockback(Buffer: buffer, Direction: Vector3)
 		return
 	end
 
-	EnemyObject:Knockback(Direction, Strength, Time)
+	EnemyObject:Knockback(Direction, Strength, Time, IsWorldRelative)
 end
 
 function Controller:FillAffliction(Buffer: buffer)

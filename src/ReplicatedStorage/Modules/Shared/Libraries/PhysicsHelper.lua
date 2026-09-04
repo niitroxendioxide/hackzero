@@ -8,11 +8,26 @@ local PhysicsHelper = {}
 
 local ENEMY_SIZE_RADIUS = 2.25
 
-function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir: Vector3, Delta: number, Blocks: {}): RaycastResult?
+const function DrawDebugLine(origin: Vector3, direction: Vector3, length: number, delta: number, hasHit: boolean)
+	local Part = Instance.new("Part")
+	Part.Color = hasHit and Color3.new(0, 1) or Color3.new(1)
+	Part.Anchored = true
+	Part.CanCollide = false
+	Part.CanQuery = false
+	Part.Shape = Enum.PartType.Block
+	Part.Size = Vector3.new(0.1, 0.1, length)
+	Part.CFrame = CFrame.lookAlong(origin, direction) * CFrame.new(0, 0, -length/2)
+	Part.Parent = workspace.World.Effects
+
+	task.delay(delta * 2, Part.Destroy, Part)
+end
+
+@native
+function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir: Vector3, Delta: number, Blocks: {}, CollisionsEnabled: boolean): RaycastResult?
     local hasResult = nil
 	local SideCount = 8
 	local Wide = math.rad(90)
-	local Params = World:GetCollisionParams(nil, Blocks) :: RaycastParams
+	local Params = World:GetCollisionParams(nil, Blocks, CollisionsEnabled) :: RaycastParams
 	for i = -1.5, 1.5, 1.5 do
 		for x = 0, SideCount do
 			local OriginPoint = (Origin * CFrame.new(0, i, 0))
@@ -22,17 +37,7 @@ function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir:
 			local Result = workspace:Raycast(OriginPoint.Position, Direction, Params)
 
 			if (Env.PROJECT_COLLISIONS and RunService:IsClient() and RunService:IsStudio()) then
-				local Part = Instance.new("Part")
-				Part.Color = Result and Color3.new(0, 1) or Color3.new(1)
-				Part.Anchored = true
-				Part.CanCollide = false
-				Part.CanQuery = false
-				Part.Shape = Enum.PartType.Block
-				Part.Size = Vector3.new(0.1, 0.1, Length)
-				Part.CFrame = CFrame.lookAlong(OriginPoint.Position, Direction.Unit) * CFrame.new(0, 0, -Length/2)
-				Part.Parent = workspace.World.Effects
-
-				task.delay(Delta * 2, Part.Destroy, Part)
+				DrawDebugLine(OriginPoint.Position, Direction, Length, Delta, Result ~= nil)
 			end
 
 			if Result then
@@ -114,6 +119,21 @@ function PhysicsHelper:CalculateEnemyCollisions(Origin: CFrame, MovementDir: Vec
 	end
 
 	return hasResult;
+end
+
+
+function PhysicsHelper:DrawForceLine(At: vector, Direction: vector, InitialVelocity: number, Time: number)
+	const Distance = (InitialVelocity * Time) / 2
+	const p = Instance.new("Part")
+	p.Size = vector.create(1, 1, Distance)
+	p.CFrame = CFrame.lookAlong(At, Direction) * CFrame.new(0, 0, -Distance/2)
+	p.Anchored = true
+	p.Transparency = 0.5
+	p.Color = Color3.new(0, 1,1)
+	p.CanCollide = false
+	p.Parent = workspace
+
+	task.delay(Time, p.Destroy, p)
 end
 
 return PhysicsHelper

@@ -238,8 +238,12 @@ function Camera:Update(delta: number)
 	local ZoomValue = Camera.__Current_Zoom
 	local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
 	local Root: Vector3 = Model:FindFirstChild('HumanoidRootPart').Position + Vector3.yAxis*2
-	local Goal = Vector3.new(Torso.X, Torso:Lerp(Root, 0).Y, Torso.Z)
+	local Goal = Torso --Vector3.new(Torso.X, Torso:Lerp(Root, 0).Y, Torso.Z)
 	local LookAtPart = Camera.__LookAtPart
+
+	if (Camera.__Offset_Disabled == true) then
+		Goal = Vector3.new(Root.X, Torso.Y, Root.Z)
+	end
 
 	if Camera.__Moving_Delta.Magnitude > 0 and LookAtPart == nil then
 		local IsConsole = Inputs:GetDevice() == GameEnum.Device.Console
@@ -280,51 +284,6 @@ function Camera:Update(delta: number)
 		CameraObject.FieldOfView = Value
 	end
 	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, SmoothAlpha(Factor, delta))
-
-	--[[
-	---
-	local EndCf = CameraObject.CFrame
-	local Length = (EndCf.Position - Camera.__Position).Magnitude;
-	local Origin = CFrame.lookAt(EndCf.Position, Camera.__Position)
-	local HalfFovCos = math.cos(math.rad(CameraObject.FieldOfView * 0.5))
-
-	local HitColliders = workspace:GetPartBoundsInBox(Origin * CFrame.new(0, 0, -Length * 0.25), vector.create(15, 5, 4), Camera.__Enemy_Params)
-	local Checked = {}
-	for _, Collider in HitColliders do
-		local Enemy = Enemies:GetFromCollider(Collider)
-		if Enemy == nil then
-			continue
-		end
-
-		local IsInGroup = table.find(Camera.__Enemies_Blocking_Vision, Enemy)
-
-		Checked[Enemy:GetId()] = true
-
-		local ToCollider = (Collider.Position - Origin.Position).Unit
-		local DotResult = vector.dot(Origin.LookVector :: vector, ToCollider :: vector)
-
-		local IsInFov = DotResult >= HalfFovCos
-		if not IsInFov then
-			if IsInGroup then
-				Enemy:SetVisible(true)
-			end
-
-			continue
-		elseif IsInGroup then continue end
-
-		table.insert(Camera.__Enemies_Blocking_Vision, Enemy)
-		Enemy:SetVisible(false)
-	end
-
-	for idx = #Camera.__Enemies_Blocking_Vision, 1, -1 do
-		local Enemy = Camera.__Enemies_Blocking_Vision[idx]
-		if Checked[Enemy:GetId()] then
-			continue
-		end
-
-		Enemy:SetVisible(true)
-		table.remove(Camera.__Enemies_Blocking_Vision, idx)
-	end]]
 end
 
 function Camera:TweenTo(GoalCFrame: CFrame, Info: {number | string}?): Tween?
@@ -349,6 +308,14 @@ end
 
 function Camera:HorizontalVector(): vector
 	return workspace.CurrentCamera.CFrame.LookVector * vector.create(1, 0, 1)
+end
+
+function Camera:DisableOffset()
+	self.__Offset_Disabled = true
+end
+
+function Camera:EnableOffset()
+	self.__Offset_Disabled = false
 end
 
 

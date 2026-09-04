@@ -5,6 +5,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Database = Shared.Database
 
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Ping = require(ServerStorage.Modules.Libraries.Ping)
 local Companions = require(Shared.Types.Companions)
 local CompanionsDatabase = require(Shared.Database.Companions)
@@ -59,9 +60,16 @@ function Replicator:RemoveTag(Agent: AgentTypes.ServerAgentClass, Tag: string)
 end
 
 function Replicator:Effect(Name: string, Data: {}, Targets: boolean | {})
+	local EffectIdBits = EffectSerdes:ForName(Name)
+	if (EffectIdBits == nil) then
+		Debugger:WarnLine("Replicator::Effect", `Packet not fired, effect id null for "{Name}"`, 1)
+
+		return;
+	end
+
 	local BufferObject = buffer.create(1 + EffectSerdes.IdByteSize)
 	buffer.writeu8(BufferObject, 0, GameEnum.Replication.PlayVisualEffect)
-	buffer.writebits(BufferObject, 8, EffectSerdes.IdByteSize * 8, EffectSerdes:ForName(Name))
+	buffer.writebits(BufferObject, 8, EffectSerdes.IdByteSize * 8, EffectIdBits)
 
 	for Key, Value in Data do
 		if tostring(Value):match('ServerAgentClass') then
@@ -476,13 +484,14 @@ function Replicator:PromptAssist(Player: Player, Agent: AgentTypes.ServerAgentCl
 	Network:Fire("Replicate", Player, Object)
 end
 
-function Replicator:Knockback(Enemy: Types.ServerEnemyClass, Direction: Vector3, Power: number, Time: number)
+function Replicator:Knockback(Enemy: Types.ServerEnemyClass, Direction: Vector3, Power: number, Time: number, WorldRelative: boolean?)
 
-	local Object = buffer.create(4)
+	local Object = buffer.create(5)
 	buffer.writeu8(Object, 0, GameEnum.Replication.Knockback)
 	buffer.writeu8(Object, 1, Enemy.__EnemyId)
 	buffer.writeu8(Object, 2, Power)
 	buffer.writeu8(Object, 3, math.floor(Time * 10))
+	buffer.writeu8(Object, 4, WorldRelative == true and 1 or 0)
 
 	Network:FireForAll('Replicate', Object, Direction)
 end

@@ -1,26 +1,11 @@
 local Default = require(script.Parent)
 local Agents = require(script.Parent.Agents)
+local SequenceModule = require(script.Parent.Parent.Utility.Sequence)
 
-export type SequenceFrames = {{number | (self: Sequence, delta: number) -> ()}}
-export type Sequence = {
-	__cache: {[any]: any},
-	__frames: SequenceFrames,
-	__currentTime: number,
-
-	--
-	Start: (self: Sequence) -> Sequence,
-	Pause: (self: Sequence) -> Sequence,
-	Destroy: (self: Sequence) -> (),
-	GetSpeed: (self: Sequence) -> (),
-	IsRunning: (self: Sequence) -> (boolean),
-
-	--
-	Update: (self: Sequence) -> (),
-	After: (self: Sequence, fn: (self: Sequence) -> ()) -> Sequence,
-
-	Add: (self: Sequence, Time: number, fn: (self: Sequence) -> ()) -> () 
-	& (self: Sequence, Start_Time: number, End_Time: number, fn: (self: Sequence) -> ()) -> (),
-}
+-- Single source of truth lives next to the implementation (Shared/Utility/Sequence.lua);
+-- this used to be a hand-duplicated (and drifted) copy of that type.
+export type Sequence = SequenceModule.Sequence
+export type SequenceFrames = SequenceModule.SequenceFrames
 
 export type HitboxAttackData = {Size: Vector3, Offset: Vector3, Hit_Function: (Target: any) -> ()}
 
@@ -98,7 +83,7 @@ export type AbilityClass = {
 		Weight: number?,
 		Active_Time: number?,
 	}) -> (),
-	CreateHitbox: (self: AbilityClass, Agent: Caster, Offset: Vector3, Size: Vector3, Event: (Enemy: Agents.ClientEnemy) -> ()) -> (),
+	CreateHitbox: (self: AbilityClass, Agent: Caster, Offset: Vector3, Size: Vector3, Event: (Target: Agents.ClientEnemy) -> ()) -> (),
 	SetTargetFinder: (self: AbilityClass, fn: TargetFinderFunction) -> (),
 
 	Save: (self: AbilityClass, Agent: Caster, Key: string, Value: any) -> (),
@@ -173,6 +158,7 @@ export type HitEnemyData = {
 	DontChargeUlt: boolean,
 	HitsAirborne: boolean,
 	Airborne: boolean,
+	NoRotate: boolean?,
 	AnimId: number?,
 
 	Knockback: {number | number | number}?,
@@ -233,9 +219,7 @@ export type AbilityHitInfo = {
 export type InputState = 'Begin' | 'End'
 export type SkillContext = {IsSignal: boolean?, Target: Agents.Enemy?, M1_Count: number?, Buffer: { any }}
 export type ServerAbilityClass = {
-	--[[
-		Identical to .__Name, other one is just deprecated (not like i'll change it.)
-	]]
+
 	Name: string,
 	__Name: string,
 	__Skill_Type: number,

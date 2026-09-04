@@ -25,7 +25,7 @@ function Connect(Enemy: Types.Enemy, Caster: Types.ServerAgentClass, Offset: CFr
     local PlayerReplicationId = (Caster.__Player_Assigned:GetAttribute("ReplicationId") or 0)
     local AgentRelativeId = Agents:GetIdForPlayer(PlayerReplicationId, Caster)
 
-    Caster:SetEnemyCollisionState(false)
+    Caster:SetEnemyCollisionState(false,  1, true)
     Enemy:AddTag("Grabbed")
 
     local BufferObj = buffer.create(4)
@@ -44,7 +44,7 @@ function Disconnect(Enemy: Types.Enemy, Caster: Types.ServerAgentClass)
     Enemy:RemoveTag("Grabbed")
 
     if (#Service:GetGrabbedEnemies(Caster) <= 0) then
-        Caster:SetEnemyCollisionState(true)
+        Caster:SetEnemyCollisionState(true, 1)
     end
 
     local BufferObj = buffer.create(4)

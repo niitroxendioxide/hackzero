@@ -33,7 +33,7 @@ function ArtifactClass.Extend(self: Types.AgentArtifactClass, Level: number): Ty
 	return newObject;
 end
 
-function ArtifactClass.OnEffectProcess(self: Types.AgentArtifactClass, Event: (Data: Types.ProcessEventData) -> ()): ()
+function ArtifactClass.OnEffectProcess(self: Types.AgentArtifactClass, Event: (Data: Types.ProcessEventData, PieceCount: number) -> ()): ()
 	if self.__Events['Effect'] ~= nil then
 		return warn('function', self.__Events['Effect'], 'already bound to event: Affliction Applied')
 	end
@@ -43,7 +43,7 @@ function ArtifactClass.OnEffectProcess(self: Types.AgentArtifactClass, Event: (D
 	return;
 end
 
-function ArtifactClass.OnHitProcess(self: Types.AgentArtifactClass, State: Types.HitProcessState, Event: (Data: Types.ProcessEventData) -> (number, number))
+function ArtifactClass.OnHitProcess(self: Types.AgentArtifactClass, State: Types.HitProcessState, Event: (Data: Types.ProcessEventData, PieceCount: number) -> (number, number))
 	if self.__Events[State] ~= nil then
 		return warn('function', self.__Events[State], 'already bound to event: ', State)
 	end

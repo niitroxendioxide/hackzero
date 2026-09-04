@@ -177,7 +177,7 @@ function Controller:BeginGrabEnemy(Buffer: buffer, Offset: CFrame)
 
 	table.insert(Controller.GrabbedEnemies[BaseAgent], EnemyObject)
 
-	BaseAgent:SetEnemyCollisionState(false)
+	BaseAgent:SetEnemyCollisionState(false, 1)
 	EnemyObject:FollowAgentGrab(BaseAgent, Offset or CFrame.new())
 end
 
@@ -200,7 +200,7 @@ function Controller:EndGrabEnemy(Buffer)
 
 	local HasMore = #Controller.GrabbedEnemies[BaseAgent] > 0;
 	if not HasMore then
-		BaseAgent:SetEnemyCollisionState(true)
+		BaseAgent:SetEnemyCollisionState(true, 1)
 	end
 	
 	EnemyObject:FollowAgentGrab(nil)
