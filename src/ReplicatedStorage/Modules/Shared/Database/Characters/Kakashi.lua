@@ -217,7 +217,6 @@ return {
 				Denko_Rensen_Dash_Count = 4,
 				Denko_Rensen_Dash_Time = 0.18,
 				Denko_Rensen_Dash_Power = 2.1,
-				Denko_Rensen_Side_Offset = 9,
 				Denko_Rensen_Hitbox_Size = vector.create(14, 5, 12),
 
 				Sosenko_Hit_Max = 6,
@@ -479,7 +478,6 @@ return {
 				Dash_Count = 5,
 				Dash_Time = 0.16,
 				Dash_Power = 2.3,
-				Side_Offset = 10,
 				Hitbox_Size = vector.create(15, 6, 13),
 
 				Hit = {

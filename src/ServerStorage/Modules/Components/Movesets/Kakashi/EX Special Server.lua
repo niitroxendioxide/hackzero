@@ -209,7 +209,8 @@ end
 
 --[[
 	ROUGH DRAFT - Lightning Mode replaces Raiden with 'Raikiri: Denko Rensen': instead of the clone
-	and the lightning blade, Kakashi cuts through the target in a zig-zag.
+	and the lightning blade, Kakashi cuts through the target repeatedly while moving left and right.
+	The zig-zag is carried by the animation and the VFX, not by repositioning the character.
 ]]
 const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContext)
 	const SkillLevel = Caster:GetSkillLevel(Ability.Name)
@@ -219,10 +220,11 @@ const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContex
 	const Dash_Count = Ability:FromData('Denko_Rensen_Dash_Count')
 	const Dash_Time = Ability:FromData('Denko_Rensen_Dash_Time')
 	const Dash_Power = Ability:FromData('Denko_Rensen_Dash_Power')
-	const Side_Offset = Ability:FromData('Denko_Rensen_Side_Offset')
 	const Hitbox_Size = Ability:FromData('Denko_Rensen_Hitbox_Size')
 
-	const Skill_Usage_Time = Startup_Time + (Dash_Count * Dash_Time) + 0.3;
+	const Total_Time = Dash_Count * Dash_Time
+	const Skill_Usage_Time = Startup_Time + Total_Time + 0.3;
+	local LastHit = 0;
 
 	local Sequence = Ability:Begin(Caster, {
 		{0, function()
@@ -234,22 +236,19 @@ const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContex
 		end},
 
 		{Startup_Time, function()
-			for Index = 1, Dash_Count do
-				const Side = (Index % 2 == 0) and 1 or -1
+			Caster:Walk(Total_Time, Dash_Power, true)
+		end},
 
-				if Context.Target then
-					Caster:PivotTo(Context.Target:GetPivot() * CFrame.new(Side_Offset * Side, 0, 6))
-					Caster:LookAtTarget(Context.Target)
-				end
-
-				Caster:Walk(Dash_Time, Dash_Power, true)
-
-				Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
-					Ability:Hit(Caster, Enemy, HitData)
-				end)
-
-				task.wait(Dash_Time)
+		{Startup_Time, Startup_Time + Total_Time, function()
+			if (os.clock() - LastHit) < Dash_Time then
+				return
 			end
+
+			LastHit = os.clock()
+
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+				Ability:Hit(Caster, Enemy, HitData)
+			end)
 		end},
 	}, true);
 
