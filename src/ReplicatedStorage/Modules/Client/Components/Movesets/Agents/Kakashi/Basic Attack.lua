@@ -42,8 +42,7 @@ const function TryEnterLightningMode(Caster: Types.ServerAgent): boolean
 	return false
 end
 
-function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
-	if State == 'Release' then
+function Ability:Play(Caster: Types.ClientAgent, _, State, Context)	if State == 'Release' then
 		Ability:Save(Caster, 'SkillHeld', false)
 		
 		return;
