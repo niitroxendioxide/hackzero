@@ -45,3 +45,10 @@ luac.out
 wally.lock
 Packages
 
+/node_modules
+node_modules/
+
+# roblox-ts (generated -- `out/` is a mirror of `src/`, `include/` is copied from the compiler)
+/out/
+/include/
+*.tsbuildinfo

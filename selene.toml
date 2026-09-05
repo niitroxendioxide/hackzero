@@ -4,4 +4,4 @@ std = "roblox"
 global_usage = "allow"
 
 [files]
-exclude = ["**/ProfileStore.lua"]
+exclude = ["**/ProfileStore.lua", "out/**", "include/**"]

@@ -1,0 +1,27 @@
+{
+  "name": "hackzero",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rbxtsc --rojo build.project.json",
+    "watch": "rbxtsc -w --rojo build.project.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/niitroxendioxide/hackzero.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/niitroxendioxide/hackzero/issues"
+  },
+  "homepage": "https://github.com/niitroxendioxide/hackzero#readme",
+  "devDependencies": {
+    "@rbxts/compiler-types": "^3.0.0-types.0",
+    "@rbxts/types": "^1.0.948",
+    "roblox-ts": "^3.0.0"
+  }
+}
