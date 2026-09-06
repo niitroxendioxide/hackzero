@@ -188,21 +188,6 @@ function Controller:PivotTo(Buffer: buffer)
 		Character:MarkServerAction(GameEnum.Replication.PivotTo)
 	end
 
-	--[[
-		The packet describes where the sender was a round trip ago, so aim the
-		correction at where they are now.
-
-		The velocity used is our own local simulation of this agent, not the
-		sender's -- the packet carries no velocity, and the local sim already
-		knows the movement state because Move/Stop/Rotate arrive reliably. That
-		works while the sim is confident, but it cuts both ways: a wrong local
-		velocity makes extrapolation worse than none at all. So it is skipped
-		while a dash or knockback impulse is decaying, which is exactly when the
-		velocity is large, changing fast, and most likely to differ between the
-		two machines.
-
-		Ping is clamped so a spike cannot fling the agent across the map.
-	]]
 	local Controller_ = Character.__Character.__Controller
 	local Target = At.Position
 

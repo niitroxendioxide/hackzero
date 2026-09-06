@@ -69,6 +69,9 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 			local AttackOffset = CFrame.lookAt(Caster:GetPivot().Position, SosenkoHitTarget:GetPivot().Position) * CFrame.new(0, 0, -DashHitboxSize.z/2)
 			Off = AttackOffset
 
+			--[[local LookAtCFrame = CFrame.lookAt(Caster:GetPivot().Position, SosenkoHitTarget:GetPivot().Position);
+			Caster:PivotTo(LookAtCFrame);]]
+
 			table.clear(Hit_Enemies)
 		end},
 

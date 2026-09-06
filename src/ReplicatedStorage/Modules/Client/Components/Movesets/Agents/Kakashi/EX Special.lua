@@ -122,7 +122,7 @@ const function CastSosenko(Caster: Types.ClientAgent, Context: Types.ClientSkill
 			Caster:PivotTo(End)
 		end},
 
-		{1.4, 1.6, function(Sequence)
+		{1.4, 1.6, function(Sequence)			
 			local Origin = Ability:Get(Caster, 'OriginCFrame')
 			local Offset = Caster:GetPivot():ToObjectSpace(Origin * CFrame.new(0, 0, -DashHitboxSize.z/2)).Position
 			Ability:CreateHitbox(Caster, Offset, DashHitboxSize, function(NewEnemy)
@@ -390,8 +390,8 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster
 	local IsSecondUse = Ability:Get(Caster, 'SecondUse')
 
 	if IsSecondUse then
-		
-	elseif (os.clock() - LastCast < 5) and IsSecondUse then
+		Ability:Save(Caster, 'SecondUse', false)
+	elseif (os.clock() - LastCast < 5) and not IsSecondUse then
 		Ability:Save(Caster, 'next_use_raiden', true)
 		Ability:Save(Caster, 'SecondUse', true)
 		Ability:PushToContextBuffer(true)

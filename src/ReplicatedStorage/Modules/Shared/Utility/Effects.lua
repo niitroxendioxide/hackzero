@@ -1,4 +1,4 @@
---
+--!strict
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,7 +11,7 @@ local EffectUtil = {
 }
 
 if RunService:IsClient() then
-	EffectUtil.General = ReplicatedStorage.Assets:WaitForChild("Effects"):WaitForChild("General")
+	EffectUtil.General = (ReplicatedStorage :: any).Assets:WaitForChild("Effects"):WaitForChild("General")
 end
 
 local Client = ReplicatedStorage.Modules.Client
@@ -19,24 +19,25 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local Random_Number = Random.new()
 
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local Mock = require(Shared.Utility.Mock)
 local World = require(script.Parent.Parent.World)
 local GameEnum = require(Shared.GameEnum)
 local Enemies = require(Shared.Libraries.Enemies)
 
-local Settings;
+local Settings: any;
 local Characters;
 local CameraShaker;
 local LightningBolt;
 if RunService:IsClient() then
 	Settings = require(Client.Packages.Settings)
-	Characters = require(Client.Libraries.Characters)
+	Characters = require(Client.Libraries.Characters) :: any
 	CameraShaker = require(Client.Utility.Libraries.CameraShaker)
 	LightningBolt = require(Client.Utility.Libraries.LightningBolt)
 end
 
 local Effects_Folder = workspace:WaitForChild('World'):WaitForChild('Effects')
-local Assets = ReplicatedStorage.Assets.Effects
+local Assets = (ReplicatedStorage :: any).Assets.Effects
 
 
 export type TweenGoals = {
@@ -56,11 +57,11 @@ function EffectUtil:Tween(Object: Instance, Info: {number | string | boolean | n
 	local Reverse, Delay = Info[5] or false, Info[6] or 0
 	local NewInfo = typeof(Info) == 'TweenInfo' and Info or TweenInfo.new(
 		Time,
-		Enum.EasingStyle[Ease] :: Enum.EasingStyle,
-		Enum.EasingDirection[Direction] :: Enum.EasingDirection,
-		Info[4] or 0,
-		Reverse,
-		Delay
+		(Enum.EasingStyle :: any)[Ease] :: Enum.EasingStyle,
+		(Enum.EasingDirection :: any)[Direction] :: Enum.EasingDirection,
+		(Info[4] :: number) or 0,
+		Reverse :: boolean,
+		(Delay :: number)
 	)
 
 	--
@@ -74,23 +75,23 @@ function EffectUtil:Tween(Object: Instance, Info: {number | string | boolean | n
 	return Tween
 end
 
-function EffectUtil:CustomTween(Object: Instance, Info: { number | string | boolean }, Goals: TweenGoals)
+function EffectUtil:CustomTween(Object: Instance, Info: { number | string | boolean }, Goals: TweenGoals): (thread?)
 	local function DoTween()
 		local StartTime = os.clock();
 		local StartValues = {};
 
 		for Key in Goals do
-			StartValues[Key] = Object[Key]
+			StartValues[Key] = (Object :: any)[Key]
 		end
 
-		while os.clock() - StartTime < Info[1] do
-			local ProgressValue = math.min((os.clock() - StartTime) / Info[1], 1)
-			local Alpha = TweenService:GetValue(ProgressValue, Enum.EasingStyle[Info[2] or 'Quad'], Enum.EasingDirection[Info[3] or 'Out'])
+		while os.clock() - StartTime < (Info[1] :: number) do
+			local ProgressValue = math.min((os.clock() - StartTime) / Info[1] :: number, 1)
+			local Alpha = TweenService:GetValue(ProgressValue, (Enum.EasingStyle :: any)[Info[2] or 'Quad'], (Enum.EasingDirection :: any)[Info[3] or 'Out'])
 			
 			for Property, GoalValue in Goals do
 				local OriginalValue = StartValues[Property];
 
-				Object[Property] = OriginalValue + (GoalValue - OriginalValue) * Alpha
+				(Object :: any)[Property] = OriginalValue + (GoalValue - OriginalValue) * Alpha
 			end
 
 			task.wait()
@@ -100,7 +101,7 @@ function EffectUtil:CustomTween(Object: Instance, Info: { number | string | bool
 	if Info[4] then
 		DoTween()
 
-		return;
+		return nil;
 	end
 
 	return task.spawn(DoTween)
@@ -113,7 +114,7 @@ end
 	@param string Info[3] = Easing Direction
 	@param bool Info[4] = Whether to defer or not the thread for fading out the beams.
 ]]
-function EffectUtil:FadeOutBeams(Object: Beam, Info: { number | string | boolean })
+function EffectUtil:FadeOutBeams(Object: Beam, Info: { number | string | boolean }): (thread?)
 	local function DoTween()
 		local StartTime = os.clock();
 		local StartValues = {};
@@ -126,9 +127,9 @@ function EffectUtil:FadeOutBeams(Object: Beam, Info: { number | string | boolean
 			})
 		end
 
-		while os.clock() - StartTime < Info[1] do
-			local ProgressValue = math.min((os.clock() - StartTime) / Info[1], 1)
-			local Alpha = TweenService:GetValue(ProgressValue, Enum.EasingStyle[Info[2] or 'Quad'], Enum.EasingDirection[Info[3] or 'Out'])
+		while os.clock() - StartTime < (Info[1] :: number) do
+			local ProgressValue = math.min((os.clock() - StartTime) / Info[1] :: number, 1)
+			local Alpha = TweenService:GetValue(ProgressValue, (Enum.EasingStyle :: any)[Info[2] or 'Quad'], (Enum.EasingDirection :: any)[Info[3] or 'Out'])
 
 			local Keypoints = {}
 			for _, KeypointValue in StartValues do
@@ -145,9 +146,8 @@ function EffectUtil:FadeOutBeams(Object: Beam, Info: { number | string | boolean
 	end
 
 	if Info[4] then
-		DoTween()
 
-		return;
+		return nil;
 	end
 
 	return task.spawn(DoTween)
@@ -157,12 +157,12 @@ end
 function EffectUtil:FromGui<T>(name: string): T & GuiObject
 	local PlayerGui = Players.LocalPlayer.PlayerGui
 
-	return PlayerGui:FindFirstChild("Effects"):FindFirstChild(name)
+	return ((PlayerGui:FindFirstChild("Effects") :: GuiObject):FindFirstChild(name)) :: GuiObject & T
 end
 
 
-function EffectUtil:RecolorToGroundColor(At: Vector3, Particles: {}, MaxRange: number)
-	local MapParams = World:GetMapParams()
+function EffectUtil:RecolorToGroundColor(At: Vector3, Particles: { ParticleEmitter }, MaxRange: number)
+	local MapParams = World:GetMapParams() :: RaycastParams
 	local Cast = EffectUtil:CastMapRaycast(At, vector.create(0, -(MaxRange or 1000)), MapParams)
 
 	if Cast then
@@ -231,9 +231,9 @@ function EffectUtil:MultiClean(Objects: {any}, Time: number)
 	end
 end
 
-type LightningBoltCreationData = {
+export type LightningBoltCreationData = {
 	CasterModel: Model,
-	Ground: RaycastResult<BasePart> & { Color: Color3 },
+	Ground: (RaycastResult<BasePart> & { Color: Color3 })?,
 	A1Parent: Instance?,
 	A0Parent: Instance?,
 	A1Instance: Instance?,
@@ -242,19 +242,21 @@ type LightningBoltCreationData = {
 	SubpartColor: Color3?,
 	A1WorldPos: vector?,
 	A0WorldPos: vector?,
-	BoltCount: number | NumberRange,
-	CurveSize: number,
+	BoltCount: (number | NumberRange)?,
+	CurveSize: number?,
 	Parent: Instance?,
-
-	--[[
-		Default: 
-		* Min 0.9
-		* Max 2.25
-	]]
-	Radius: NumberRange,
+	Radius: NumberRange?,
 }
 
 function EffectUtil:CreateLightningBolt(Data: LightningBoltCreationData)
+	if typeof(Data.CasterModel) ~= 'Instance' or not Data.CasterModel:IsA('Model')
+	and (Data.A1Instance == nil and Data.A0Instance == nil) 
+	then
+		Debugger:DebugLine("EffectUtil.CreateLightningBolt", "CasterModel is not a valid Model", 2)
+
+		return
+	end
+
 	local Ground = Data.Ground;
     local Color = Data.LightningColor or Color3.fromRGB(112, 150, 255);
     local Parent = Data.Parent or EffectUtil:GetParent()
@@ -263,11 +265,13 @@ function EffectUtil:CreateLightningBolt(Data: LightningBoltCreationData)
 	if A1 == nil then
 		A1 = Instance.new('Attachment')
 		A1.Name = 'LightningBoltAttachment'
-		A1.Position = vector.create(EffectUtil:Random(-0.5, 0.5), EffectUtil:Random(-1, 1), EffectUtil:Random(-0.5, 0.5))
+		A1.Position = (vector.create :: any)(EffectUtil:Random(-0.5, 0.5), EffectUtil:Random(-1, 1), EffectUtil:Random(-0.5, 0.5))
 		A1.WorldAxis = EffectUtil:RandomV3()
 		A1.Parent = Data.CasterModel.PrimaryPart
 	end
     
+	A1 = (A1 :: Attachment)
+
     local Attachment = Data.A0Instance;
 	if Attachment == nil then
 		Attachment = Instance.new('Attachment')
@@ -276,24 +280,27 @@ function EffectUtil:CreateLightningBolt(Data: LightningBoltCreationData)
 		Attachment.Parent = workspace.Terrain
 	end
 
+	Attachment = (Attachment :: Attachment)
+
 	if Data.A0WorldPos then
-		Attachment.WorldPosition = Data.A0WorldPos
+		Attachment.WorldPosition = Data.A0WorldPos :: any
 	end
 
 	if Data.A1WorldPos then
-		A1.WorldPosition = Data.A1WorldPos
+		A1.WorldPosition = Data.A1WorldPos :: any
 	end
 
     if Data.Ground ~= nil then
+		Ground = Ground :: (RaycastResult & { Color: Color3 })
 		if Data.A0WorldPos ~= nil then
-			EffectUtil:Tween(Attachment, {.1}, {WorldPosition = Ground.Position})
+			EffectUtil:Tween(Attachment :: Attachment, {.1}, {WorldPosition = Ground.Position})
 		end
 
-		local Floor = EffectUtil:Create(EffectUtil.General.FloorPart, 1.25)
+		local Floor = EffectUtil:Create((EffectUtil.General :: any).FloorPart :: any, 1.25)
 		Floor:PivotTo(CFrame.lookAlong(Ground.Position, Ground.Normal) * CFrame.Angles(-math.pi/2, 0, 0))
 		Floor.Parent = Parent
 
-		for _, v in Floor:GetDescendants() do
+		for _, v in Floor:GetDescendants() or {} do
 			if v:HasTag('Recolorable') then
 				v.Color = ColorSequence.new(Data.SubpartColor or Color)
 			end
@@ -314,7 +321,7 @@ function EffectUtil:CreateLightningBolt(Data: LightningBoltCreationData)
 	local BoltSegCount = if Data.BoltCount == nil then EffectUtil:Random(8, 14) else 
 		typeof(Data.BoltCount) == 'number' and Data.BoltCount or EffectUtil:Random(Data.BoltCount.Min, Data.BoltCount.Max)
 
-    local NewBolt = LightningBolt.new(A1, Attachment, BoltSegCount)
+    local NewBolt = (LightningBolt :: any).new(A1, Attachment, BoltSegCount)
     NewBolt.CurveSize0, NewBolt.CurveSize1 = RandomCurve, -RandomCurve
     NewBolt.PulseSpeed = EffectUtil:Random(9, 24)
     NewBolt.PulseLength = EffectUtil:Random(.75, 4)
@@ -333,12 +340,12 @@ function EffectUtil:CastMapRaycast(from: Vector3 | vector | CFrame, dir: vector 
 	if not Params then
 		Params = RaycastParams.new()
 		Params.FilterType = Enum.RaycastFilterType.Include
-		Params.FilterDescendantsInstances = {workspace.World.Map}
+		Params.FilterDescendantsInstances = {(workspace :: any).World.Map}
 	end
 
 	from = (if typeof(from) == 'CFrame' then from.Position else from) :: Vector3
 
-	local Result = workspace:Raycast(from, dir, Params);
+	local Result = workspace:Raycast(from, dir :: any, Params);
 	if Result then
 		Result = {
 			Instance = Result.Instance,
@@ -350,7 +357,7 @@ function EffectUtil:CastMapRaycast(from: Vector3 | vector | CFrame, dir: vector 
 		}
 	end
 
-	return Result
+	return Result :: any
 end
 
 function EffectUtil:SetRandomSeed(n: number)
@@ -365,7 +372,7 @@ function EffectUtil:RandomInt(min: number, max: number): (number)
 	return Random_Number:NextInteger(min, max)
 end
 
-function EffectUtil:RandomV3(MaxExtraMagnitude: number): Vector3
+function EffectUtil:RandomV3(MaxExtraMagnitude: number?): Vector3
 	return Random_Number:NextUnitVector() * EffectUtil:Random(0.999999, 1 + (MaxExtraMagnitude or 0))
 end
 
@@ -380,11 +387,11 @@ end
 --[[
 	Returns the waited time divided by world speed, so it's useful for effects
 ]]
-function EffectUtil:Wait(time_to_wait: number)
+function EffectUtil:Wait(time_to_wait: number?)
 	return task.wait(time_to_wait) / World:GetSpeed()
 end
 
-function EffectUtil:Create<T>(Asset: T & Instance, Time: number?, Parent: Instance?): (T, thread)
+function EffectUtil:Create<T>(Asset: T & Instance, Time: number?, Parent: (Instance | boolean)?): (T, thread)
 	local Dir = string.split(debug.info(2, 's'), '.')
 	local Name = Dir[#Dir]
 
@@ -396,7 +403,7 @@ function EffectUtil:Create<T>(Asset: T & Instance, Time: number?, Parent: Instan
 
 	local Cloned = (Asset :: Instance):Clone()
 	if Parent ~= false then
-		Cloned.Parent = typeof(Parent) ~= 'nil' and Parent or Effects_Folder:FindFirstChild(Name)
+		Cloned.Parent = (typeof(Parent) ~= 'nil' and typeof(Parent) ~= 'boolean') and Parent or Effects_Folder:FindFirstChild(Name)
 	end
 
 	local DeleteThread = EffectUtil:CleanUp(Cloned, Time or 100000)
@@ -450,11 +457,11 @@ function EffectUtil:TweenModel(Model: Model, ScaleGoal: number, Time: number, St
 	task.spawn(function()
 		local StartScale = Model:GetScale()
 		local ActiveTime = 0;
-		local EaseStyle = Enum.EasingStyle[Style or 'Quad']
-		local EaseDirection = Enum.EasingDirection[Direction or 'Out']
+		local EaseStyle = (Enum.EasingStyle :: any)[Style or 'Quad']
+		local EaseDirection = (Enum.EasingDirection :: any)[Direction or 'Out']
 
 		while ActiveTime <= Time do
-			ActiveTime += EffectUtil:Wait()
+			ActiveTime += EffectUtil:Wait() :: number
 
 			local TotalTime = ActiveTime / Time;
 			local Alpha = TweenService:GetValue(TotalTime, EaseStyle, EaseDirection)
@@ -467,7 +474,7 @@ end
 
 function EmitObj(Objects: ParticleEmitter)
 	local GraphicSettings = math.max(UserSettings().GameSettings.SavedQualityLevel.Value / 10, 0.3)
-	local CorrectedAmount = math.ceil((Objects:GetAttribute('EmitCount') or 0) * GraphicSettings)
+	local CorrectedAmount = math.ceil((Objects:GetAttribute('EmitCount') :: number or 0) * GraphicSettings)
 
 	Objects:Emit(CorrectedAmount)
 end
@@ -476,7 +483,7 @@ function EffectUtil:Emit(Asset: Instance, Light: boolean?): ()
 	local WorldSpeed = World:GetSpeed() :: number
 	if Asset:IsA('ParticleEmitter') then
 		local Delay = Asset:GetAttribute('EmitDelay') or 0
-		task.delay( Delay / WorldSpeed, EmitObj, Asset)
+		task.delay( Delay :: number / WorldSpeed, EmitObj, Asset)
 
 		return;
 	end
@@ -485,7 +492,7 @@ function EffectUtil:Emit(Asset: Instance, Light: boolean?): ()
 		if Objects:IsA('ParticleEmitter') then
 
 			local Delay = Objects:GetAttribute('EmitDelay') or 0
-			task.delay( Delay / WorldSpeed, EmitObj, Objects)
+			task.delay( Delay :: number / WorldSpeed, EmitObj, Objects)
 		elseif Objects:IsA('PointLight') and Light then
 			EffectUtil:Tween(Objects, {.5 / WorldSpeed}, {Brightness = 0})
 		end
@@ -497,26 +504,27 @@ function EffectUtil.TableShortcut(tab: {})
 end
 
 function EffectUtil:CreateRocks(RaycastResult: RaycastResult, Size: Vector3 | vector, Count: number | {number}, Range: number, Rotation: {number}, Parent: Instance?, Time: number?)
-	local RocksToCreate = typeof(Count) == 'table' and Random_Number:NextInteger(Count[1], Count[2]) or Count
+	local RocksToCreate = (typeof(Count) == 'table' and Random_Number:NextInteger(Count[1], Count[2]) or Count) :: number
 	local Center = RaycastResult.Position
 	local Base = RaycastResult.Instance
 	local Normal = RaycastResult.Normal
 
 	local hasColor = pcall(function(...)
-		return RaycastResult.Color;
+		return (RaycastResult :: any).Color;
 	end)
 
 	local RangeError = (360 / RocksToCreate)
 	local RockItems = Assets.General.Rocks:GetChildren()
+	RaycastResult = (RaycastResult :: RaycastResult & { Color: Color3 })
 
 	for i = 1, RocksToCreate do
 		local Angle = math.rad((360 / RocksToCreate) * i  + Random_Number:NextNumber(-RangeError/1.5, RangeError/1.5));
-		local Distance = typeof(Range) == 'table' and Random_Number:NextNumber(Range[1], Range[2]) or Range;
+		local Distance = typeof(Range) == 'table' and Random_Number:NextNumber((Range :: { number })[1], (Range :: { number })[2]) or Range;
 		local BasePosition = Center + Vector3.new(math.cos(Angle) * Distance, 0, math.sin(Angle) * Distance)
 		local XRot = math.rad(Random_Number:NextNumber(Rotation[1], Rotation[2]))
 		
 		local RockCreated = RockItems[math.random(1, #RockItems)]:Clone() --Instance.new("Part")
-		local RockSize = Size * vector.create(Random_Number:NextNumber(0.8, 1.2), Random_Number:NextNumber(0.8, 1.2), Random_Number:NextNumber(0.8, 1.2))
+		local RockSize = (Size :: any) * vector.create(Random_Number:NextNumber(0.8, 1.2), Random_Number:NextNumber(0.8, 1.2), Random_Number:NextNumber(0.8, 1.2))
 		RockCreated.Size = RockSize * 0.75;
 
 
@@ -527,7 +535,7 @@ function EffectUtil:CreateRocks(RaycastResult: RaycastResult, Size: Vector3 | ve
 		RockCreated.Anchored = true;
 		RockCreated.Material = RaycastResult.Material;
 		RockCreated.Color = hasColor and RaycastResult.Color or Base.Color;
-		RockCreated.Parent = Parent or workspace.World.Effects
+		RockCreated.Parent = Parent or (workspace :: any).World.Effects
 
 		EffectUtil:Tween(RockCreated, { Random_Number:NextNumber(0.15, 0.25), 'Back' }, { Size = RockSize })
 		EffectUtil:Tween(RockCreated, { 0.2, 'Quint' }, {CFrame = RockGoalCFrame * CFrame.Angles(0, Random_Number:NextNumber(-math.pi * 0.25, math.pi * 0.25), 0)})
@@ -547,49 +555,51 @@ function EffectUtil:RecolorSmoke(RaycastResult: RaycastResult, Particles: {Insta
 	end
 	
 	local HasColor = pcall(function(...)
-		return RaycastResult.Color == nil;
+		return (RaycastResult :: any).Color == nil;
 	end)
 
-	for _, Particle in Particles do
+	for _, Particle: ParticleEmitter in Particles do
 		if Particle:HasTag('Smoke') then
-			Particle.Color = ColorSequence.new(HasColor and RaycastResult.Color or RaycastResult.Instance.Color)
+			local UsedColor = (HasColor and (RaycastResult :: RaycastResult & { Color: Color3 }).Color or RaycastResult.Instance.Color) :: Color3
+			Particle.Color = ColorSequence.new(UsedColor)
 		end
 	end
 end
 
 function EffectUtil:ShootRocks(RaycastResult: RaycastResult, Amount: number | {number}, Speed: number | {number}, Parent: Instance?)
-	local RocksToCreate = typeof(Amount) == 'table' and Random_Number:NextInteger(Amount[1], Amount[2]) or Amount
+	local RocksToCreate = (typeof(Amount) == 'table' and Random_Number:NextInteger(Amount[1], Amount[2]) or Amount) :: number
 	local Center = RaycastResult.Position
 	local Base = RaycastResult.Instance
 	local Normal = RaycastResult.Normal
 
 	local RangeError = (360 / RocksToCreate)
+	RaycastResult = (RaycastResult :: RaycastResult & {Color: Color3})
 
 	local hasColor = pcall(function(...)
-		return RaycastResult.Color;
+		return (RaycastResult :: any).Color;
 	end)
 
 	for i = 1, RocksToCreate do
-		local SpeedRange = typeof(Speed) == 'table' and Random_Number:NextNumber(Speed[1], Speed[2]) or Speed
+		local SpeedRange = (typeof(Speed) == 'table' and Random_Number:NextNumber(Speed[1], Speed[2]) or Speed) :: number
 		local Angle = math.rad((360 / RocksToCreate) * i  + Random_Number:NextNumber(-RangeError/1.5, RangeError/1.5));
 		
 		local RockCreated = Instance.new("Part")
 		local RockSize = vector.one * Random_Number:NextNumber(0.8, 1.2)
-		RockCreated.Size = RockSize * 0.75;
+		RockCreated.Size = (RockSize * 0.75) :: any;
 		RockCreated.CFrame = CFrame.lookAlong(Center, Normal);
 		RockCreated.CanCollide = true;
 		RockCreated.Material = Base.Material;
 		RockCreated.Color = hasColor and RaycastResult.Color or Base.Color;
-		RockCreated.Parent = Parent or workspace.World.Effects;
+		RockCreated.Parent = Parent or (workspace :: any).World.Effects;
 
 		local Bv = Instance.new("BodyVelocity")
 		Bv.Velocity = (CFrame.new(Center) * CFrame.Angles(math.rad(45), Angle, 0)).LookVector * SpeedRange
-		Bv.MaxForce = vector.one * math.huge;
+		Bv.MaxForce = (vector.one * math.huge) :: any;
 		Bv.Parent = RockCreated
 
 		local Bang = Instance.new("BodyAngularVelocity")
 		Bang.AngularVelocity = Random_Number:NextUnitVector() * (SpeedRange * Random_Number:NextNumber(0.8, 1.2))
-		Bang.MaxTorque = vector.one * math.huge;
+		Bang.MaxTorque = (vector.one * math.huge) :: any;
 		Bang.Parent = RockCreated
 
 		EffectUtil:CleanUp(Bv, 0.15);
@@ -640,7 +650,7 @@ end
 
 
 function EffectUtil:GetParent(Name: string?): Instance
-	local WorldFolder = workspace:FindFirstChild("World"):: Folder
+	local WorldFolder = workspace:FindFirstChild("World") :: any
 
 	if Name then
 		return WorldFolder.Effects:FindFirstChild(Name) or WorldFolder.Effects;
@@ -667,7 +677,8 @@ function EffectUtil:Toggle(Object: Instance, State: boolean, Filter: ((Object: P
 	end
 end
 
-function EffectUtil:Quad(p0, p1, p2, t)
+type Lerpable = vector | Vector3 | Vector2 | number
+function EffectUtil:Quad<T>(p0: T & Lerpable, p1: T & Lerpable, p2: T & Lerpable, t: number): T & Lerpable
 	return (1 - t)^2 * p0 + 2 * (1 - t) * t * p1 + t^2 * p2
 end
 
@@ -693,12 +704,12 @@ function EffectUtil:ShakeCamera(Preset: CamShakePreset)
 
 
 	local Camera = workspace.CurrentCamera
-	local NewCamShake = CameraShaker.new(Enum.RenderPriority.Last.Value, function(shakeCf)
+	local NewCamShake = (CameraShaker :: any).new(Enum.RenderPriority.Last.Value, function(shakeCf)
 		Camera.CFrame = Camera.CFrame * shakeCf
 	end)
 
 	NewCamShake:Start()
-	NewCamShake:Shake(CameraShaker.Presets[Preset]);
+	NewCamShake:Shake((CameraShaker :: any).Presets[Preset]);
 
 	return NewCamShake;
 end
@@ -707,7 +718,7 @@ export type ClientProjectile = {
 	SetSpeed: (self: ClientProjectile, Speed: number) -> (),
 }
 
-function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: () -> (boolean), PassedParams: OverlapParams, Step_fn: () -> ()): {}
+function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: (Target: any, ...any) -> (boolean), PassedParams: OverlapParams, Step_fn: (Delta: number, ...any) -> ()): {}
 	local Loop do
 		local Class = {
 			Speed = Speed,
@@ -722,19 +733,19 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 		Loop = RunService.PostSimulation:Connect(function(Delta: number)  
 			local DeltaTime = Delta * World:GetSpeed()
 			Max_Time += DeltaTime * World:GetSpeed()
-
-			if Max_Time >= Time then
+			
+			if Max_Time >= Time and Loop ~= nil then
 				Loop:Disconnect()
 				return;
 			end
 
 			Model:PivotTo(Model:GetPivot() * CFrame.new(0, 0, -DeltaTime * Class.Speed))
-			if Step_fn then
+			if typeof(Step_fn) == 'function' then
 				Step_fn(Delta)
 			end
 
 			--
-			local PartBounds = workspace:GetPartBoundsInBox(Model:GetPivot(), Size, Params)
+			local PartBounds = workspace:GetPartBoundsInBox(Model:GetPivot(), Size :: any, Params :: any)
 			if #PartBounds > 0 then
 				local Targets = {};
 				local ToStop = false;
@@ -748,13 +759,13 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 						continue
 					end
 
-					local Target = Enemies:GetFromCollider(Part) or Characters:GetCharacterFromHitbox(Part)
+					local Target = (Enemies :: any):GetFromCollider(Part) or Characters:GetCharacterFromHitbox(Part)
 					if Target then
 						table.insert(Targets, Target)
 					end
 				end
 
-				if AllInvulnerable then return end
+				if AllInvulnerable or typeof(Hit) ~= 'function' then return end
 				for _, Target in Targets do
 					local Result = Hit(Target)
 					if Result then
@@ -762,7 +773,7 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 					end
 				end
 
-				if ToStop then
+				if ToStop and Loop ~= nil then
 					Loop:Disconnect()
 
 					return;
@@ -775,6 +786,8 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 		end
 
 		Class.Disconnect = function()
+			if Loop == nil then return end
+
 			Loop:Disconnect()
 		end
 
@@ -789,7 +802,7 @@ function EffectUtil:ForModelParts(Model: Model, Functions: { [string]: (BasePart
 
 	for _, Part in Model:GetChildren() do
 		if Functions[Part.Name] then
-			Functions[Part.Name](Part);
+			Functions[Part.Name](Part :: BasePart);
 		end
 	end
 

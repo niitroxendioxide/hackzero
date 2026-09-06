@@ -20,25 +20,10 @@ type Player_Data = {Active: number, Characters: {AgentTypes.ServerAgentClass}}
 
 local Service = {
 	__Characters = {} :: {[Player]: Player_Data},
-	--[[
-		Opcode -> handler. This replaces the old dispatch, which scanned
-		GameEnum.Replication for a key whose name matched a method on this
-		table -- and so quietly exposed AddAgent, RemoveAgent and PivotTo to
-		anything a client cared to send. Only what is registered here is
-		reachable from the network.
-	]]
 	__Handlers = {} :: {[number]: (any, Player, buffer, ...any) -> ()},
 	AgentAdded = Signal.new() :: Signal.ScriptSignal<AgentTypes.ServerAgentClass>,
 }
 
---[[
-	Submodules attach their public methods to Service and register their packet
-	handlers here.
-
-	They must NOT expose an `Init` field: Framework:Init walks Services with
-	GetDescendants and would initialise each of them on its own thread in
-	undefined order. `Start` is called explicitly below instead.
-]]
 local SUBMODULES = {'Movement', 'Switching', 'Sync'}
 
 function Service:RegisterHandler(Action: number, Handler: (any, Player, buffer, ...any) -> ())
@@ -152,10 +137,6 @@ function Service:GetAgentId(Player: Player, Agent: AgentTypes.ServerAgentClass):
 	return nil
 end
 
---[[
-	Build the byte broadcast alongside Move/Stop, describing the given agent as
-	the server currently sees it.
-]]
 function Service:GetMovementByte(Player: Player, Agent: AgentTypes.ServerAgentClass, Moving: boolean?): number?
 	local AgentId = Service:GetAgentId(Player, Agent)
 	if not AgentId then
@@ -167,9 +148,6 @@ function Service:GetMovementByte(Player: Player, Agent: AgentTypes.ServerAgentCl
 	return Math:EncodeMovementByte(AgentId, IsMoving, Agent:GetKey("Sprint") == true, Agent:GetKey("Jog") == true)
 end
 
--- Attached at require time rather than in Init: Framework initialises services
--- on separate threads in undefined order, and callers such as AbilityService and
--- Mission expect Stop/SnapTo/CharacterSwitch/Sync to already be here.
 for _, Name in SUBMODULES do
 	require(script[Name]).Start(Service)
 end

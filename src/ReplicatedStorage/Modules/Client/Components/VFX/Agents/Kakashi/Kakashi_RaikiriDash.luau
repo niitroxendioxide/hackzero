@@ -1,4 +1,4 @@
----
+--
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 
@@ -51,7 +51,20 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
         Effects:Emit(Beams)
 
         --- Bolt VFX
-        
+        task.spawn(function()
+            for i = 1, 4 do
+                local Origin = Base.Position;
+                local End = EndCFrame.Position;
+
+                Effects:CreateLightningBolt({
+                    A1WorldPos = End,
+                    A0WorldPos = Origin,
+                    CasterModel = Caster:GetModel(),
+                })
+
+                task.wait()
+            end
+        end)
 
         ---
         for _, Asset: Instance in Beams:GetDescendants() do

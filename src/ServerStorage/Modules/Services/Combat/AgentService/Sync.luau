@@ -8,9 +8,6 @@ local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
 --
 local Sync = {}
 
--- Seconds between full position snapshots. This is a correction heartbeat, not
--- the primary position channel: the owning client sends its own pose far more
--- often, and clients smooth whatever this disagrees with.
 local BATCH_SYNC_INTERVAL = 2
 
 function Sync.Start(Service)
@@ -30,9 +27,6 @@ function Sync.Start(Service)
 		end
 	end)
 
-	--[[
-		Replay one player's agents to a client that has just joined or respawned.
-	]]
 	function Service:Sync(Player: Player, Target: Player)
 		local CurrentCharacter = Service:GetCurrentCharacter(Player)
 
@@ -57,9 +51,6 @@ function Sync.Start(Service)
 			Replicator:Move(Player, MovementByte, Target)
 		end
 
-		-- Order matters and must match AgentClass:SyncVelocities on the client.
-		-- MovementVelocity is deliberately not sent: it is a Vector3 here and a
-		-- scalar there, so it cannot be copied across.
 		local Controller = CurrentCharacter.__Character
 
 		Replicator:SyncVelocities(Player, Target,

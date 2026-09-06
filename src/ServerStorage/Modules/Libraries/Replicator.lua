@@ -236,17 +236,6 @@ function Replicator:SyncVelocities(Player: Player, Target: Player, ...)
 	Network:Fire('Replicate', Target, Object, ...)
 end
 
---[[
-	Broadcast a resolved character switch.
-
-	Carries the destination CFrame so receivers never have to reproduce the
-	server's random draws, and goes to everyone *including* the owner: for them
-	it is a correction against what they already predicted, which CorrectTo
-	discards when the prediction was right.
-
-	Reliable, because a dropped switch would leave the owner and the server
-	permanently disagreeing about which agent is active.
-]]
 function Replicator:CharacterSwitch(Player: Player, Index: number, TargetId: number?, At: CFrame)
 	local Object = buffer.create(16)
 	buffer.writeu8(Object, 0, GameEnum.Replication.CharacterSwitch)

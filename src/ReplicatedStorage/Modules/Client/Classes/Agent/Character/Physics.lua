@@ -199,6 +199,20 @@ function PhysicsClass:PivotTo(To: CFrame)
 	self.__Position = To.Position
 	self.__Rotation = To.LookVector
 	self.__RotationGoal = To.LookVector
+
+	-- A teleport is unconditional, so nothing about the old position survives it.
+	-- A pending correction offset would otherwise be added straight back on top
+	-- of the destination by GetPivot.
+	self.__CorrectionOffset = Vector3.zero
+
+	-- The collider has to move with it. The model is bound to the collider by an
+	-- AlignPosition with MaxForce = math.huge (Appearance:JoinTo), so leaving the
+	-- collider behind drags the model back onto it. Update does sync the collider,
+	-- but only on its last line, and it returns early when the character has no
+	-- velocity -- exactly the case for a teleport from a standstill.
+	if self.__Collider then
+		self.__Collider:PivotTo(self:GetPivot())
+	end
 end
 
 function PhysicsClass:SetMovementVelocity(Velocity: number)
