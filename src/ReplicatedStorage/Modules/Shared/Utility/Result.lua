@@ -70,6 +70,23 @@ function ResultClass.IsErr<T, E>(self: Result<T, E>): boolean
     return self.__TypePair[2] ~= nil
 end
 
+--[[
+    Read the Ok value out without going through a callback, nil when the result is an Err.
+    Lets a caller keep a synchronous flow, `Ok`/`Err` both hand off to `task.spawn`.
+]]
+function ResultClass.Unwrap<T, E>(self: Result<T, E>): T?
+    return self.__TypePair[1] :: T?
+end
+
+--- The Ok value, or `Fallback` when the result is an Err.
+function ResultClass.UnwrapOr<T, E>(self: Result<T, E>, Fallback: T): T
+    if self.__TypePair[1] == nil then
+        return Fallback
+    end
+
+    return self.__TypePair[1] :: T
+end
+
 --export type IterResult<T, E> = {Value: T | E, Type: "Ok" | "Err"}
 
 export type Result<T, E> = typeof(setmetatable({}, ResultClass)) & {
@@ -80,6 +97,9 @@ export type Result<T, E> = typeof(setmetatable({}, ResultClass)) & {
     
     IsOk: (self: Result<T, E>) -> (boolean),
     IsErr: (self: Result<T, E>) -> (boolean),
+
+    Unwrap: (self: Result<T, E>) -> (T?),
+    UnwrapOr: (self: Result<T, E>, Fallback: T) -> (T),
 }
 
 

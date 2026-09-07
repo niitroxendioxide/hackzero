@@ -17,6 +17,15 @@ local Service = {
     __Chatting_With = {},
     __Stage = '',
     __Act = '',
+
+    --[[
+        Markers resolved for this run, set by MatchService.
+
+        Dialogue used to be read straight out of the stage database, which a mission
+        authored at runtime has no entry in. The run's own markers are the source now, and
+        the stage act is only the fallback.
+    ]]
+    __Markers = nil :: {[string]: any}?,
 }
 
 function Service:Init()
@@ -59,12 +68,29 @@ function Service:SetupNPCS(Data: {})
     end
 end
 
-function Service:HandleEvent(NPCName: string, Id: number)
-    local ActData = StagesDatabase:GetAct(Service.__Stage, Service.__Act)
-    local NPCData = ActData.Markers[NPCName]
+--- Markers for this run, falling back to the stage act for hand-built maps.
+function Service:GetMarkers(): {[string]: any}
+    if Service.__Markers then
+        return Service.__Markers
+    end
 
-    if NPCData then
+    local ActData = StagesDatabase:GetAct(Service.__Stage, Service.__Act)
+
+    return (ActData and ActData.Markers) or {}
+end
+
+function Service:SetMarkers(Markers: {[string]: any}?)
+    Service.__Markers = Markers
+end
+
+function Service:HandleEvent(NPCName: string, Id: number)
+    local NPCData = Service:GetMarkers()[NPCName]
+
+    if NPCData and NPCData.Dialogue then
         local DialogueIndexData = NPCData.Dialogue[Id]
+        if not DialogueIndexData then
+            return
+        end
 
         if not Service.__Logs[NPCName] then
             Service.__Logs[NPCName] = {}

@@ -47,7 +47,7 @@ function Component:Init()
     MainFrame.Visible = true
 end
 
-local Priorities = {Gold = 0, Gems = 1, Item = 23, Artifact = 25, Drive = 26}
+local Priorities = {_mission_object = 0, Gold = 1, Gems = 2, Item = 23, Artifact = 25, Drive = 26}
 function Component:AddItem(Type: string, Amount: number, Name: string?)
     local MainFrame = Component:GetFrame()
     local Stackable = Type == 'Gold' or Type == 'Gems' 
@@ -64,13 +64,20 @@ function Component:AddItem(Type: string, Amount: number, Name: string?)
         return
     end
 
+    if (typeof(Amount) ~= 'number' or typeof(Type) ~= 'string') then
+        warn('Invalid parameters passed to ItemNotification')
+        return
+    end
+
     local ItemName = if (Name ~= nil and #Name > 0) then Name else Type
     local ItemFrame = Assets.Items.Notification:Clone()
     ItemFrame.Parent = MainFrame.List
     ItemFrame.Name = Type
     ItemFrame.LayoutOrder = Priorities[Type] or 27
     ItemFrame:SetAttribute('Amount', Amount)
-    if Type == 'Artifact' or Type == 'Drive' then
+    if Type == '_mission_object' then
+        ItemFrame.Design.Label.Text = `Key Item: {ItemName}`;
+    elseif Type == 'Artifact' or Type == 'Drive' then
         ItemFrame.Design.Label.Text = `{Type}: "{ItemName}"`
     else
         ItemFrame.Design.Label.Text = 'x'..Amount.." "..(ItemName)

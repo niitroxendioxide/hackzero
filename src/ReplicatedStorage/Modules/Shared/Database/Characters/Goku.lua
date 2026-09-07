@@ -81,10 +81,7 @@ return {
 
 				Effect_Data = {
 					Highlight = true,
-					Audio = {
-						Id =  {8595980577}, --{ 9117969687, 175024455 }, -- 8595980577 lighter  --{ 135200034075896, 135175485527318 }, 
-						Volume = 0.5,
-					}
+					Audio = 'General/Effects/Hit_Punch'
 				},
 
 				Walk_Time = 0.2,

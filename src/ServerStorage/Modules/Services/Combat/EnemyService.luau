@@ -217,9 +217,10 @@ function Service:__GenerateLocation(SpawnLocation: BasePart)
 	local Size = (SpawnLocation:GetAttribute("AreaSize") or SpawnLocation.Size) :: Vector3
 	local BaseOffset = CFrame.new(SpawnLocation:GetAttribute("AreaOffset") or Vector3.new()) :: CFrame
 
+	const BOUNDARY = 2.1;
 	local RNG = Random.new()
 
-	return (cFrame * BaseOffset) * CFrame.new(RNG:NextNumber(-Size.X/2, Size.X/2), Size.Y/2, RNG:NextNumber(-Size.Z/2, Size.Z/2))
+	return (cFrame * BaseOffset) * CFrame.new(RNG:NextNumber(-Size.X/BOUNDARY, Size.X/BOUNDARY), Size.Y/2, RNG:NextNumber(-Size.Z/BOUNDARY, Size.Z/BOUNDARY))
 end
 
 return Service

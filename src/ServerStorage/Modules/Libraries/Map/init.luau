@@ -16,10 +16,13 @@ local World = workspace:WaitForChild('World')
 local MapLoader = {
     __Current_Loading_Data = {
         Infinite = false,
-    }
+    },
+
+    --- Layout the generator produced for this server, nil while the map is static.
+    __Generation_Result = nil :: Types.MapGenerationResult?,
 }
 
-function GetMap(p_MapPath: string): Folder?
+local function GetMap(p_MapPath: string): Folder?
     local Split = string.split(p_MapPath, "/")
     local Map = Assets:WaitForChild("Maps") :: Folder
 
@@ -34,9 +37,14 @@ function GetMap(p_MapPath: string): Folder?
     return Map
 end
 
-function MapLoader:Unpack(p_MapPath: string, p_SpawnToUse: string?)
+function MapLoader:Unpack(p_MapPath: string, p_SpawnToUse: string?): boolean
     local SpawnId = p_SpawnToUse or 'SpawnLocation'
     local Map = GetMap(p_MapPath)
+    if not Map then
+        warn("MapLoader::Unpack - no map asset at path:", p_MapPath)
+
+        return false
+    end
 
     --
     local NewMap = Map:Clone()
@@ -100,7 +108,7 @@ function MapLoader:Unpack(p_MapPath: string, p_SpawnToUse: string?)
     return true
 end
 
-function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}, SubLookup: { Destructibles: {}, Triggers: {} }): {Destructibles: {}, Chests: {}}?
+function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destructibles: {}, Chests: {}, NPCS: {}}
     local MapData = {
         Destructibles = {},
         Chests = {},
@@ -119,7 +127,8 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}, SubLookup:
         Part:ClearAllChildren()
     end
 
-    local Triggers = Map:FindFirstChild('   Triggers') or Instance.new('Folder')
+    --- Was looking up '   Triggers', which never matched, so every call built a new folder.
+    local Triggers = Map:FindFirstChild('Triggers') or Instance.new('Folder')
     Triggers.Name = 'Triggers'
     Triggers.Parent = Map
 
@@ -164,7 +173,9 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}, SubLookup:
             })
         elseif MarkerObj.Type == 'NPC' then
             local Part = Map.Markers:FindFirstChild(MarkerId)
-            table.insert(MapData.NPCS, Part)
+            if Part then
+                table.insert(MapData.NPCS, Part)
+            end
         end
     end
 
@@ -213,7 +224,7 @@ end
 
 
 --
-function GetRoomsSource(p_MapFolder: Folder, p_Source: string): Folder?
+local function GetRoomsSource(p_MapFolder: Folder, p_Source: string): Folder?
     local SourceDirs = string.split(p_Source, '/')
     local MapFolder = p_MapFolder
     local index = 1;
@@ -233,24 +244,86 @@ function GetRoomsSource(p_MapFolder: Folder, p_Source: string): Folder?
     return MapFolder
 end
 
-function MapLoader:Generate(p_MapPath: string, p_GenerationData: Types.MapGenerationData): (boolean)
+--[[
+    Procedurally build the map instead of unpacking a static one.
+
+    @param p_MapPath Map asset the room source lives under.
+    @param p_GenerationData Resolved generation parameters, see `Types.MapGenerationData`.
+
+    @return The layout that was built, or nil when it could not be.
+]]
+function MapLoader:Generate(p_MapPath: string, p_GenerationData: Types.MapGenerationData): Types.MapGenerationResult?
     local MapFolder = GetMap(p_MapPath)
-    
-    MapLoader.__Current_Loading_Data.Infinite = p_GenerationData.Infinite
+    if not MapFolder then
+        warn("MapLoader::Generate - no map asset at path:", p_MapPath)
+
+        return nil
+    end
+
+    MapLoader.__Current_Loading_Data.Infinite = p_GenerationData.Infinite == true
+    MapLoader.__Generation_Result = nil
 
     --
     local Source = GetRoomsSource(MapFolder, p_GenerationData.Source)
+    if not Source then
+        warn("MapLoader::Generate - no room source:", p_GenerationData.Source, "under", p_MapPath)
 
-    local Result = Generator:Create(Source, p_GenerationData)
-    Result:Err(function(msg): ()
-        error("Map generation errored: " .. msg)
+        return nil
+    end
+
+    local Generated = Generator:Create(Source, p_GenerationData)
+    Generated:Err(function(msg): ()
+        warn("MapLoader::Generate - map generation errored: " .. msg)
     end)
 
-    return Result();
+    if Generated:IsErr() then
+        return nil
+    end
+
+    MapLoader.__Generation_Result = Generated:Unwrap()
+
+    return MapLoader.__Generation_Result;
 end
 
-function MapLoader:CreateMarkersForGeneratedMap()
-    --local Rooms = World:FindFirstChild("Map"):FindFirstChild("Design")
+--[[
+    Turn every room the generator placed into a marker entry, so a generated dungeon goes
+    through the exact same marker/trigger path a hand-built map does.
+
+    Entries already declared by the mission win, that is how a mission attaches real event
+    data (goals, enemies, dialogue) to a specific room.
+
+    @param p_MarkerData Markers the mission declared, may be nil.
+
+    @return A new merged marker table, the one passed in is left alone (it can belong to a
+            cached stage act).
+]]
+function MapLoader:CreateMarkersForGeneratedMap(p_MarkerData: {[string]: Types.Marker}?): {[string]: Types.Marker}
+    local Markers = table.clone(p_MarkerData or {})
+    local Generated = MapLoader.__Generation_Result
+    if not Generated then
+        return Markers
+    end
+
+    for _, Room in Generated.Rooms do
+        if Room.IsHall or not Room.Marker then
+            continue
+        end
+
+        if Markers[Room.Marker.Name] then
+            continue
+        end
+
+        Markers[Room.Marker.Name] = {
+            Type = 'Trigger',
+        } :: Types.Marker
+    end
+
+    return Markers
+end
+
+--- Layout the generator produced for this server, nil when the map is static.
+function MapLoader:GetGenerationResult(): Types.MapGenerationResult?
+    return MapLoader.__Generation_Result
 end
 
 function MapLoader:IsInfinite(): boolean

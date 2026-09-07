@@ -8,6 +8,7 @@ export type Goal = {
 }
 export type EventHandlerState = {Dead: boolean, [string | Stage_Objective]: any}
 export type Action = "KickPlayer"
+export type MissionKind = "Recover" | "Escort" | "Revenge";
 
 --[[
 
@@ -157,8 +158,39 @@ export type Stage = {
 	},
 }
 
+--[[
+	Everything `MissionClass.new` needs to build a mission. Passed as a single table so
+	adding a field doesn't shuffle a positional argument list.
+]]
+export type MissionConfig = {
+	Type: MissionType,
+	Stage: string,
+	Act: string,
+
+	--[[
+		The world data the mission runs on: `Markers` / `Guide` / `Destructibles` /
+		`Completion`. For an Expedition this is the stage act itself.
+	]]
+	Data: {[string]: any},
+
+	-- Seed the map was generated with, 0 when the map is static.
+	Seed: number?,
+	Procedural: boolean?,
+	Generated_Rooms: {GeneratedRoom}?,
+
+	--[[
+		Component running this mission, already resolved by MatchService. Passing it means a
+		runtime-authored mission hooks into its kind's handler rather than a stage act it
+		does not have.
+	]]
+	Hooks: any?,
+}
+
+export type MissionType = "Mission" | "Expedition" | "ChaosControl"
+
 export type MissionClass = {
-	Finished: Signal<{[string]: any}>,
+	--- Fired with (Won, FinalState) once the mission closes out.
+	Finished: Signal<boolean, {[string]: any}>,
 
 	__Is_Chaos_Control: boolean,
 	__Custom_Data: {
@@ -167,12 +199,27 @@ export type MissionClass = {
 	__Active: boolean,
 	__Act: string,
 	__Stage: string,
+	__Seed: number,
+	__Procedural: boolean,
+	__Generated_Rooms: {GeneratedRoom},
+	__Mission_Type: MissionType,
 	__Is_Finished: boolean,
 	__Current_Active_Triggers: {thread | RBXScriptConnection},
 	__Current_Events: {[string]: EventClass},
 	__Current_State: {[string]: any},
 	__Hooks: {[string]: (...any) -> ()},
 
+
+	--[[
+		Seed the map for this mission was generated with, 0 for a static map.
+	]]
+	GetSeed: (self: MissionClass) -> (number),
+
+	--[[
+		Rooms the generator placed for this mission, empty for a static map.
+	]]
+	GetGeneratedRooms: (self: MissionClass) -> ({GeneratedRoom}),
+	IsProcedural: (self: MissionClass) -> (boolean),
 
 	--
 	Begin: (self: MissionClass) -> (),
@@ -185,7 +232,9 @@ export type MissionClass = {
 	]]
 	BeginEvent: (self: MissionClass, Event: ("Begin" | string)?, Players: {StagePlayer}, Ignore_Replay: boolean?, Trigger: BasePart?) -> (),
 	SummonEnemyWave: (self: MissionClass, Wave: number) -> (),
-	Finish: (self: MissionClass) -> (),
+	Finish: (self: MissionClass, Won: boolean?) -> (),
+	ObtainMissionRank: (self: MissionClass, Won: boolean) -> (Rating),
+	GetHookPayload: (self: MissionClass, Extra: {[string]: any}?) -> ({[string]: any}),
 	GetProgressValue: (self: MissionClass, Key: string) -> (),
 	SetProgressValue: (self: MissionClass, Key: string, Value: any) -> (),
 
@@ -207,6 +256,7 @@ export type MissionClass = {
 export type EventClass = {
 	Finished: Signal<string, {[string]: any}>,
 
+	__Current_Mission_State_Link: {}?,
 	__Current_Barrier_State: boolean,
 	__Players: {StagePlayer},
 	__Current_Barriers: {BasePart},
@@ -272,7 +322,49 @@ export type MapGenerationData = {
 	Infinite: boolean?,
 	Seed: number, -- when set to 0 it'll be random
 	Source: string, -- From the map base folder,
-	Extent: number?, -- How far from the source to expand from the initial room
+	Extent: number?, -- Hard cap on how many tiles (rooms + halls) may be placed
+	Trail: number?,
+
+	--[[
+		How many *rooms* (halls excluded) the layout should end up with.
+		This is the number a procedural mission "comes up with", `Extent` stays the
+		safety cap for the tile budget.
+	]]
+	Rooms: number?,
+}
+
+--[[
+	One placed piece of a generated layout. Halls are included so a hook can walk the
+	whole layout, but only rooms get a marker/trigger part.
+]]
+export type GeneratedRoom = {
+	Id: number,
+	Name: string,
+	Model: Model,
+	Marker: BasePart?,
+	IsHall: boolean,
+}
+
+--[[
+	What the map generator hands back, so the caller knows what it actually built and
+	with which seed (relevant when the seed was rolled at runtime).
+]]
+export type MapGenerationResult = {
+	Seed: number,
+	Rooms: {GeneratedRoom},
+	RoomCount: number,
+	HallCount: number,
+}
+
+--[[
+	Parameters a mission carries when it wants its map built procedurally instead of
+	unpacked from a static asset.
+]]
+export type ProceduralMissionData = {
+	Rooms: number?,
+	Source: string?,
+	Infinite: boolean?,
+	Extent: number?,
 	Trail: number?,
 }
 

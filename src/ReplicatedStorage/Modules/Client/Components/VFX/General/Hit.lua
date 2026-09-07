@@ -7,6 +7,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
 local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
 local AudioLib = require(Client.Libraries.Audio)
 local Types = require(Shared.Types)
 local Effects = require(Shared.Utility.Effects)
@@ -81,17 +82,25 @@ return function(
 	end
 
 	if Data.Audio then
-		AudioLib:PlayId(Data.Audio.Id, {
-			At = BaseCFrame.Position,
-			Volume = Data.Audio.Volume or 1,
-			Category = 'Effects',
-			Priority = Data.Audio.Priority,
-		})
+		local IsTable = typeof(Data.Audio) == 'table';
+		if IsTable and (typeof(Data.Audio.Id) == 'number') then
+			AudioLib:PlayId(Data.Audio.Id, {
+				At = BaseCFrame.Position,
+				Volume = Data.Audio.Volume or 1,
+				Category = 'Effects',
+				Priority = Data.Audio.Priority,
+			})
+		elseif typeof(Data.Audio) == 'string' then
+			AudioLib:PlayFromDb(Data.Audio, BaseCFrame.Position);
+		else
+			Debugger:DebugLine("VFX.General.Hit", `Malformed audio cue: {Data.Audio}`, 3)
+		end
+
 	end
 
 	Effects:Emit(Object)
 
-	task.delay(6/60, function()
+	task.delay(0.1, function()
 		for _, Particle in Object:GetDescendants() do
 			if Particle:IsA("ParticleEmitter") then
 				local Time = Particle.TimeScale

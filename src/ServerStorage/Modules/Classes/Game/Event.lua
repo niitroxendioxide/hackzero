@@ -51,6 +51,7 @@ EventClass.new = function(Stage: string, Act: string, Event: string)
     self.__Current_Goals = {};
     self.__Current_State = {};
     self.__Current_Barriers = {};
+    self.__Current_Mission_State_Link = {};
     self.__Current_Barrier_State = false;
 
     if typeof(Stage) == 'table' then
@@ -62,10 +63,13 @@ EventClass.new = function(Stage: string, Act: string, Event: string)
     return self
 end
 
-function EventClass.Start(self: Types.EventClass, Trigger: BasePart?): (boolean, boolean)
+--- Where 'mission_state_link' is literally the Current_State from Mission, it should work just fine 
+function EventClass.Start(self: Types.EventClass, Trigger: BasePart?, Mission_State_Link: {}): (boolean, boolean)
     if self.__Finish_Status then
         return false, "Event is... finished?";
     end
+
+    self.__Current_Mission_State_Link = Mission_State_Link;
 
     local EventData;
     if self.__Is_Custom_Event then
@@ -334,8 +338,7 @@ function EventClass.Destroy(self: Types.EventClass, Not_Finished: boolean)
         else Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
 
     local CorrectedState = self:GetCorrectedState()
-    local Next_Stage = typeof(EventData.Finished) == 'function' and EventData.Finished(self.__Current_State) or tostring(EventData.Finished)
-    print(EventData)
+    local Next_Stage = typeof(EventData.Finished) == 'function' and EventData.Finished(self.__Current_State, self.__Current_Mission_State_Link) or tostring(EventData.Finished)
 
     self:SetBarrierCollision(false)
 

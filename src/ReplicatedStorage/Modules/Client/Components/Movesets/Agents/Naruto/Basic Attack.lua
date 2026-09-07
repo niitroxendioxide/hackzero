@@ -73,6 +73,7 @@ function Ability:Play(Caster: Types.AgentClass, _, _, Context)
 			end
 			
 			Ability:Hit(Caster, Target, {Track = TrackToBeUsed, HitAirborne = true, EffectData = {
+				Audio = 'General/Effects/Hit_Punch',
 				Offset = Offset
 			}})
 

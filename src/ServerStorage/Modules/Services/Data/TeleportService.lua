@@ -183,7 +183,12 @@ function Service:TeleportGroup(Stage: string, Party: Types.PartyClass, Data: {})
             Stage = PartyStage[2],
             Act = PartyStage[3],
             Difficulty = Party:GetDifficulty(),
-            Seed = (PartyData.Stage and PartyData.Stage.Seed) or 0,
+            Seed = (PartyData.Stage and PartyData.Stage.Seed) or PartyData.Seed or 0,
+
+            Procedural = PartyData.Procedural,
+            Generation = PartyData.Generation,
+            Kind = PartyData.Kind,
+
             Data = PartyData,
         },
         Players = {},
@@ -324,7 +329,25 @@ export type MatchData = {
         Type: string,
         Stage: string,
         Act: string?,
-        Seed: number,
+        Difficulty: string?,
+
+        --[[
+            Seed the run should be built from. 0 means "roll one", `MatchService` reports
+            the rolled value back on the completion payload so a run can be replayed.
+            May also be an authored string seed, it gets folded to a number.
+        ]]
+        Seed: (number | string)?,
+        Procedural: boolean?,
+
+        --- see `Types.ProceduralMissionData`.
+        Generation: {[string]: any}?,
+
+        --[[
+            What kind of mission this is, e.g. 'Recover'. Resolves the world handler at
+            `Components/Missions/<Kind>` that authors the mission into the generated map.
+            This is the only classification a mission with no database entry needs.
+        ]]
+        Kind: string?,
 
         Data: {
             MissionId: string,
@@ -351,7 +374,11 @@ function Service:GetStageData(): MatchData
                 Type = settings.MISSION.TYPE,
                 Stage = settings.MISSION.STAGE.Stage,
                 Act = settings.MISSION.STAGE.Act,
-                Seed = 0,
+                Difficulty = settings.MISSION.DIFFICULTY,
+                Seed = settings.MISSION.SEED or 0,
+                Procedural = settings.MISSION.PROCEDURAL,
+                Generation = settings.MISSION.GENERATION,
+                Kind = settings.MISSION.DATA.Kind,
                 Data = settings.MISSION.DATA,
             },
         }

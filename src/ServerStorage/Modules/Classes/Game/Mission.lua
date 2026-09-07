@@ -41,35 +41,65 @@ local MissionClass = {}
 MissionClass.__index = MissionClass
 
 --[[
-    Create a new mission, there are a few variant parameters
+    Create a new mission.
 
-    @param Type "Mission" or "ChaosControl"
-    @param Stage The stage to take as reference.
-    @param 'Act', can also be 'Data', for custom missions.
+    Takes a single config table (`Types.MissionConfig`) so Stage/Act stay Stage/Act no
+    matter the mission type. The world data the mission runs on travels in `Data`, it used
+    to be smuggled through the `Act` argument for custom missions, which meant
+    `StageHandlers:Get(Stage, Act)` was handed a table and mission hooks never resolved.
 
---]]
-MissionClass.new = function(Type: string, Stage: string, Extra: string | {}, ...): Types.MissionClass
+    @param p_Config Type / Stage / Act / Data, plus the seed and rooms of a generated map.
+]]
+MissionClass.new = function(p_Config: Types.MissionConfig): Types.MissionClass
     local self = setmetatable({}, MissionClass)
     self.Finished = Signal.new()
 
     self.__Is_Finished = false
     self.__Active = false
-    self.__Act = Extra :: string;
-    self.__Stage = Stage;
+    self.__Mission_Type = p_Config.Type
+    self.__Stage = p_Config.Stage;
+    self.__Act = p_Config.Act;
+    self.__Custom_Data = p_Config.Data or {};
+    self.__Seed = p_Config.Seed or 0;
+    self.__Procedural = p_Config.Procedural == true;
+    self.__Generated_Rooms = p_Config.Generated_Rooms or {};
     self.__Current_Events = {};
     self.__Current_Active_Triggers = {};
     self.__Current_State = {};
-    self.__Hooks = StageHandlers:Get(Stage, Extra) or Mock
+    self.__Hooks = p_Config.Hooks or StageHandlers:Get(p_Config.Stage, p_Config.Act) or Mock
 
-    if (Type == 'ChaosControl' or Type == 'Mission') then
-        self.__Mission_Type = Type
-        self.__Custom_Data = Extra
-    end
+    self.__Hooks:SetSeed(self.__Seed)
 
     return self
 end
 
---
+function MissionClass.GetHookPayload(self: Types.MissionClass, Extra: {[string]: any}?): {[string]: any}
+    local Payload = {
+        Seed = self.__Seed,
+        Procedural = self.__Procedural,
+        Rooms = self.__Generated_Rooms,
+    }
+
+    for Key, Value in (Extra or {}) do
+        Payload[Key] = Value
+    end
+
+    return Payload
+end
+
+
+function MissionClass.GetSeed(self: Types.MissionClass): number
+    return self.__Seed
+end
+
+function MissionClass.GetGeneratedRooms(self: Types.MissionClass): {Types.GeneratedRoom}
+    return self.__Generated_Rooms
+end
+
+function MissionClass.IsProcedural(self: Types.MissionClass): boolean
+    return self.__Procedural
+end
+
 function MissionClass.Begin(self: Types.MissionClass)
     if self.__Active or self.__Is_Finished then
         return
@@ -77,7 +107,7 @@ function MissionClass.Begin(self: Types.MissionClass)
 
     self.__Active = true
 
-    self.__Hooks:ExecuteHooks(GameEnum.StageHook.Begin)
+    self.__Hooks:ExecuteHooks(GameEnum.StageHook.Begin, self, self:GetHookPayload())
 
     self:DetectAreaTriggers()
     self:BeginEvent("Begin", PlayersLibrary:GetAll())
@@ -97,23 +127,15 @@ end
 
 function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Players: {Types.StagePlayer}, Replay_Event, Trigger: BasePart?)
     ---
-    
-    ---
     local EventData;
     local IsCustom = true;
     if Trigger and Trigger:HasTag("CustomObject") then
         EventData = MapCache:GetTriggerData(Event)
     elseif self.__Mission_Type == 'Mission' then
-        if self.__Custom_Data.Guide then
-           local Guide = self.__Custom_Data.Guide[Event]
+        local Guide = self.__Custom_Data.Guide
 
-            EventData = Guide 
-        else
-            EventData = self.__Custom_Data
-        end
-    ---elseif self.__Mission_Type == 'ChaosControl' then
-
-    else
+        EventData = if Guide then Guide[Event] else self.__Custom_Data
+    elseif self.__Mission_Type == 'Expedition' then
         IsCustom = false;
         EventData = Stages:GetEvent(self.__Stage, self.__Act, Event :: string)
     end
@@ -207,13 +229,13 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
     self.__Current_Events[Event] = EventObject
 
     if Trigger then
-        self.__Hooks:ExecuteTrigger(GameEnum.StageHook.TriggerEnter, {
+        self.__Hooks:ExecuteHooks(GameEnum.StageHook.TriggerEnter, self, self:GetHookPayload({
             Trigger = Trigger,
             Players = Players,
-        })
+        }))
     end
 
-    local Success, IsGoallessEvent = EventObject:Start(Trigger)
+    local Success, IsGoallessEvent = EventObject:Start(Trigger, self.__Current_State)
     if Success == false and not (IsGoallessEvent == true) then
         warn('Error on event: ', Event, "Errorcode:", IsGoallessEvent)
     end
@@ -237,23 +259,22 @@ function MissionClass.ObtainMissionRank(self: Types.MissionClass, Won: boolean)
         return 'X'
     end
     
-    if self.__Mission_Type ~= nil then
-        local EventData = self.__Custom_Data;
-        local Completion = EventData.Completion;
-        if Completion and typeof(Completion.Handler) == 'function' then
-            return (Completion.Handler(self.__Current_State) or 'B')
-        end
-
-        return 'S';
-    else
+    if self.__Mission_Type == 'Expedition' then
         local EventData = Stages:GetAct(self.__Stage, self.__Act)
-        local RewardsTable = EventData.Completion.Rewards;
-        if typeof(RewardsTable.Handler) == 'function' then
+        local RewardsTable = EventData and EventData.Completion and EventData.Completion.Rewards;
+        if RewardsTable and typeof(RewardsTable.Handler) == 'function' then
             return (RewardsTable.Handler(self.__Current_State) or 'B')
         end
 
         return 'S'
     end
+
+    local Completion = self.__Custom_Data.Completion;
+    if Completion and typeof(Completion.Handler) == 'function' then
+        return (Completion.Handler(self.__Current_State) or 'B')
+    end
+
+    return 'S';
 end
 
 function MissionClass.AddTrigger(self: Types.MissionClass, Area: BasePart)
@@ -292,16 +313,31 @@ function MissionClass.AddTrigger(self: Types.MissionClass, Area: BasePart)
     table.insert(self.__Current_Active_Triggers, TriggerDetectionThread);
 end
 
-function MissionClass.Finish(self: Types.MissionClass)
+--[[
+    Close the mission out.
+
+    @param Won Whether the mission was completed, defaults to true. The win state is fired
+           alongside the state table, it used to only fire the state table, which is
+           always truthy and so read as a win even on a wipe.
+]]
+function MissionClass.Finish(self: Types.MissionClass, Won: boolean?)
+    if self.__Is_Finished then
+        return
+    end
+
     self.__Active = false
     self.__Is_Finished = true
-    self.Finished:Fire(self.__Current_State)
+    self.__Won = Won ~= false
 
     for _, Event in self.__Current_Events do
         if not Event:IsFinished() then
             Event:Destroy()
         end
     end
+
+    self:CleanUpTriggers()
+
+    self.Finished:Fire(self.__Won, self.__Current_State)
 end
 
 function MissionClass.CleanUpTriggers(self: Types.MissionClass): ()

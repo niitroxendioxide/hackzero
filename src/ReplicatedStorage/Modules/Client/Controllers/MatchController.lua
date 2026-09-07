@@ -57,6 +57,8 @@ function Controller:Init()
             Controller:BeginMatch(...)
         elseif Type == GameEnum.MatchEvents.UpdateWave then
             Controller:UpdateCurrentWave(...)
+        elseif Type == GameEnum.MatchEvents.AllocateDialogueData then
+            Controller:AllocateDialogueData(...)
         end
     end)
 
@@ -78,6 +80,28 @@ end
 
 
 -- // Client
+function Controller:AllocateDialogueData(DialogueIndexes: { [string]: {} })
+    local RebuiltData = {
+        Events = {},
+        Characters = {},
+    }
+
+    for Index, Data in DialogueIndexes do
+        local SplitIndex = string.split(Index, "_");
+        if string.lower(SplitIndex[1]) == 'event' then
+            RebuiltData.Events[SplitIndex[2]] = {
+                Dialogue = Data
+            };
+        elseif string.lower(SplitIndex[1]) == 'npc' then
+            RebuiltData.Characters[SplitIndex[2]] = {
+                Dialogue = Data,
+            };
+        end
+    end
+
+    LocalData:AllocateDialogueData(RebuiltData)
+end
+
 function Controller:PromptGearChoice(List: {string})
     local Component = InterfaceController:GetComponent("Gear")
 

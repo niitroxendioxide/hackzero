@@ -197,15 +197,20 @@ function Controller:InteractWithNPC(Prompt: ProximityPrompt)
     local NpcObject = NPCS:GetById(Id)
     local NpcName = NpcObject.Name
 
+    local AllocatedData = LocalData:GetAllocatedDialogueData()
     local Data = LocalData:GetStageData()
 
     local NpcData = nil;
-    if Data.MissionId == nil then
-        local StageData = StageDatabase:GetAct(Data.Stage, Data.Act)
-        NpcData = StageData.Markers[NpcName]
-    elseif Data.MissionId ~= nil then
-        local StageData = MissionsDatabase:Get(Data.MissionId)
-        NpcData = StageData.Triggers[NpcName]
+    if AllocatedData and AllocatedData.Characters then
+        NpcData = AllocatedData.Characters[NpcName];
+    else
+        if Data.MissionId == nil then
+            local StageData = StageDatabase:GetAct(Data.Stage, Data.Act)
+            NpcData = StageData.Markers[NpcName]
+        elseif Data.MissionId ~= nil then
+            local StageData = MissionsDatabase:Get(Data.MissionId)
+            NpcData = StageData.Triggers[NpcName]
+        end
     end
 
     if NpcData then

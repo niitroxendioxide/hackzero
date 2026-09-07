@@ -11,6 +11,18 @@ local LocalData = {
     __MissionId = nil :: string,
 }
 
+function LocalData:AllocateDialogueData(New_Dialogue_Data: { any })
+    assert(typeof(New_Dialogue_Data) == 'table', "Must pass in a table to allocate dialogue data")
+
+    if not LocalData.__Cache.AllocatedDialogue then
+        LocalData.__Cache.AllocatedDialogue = New_Dialogue_Data
+    end
+end
+
+function LocalData:GetAllocatedDialogueData()
+    return LocalData.__Cache.AllocatedDialogue
+end
+
 function LocalData:SetAgents(Data: {Types.ClientAgentData}): ()
     assert(typeof(Data) == "table", "Cannot overwrite the current agent table")
 

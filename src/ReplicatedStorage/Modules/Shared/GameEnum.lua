@@ -285,6 +285,7 @@ return {
 		SingularPlayerLeave = 10,
 		UpdateWave = 11,
 		SetMissionId = 12,
+		AllocateDialogueData = 13,
 	},
 
 	SummonDropTypes = {

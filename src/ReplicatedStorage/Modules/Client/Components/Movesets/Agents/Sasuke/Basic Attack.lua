@@ -202,7 +202,13 @@ function Ability:Play(Caster: Types.AgentClass, _key, State, Ctx)
 			Offset = Ability:FromData("HitboxOffset"),
 
 			Hit_Function = function(Target)
-				Ability:Hit(Caster, Target, {EffectData = {Highlight = true}, NoHitStop = true})
+				Ability:Hit(Caster, Target, {
+					EffectData = {
+						Highlight = true,
+						Audio = 'General/Effects/Hit_Punch',
+					}, 
+					NoHitStop = true
+				})
 			end
 		})
 	end

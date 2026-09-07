@@ -28,19 +28,31 @@ function Controller:CreateNPC(Buffer: buffer, Part: BasePart)
 end
 
 function Controller:PlayEventDialogue(Buffer: buffer)
-	local EventName = buffer.readstring(Buffer, 1, buffer.len(Buffer)-1)
-
-	local MissionData = LocalData:GetStageData()
-	
+	const EventName = buffer.readstring(Buffer, 1, buffer.len(Buffer)-1)
+	const AllocatedDialogueData = LocalData:GetAllocatedDialogueData()
 	local EventData;
-	if MissionData.MissionId == nil then
-		EventData = StageDatabase:GetEvent(MissionData.Stage, MissionData.Act, EventName)
-	else
-		local Data = MissionsDatabase:Get(MissionData.MissionId)
-		EventData = Data.Triggers[EventName]
-	end
 
+	if AllocatedDialogueData then
+		EventData = AllocatedDialogueData.Events[EventName]
+
+		if EventData == nil then
+			print('Event:', EventName, 'doesn\'t exist!')
+		end
+	else
+		local MissionData = LocalData:GetStageData()
+	
+		if MissionData.MissionId == nil then
+			EventData = StageDatabase:GetEvent(MissionData.Stage, MissionData.Act, EventName)
+		else
+			local Data = MissionsDatabase:Get(MissionData.MissionId)
+			EventData = Data.Triggers[EventName]
+		end
+
+	end
 	local Dialogue = InterfaceController:GetComponent("Dialogue")
+	if EventData == nil or typeof(EventData.Dialogue) ~= 'table' then
+		return
+	end
 
 	Dialogue:PlaySequence(EventData.Dialogue)
 end

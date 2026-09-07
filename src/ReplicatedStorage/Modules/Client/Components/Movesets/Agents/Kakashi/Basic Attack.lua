@@ -11,6 +11,12 @@ local AbilityClass = require(Client.Classes.Ability)
 --
 local Ability = AbilityClass.new()
 
+const SoundFrameWindows = {
+	[1] = {0.3, 0.55},
+	[2] = {0.25, 0.8},
+	[3] = {0.36, 0.7},
+}
+
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = 3})
 end)
@@ -21,13 +27,14 @@ const function TryEnterLightningMode(Caster: Types.ServerAgent): boolean
 	end
 
 	Ability:Save(Caster, 'SkillHeld', true)
-	
+
+	const Count = Caster:GetMeter("Lightning")
 	const Hold_Time = Ability:FromData('Lightning_Mode_Hold_Time')
 	const HoldStart = os.clock();
 	
 	Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Hold_Time)
 
-	while (Ability:Get(Caster, "SkillHeld") == true) do
+	while (Ability:Get(Caster, "SkillHeld") == true) and Count >= 6 do
 		const Was_Held = (os.clock() - HoldStart) >= Hold_Time
 
 		if Was_Held then
@@ -70,6 +77,14 @@ function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
 		end,},
 	}, true)
 
+	for idx, TimeFrame in SoundFrameWindows[M1_Count] do
+		Sequence:Add(TimeFrame, function(_)
+			Ability:Effect("Sound", Caster:GetPivot().Position, {
+				FromDatabase =  if (idx == 2 and M1_Count == 2) then 'General/Effects/Swing_Sword' else 'General/Effects/Swing_Punch',
+			})
+		end)
+	end
+
 	local AttackData = Ability:FromData("Attack_Data")
 	for Step = M1_Count, M1_Count + 1, 0.1 do
 		local Tick = AttackData[Step];
@@ -96,7 +111,10 @@ function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
 						HueShift = 175,
 						Highlight = true,
 						HighlightColor = Color3.fromRGB(117, 150, 244),
-					} or nil,
+					} or {
+						Highlight = true,
+						Audio = 'General/Effects/Hit_Punch',
+					},
 				})
 			end
 		})

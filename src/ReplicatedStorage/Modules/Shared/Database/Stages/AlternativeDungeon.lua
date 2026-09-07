@@ -1,23 +1,10 @@
 local Types = require("../../Types/Stages")
 
 return {
-    Name = "Dungeon_Test",
-    Map = "General/Dungeon",
+    Name = "Alternative_Dungeon_Test",
+    Map = "General/AlternativeDungeon",
 
     Acts = {
-        --[[
-            Procedural act. `AutoGenerate` is what makes MatchService build the map with
-            the dungeon generator instead of unpacking a static asset, and
-            `AutoGenerationData` are this act's defaults.
-
-            A mission can override any of these per run (see `settings.MISSION.GENERATION`
-            or the `Generation` block on a mission entry), which is how one dungeon stage
-            serves missions of different sizes.
-
-            Rooms placed by the generator become `Room_<n>` triggers automatically, so
-            hooking one only takes an entry in `Markers` (for event data) or a
-            `ForTrigger("Room_3", ...)` in the stage's server component.
-        ]]
         Intro = {
             AutoGenerate = true,
             AutoGenerationData = {
