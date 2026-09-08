@@ -4,6 +4,7 @@ local EnemyMovement = require(ReplicatedStorage.Modules.Shared.Classes.Enemy.Ene
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Fusion = require(ReplicatedStorage.Modules.Client.Libraries.Fusion)
 local _GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
+local Tasks = require(ReplicatedStorage.Modules.Shared.Types.Tasks)
 
 -- [[ Other ]]
 
@@ -54,7 +55,7 @@ export type AppearanceController = {
 	BindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),
 	UnbindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),
 	SetVisible: (self: AppearanceController, State: boolean) -> (),
-	JoinTo: (self: AppearanceController, BasePart: BasePart) -> (),
+	JoinTo: (self: AppearanceController, BasePart: BasePart, Responsiveness: number?) -> (),
 
 	EditPartValue: (self: AppearanceController, Part: BasePart, Value: number) -> (),
 	Destroy: (self: AppearanceController) -> (),
@@ -633,6 +634,28 @@ export type PartyPlayer = {
 	GetId: (self: PartyPlayer) -> (number),
 }
 
+export type PartyDataDict = {
+	Kind: Tasks.TaskType?,
+	Generation: {
+		Rooms: number?,
+		Source: string?,
+		Infinite: boolean?,
+		Extent: number?,
+		Trail: number?,
+	}?,
+	Procedural: boolean | nil,
+	Seed: number,
+	MissionId: string?,
+	Difficulty: string?,
+	Completion: {
+		Experience: number,
+		Rewards: { [string]: { { Type: string, Amount: number, Extra: { } } } },
+	}?,
+	Enemies: { 
+		[number]: { { Amount: number, Name: string, Level: number, } }
+	}
+}
+
 export type PartyClass = {
 	Code: number,
 	__Players: {[number]: PartyPlayer},
@@ -675,8 +698,8 @@ export type PartyClass = {
 	GetDifficulty: (self: PartyClass) -> (string),
 	SwitchStage: (self: PartyClass, Type: string, Stage: string, Act: string) -> (),
 
-	SetData: (self: PartyClass, Data: {[string]: any}) -> (),
-	GetData: (self: PartyClass) -> ({[string]: any}),
+	SetData: (self: PartyClass, Data: PartyDataDict) -> (),
+	GetData: (self: PartyClass) -> (PartyDataDict | {}),
 
 	GetPlayerTeam: (self: PartyClass, Player: PartyPlayer) -> (PartyPlayerTeam),
 	SetPlayerTeam: (self: PartyClass, Player: PartyPlayer, Team: PartyPlayerTeam?) -> (),
@@ -771,6 +794,10 @@ export type PlayerProfileData = {
     Agents: {
 		[number]: PlayerAgentData,
 	},
+	Missions: {
+		Completed: {},
+	},
+	Tasks: { [Tasks.UUID]: Tasks.StoredAgencyMission },
     Achievements: {},
     Titles: {},
     Items: {

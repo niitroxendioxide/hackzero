@@ -6,19 +6,77 @@
     Generates NPCs that walk around the lobby
 ]]
 
-local HttpService = game:GetService("HttpService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
+const PathfindingService = game:GetService("PathfindingService")
+const HttpService = game:GetService("HttpService")
+const ReplicatedStorage = game:GetService("ReplicatedStorage")
+const Players = game:GetService("Players")
 
-local Client = ReplicatedStorage.Modules.Client
-local Shared = ReplicatedStorage.Modules.Shared
+const Client = ReplicatedStorage.Modules.Client
+const Shared = ReplicatedStorage.Modules.Shared
 
-local UIController = require(Client.Controllers.InterfaceController)
-local Appearance = require(Client.Classes.Appearance)
-local Prompts = require(Client.Libraries.Prompts)
-local GameEnum = require(Shared.GameEnum)
-local Effects = require(Shared.Utility.Effects)
+local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
+local LocalData = require(ReplicatedStorage.Modules.Client.Libraries.LocalData)
+local Network = require(ReplicatedStorage.Modules.Shared.Network)
+local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
+const UIController = require(Client.Controllers.InterfaceController)
+const Appearance = require(Client.Classes.Appearance)
+const Prompts = require(Client.Libraries.Prompts)
+const GameEnum = require(Shared.GameEnum)
+const Effects = require(Shared.Utility.Effects)
+const TextForType = require(Client.Utility.TextForType);
 
+--- // DIALOGUE DATA
+const STARTING_DIALOGUES = {
+    {
+        Text = "Oh, What's up, are you new around here? Do you need anything?",
+        Responses = {
+            'Yes, I\'m trying to do favors to grow my reputation.',
+            '...',
+        },
+    },
+
+    {
+        Text = "Hey, do you need anything?",
+        Responses = {
+            'Yes, i\'m a new dive-agent.',
+            '...',
+        },
+    },
+
+    {
+        Text = "Hi.. Wait, are you a Dive-agent? I might have something for you",
+        Responses = {
+            'Yes, I do want ',
+            '...',
+        },
+    },
+}
+
+const SUBSEQUENT_DIALOGUES = {
+    {
+        Text = "Alright, may you %s",
+        Responses = {
+            'Yes, I will.',
+            'I don\'t think I can',
+        }
+    },
+
+    {
+        Text = "Oh, do you want tasks? Why don\'t you %s",
+        Responses = {
+            'Alright, I will.',
+            'I don\'t think I can',
+        }
+    },
+
+    {
+        Text = "Could you please %s",
+        Responses = {
+            'Anything for you, let me get on it.',
+            'Sorry, I cannot do that',
+        }
+    },
+}
 
 -- typedef
 type Character = {
@@ -26,28 +84,30 @@ type Character = {
     Model: any,
     Position: vector | Vector3,
     Direction: vector | Vector3,
-    MoveTime: number,
-    MoveStarted: number,
-    UntilNext: number,
     Created: number,
     Lifetime: number,
     Collider: BasePart,
+    ChosenPath: number,
 
     Moving: boolean,
     Available: boolean,
     Talking: boolean,
+    ProducedPath: Path,
+    CurrentWaypointIndex: number,
+    MoveGoal: PathWaypoint,
+
+    Animations: { [string]: AnimationTrack },
 }
 
 --- Constants / Statics
-local RNG = Random.new()
-local MAX_NPC_COUNT = 6
-local SPAWN_RATE = 2
-local MIN_SPAWN_RANGE = 12
-local MAX_SPAWN_RANGE = 80
+const RNG = Random.new();
+const MAX_NPC_COUNT = 16;
+const SPAWN_TIME = 2.75;
+const WALK_SPEED = 8;
+const NPC_HEIGHT = Vector3.new(0, 3, 0)
 
 
-
-local Controller = {
+const Controller = {
     __Inited = false,
     __Present_Npcs = {} :: { Character },
 }
@@ -58,7 +118,7 @@ function MainThread(): ()
     while true do
         local Delta = task.wait()
 
-        if os.clock() - SpawnClock > SPAWN_RATE then
+        if os.clock() - SpawnClock > (SPAWN_TIME) then
             SpawnClock = os.clock()
             HandleNewNPCCreation()
         end
@@ -83,7 +143,7 @@ end
 
 function ProcessNpcMovements(Delta: number): ()
     for _, Character in Controller.__Present_Npcs do
-        Update(Character, Delta)
+        task.spawn(Update, Character, Delta)
     end
 end
 
@@ -91,30 +151,91 @@ function Update(NPC: Character, Delta: number): ()
     if (os.clock() - NPC.Created) >= NPC.Lifetime and not NPC.Talking then
         return RemoveNPC(NPC.Id)
     end
+    
+    ---
+    if not NPC.ProducedPath then
+        local Paths = (workspace :: any).World.Map.AgentPaths:GetChildren();
+        local Chosen = Paths[NPC.ChosenPath];
 
-    local HasMovementEnded = os.clock() - NPC.MoveStarted > NPC.MoveTime
-    if HasMovementEnded then
-        NPC.Moving = false
-        local IsOver = os.clock() - NPC.MoveStarted
-        local CanStartMoving = IsOver > NPC.UntilNext
-        if not CanStartMoving then return end
+        local PathResult = PathfindingService:CreatePath({
+            AgentRadius = 1.25,
+            AgentHeight = 3,
+            AgentCanJump = false,
+            AgentCanClimb = false,
+            WaypointSpacing = 3,
+            Costs = {
+                Avoid = math.huge,
+            }
+        })
 
-        NPC.Direction = CFrame.Angles(0, RNG:NextNumber(-math.tau, math.tau), 0).LookVector
+        NPC.CurrentWaypointIndex = 0;
 
-        NPC.MoveStarted = os.clock()
-        NPC.UntilNext = RNG:NextNumber(3, 5)
-        NPC.MoveTime = RNG:NextNumber(1, 2)
-        NPC.Moving = true
+        local Success, ErMessage = pcall(function(...)
+            return PathResult:ComputeAsync(Chosen.Start.Position, Chosen.End.Position)
+        end)
+
+        if Success and PathResult.Status == Enum.PathStatus.Success then
+            NPC.ProducedPath = PathResult;
+        else
+            warn('Error when producing path:', ErMessage)
+        end
     end
 
-    if not NPC.Moving or NPC.Talking then
+    ---
+    if not NPC.ProducedPath or typeof(NPC.ProducedPath) ~= 'Instance' then
+        return;
+    end
+
+    local Waypoints = NPC.ProducedPath:GetWaypoints() :: { PathWaypoint };
+    local NextWaypoint = Waypoints[NPC.CurrentWaypointIndex + 1];
+    if NPC.Moving == false and NextWaypoint ~= nil then
+        NPC.Moving = true;
+        NPC.MoveGoal = NextWaypoint;
+        NPC.CurrentWaypointIndex += 1;
+    end
+
+    if (NextWaypoint == nil and not NPC.Moving) and not NPC.Talking then
+        RemoveNPC(NPC.Id);
+        
         return
     end
 
-    local Movement = (NPC.Direction :: vector) * 8 * Delta
-    local NewPosition = NPC.Position :: vector + Movement :: vector
-    NPC.Position = NewPosition
-    NPC.Collider.CFrame = CFrame.lookAlong(NPC.Position:: Vector3, NPC.Direction :: Vector3)
+    if NPC.Talking or not NPC.Moving then
+        if NPC.Talking then
+            NPC.Animations.Walk:AdjustWeight(0.001);
+        end
+
+        return;
+    end
+
+    NPC.Moving = true;
+
+    const UsedWalkSpeed = WALK_SPEED;
+    const CurrentWaypoint = NPC.MoveGoal;
+    local DistanceToWaypoint = (NPC.Position :: Vector3 -  CurrentWaypoint.Position).Magnitude;
+    local Moved = CFrame.lookAt(NPC.Position :: Vector3, CurrentWaypoint.Position).LookVector;
+    local Result = (Moved * UsedWalkSpeed * Delta);
+
+    if NPC.Animations.Walk then
+        NPC.Animations.Walk:AdjustSpeed(WALK_SPEED / 8);
+        NPC.Animations.Walk:AdjustWeight(1);
+    end
+
+    if (Result.Magnitude >= DistanceToWaypoint) then
+        NPC.Moving = false;
+        NPC.Position += Result;
+    else
+        NPC.Position += Result;
+        NPC.Direction = Moved.Unit;
+    end
+
+    local UsedPosition = NPC.Position :: Vector3 + NPC_HEIGHT
+    const Ground = Effects:CastMapRaycast(UsedPosition, vector.create(0, -10))
+    if Ground then
+        UsedPosition = Ground.Position + NPC_HEIGHT;
+    end
+
+    NPC.Collider.CFrame = CFrame.lookAlong(UsedPosition, NPC.Direction :: Vector3)
 end
 
 function HandleNewNPCCreation(): ()
@@ -127,7 +248,7 @@ function HandleNewNPCCreation(): ()
         return
     end
 
-    local Prompt = Prompts:CreatePromptOnPart(NewNpc.Collider, GameEnum.InteractionType.LobbyNPC, "Talk", "Agent", 6)
+    local Prompt = Prompts:CreatePromptOnPart(NewNpc.Collider, GameEnum.InteractionType.LobbyNPC, "Talk", "Agent", 9)
     Prompt:SetAttribute("NpcId", NewNpc.Id)
 
     task.delay(.5, function()
@@ -143,16 +264,12 @@ function NewCharacter(): Character?
         return nil
     end
 
-    local BaseCF = CFrame.new(0, 3, 0)  -- (BaseChar:FindFirstChild("HumanoidRootPart") :: BasePart):GetPivot()
-    local RandomId = HttpService:GenerateGUID(false)
-    local DirCF = BaseCF * CFrame.Angles(0, RNG:NextNumber(-math.tau, math.tau), 0)
-    local Len = RNG:NextInteger(MIN_SPAWN_RANGE, MAX_SPAWN_RANGE)
+    local PossiblePaths = (workspace :: any).World.Map.AgentPaths:GetChildren()
+    local TotalAmount = #PossiblePaths
+    local Chosen = math.random(1, TotalAmount);
 
-    local BasePos = DirCF * CFrame.new(0, 0, -Len)
-    local IsColliding = Effects:CastMapRaycast(DirCF.Position, DirCF.LookVector * Len)
-    if IsColliding then
-        BasePos = DirCF * CFrame.new(0, 0, -(IsColliding.Distance - 2))
-    end
+    local BaseCF = PossiblePaths[Chosen].Start.CFrame * CFrame.new(0, 3, 0);
+    local RandomId = HttpService:GenerateGUID(false)
 
 
     local Base = Instance.new("Part")
@@ -160,29 +277,50 @@ function NewCharacter(): Character?
     Base.Anchored = true
     Base.CanCollide = false
     Base.Transparency = 1
-    Base.CFrame = BasePos
-    Base.Parent = workspace.World.Entities.Colliders
+    Base.CFrame = BaseCF
+    Base.Parent = (workspace :: any).World.Entities.Colliders
 
-    local Model = Appearance.new("SecretAgent", "Agents", true)
-    Model:JoinTo(Base, 45)
+    const Randomizer = Random.new(Math:ToSeedNumber(RandomId))
+    const Appearance = Appearance.new("SecretAgent", "Agents", true, Randomizer)
+    Appearance:JoinTo(Base, 45)
 
+    const AnimList = {}
+    const Model = Appearance:GetModel();
+    local AnimationObject = Animation:GetMovementAnim('General', 'Walk')
+
+    if typeof(AnimationObject) == 'Instance' and AnimationObject:IsA('Animation') then
+        AnimList.Walk = Animation:Play(Model, AnimationObject, 0, 1, 1) :: AnimationTrack
+        AnimList.Walk.Looped = true 
+    end
+
+    const MAX_LIFETIME = ((PossiblePaths[Chosen].Start.Position - PossiblePaths[Chosen].End.Position).Magnitude / WALK_SPEED) * 2.5
     local Char: Character = {
         Id = RandomId,
-        Model = Model,
-        Position = BasePos.Position,
-        Direction = -DirCF.LookVector,
+        Model = Appearance,
+        Position = BaseCF.Position,
+        Direction = BaseCF.LookVector,
         MoveTime = 1,
         MoveStarted = os.clock(),
         Created = os.clock(),
-        Lifetime = RNG:NextNumber(14, 36),
+        Lifetime = MAX_LIFETIME,
         UntilNext = RNG:NextNumber(2, 4),
         Collider = Base,
+        ChosenPath = Chosen,
 
         Available = true,
-        Moving = true,
+        Moving = false,
+        Animations = AnimList,
     } :: Character
 
     return Char
+end
+
+const function RequestMissionCreation(UUID: string)
+    Network:Fire("AgencyTasks", GameEnum.AgencyTaskEvent.RetrieveInfoForUUID, UUID)
+end
+
+const function AcceptGivenTask(UUID: string)
+    Network:Fire("AgencyTasks", GameEnum.AgencyTaskEvent.AcceptUUIDMission, UUID)
 end
 
 function Controller:Init()
@@ -190,6 +328,19 @@ function Controller:Init()
         return
     end
 
+    ---
+    Network:On("AgencyTasks", function(Type: number, Packet: { Id: string, Data: any } & { any })
+        if Type == GameEnum.AgencyTaskEvent.RetrieveInfoForUUID then
+            local UUID = Packet.Id;
+            local Mission = Packet.Data;
+
+            LocalData:AllocateUUIDMission(UUID, Mission);
+        elseif Type == GameEnum.AgencyTaskEvent.RetrieveAllAccepted then
+            LocalData:AllocateAllAcceptedTasks(Packet)
+        end
+    end)
+
+    ---
     Controller.__Inited = true
 
     task.spawn(MainThread)
@@ -220,35 +371,63 @@ function Controller:TalkToNPC(NpcId: string)
     local RootPos = (UserCharacter:FindFirstChild('HumanoidRootPart') :: BasePart).Position
     local Direction = CFrame.lookAt(RootPos * Vector3.new(1, 0, 1), (NPC.Position :: Vector3) * Vector3.new(1, 0, 1)).LookVector
 
+    if LocalData:GetUUIDMission(NpcId, false) == nil then
+        RequestMissionCreation(NpcId)
+    end
+
     Prompts:DisableAll()
 
-    NPC.Collider.CFrame = CFrame.lookAlong(NPC.Position:: Vector3, -Direction)
+    local At = NPC.Position:: Vector3 + NPC_HEIGHT;
+    local Ground = Effects:CastMapRaycast(At, vector.create(0, -12, 0))
+    if Ground then
+        At = Ground.Position + NPC_HEIGHT;
+    end
+
+    NPC.Collider.CFrame = CFrame.lookAlong(At, -Direction)
     NPC.Talking = true
 
     local CurrentIndex = 1
-    local Dialogues = {
-        "Hello! I need some help",
-        "So, I want you to go into those places and get back my suitcase",
-        "Thanks in advance!",
-    }
 
-    local Available = DialogueComponent:OpenDialogue("Agent Worker", Dialogues)
+    local ChosenStarter = math.random(1, #STARTING_DIALOGUES)
+    local Available = DialogueComponent:OpenDialogue("Agent ".. TextForType.GetNameForSeed(NpcId), STARTING_DIALOGUES[ChosenStarter])
     if not Available then
         return
     end
+
+    const function Close()
+        DialogueComponent:CloseDialogue()
+        NPC.Talking = false
+        Prompts:EnableAll()
+    end
     
-    DialogueComponent:BoxSkipped(function()
-        if CurrentIndex >= #Dialogues then
-            DialogueComponent:CloseDialogue()
-            NPC.Talking = false
-            Prompts:EnableAll()
+    DialogueComponent:BoxSkipped(function(OptionChosen: number)
+        if OptionChosen == 1 and CurrentIndex > 1 then
+            AcceptGivenTask(NpcId)
+            Close()
 
             return
         end
-        
+
+        if (OptionChosen ~= 1) or (CurrentIndex > 1) then
+            Close()
+
+            return
+        end
+
+        local MissionInformation = LocalData:GetUUIDMission(NpcId, true, 5)
+        if not MissionInformation then
+            Close()
+
+            return;
+        end
+
+        local FormattedText = TextForType.ForDialogue(MissionInformation);
+
+        local NewDialogue = table.clone(SUBSEQUENT_DIALOGUES[ChosenStarter]);
+        NewDialogue.Text = string.format(NewDialogue.Text, FormattedText);
 
         CurrentIndex += 1
-        DialogueComponent:DisplayDialogue(Dialogues[CurrentIndex])
+        DialogueComponent:DisplayDialogue(NewDialogue)
     end)
 end
 

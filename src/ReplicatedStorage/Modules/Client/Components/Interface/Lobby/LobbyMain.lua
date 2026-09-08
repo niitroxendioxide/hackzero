@@ -256,13 +256,13 @@ function Component:Init(): ()
     end)
 
     Menu.Button.MouseEnter:Connect(function()
-        Menu.UIStroke.Color = Color3.new(1, 1, 1)
+        Menu.OuterStroke.Color = Color3.new(1, 1, 1)
 
         EffectUtil:Tween(Menu.Icon.UIScale, {.2}, {Scale = 1.1})
     end)
 
     Menu.Button.MouseLeave:Connect(function()
-        Menu.UIStroke.Color = Color3.new()
+        Menu.OuterStroke.Color = Color3.new()
 
         EffectUtil:Tween(Menu.Icon.UIScale, {.2}, {Scale = 1})
     end)
@@ -280,13 +280,13 @@ function Component:Init(): ()
     Agents.Button.MouseButton1Click:Connect(ActivateAgentsMenu)
 
     Agents.Button.MouseEnter:Connect(function()
-        Agents.UIStroke.Color = Color3.new(1, 1, 1)
+        Agents.OuterStroke.Color = Color3.new(1, 1, 1)
 
         EffectUtil:Tween(Agents.Icon.UIScale, {.2}, {Scale = 1.1})
     end)
 
     Agents.Button.MouseLeave:Connect(function()
-        Agents.UIStroke.Color = Color3.new()
+        Agents.OuterStroke.Color = Color3.new()
 
         EffectUtil:Tween(Agents.Icon.UIScale, {.2}, {Scale = 1})
     end)

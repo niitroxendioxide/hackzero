@@ -24,6 +24,7 @@ local LootService = require(script.Parent.LootService)
 local NPCService = require(script.Parent.NPCService)
 local Stages = require(ReplicatedStorage.Modules.Shared.Types.Stages)
 local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
+local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local World = require(ReplicatedStorage.Modules.Shared.World)
 local Map = require(ServerStorage.Modules.Libraries.Map)
 
@@ -103,26 +104,8 @@ local Service = {
     __Player_Status = {},
 }
 
---[[
-    Turn a seed of any shape into the integer the generator wants.
-    Mission seeds are authored as readable strings (`'12345-abcde-67890-fabcd'`), so those
-    get folded down to a number instead of being dropped.
-]]
-local function ToSeedNumber(Value: (string | number)?): number
-    if typeof(Value) == 'number' then
-        return math.floor(math.abs(Value)) % MAX_SEED
-    end
-
-    if typeof(Value) ~= 'string' or #Value < 1 then
-        return 0
-    end
-
-    local Hash = 2166136261 % MAX_SEED
-    for Index = 1, #Value do
-        Hash = (Hash * 31 + string.byte(Value, Index)) % MAX_SEED
-    end
-
-    return Hash
+const function ToSeedNumber(Value: (string | number)?): number
+    return Math:ToSeedNumber(Value)
 end
 
 local function FirstDefined(...: any): any
@@ -343,7 +326,10 @@ function Service:CreateMap(Context: MatchContext): boolean
 
     Debugger:DebugLine(
         "MatchService::CreateMap",
-        string.format("Generated %d rooms (%d halls) with seed %d", Generated.RoomCount, Generated.HallCount, Generated.Seed),
+        string.format(
+            "Generated %d rooms (%d halls, %d sealed doorways) with seed %d",
+            Generated.RoomCount, Generated.HallCount, Generated.SealCount or 0, Generated.Seed
+        ),
         1
     )
 

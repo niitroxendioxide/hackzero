@@ -303,4 +303,33 @@ function Math:DecodeCFrame(Buffer: buffer, Offset: number)
     return Rebuilt, (Offset::number) + 12
 end
 
+const MAX_SEED = 2 ^ 31 - 1
+
+function Math:ToSeedNumber(Value: (string | number)?): number
+    if typeof(Value) == 'number' then
+        return math.floor(math.abs(Value)) % MAX_SEED
+    end
+
+    if typeof(Value) ~= 'string' or #Value < 1 then
+        return 0
+    end
+
+    local Hash = 2166136261 % MAX_SEED
+    for Index = 1, #Value do
+        Hash = (Hash * 31 + string.byte(Value, Index)) % MAX_SEED
+    end
+
+    return Hash
+end
+
+function Math:ValueSubOnMul(SubtractedValue: number)
+    return setmetatable({}, {__mul = function(lside, rside)
+        if typeof(lside) == 'number' then
+            return lside - SubtractedValue
+        else
+            return rside - SubtractedValue
+        end
+    end})
+end
+
 return Math

@@ -336,7 +336,7 @@ function EffectUtil:CreateLightningBolt(Data: LightningBoltCreationData)
     EffectUtil:CleanUp(A1, 5)
 end
 
-function EffectUtil:CastMapRaycast(from: Vector3 | vector | CFrame, dir: vector | Vector3, Params: RaycastParams): RaycastResult & {Color: Color3}
+function EffectUtil:CastMapRaycast(from: Vector3 | vector | CFrame, dir: vector | Vector3, Params: RaycastParams?): RaycastResult & {Color: Color3}
 	if not Params then
 		Params = RaycastParams.new()
 		Params.FilterType = Enum.RaycastFilterType.Include

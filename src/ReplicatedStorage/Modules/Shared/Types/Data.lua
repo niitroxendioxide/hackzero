@@ -88,5 +88,4 @@ export type QuestData = {
     Name: string,
 }
 
-
 return {}

@@ -453,6 +453,18 @@ return {
 		PatternUsed = 2,
 	},
 
+	AgencyTaskEvent = {
+		RetrieveInfoForUUID = 1,
+		AcceptUUIDMission = 2,
+		RetrieveAllAccepted = 3,
+	},
+
+	MissionKind = {
+		Recover = 1,
+		Escort = 2,
+		Revenge = 3,
+	},
+
 	KeyLookup = function(Table: {}, val: number)
 		for Key, Value in Table do
 			if Value == val then

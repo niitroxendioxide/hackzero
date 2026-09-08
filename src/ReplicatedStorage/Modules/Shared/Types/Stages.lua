@@ -343,6 +343,12 @@ export type GeneratedRoom = {
 	Model: Model,
 	Marker: BasePart?,
 	IsHall: boolean,
+
+	--[[
+		A plug plastered over a doorway that led nowhere, rather than part of the layout
+		proper. Carries no marker, so it is never a place a mission can put anything.
+	]]
+	IsSeal: boolean?,
 }
 
 --[[
@@ -354,6 +360,9 @@ export type MapGenerationResult = {
 	Rooms: {GeneratedRoom},
 	RoomCount: number,
 	HallCount: number,
+
+	--- Plugs placed over doorways that led nowhere. Outside the room and tile budgets.
+	SealCount: number,
 }
 
 --[[

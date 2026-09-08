@@ -39,7 +39,7 @@ function AnimationLibrary:GetCompanionAnimation(Character: string, TrackName: st
 	return Track
 end
 
-function AnimationLibrary:GetMovementAnim(Character: string, TrackName: string)
+function AnimationLibrary:GetMovementAnim(Character: string, TrackName: string): Animation?
 	local MovementDirectory = General
 
 	if Characters:FindFirstChild(Character) and Characters:FindFirstChild(Character):FindFirstChild('Movement') then
@@ -76,7 +76,7 @@ function AnimationLibrary:Load(Character: Model, Track: Animation)
 	return LoadedTrack
 end
 
-function AnimationLibrary:Play(Character: Model, TrackObject: Animation, ...)
+function AnimationLibrary:Play(Character: Model, TrackObject: Animation, ...): AnimationTrack?
 	if not TrackObject then
 		return
 	end

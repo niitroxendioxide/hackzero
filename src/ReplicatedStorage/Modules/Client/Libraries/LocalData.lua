@@ -1,15 +1,75 @@
 --
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Types = require(ReplicatedStorage.Modules.Shared.Types)
-local Data = require(ReplicatedStorage.Modules.Shared.Types.Data)
-local Companions = require(ReplicatedStorage.Modules.Shared.Types.Companions)
+const ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+const Shared = ReplicatedStorage.Modules.Shared
+
+const GameEnum = require(Shared.GameEnum)
+const Network = require(Shared.Network)
+const Tasks = require(Shared.Types.Tasks)
+const Types = require(Shared.Types)
+const Data = require(Shared.Types.Data)
+const Companions = require(Shared.Types.Companions)
 
 --
-local LocalData = {
+const LocalData = {
     __Cache = {},
     __Stage_Data = {},
     __MissionId = nil :: string,
+    __Lock = {},
 }
+
+function LocalData:AllocateAllAcceptedTasks(Value: { Tasks.AgencyTaskMission })
+    LocalData.__Lock.Tasks = false;
+    LocalData.__Cache.AcceptedTasks = Value;
+end
+
+function LocalData:GetAllAcceptedTasks(Fetch: boolean?): { Tasks.AgencyTaskMission }
+    if LocalData.__Lock.Tasks then
+        return
+    end
+
+    if Fetch then
+        LocalData.__Lock.Tasks = true;
+
+        Network:Fire("AgencyTasks", GameEnum.AgencyTaskEvent.RetrieveAllAccepted)
+
+        while (LocalData.__Lock.Tasks == true) do
+            task.wait() 
+        end
+    end
+
+    return LocalData.__Cache.AcceptedTasks;
+end
+
+function LocalData:AllocateUUIDMission(UUID: string, Value: any)
+    if not LocalData.__Cache.ProceduralMissions then
+        LocalData.__Cache.ProceduralMissions = {}
+    end
+
+    LocalData.__Cache.ProceduralMissions[UUID] = Value;
+end
+
+function LocalData:GetUUIDMission(UUID: string, Yield: boolean?, MaxYieldTime: number?): any
+    if not LocalData.__Cache.ProceduralMissions then
+        return
+    end
+    
+    local Value = LocalData.__Cache.ProceduralMissions[UUID]
+    
+    if not Yield then
+        return Value;
+    end
+
+    if Value == nil then
+        local Started = os.clock();
+        repeat
+            Value = LocalData.__Cache.ProceduralMissions[UUID]
+            task.wait(0.1)
+        until Value ~= nil or (MaxYieldTime ~= nil and (os.clock() - Started) > MaxYieldTime)
+    end
+
+    return Value
+end
 
 function LocalData:AllocateDialogueData(New_Dialogue_Data: { any })
     assert(typeof(New_Dialogue_Data) == 'table', "Must pass in a table to allocate dialogue data")

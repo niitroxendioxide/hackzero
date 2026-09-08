@@ -99,7 +99,7 @@ function Controller:Init()
         elseif Type == GameEnum.PartyManaging.ChangeStage then
             local PartyStageData = ServerResponse :: {string}
 
-            NewComponent:UpdateStageInfo(PartyStageData[1])
+            NewComponent:UpdateStageInfo(table.unpack(PartyStageData))
         end
     end)
 end

@@ -10,7 +10,7 @@ return table.freeze({
         TYPE = 'Mission',
         STAGE = {
             --- LeafVillage, Training, Testing, DailyImprovement, DungeonEx, HuecoMundo
-            Stage = 'AlternativeDungeon',
+            Stage = 'DungeonEx',
             Act = 'Intro',
         },
 

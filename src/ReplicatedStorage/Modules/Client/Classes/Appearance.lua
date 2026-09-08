@@ -12,10 +12,10 @@ local Trove = require(Shared.Utility.Trove)
 local EffectsUtil = require(Shared.Utility.Effects)
 
 --
-local AppearanceClass = {} :: {[string]: (self: Types.AppearanceController, any) -> (), new: (ModelName: string, Directory: string?, BeginTransparet: boolean?) -> Types.AppearanceController}
+local AppearanceClass = {} :: {[string]: (self: Types.AppearanceController, any) -> (), new: (ModelName: string, Directory: string?, BeginTransparet: boolean?, Generator: Random?) -> Types.AppearanceController}
 AppearanceClass.__index = AppearanceClass
 
-function AppearanceClass.new(ModelName: string, Directory: string?, BeginTransparet: boolean?): Types.AppearanceController
+function AppearanceClass.new(ModelName: string, Directory: string?, BeginTransparet: boolean?, Generator: Random): Types.AppearanceController
 	local FolderToLookIn = Directory and Assets:FindFirstChild(Directory) or Assets
 
 	if not FolderToLookIn:FindFirstChild(ModelName, true) then
@@ -31,7 +31,11 @@ function AppearanceClass.new(ModelName: string, Directory: string?, BeginTranspa
 	if AssetsModel and AssetsModel:IsA('Folder') then
 		local RandomObj = AssetsModel:GetChildren()
 
-		AssetsModel = RandomObj[math.random(1, #RandomObj)]
+		if Generator then
+			AssetsModel = RandomObj[Generator:NextInteger(1, #RandomObj)]
+		else
+			AssetsModel = RandomObj[math.random(1, #RandomObj)]
+		end
 	end
 
 	local self = setmetatable({}, AppearanceClass)
@@ -275,6 +279,10 @@ function AppearanceClass:SetRotationResponsiveness(n)
 end
 
 function AppearanceClass:Destroy(IncludeFade: boolean?)
+	if not self.__Model or not self.__Model.PrimaryPart then
+		return
+	end
+
 	self.__Model.PrimaryPart.Anchored = true
 
 	if IncludeFade then

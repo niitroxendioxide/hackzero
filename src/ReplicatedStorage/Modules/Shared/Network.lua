@@ -176,7 +176,7 @@ function Network:FireForAllBut(Blacklisted: Player, Name: string, ...)
 end
 
 if RunService:IsServer() then
-	function Network:On<T...>(Name: string, fn: (Player: Player, T...) -> ())
+	function Network:On<T...>(Name: string, fn: (T...) -> ())
 		local Event = Network:Get(Name) :: RemoteEvent
 		if not Event then
 			return

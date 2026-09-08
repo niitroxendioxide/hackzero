@@ -15,7 +15,8 @@ local Component = InterfaceClass.new("LobbyDialogue", "Dialogue")
 local States = {
     InAnimation = false,
     IsOpen = false,
-    DialogueToEnd = Signal.new(),
+    HasOptions = false,
+    DialogueToEnd = Signal.new() :: Signal.ScriptSignal<number>,
 }
 
 function WaitForAnimation()
@@ -24,22 +25,22 @@ function WaitForAnimation()
     until not States.InAnimation
 end
 
-function SkipCurrentDialogue()
-    States.DialogueToEnd:Fire()
+function SkipCurrentDialogue(Index: number?)
+    States.DialogueToEnd:Fire(Index or 0)
 end
 
 function Component:Link(Player: Player): Instance?
     local GUI = Player.PlayerGui
-    if not GUI:WaitForChild("LobbyHUD", 2) then
+    if not GUI:WaitForChild("LobbyHUD") then
         return
     end
 
-    local HUD = GUI.LobbyHUD:WaitForChild("Screen", 2)
+    local HUD = GUI.LobbyHUD:WaitForChild("Screen")
     if not HUD then
         return
     end
 
-    return HUD:WaitForChild("Dialogues", 10)
+    return HUD:WaitForChild("Dialogues")
 end
 
 function Component:Init()
@@ -57,12 +58,12 @@ function Component:Init()
             States.InAnimation = true
 
 
-            Box.Size = UDim2.fromScale(0.05, .25)
-            Box.Position = UDim2.fromScale(0.5, 1.2)
+            Box.Size = UDim2.fromScale(0.05, .236)
+            Box.Position = UDim2.fromScale(0.5, 0.857)
 
             Effects:Tween(Box, {.15, 'Back'}, {Position = UDim2.fromScale(0.5, 0.85)})
             task.delay(.1, function()
-                Effects:Tween(Box, {.25, 'Back'}, {Size = UDim2.fromScale(0.45, .25)})
+                Effects:Tween(Box, {.25, 'Back'}, {Size = UDim2.fromScale(0.365, .236)})
 
                 task.wait(.15)
                 States.InAnimation = false
@@ -79,7 +80,11 @@ function Component:Init()
     Inputs:Bind(Enum.UserInputType.MouseButton1, {
         Callback = function()
             if States.IsOpen and not States.InAnimation then
-                SkipCurrentDialogue()
+                if States.HasOptions == true then
+                    return
+                end
+
+                SkipCurrentDialogue(0)
             end
         end,
         Release = false,
@@ -107,7 +112,7 @@ function Component:OpenDialogue(Name: string, Data: {}): boolean
     WaitForAnimation()
 
     Component:ShowName(Name)
-    Component:DisplayDialogue(Data[1])
+    Component:DisplayDialogue(Data)
 
     return true
 end
@@ -116,22 +121,71 @@ function Component:CloseDialogue()
     States.IsOpen = false
     Component:Set(false)
 
+    Component:ClearResponses()
     States.DialogueToEnd:DisconnectAll()
 end
 
-function Component:DisplayDialogue(Line: string)
+function Component:ClearResponses()
+    States.HasOptions = false;
+
+    const Frame = Component:GetFrame()
+    const OptionList = Frame.List;
+    for _, Option in OptionList:GetChildren() do
+        if Option:IsA('Frame') then
+            Option:Destroy();    
+        end
+    end
+end
+
+function Component:DisplayResponses(ResponseList: { string })
+    if #ResponseList <= 0 then
+        return
+    end
+
+    Component:ClearResponses()
+    
+    const OptionAsset = ReplicatedStorage.Assets.Interface.Lobby.Dialogue.Option
+    const Frame = Component:GetFrame()
+    const OptionList = Frame.List;
+
+    States.HasOptions = true
+    
+    for Index, OptText in ResponseList do
+        local NewOption = OptionAsset:Clone();
+        NewOption.Label.Text = OptText;
+        NewOption.Parent = OptionList;
+        NewOption.Index.Label.Text = tostring(Index);
+        NewOption.Button.MouseButton1Click:Connect(function()
+            SkipCurrentDialogue(Index)
+        end)
+    end
+end
+
+function Component:DisplayDialogue(Data: { Text: string, Responses: { string }? })
+    assert(typeof(Data) == 'table', "Data passed to DisplayDialogue must be a Table,")
+    
     local Frame = Component:GetFrame()
     local Box = Frame.Main
 
     Box.DialogueText.TextSize = ScreenUtil:GetTextSize(35)
     
+    local DialogueText = Data.Text;
+    if not DialogueText then
+        return;
+    end
+
     task.spawn(function()
-        for t = 1, #Line do
-            Box.DialogueText.Text = Line:sub(1, t)
+        for t = 1, #DialogueText do
+            Box.DialogueText.Text = DialogueText:sub(1, t)
             task.wait()
         end
-
     end)
+
+    if Data.Responses then
+        Component:DisplayResponses(Data.Responses)
+    else
+        Component:ClearResponses()
+    end
 end
 
 function Component:ShowName(Name: string)
@@ -148,7 +202,7 @@ function Component:ShowName(Name: string)
 
     Box.NameFrame.UIStroke.Enabled = true
     Box.CharacterName.Visible = true
-    Box.CharacterName.Text = Name--string.sub(Name, 1, i)
+    Box.CharacterName.Text = Name
 end
 
 function Component:BoxSkipped(fn: () -> ())

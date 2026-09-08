@@ -1,8 +1,9 @@
 local Types = require("../../Types/Stages")
 
 return {
-    Name = "Dungeon_Test",
+    Name = "Example Dungeon",
     Map = "General/Dungeon",
+    Icon = 111390689929706,
 
     Acts = {
         --[[

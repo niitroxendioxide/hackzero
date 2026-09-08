@@ -71,6 +71,7 @@ return {
     Missions = {
         Completed = {},
     },
+    Tasks = {},
     Companions = {},
     Agents = {},
     Achievements = {},

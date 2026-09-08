@@ -13,11 +13,14 @@ local UIGroups = require(ReplicatedStorage.Modules.Client.Libraries.UIGroups)
 local UIUtils = require(ReplicatedStorage.Modules.Client.Libraries.UIUtils)
 local Navigation = require(ReplicatedStorage.Modules.Client.States.Navigation)
 local RandomNameGen = require(ReplicatedStorage.Modules.Client.Utility.RandomNameGen)
+local TextForType = require(ReplicatedStorage.Modules.Client.Utility.TextForType)
 local UIEffects = require(ReplicatedStorage.Modules.Client.Utility.UIEffects)
+local Tasks = require(ReplicatedStorage.Modules.Shared.Types.Tasks)
 local Network = require(Shared.Network)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
 local String = require(ReplicatedStorage.Modules.Shared.Utility.String)
+local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local GameEnum = require(Shared.GameEnum)
 local StagesDatabase = require(Shared.Database.Stages)
 local MissionsDatabase = require(Shared.Database.Missions)
@@ -65,6 +68,7 @@ local States = {
     MissionId = '',
     PartyMode = 'Mission',
     SelectedMission = nil,
+    Mission_Is_Task = false,
 
     IsReady = false,
     Queueing = Component:GetScope():Value(false),
@@ -105,7 +109,7 @@ local function RequestMapChange(ActName: string): ()
 end
 
 local function RequestMissionChange(): ()
-    Network:Fire("Party", GameEnum.PartyManaging.ChangeStage, {"Mission", States.MissionId})
+    Network:Fire("Party", GameEnum.PartyManaging.ChangeStage, {"Mission", States.MissionId, States.Mission_Is_Task})
 end
 
 local function HandlePlayButton()
@@ -531,9 +535,73 @@ function GetDock(DockName: string)
     return Component:GetFrame():FindFirstChild(DockName) or Component:GetFrame().Transition:FindFirstChild(DockName)
 end
 
+const function ConstructMission(MissionId: string, MissionData: MissionsDatabase.Mission & Tasks.AgencyTaskMission, Is_Task: boolean): ()
+    local MapsDock = GetDock('Maps')
+
+    local StageInfo = if Is_Task then 
+        StagesDatabase:GetStage(MissionData.World)
+    else 
+        StagesDatabase:GetStage(string.split(MissionData.Stage_Act, "/")[1])
+
+    const CurrentCount = #MapsDock.List:GetChildren()
+    const Recommended_Level = 'Lv.'..(MissionData.Recommended_Level or MissionData.Level or 1)
+    local Object = Assets.Lobby.Party.MissionObject:Clone()
+    Object.Parent = MapsDock.List
+    Object.LayoutOrder = (Is_Task and 0 or 500) + CurrentCount;
+    Object.MissionName.Text = MissionData.Display_Name or (Is_Task and TextForType.ForMissionTitle(MissionData)) or MissionId
+    Object.Name = MissionId
+    Object.LvlRec.Text = Recommended_Level;
+    Object.Banner.Image = StageInfo.Icon and 'rbxassetid://' .. StageInfo.Icon or "rbxassetid://118719541712234"
+
+    Object.Button.MouseButton1Click:Connect(function()
+        if States.SelectedMission == MissionId then
+            SetDockState('Info', false)
+            States.SelectedMission = nil
+            Effects:Tween(Object.UIShadow, { 0.25, 'Quad' }, {Transparency = 1})
+            Effects:Tween(Object.Outer, { 0.2, 'Quart' }, {Color = Color3.new(0, 0, 0), Thickness = 0.045})
+            Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1})
+            return
+        elseif States.SelectedMission ~= nil then
+            local OldObj = MapsDock.List:FindFirstChild(States.SelectedMission)
+            Effects:Tween(OldObj.UIShadow, { 0.25, 'Quad' }, {Transparency = 1})
+            Effects:Tween(OldObj.Outer, { 0.2, 'Quart' }, {Color = Color3.new(0, 0, 0), Thickness = 0.045})
+            Effects:Tween(OldObj.UIScale, { 0.3, 'Quad' }, {Scale = 1})
+        end
+
+        States.SelectedMission = MissionId;
+        States.Mission_Is_Task = Is_Task;
+
+        Effects:Tween(Object.UIShadow, { 0.25, 'Quad' }, {Transparency = 0})
+        Effects:Tween(Object.Outer, { 0.2, 'Quart' }, {Color = Color3.new(1, 1, 1), Thickness = 0.025})
+        Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1.05})
+
+        ---
+        local InfoDock = GetDock('Info')
+        InfoDock.Description.Text = Is_Task and TextForType.ForMission(MissionData) or MissionData.Description or "No description available";
+        InfoDock.LvlRec.Lvl.Text = Recommended_Level;
+
+        SetDockState('Info', true)
+    end)
+
+    Object.Button.MouseEnter:Connect(function()
+        Effects:Tween(Object.Outer, { .2, 'Quad' }, {Color = Color3.new(1, 1, 1)})
+        Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1.01})
+    end)
+
+    Object.Button.MouseLeave:Connect(function()
+        if States.SelectedMission == MissionId then
+            return
+        end
+        
+        Effects:Tween(Object.Outer, { .2, 'Quad' }, {Color = Color3.new(), Thickness = 0.045})
+        Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1})
+    end)
+end
+
 local function UpdateMissions(Unlocked: {})
-    local Missions = MissionsDatabase:GetAll(true)
-    local MapsDock = Component:GetFrame():FindFirstChild("Maps")
+    const Missions = MissionsDatabase:GetAll(false)
+    const MapsDock = Component:GetFrame():FindFirstChild("Maps")
+    const AcceptedTasks = LocalData:GetAllAcceptedTasks(true);
 
     for _, obj in MapsDock.List:GetChildren() do
         if obj:IsA("Frame") then
@@ -542,67 +610,12 @@ local function UpdateMissions(Unlocked: {})
     end
 
     for MissionId, MissionData in Missions do
-        if not MissionData.Stage_Act then
-            continue
-        end
-
-        local StageInfo = StagesDatabase:GetStage(string.split(MissionData.Stage_Act, "/")[1])
-        local Object = Assets.Lobby.Party.MissionObject:Clone()
-        Object.Parent = MapsDock.List
-        Object.MissionName.Text = MissionData.Display_Name or MissionId
-        Object.Name = MissionId
-        Object.LvlRec.Text = 'Lv.'..(MissionData.Recommended_Level or 1);
-        Object.Banner.Image = StageInfo.Icon and 'rbxassetid://' .. StageInfo.Icon or "rbxassetid://118719541712234"
-
-        -- TODO: Make this actually do something lmao.
-        if Unlocked[MissionId] == nil then
-            --
-        end
-
-        Object.Button.MouseButton1Click:Connect(function()
-            if States.SelectedMission == MissionId then
-                SetDockState('Info', false)
-                States.SelectedMission = nil
-                Effects:Tween(Object.UIShadow, { 0.25, 'Quad' }, {Transparency = 1})
-                Effects:Tween(Object.Outer, { 0.2, 'Quart' }, {Color = Color3.new(0, 0, 0), Thickness = 0.045})
-                Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1})
-                return
-            elseif States.SelectedMission ~= nil then
-                local OldObj = MapsDock.List:FindFirstChild(States.SelectedMission)
-                Effects:Tween(OldObj.UIShadow, { 0.25, 'Quad' }, {Transparency = 1})
-                Effects:Tween(OldObj.Outer, { 0.2, 'Quart' }, {Color = Color3.new(0, 0, 0), Thickness = 0.045})
-                Effects:Tween(OldObj.UIScale, { 0.3, 'Quad' }, {Scale = 1})
-            end
-
-            States.SelectedMission = MissionId;
-
-            Effects:Tween(Object.UIShadow, { 0.25, 'Quad' }, {Transparency = 0})
-            Effects:Tween(Object.Outer, { 0.2, 'Quart' }, {Color = Color3.new(1, 1, 1), Thickness = 0.025})
-            Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1.05})
-
-            ---
-            local InfoDock = GetDock('Info')
-            InfoDock.Description.Text = MissionData.Description;
-            InfoDock.LvlRec.Lvl.Text = 'Lv.'..(MissionData.Recommended_Level or 1);
-
-            SetDockState('Info', true)
-        end)
-
-        Object.Button.MouseEnter:Connect(function()
-            Effects:Tween(Object.Outer, { .2, 'Quad' }, {Color = Color3.new(1, 1, 1)})
-            Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1.01})
-        end)
-
-        Object.Button.MouseLeave:Connect(function()
-            if States.SelectedMission == MissionId then
-                return
-            end
-            
-            Effects:Tween(Object.Outer, { .2, 'Quad' }, {Color = Color3.new(), Thickness = 0.045})
-            Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1})
-        end)
+        ConstructMission(MissionId, MissionData)
     end
 
+    for _, MissionData in AcceptedTasks do
+        ConstructMission(MissionData.Seed, MissionData, true)
+    end
 end
 
 
@@ -648,8 +661,8 @@ local function UpdateStages(Unlocked: {})
     end
 end
 
-function ShowStageInfo(CodeStage: string, Id: string)
-    local MissionDock = Component:GetFrame():FindFirstChild("Mission")
+function ShowStageInfo(CodeStage: string, Info: string | any, IsTask: boolean?)
+    local MissionDock = GetDock('Mission')
     local MapPlate = MissionDock.MapPlate
     
     if CodeStage == '' or #CodeStage < 1 then
@@ -671,9 +684,13 @@ function ShowStageInfo(CodeStage: string, Id: string)
         Act = 'No mission selected'
     end
 
+    if IsTask then
+        Act = TextForType.ForMissionTitle(Info)
+    end
+
     local StageData = StagesDatabase:GetStage(Stage) or {}
 
-    MapPlate.MapName.Text = String:SplitTitleCaps(Stage)
+    MapPlate.MapName.Text = String:SplitTitleCaps(StageData.Name or Stage)
     MapPlate.ActName.Text = Act
     MapPlate.Banner.Image = 'rbxassetid://'.. (StageData.Icon or 118719541712234)
 end
@@ -751,16 +768,16 @@ function SetMode(State: string, ServerData: {})
 end
 
 function ShowRewards(List)
-    local MainFrame = Component:GetFrame()
+    local MissionDock = GetDock('Mission')
 
-    for _, Item in MainFrame.Mission.RewardsPlate.List:GetChildren() do
+    for _, Item in MissionDock.RewardsPlate.List:GetChildren() do
         if Item:IsA('Frame') then
             Item:Destroy()
         end
     end
 
     for _, Item in List do
-        UIUtils:CreateRewardItem(Item.Name or Item.Type, Item.Type, Item.Amount, false, MainFrame.Mission.RewardsPlate.List)
+        UIUtils:CreateRewardItem(Item.Name or Item.Type, Item.Type, Item.Amount, false, MissionDock.RewardsPlate.List)
     end
 end
 
@@ -1011,8 +1028,8 @@ function Component:RemovePlayerFromList(ID: number, PlayerCount: number)
     return RemovePlayer(ID)
 end
 
-function Component:UpdateStageInfo(CodeStage: string)
-    return ShowStageInfo(CodeStage)
+function Component:UpdateStageInfo(CodeStage: string, SeedOrData: string | {}, IsTask: boolean)
+    return ShowStageInfo(CodeStage, SeedOrData, IsTask)
 end
 
 function Component:ShowRewards(List: {})

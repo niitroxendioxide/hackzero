@@ -1,25 +1,28 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerStorage = game:GetService("ServerStorage")
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
+const ReplicatedStorage = game:GetService("ReplicatedStorage")
+const ServerStorage = game:GetService("ServerStorage")
+const Players = game:GetService("Players")
+const HttpService = game:GetService("HttpService")
 
-local Modules = ServerStorage.Modules
-local Shared = ReplicatedStorage.Modules.Shared
-local Classes = Shared.Classes
-local DataModules = Modules.Services.Data
+const Modules = ServerStorage.Modules
+const Shared = ReplicatedStorage.Modules.Shared
+const Classes = Shared.Classes
+const DataModules = Modules.Services.Data
+const LobbyModules = Modules.Services.Lobby
 
-local Types = require(Shared.Types)
-local Network = require(Shared.Network)
-local GameEnum = require(Shared.GameEnum)
-local PartyPlayerClass = require(Classes.Party.PartyPlayer)
-local PartyClass = require(Classes.Party.Party)
-local Notifications = require(Modules.Packages.Notifications)
-local StagesDatabase = require(Shared.Database.Stages)
-local MissionDatabase = require(Shared.Database.Missions)
+local Debugger = require(ReplicatedStorage.Modules.Shared.Utility.Debugger)
+local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
+const Types = require(Shared.Types)
+const Network = require(Shared.Network)
+const GameEnum = require(Shared.GameEnum)
+const PartyPlayerClass = require(Classes.Party.PartyPlayer)
+const PartyClass = require(Classes.Party.Party)
+const Notifications = require(Modules.Packages.Notifications)
+const StagesDatabase = require(Shared.Database.Stages)
+const MissionDatabase = require(Shared.Database.Missions)
 
-
-local DataService = require(DataModules.DataService)
-local TeleportService = require(DataModules.TeleportService)
+const DataService = require(DataModules.DataService)
+const TeleportService = require(DataModules.TeleportService)
+const AgencyTaskService = require(LobbyModules.AgencyTaskService)
 
 --
 local Service = {
@@ -128,6 +131,10 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         Network:Fire("Party", Player, GameEnum.PartyManaging.Join, Party:Compress(), {Party:GetStage(), Party:GetData()})
     elseif Type == GameEnum.PartyManaging.ChangeStage then
         local Request = ({...})[1]
+
+        local ReqType = Request[1];
+        local Id = Request[2];
+        local IsTask = Request[3];
         local Party = Service:GetParty(Service:GetCode(Player)) :: Types.PartyClass
         local Class = Service:GetClass(Player)
         
@@ -135,28 +142,60 @@ function Service.OnPartyEvent(Player: Player, Type: number, ...: any)
         if not Party:IsOwner(Class) then
             return
         end
-
         
-        if Request[1] == 'Expedition' then
+        if ReqType == 'Expedition' then
             Party:SwitchStage(Request[1], Request[2], Request[3])
-            
-        elseif Request[1] == 'Mission' then
-            local MissionInfo = MissionDatabase:Get(Request[2])
-            if not MissionInfo.Stage_Act then
-                return;
+        elseif ReqType == 'Mission' then
+            if IsTask then
+                if typeof(Id) ~= 'string' then
+                    Debugger:WarnLine("PartyService::OnPartEvent<Case=ChangeStage>", "Invalid mission Id given, parameter passed was not a valid string-type UUID", 5)
+
+                    return;
+                end
+
+                const MissionInfo = AgencyTaskService:RetrieveUUIDMissionFromCache(Player, Id);
+                if not MissionInfo then
+                    Debugger:WarnLine("PartyService::OnPartEvent<Case=ChangeStage>", "No mission info found", 5)
+
+                    return
+                end
+
+                const GenerationData = AgencyTaskService:ConstructProceduralDataFromUUID(Id)
+                const NumerizedSeed = Math:ToSeedNumber(MissionInfo.Seed)
+
+                Party:SwitchStage('Mission', MissionInfo.World, 'Intro');
+                Party:SetData({
+                    Kind = MissionInfo.Type,
+                    Difficulty = 'Easy',
+                    Level = MissionInfo.Level,
+                    Item = MissionInfo.Item,
+                    Procedural = true,
+                    Seed = NumerizedSeed,
+                    Generation = GenerationData,
+                })
+
+                for _, NetPlayer in Party:GetRawPlayers() do
+                    Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.ChangeStage, {Party.__Stage, MissionInfo, IsTask})
+                end
+            else
+                local MissionInfo = MissionDatabase:Get(Request[2])
+                if not MissionInfo.Stage_Act then
+                    return;
+                end
+
+                local Stage = string.split(MissionInfo.Stage_Act, '/');
+
+                Party:SetData({
+                    MissionId = Id,
+                    Difficulty = 'EASY'
+                })
+                Party:SwitchStage(Request[1], Stage[1], Stage[2])
+
+                for _, NetPlayer in Party:GetRawPlayers() do
+                    Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.ChangeStage, {Party.__Stage, Id})
+                end
             end
 
-            local Stage = string.split(MissionInfo.Stage_Act, '/');
-
-            Party:SetData({
-                MissionId = Request[2],
-                Difficulty = 'EASY'
-            })
-            Party:SwitchStage(Request[1], Stage[1], Stage[2])
-
-            for _, NetPlayer in Party:GetRawPlayers() do
-                Network:Fire("Party", NetPlayer, GameEnum.PartyManaging.ChangeStage, {Party.__Stage, Request[2]})
-            end
         end
     elseif Type == GameEnum.PartyManaging.Leave then
         local Code = Service:GetCode(Player)

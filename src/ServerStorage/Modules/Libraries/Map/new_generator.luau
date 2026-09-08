@@ -21,6 +21,15 @@ local TILE_AREA_SIZE = vector.create(TILE_SIZE, TILE_SIZE, TILE_SIZE)
 local DEFAULT_ROOM_COUNT = 25
 local MAX_SEED = 2 ^ 31 - 1
 
+local HALL_TAG = 'Hall'
+
+--[[
+    Tag for the piece used to plug a doorway that leads nowhere. Optional: without one, any
+    closed room is used instead. Tag a small filler room with this and it becomes the
+    dedicated plug for those spots.
+]]
+local SEAL_TAG = 'Seal'
+
 
 --- Generator Related
 local Shared = ReplicatedStorage.Modules.Shared
@@ -42,6 +51,14 @@ export type GeneratorState = {
     Trail: number,
     Source: Folder?,
     Warned_No_Closed_Room: boolean,
+
+    --[[
+        Doorways that were opened but never built through, collected during generation and
+        plugged once it finishes. A connector is destroyed the moment it is walked, so
+        without this the layout has no record of where its holes are.
+    ]]
+    Open_Connectors: {CFrame},
+    PlacedSeals: number,
 }
 
 --- Every run gets a fresh state, nothing leaks between generations.
@@ -59,6 +76,8 @@ local function NewState(): GeneratorState
         Trail = 0,
         Source = nil,
         Warned_No_Closed_Room = false,
+        Open_Connectors = {},
+        PlacedSeals = 0,
     }
 end
 
@@ -85,6 +104,17 @@ local function GetMarkerFolder(): Folder
     end
 
     return MarkerFolder
+end
+
+--- Whether a tile slot is clear, used both when growing and when plugging holes.
+local function IsSlotFree(At: CFrame): boolean
+    local BoundParams = OverlapParams.new()
+    BoundParams.FilterDescendantsInstances = {GetMapFolder()}
+    BoundParams.FilterType = Enum.RaycastFilterType.Include
+
+    local PartsInBox = workspace:GetPartBoundsInBox(At, vector.create(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE/2), BoundParams)
+
+    return #PartsInBox < 1
 end
 
 local function GetStartingRoom(): Model?
@@ -135,7 +165,7 @@ local function ChooseFromSource(IsStarting: boolean, Hall: boolean, DeadEnds: De
             continue
         end
 
-        if Candidate:HasTag('Hall') ~= Hall then
+        if Candidate:HasTag(HALL_TAG) ~= Hall then
             table.remove(Rooms, k)
             continue
         end
@@ -248,25 +278,37 @@ local function CreateRoom(RoomCFrame: CFrame?, UseHall: boolean)
             IsHall = false,
         })
 
-        local FirstConnector = Clone.Connections:GetChildren()[1]
+        local Connectors = Clone.Connections:GetChildren()
+        local FirstConnector = Connectors[1]
         if not FirstConnector then
             return;
+        end
+
+        --[[
+            The spawn room only ever grows out of its first doorway. The others were left
+            standing open, so they go on the list to be plugged at the end.
+        ]]
+        for Index = 2, #Connectors do
+            table.insert(State.Open_Connectors, Connectors[Index].CFrame * TILE_OFFSET)
+            Connectors[Index]:Destroy()
         end
 
         local FirstCFrame = FirstConnector.CFrame;
         FirstConnector:Destroy()
 
-        CreateRoom(FirstCFrame * TILE_OFFSET, true);
+        local Target = FirstCFrame * TILE_OFFSET
+        local TilesBefore = State.PlacedTiles
+
+        CreateRoom(Target, true);
+
+        if State.PlacedTiles == TilesBefore then
+            table.insert(State.Open_Connectors, Target)
+        end
 
         return;
     end
 
-    local BoundParams = OverlapParams.new()
-    BoundParams.FilterDescendantsInstances = {MapFolder}
-    BoundParams.FilterType = Enum.RaycastFilterType.Include
-
-    local PartsInBox = workspace:GetPartBoundsInBox(RoomCFrame, vector.create(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE/2), BoundParams)
-    if #PartsInBox > 0 then
+    if not IsSlotFree(RoomCFrame) then
         return;
     end
 
@@ -305,7 +347,123 @@ local function CreateRoom(RoomCFrame: CFrame?, UseHall: boolean)
         local ConnectorCFrame = Connection.CFrame
         Connection:Destroy();
 
-        CreateRoom(ConnectorCFrame * TILE_OFFSET, not UseHall)
+        local Target = ConnectorCFrame * TILE_OFFSET
+        local TilesBefore = State.PlacedTiles
+
+        CreateRoom(Target, not UseHall)
+
+        --[[
+            Nothing was placed there: out of budget, no candidate, or the slot was taken.
+            Either way the doorway now opens onto nothing, so remember it. The plug pass
+            re-checks the slot, which is what filters out the "already occupied" case.
+        ]]
+        if State.PlacedTiles == TilesBefore then
+            table.insert(State.Open_Connectors, Target)
+        end
+    end
+end
+
+--[[
+    Pick the piece used to plug a doorway that leads nowhere.
+
+    Prefers anything tagged `Seal` — that is the slot for a small filler room built for
+    these spots — and otherwise falls back to any closed room.
+]]
+local function ChooseSealPiece(): Model?
+    local Source = State.Source
+    if not Source then
+        return nil
+    end
+
+    local StartingRoom = GetStartingRoom()
+    local Tagged, Closed = {}, {}
+
+    for _, Candidate in Source:GetChildren() do
+        if not Candidate:IsA('Model') or Candidate == StartingRoom then
+            continue
+        end
+
+        if Candidate:HasTag(SEAL_TAG) then
+            table.insert(Tagged, Candidate)
+            continue
+        end
+
+        if Candidate:HasTag(HALL_TAG) then
+            continue
+        end
+
+        local Connections = Candidate:FindFirstChild('Connections')
+        if Connections and #Connections:GetChildren() < 1 then
+            table.insert(Closed, Candidate)
+        end
+    end
+
+    local Pool = if #Tagged > 0 then Tagged else Closed
+    if #Pool < 1 then
+        return nil
+    end
+
+    return Pool[State.Rng:NextInteger(1, #Pool)]
+end
+
+--[[
+    Plug every doorway that was left opening onto nothing.
+
+    Runs after the layout is finished and deliberately ignores the room and tile budgets:
+    these are not part of the dungeon's size, they are what stops it having holes in it.
+    A slot another branch filled in the meantime is skipped, that doorway leads somewhere.
+]]
+local function SealOpenConnectors()
+    if #State.Open_Connectors < 1 then
+        return
+    end
+
+    local MapFolder = GetMapFolder()
+
+    for _, At in State.Open_Connectors do
+        if not IsSlotFree(At) then
+            continue
+        end
+
+        local Piece = ChooseSealPiece()
+        if not Piece then
+            warn("Generator: nothing to plug open doorways with in " .. State.Source:GetFullName() ..
+                ", tag a small room '" .. SEAL_TAG .. "' or add a closed room. " ..
+                #State.Open_Connectors .. " doorway(s) left open")
+
+            return
+        end
+
+        if RunService:IsStudio() then
+            task.wait(VIEW_TIME)
+        end
+
+        State.PlacedSeals += 1
+
+        local Clone = Piece:Clone()
+        Clone.PrimaryPart.Transparency = 1
+        Clone.Name = 'Seal_' .. State.PlacedSeals
+        Clone:PivotTo(At)
+        Clone.Parent = MapFolder
+
+        --- A plug ends there, whatever the prefab carried must not grow the layout further.
+        local Connections = Clone:FindFirstChild('Connections')
+        if Connections then
+            Connections:ClearAllChildren()
+        end
+
+        --[[
+            No area marker on purpose. A plug is geometry, not somewhere a mission should
+            put an objective, and everything downstream already skips rooms without one.
+        ]]
+        table.insert(State.Rooms, {
+            Id = State.PlacedSeals,
+            Name = Clone.Name,
+            Model = Clone,
+            Marker = nil,
+            IsHall = false,
+            IsSeal = true,
+        })
     end
 end
 
@@ -354,12 +512,14 @@ function Generator:Create(p_RoomSource: Folder, p_GenerationData: Types.MapGener
     NewSpawnLocation.Parent = workspace
 
     CreateRoom();
+    SealOpenConnectors();
 
     return Result.new({
         Seed = State.Seed,
         Rooms = State.Rooms,
         RoomCount = State.PlacedRooms,
         HallCount = State.PlacedHalls,
+        SealCount = State.PlacedSeals,
     } :: Types.MapGenerationResult)
 end
 

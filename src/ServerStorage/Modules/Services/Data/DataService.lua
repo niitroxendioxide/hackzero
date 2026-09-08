@@ -29,7 +29,7 @@ local PlayerArtifactDataClass = require(Classes.Data.PlayerArtifactData)
 local PlayerCompanionDataClass = require(Classes.Data.PlayerCompanionData)
 
 local ProfileStore = require(Packages.Data.ProfileStore)
-local DataStore = ProfileStore.New("newartifactencoding", ProfileTemplate)
+local DataStore = ProfileStore.New("ProceduralAgentTasks", ProfileTemplate)
 
 --
 const ITEM_COUNT_LIMIT = {
