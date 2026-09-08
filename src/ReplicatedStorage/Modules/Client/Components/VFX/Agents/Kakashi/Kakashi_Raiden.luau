@@ -53,11 +53,11 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
             Track = AnimationLibrary:Play(Cloned, LoopObj);
         end)
 
-        const BoltCount = NumberRange.new(5, 9)
+        const BoltCount = NumberRange.new(9, 16)
         const Radius = NumberRange.new(0.25, 0.5)
         const LightningThread = task.delay(FlipTime - 0.1, function()
             
-            while task.wait(1 / 24) do
+            while task.wait(1 / 32) do
                 const Side = math.random(1, 2) == 1;
                 Effects:CreateLightningBolt({
                     A1Instance = Side and c_att or u_att,
@@ -65,7 +65,7 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
                     Color3 = Color3.fromRGB(112, 150, 255),
                     SubpartColor = Color3.fromRGB(51, 78, 255),
                     BoltCount = BoltCount,
-                    CurveSize = 2,
+                    CurveSize = 1.25,
                     Radius = Radius,
                     Parent = ThunderFolder,
                 })

@@ -113,9 +113,31 @@ function Camera:Init()
 	ParamsNew.FilterType = Enum.RaycastFilterType.Include
 	Camera.__Enemy_Params = ParamsNew
 
-	UserInputService.TouchRotate:Connect(function(_: {any}, _: number, _: number, _: Enum.UserInputState, _: boolean) 
+	local RotationObject = nil; do
+		UserInputService.TouchStarted:Connect(function(Object: InputObject, GameProcessedState: boolean) 
+			if GameProcessedState then return end
+			if RotationObject == nil then
+				RotationObject = Object;
+			end
+		end)
 
-	end)
+		UserInputService.TouchMoved:Connect(function(Object: InputObject, GameProcessedState: boolean) 
+			if GameProcessedState then return end
+			if Object == RotationObject then
+				local TouchDelta = RotationObject.Delta;
+				local Transformed = Vector2.new(TouchDelta.X, TouchDelta.Y)
+
+				Camera.__Rotation += Transformed*Rad(Settings.Sensitivity)
+				Camera.__Rotation = Vector2.new(Camera.__Rotation.X, Clamp(Camera.__Rotation.Y, Rad(Settings.Min_Angle), Rad(Settings.Max_Angle)))
+			end
+		end)
+
+		UserInputService.TouchEnded:Connect(function(Object, GameProcessedState: boolean) 
+			if Object == RotationObject then
+				RotationObject = nil;
+			end
+		end)
+	end
 
 	UserInputService.WindowFocusReleased:Connect(function()
 		Camera.__Focused = false
@@ -198,6 +220,19 @@ function Camera:SetLookAtPart(p_LookAtPart: BasePart)
 	end
 end
 
+function Camera:UseFovUndefinitely(p_Value: number, p_Tween_Time: number): () -> ()
+	if Camera.__Using_fov then
+		return function() end
+	end
+
+	Camera.__Using_fov = true;
+	Effects:Tween(workspace.CurrentCamera, {p_Tween_Time or 0.25, 'Quad'}, {FieldOfView = p_Value})
+
+	return function()
+		Camera.__Using_fov = false;
+	end
+end
+
 function Camera:UseFov(p_Usage_Time: number, p_Value: number, p_Tween_Time: number?)
 	if Camera.__Using_fov then
 		return
@@ -233,7 +268,8 @@ function Camera:Update(delta: number)
 		return
 	end
 
-	Camera.__Current_Zoom = math.lerp(Camera.__Current_Zoom, Camera.__Zoom, SmoothAlpha(12, delta))
+	local ExtraZoom = (Inputs:IsMobile() and 10 or 0)
+	Camera.__Current_Zoom = math.lerp(Camera.__Current_Zoom, Camera.__Zoom + ExtraZoom, SmoothAlpha(12, delta))
 
 	local ZoomValue = Camera.__Current_Zoom
 	local Torso: Vector3 = (Model:FindFirstChild('UpperTorso') or Model:FindFirstChild('Torso')).Position
@@ -281,7 +317,7 @@ function Camera:Update(delta: number)
 
 	if not Camera.__Using_fov then
 		local Value = LookAtPart and 75 or 70
-		CameraObject.FieldOfView = Value
+		CameraObject.FieldOfView = Value + ExtraZoom
 	end
 	CameraObject.CFrame = CameraObject.CFrame:Lerp(CameraCFrame, SmoothAlpha(Factor, delta))
 end

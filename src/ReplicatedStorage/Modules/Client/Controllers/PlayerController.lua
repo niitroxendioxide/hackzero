@@ -149,7 +149,8 @@ function Controller:Init(): ()
 		end
 
 		local CurrentCharacter = CharacterLibrary:GetCurrent(Player:GetAttribute("ReplicationId"))
-		local Direction = Controller:GetCurrentMovementDirection()
+		local Direction = Inputs:IsMobile() and Inputs:GetMovementVector() or Controller:GetCurrentMovementDirection()
+
 
 		if CurrentCharacter == nil then
 			return

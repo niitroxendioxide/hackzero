@@ -249,8 +249,8 @@ export type LightningBoltCreationData = {
 }
 
 function EffectUtil:CreateLightningBolt(Data: LightningBoltCreationData)
-	if typeof(Data.CasterModel) ~= 'Instance' or not Data.CasterModel:IsA('Model')
-	and (Data.A1Instance == nil and Data.A0Instance == nil) 
+	if (typeof(Data.CasterModel) ~= 'Instance' or not Data.CasterModel:IsA('Model'))
+	and (Data.A1Instance == nil and Data.A0Instance == nil and Data.Parent == nil)
 	then
 		Debugger:DebugLine("EffectUtil.CreateLightningBolt", "CasterModel is not a valid Model", 2)
 

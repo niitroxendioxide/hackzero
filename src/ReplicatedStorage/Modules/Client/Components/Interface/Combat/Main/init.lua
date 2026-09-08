@@ -7,6 +7,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 local InterfaceAssets = ReplicatedStorage.Assets.Interface
 
+local Inputs = require(ReplicatedStorage.Modules.Client.Libraries.Inputs)
 local IconDatabase = require(ReplicatedStorage.Modules.Shared.Database.Icons)
 local Places = require(ReplicatedStorage.Modules.Shared.Places)
 local EffectUtil = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
@@ -20,6 +21,9 @@ local CharacterDatabase = require(Shared.Database.Characters)
 -- STATICS
 local FULL_COLOR = Color3.fromRGB(51, 211, 255);
 local NOT_COLOR = Color3.fromRGB(86, 127, 152);
+
+const DESKTOP_SCALE_POS = UDim2.fromScale(0.037, 0.956)
+const PHONE_SCALE_POS = UDim2.fromScale(0, 0.775)
 
 --
 local peek = Fusion.peek
@@ -86,6 +90,14 @@ function Component:Init()
 
 	local Meters = Info:FindFirstChild('Meters') :: ComponentClass.Meter_Folder
 	local EffectsFrame = Info:FindFirstChild('EffectsList')
+
+	Inputs:OnInputTypeChanged(function(Type: Enum.UserInputType)
+		if Type == Enum.UserInputType.Touch then
+			EffectUtil:Tween(Frame, { 0.25, 'Sine' }, { Position = PHONE_SCALE_POS })
+		else
+			EffectUtil:Tween(Frame, { 0.25, 'Sine' }, { Position = DESKTOP_SCALE_POS })
+		end
+	end)
 
 	-- Privates
 	local Active_Pos = UDim2.fromScale(-0.05, 0.898)

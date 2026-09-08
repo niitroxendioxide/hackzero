@@ -104,6 +104,14 @@ local function CreateSkillObject(Name: string)
     Object.Parent = MainFrame.Buttons
     Object:SetAttribute('Active', true)
 
+    Object.Button.MouseButton1Down:Connect(function()
+        Inputs:EmulateBindPress(Name, Enum.UserInputState.Begin)
+    end)
+
+    Object.Button.MouseButton1Up:Connect(function()
+        Inputs:EmulateBindPress(Name, Enum.UserInputState.End)
+    end)
+
     if Name == 'Ultimate' then
         local CurrentAgentName = AgentsLib:GetCurrentName(Player:GetAttribute('ReplicationId') :: number)
 

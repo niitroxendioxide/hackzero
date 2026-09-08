@@ -31,7 +31,7 @@ end
 
 function Component:Link(Player: Player): Instance?
     local GUI = Player.PlayerGui
-    if not GUI:WaitForChild("LobbyHUD") then
+    if not GUI:WaitForChild("LobbyHUD", 12) then
         return
     end
 

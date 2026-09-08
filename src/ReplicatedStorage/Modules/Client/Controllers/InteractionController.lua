@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Database = ReplicatedStorage.Modules.Shared.Database
 local Assets = ReplicatedStorage.Assets.Interface
 
+local Inputs = require(ReplicatedStorage.Modules.Client.Libraries.Inputs)
 local InterfaceController = require(script.Parent.InterfaceController)
 local LocalData = require(ReplicatedStorage.Modules.Client.Libraries.LocalData)
 local NPCS = require(ReplicatedStorage.Modules.Client.Libraries.NPCS)
@@ -147,10 +148,12 @@ function Controller:CreatePromptWithCustomDesign(Prompt: ProximityPrompt)
     CustomPromptDesign.Background.Key.Label.Text = Prompt.KeyboardKeyCode.Name
     CustomPromptDesign.Background.Action.Text = Prompt.ActionText
     CustomPromptDesign.Background.Description.Text = Prompt.ObjectText
-    CustomPromptDesign.Parent = Prompt.Parent
+    CustomPromptDesign.Parent = Players.LocalPlayer.PlayerGui
+    CustomPromptDesign.Adornee = Prompt.Parent;
     CustomPromptDesign.Background.UIScale.Scale = 0
 
     KeyObject.UIScale.Scale = 0
+    CustomPromptDesign.Size = Inputs:IsMobile() and UDim2.fromOffset(110, 50) or CustomPromptDesign.Size
     CustomPromptDesign.StudsOffset = vector.zero
     Effects:Tween(CustomPromptDesign.Background.UIScale, { 0.4, 'Back', 'Out' }, {Scale = 1})
 
@@ -159,17 +162,29 @@ function Controller:CreatePromptWithCustomDesign(Prompt: ProximityPrompt)
         Effects:Tween(KeyObject.UIScale, { 0.3, 'Back' }, {Scale = 1})
     end)
 
-    local PressConnection; PressConnection = Prompt.PromptButtonHoldBegan:Connect(function(a0: Player)  
+    local function PressEffect()
         KeyObject.UIScale.Scale = 0.75
         KeyObject.UIStroke.Thickness = 0.08
 
         Effects:Tween(KeyObject.UIStroke, { 0.5, 'Back' }, {Thickness = 0.04})
         Effects:Tween(KeyObject.UIScale, { 0.5, 'Back' }, {Scale = 1})
+    end
+
+    local PressConnection = Prompt.PromptButtonHoldBegan:Connect(PressEffect)
+
+    local DownC = CustomPromptDesign.Background.Button.MouseButton1Down:Connect(function()
+        Prompt:InputHoldBegin()
+    end)
+
+    local UpC = CustomPromptDesign.Background.Button.MouseButton1Up:Connect(function()
+        Prompt:InputHoldEnd()
     end)
 
     Prompt.PromptHidden:Once(function(...)  
         task.spawn(HandleHiddenPrompt, Prompt)
         PressConnection:Disconnect()
+        DownC:Disconnect()
+        UpC:Disconnect()
 
         if not KeyObject:FindFirstChild('UIScale') then
             return

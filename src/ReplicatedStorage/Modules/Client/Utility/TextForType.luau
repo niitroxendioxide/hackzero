@@ -10,7 +10,8 @@ const Math = require(Shared.Utility.Math)
 ---
 const NAME_LIST = {
     'John', 'Jerry', 'James', 'Jamal', 'Jamie', 'Nathan', 'Ethan', 'Mug', 'Kata', 'Bat', 'Zaros', 'Tro\'fi', 'Nitrogen', 'Helium', 'Carbonate', 'Joku',
-    'Juan', 'Ramiro', 'Fred', 'Esteban', 'Nacho', 'Joaquin', 'Pedro', 'Peter', 'Unc', 'Skibidi'
+    'Juan', 'Ramiro', 'Fred', 'Esteban', 'Nacho', 'Joaquin', 'Pedro', 'Peter', 'Unc', 'Skibidi', 'pKaimu', 'Trophy', 'Stevy', 'Andy', 'Dandy', 'Kidd', 'Death',
+    'Mikar'
 };
 
 ---

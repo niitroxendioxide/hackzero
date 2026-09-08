@@ -1,3 +1,4 @@
+local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Players = game:GetService('Players')
 local RunService = game:GetService("RunService")
@@ -210,6 +211,17 @@ local function RequestChangeDrive()
     })
 end
 
+const function RotateModel(Param: number)
+    if not States.__Current_Model or not States.__Model_Base_CF then
+        return
+    end
+
+    States.__Rotation_Model += Param;
+
+    local Pivot = States.__Model_Base_CF * CFrame.Angles(0, States.__Rotation_Model, 0)
+    States.__Current_Model:PivotTo(Pivot)
+end
+
 --
 function Component:Link(): Instance?
 	local PlayerGui = Player.PlayerGui
@@ -225,32 +237,23 @@ function Component:Init()
     local MainFrame = Component:GetFrame()
 
     --
-    RunService.Heartbeat:Connect(function(Delta: number)  
-        if not States.__Current_Model or not States.__Model_Base_CF then
-            return
-        end
-
-        local Pivot = States.__Model_Base_CF * CFrame.Angles(0, math.rad(States.__Rotation_Model), 0)
-        States.__Current_Model:PivotTo(States.__Current_Model:GetPivot():Lerp(Pivot, Delta * 20))
-    end)
-
     UserInputService.InputBegan:Connect(function(Obj: InputObject, a1: boolean)  
         if a1 then 
             return 
         end
 
-        if Obj.UserInputType == Enum.UserInputType.MouseButton1 then
+        if (Obj.UserInputType == Enum.UserInputType.MouseButton1) then
            if Component:Peek(States.__Current_Tab) == 'None' or Component:Peek(States.__Current_Tab) == "" then
                 return
            end
             
            while UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
                 UserInputService.MouseBehavior = Enum.MouseBehavior.LockCurrentPosition
-                local _TimeDelta = task.wait()
+                local TimeDelta = task.wait()
 
                 local MouseDelta = UserInputService:GetMouseDelta();
-                States.__Rotation_Model += MouseDelta.X;
-                
+                const CreatedRotation = MouseDelta.X * TimeDelta * math.tau;
+                RotateModel(CreatedRotation)
            end
 
            UserInputService.MouseBehavior = Enum.MouseBehavior.Default
@@ -259,6 +262,8 @@ function Component:Init()
 
     local ReturnHolder: Frame & {Btn: TextButton, UIStroke: UIStroke, UIScale: UIScale} = MainFrame.Return
     local ReturnButton: TextButton = ReturnHolder.Btn
+    
+    local FovCleanup = nil;
     Component:BindToStateChange(function(State: boolean)
         if State then
             for _, DiffTabs in MainFrame:GetChildren() do
@@ -270,17 +275,33 @@ function Component:Init()
             UIEffects:Transition('Agents', .75)
 
             --
+            local LightingAtmosphere = Lighting:FindFirstChildOfClass("Atmosphere");
+            if LightingAtmosphere then
+                local BaseValue = LightingAtmosphere:GetAttribute('BaseDensity') or LightingAtmosphere.Density;
+                LightingAtmosphere:SetAttribute('BaseDensity', BaseValue)
+                LightingAtmosphere.Density = 0;
+            end
+
             MainFrame.Agents.Visible = true
             MainFrame.TabButtons.Visible = true
             ReturnHolder.Visible = true
             Camera:MarkUsage("AgentMenu")
+            FovCleanup = Camera:UseFovUndefinitely(33)
 
             CreateAgentIcons()
 
             States.__Current_Tab:set("Stats")
-
-            --
         else
+            if typeof(FovCleanup) == 'function' then
+                FovCleanup()
+            end
+
+            local LightingAtmosphere = Lighting:FindFirstChildOfClass("Atmosphere");
+            if LightingAtmosphere then
+                local BaseValue = LightingAtmosphere:GetAttribute('BaseDensity');
+                LightingAtmosphere.Density = BaseValue or 0.325;
+            end
+
             local LobbyMain = UIGroups:GetElementClass('Lobby', 'MainMenu')
             LobbyMain:Set(true)
 
