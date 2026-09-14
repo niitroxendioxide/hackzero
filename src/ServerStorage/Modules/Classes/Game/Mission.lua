@@ -18,10 +18,17 @@ local Hitbox = require(Modules.Libraries.Hitbox)
 local GameEnum = require(Shared.GameEnum)
 local EventClass = require(script.Parent.Event)
 local AgentService = require(Services.Combat.AgentService)
+local LootService = require(Services.Match.LootService)
 local StageHandlers = require(Modules.Libraries.StageHandlers)
 local PlayersLibrary = require(Modules.Libraries.Players)
 
 --
+local CHANGE_HOOKS = {
+    Value = GameEnum.StageHook.ValueChanged,
+    Event = GameEnum.StageHook.EventCompleted,
+    Interaction = GameEnum.StageHook.Interaction,
+}
+
 local function GetTrigger(Name: string?): BasePart?
     if Name == nil then return end
 
@@ -33,6 +40,29 @@ local function GetTrigger(Name: string?): BasePart?
     end
 
     return nil
+end
+
+--[[
+    Write a progress value without telling anyone yet. Callers batch their writes and flush
+    once, so a watcher never sees half of a multi-key update.
+]]
+local function WriteValue(Mission: Types.MissionClass, Key: string, Value: any, Changes: {Types.MissionChange})
+    local Previous = Mission.__Current_State[Key]
+    Mission.__Current_State[Key] = Value
+
+    if Previous ~= Value then
+        table.insert(Changes, {Kind = 'Value', Key = Key, Value = Value, Previous = Previous})
+    end
+end
+
+local function FlushChanges(Mission: Types.MissionClass, Changes: {Types.MissionChange})
+    for _, Change in Changes do
+        if Mission.__Is_Finished then
+            return
+        end
+
+        Mission:__Notify(Change)
+    end
 end
 
 
@@ -67,6 +97,15 @@ MissionClass.new = function(p_Config: Types.MissionConfig): Types.MissionClass
     self.__Current_Active_Triggers = {};
     self.__Current_State = {};
     self.__Hooks = p_Config.Hooks or StageHandlers:Get(p_Config.Stage, p_Config.Act) or Mock
+
+    self.__Watchers = {};
+    self.__Interactions = {};
+    self.__Completed_Events = {};
+    self.__Completed_Tags = {};
+
+    for _, Watcher in (self.__Custom_Data.Watchers or {}) do
+        table.insert(self.__Watchers, Watcher)
+    end
 
     self.__Hooks:SetSeed(self.__Seed)
 
@@ -118,12 +157,237 @@ function MissionClass.IsFinished(self: Types.MissionClass): boolean
 end
 
 function MissionClass.GetProgressValue(self: Types.MissionClass, Key: string)
-    return self.__Current_State[Key] 
+    return self.__Current_State[Key]
 end
 
 function MissionClass.SetProgressValue(self: Types.MissionClass, Key: string, Value: number | boolean | any)
-    self.__Current_State[Key] = Value
+    local Changes = {}
+    WriteValue(self, Key, Value, Changes)
+
+    FlushChanges(self, Changes)
 end
+
+--[[
+    Apply a `SetValues` block, the shape destructibles and interactions carry.
+    A key ending in '+' with a number adds to the current value instead of replacing it.
+]]
+function MissionClass.ApplySetValues(self: Types.MissionClass, Values: {[string]: any})
+    local Changes = {}
+
+    for Key, Value in Values do
+        local IsAddition = typeof(Value) == 'number' and string.sub(Key, -1) == '+'
+        local CorrectedKey = if IsAddition then string.sub(Key, 1, -2) else Key
+        local CorrectedValue = if IsAddition then (self.__Current_State[CorrectedKey] or 0) + Value else Value
+
+        WriteValue(self, CorrectedKey, CorrectedValue, Changes)
+    end
+
+    FlushChanges(self, Changes)
+end
+
+-- ## Watching
+
+--[[
+    Run `Watcher` on every change: a progress value changing, an event completing, an
+    interaction being used. Returning a stage advances the mission, see `__Advance`.
+
+    @return Unsubscribes the watcher.
+]]
+function MissionClass.Watch(self: Types.MissionClass, Watcher: Types.MissionWatcher): () -> ()
+    table.insert(self.__Watchers, Watcher)
+
+    return function()
+        local Index = table.find(self.__Watchers, Watcher)
+        if Index then
+            table.remove(self.__Watchers, Index)
+        end
+    end
+end
+
+function MissionClass.__Notify(self: Types.MissionClass, Change: Types.MissionChange)
+    if self.__Is_Finished then
+        return
+    end
+
+    local HookType = CHANGE_HOOKS[Change.Kind]
+    if HookType then
+        self.__Hooks:ExecuteHooks(HookType, self, self:GetHookPayload({Change = Change}))
+    end
+
+    --- Every watcher sees the change before any of them gets to move the mission on.
+    local Requested = {}
+    for _, Watcher in table.clone(self.__Watchers) do
+        local Ran, Result = pcall(Watcher, self, Change)
+
+        if not Ran then
+            warn("[Mission] Watcher errored on a", Change.Kind, "change:", Result)
+        elseif typeof(Result) == 'string' then
+            table.insert(Requested, Result)
+        end
+    end
+
+    for _, Next in Requested do
+        self:__Advance(Next)
+    end
+end
+
+--[[
+    Move the mission on from outside an event: 'End' closes it, 'None' / '' does nothing,
+    anything else begins that Guide event. Beginning is spawned so a watcher or an
+    interaction never waits on a cutscene, and asking for an event that is already running
+    only adds players to it.
+]]
+function MissionClass.__Advance(self: Types.MissionClass, Next: string, Players: {Types.StagePlayer}?)
+    if self.__Is_Finished or Next == 'None' or Next == '' then
+        return
+    end
+
+    if Next == 'End' then
+        self:Finish()
+
+        return
+    end
+
+    task.spawn(self.BeginEvent, self, Next, Players or PlayersLibrary:GetAll())
+end
+
+function MissionClass.IsEventCompleted(self: Types.MissionClass, Event: string): boolean
+    return (self.__Completed_Events[Event] or 0) > 0
+end
+
+--- Whether any event carrying `Tag` has completed, e.g. `HasCompletedTag('FinalBoss')`.
+function MissionClass.HasCompletedTag(self: Types.MissionClass, Tag: string): boolean
+    return (self.__Completed_Tags[Tag] or 0) > 0
+end
+
+function MissionClass.GetGuide(self: Types.MissionClass): {[string]: any}
+    if self.__Mission_Type == 'Expedition' then
+        local ActData = Stages:GetAct(self.__Stage, self.__Act)
+
+        return (ActData and ActData.Guide) or {}
+    end
+
+    return self.__Custom_Data.Guide or {}
+end
+
+--[[
+    Guide events that have not completed yet, including ones nobody has walked into.
+
+    @param Tag Only events carrying this tag, so `#GetPendingEvents('Filler') == 0` reads
+           as "every filler room was cleared".
+]]
+function MissionClass.GetPendingEvents(self: Types.MissionClass, Tag: string?): {string}
+    local Pending = {}
+
+    for Name, EventData in self:GetGuide() do
+        if Tag and not table.find(EventData.Tags or {}, Tag) then
+            continue
+        end
+
+        if not self:IsEventCompleted(Name) then
+            table.insert(Pending, Name)
+        end
+    end
+
+    return Pending
+end
+
+-- ## Interactions
+
+--[[
+    Pair the interaction markers `SetupMarkers` found with the data the mission declared
+    for them, the same split `DestructibleService:SetupStage` takes.
+]]
+function MissionClass.RegisterInteractions(self: Types.MissionClass, Placed: {{Id: string, Part: BasePart}}?, Data: {[string]: Types.InteractionObject})
+    for _, Object in (Placed or {}) do
+        local InteractionData = Data[Object.Id]
+        if not InteractionData then
+            warn("[Mission] Interaction marker with no data:", Object.Id)
+
+            continue
+        end
+
+        self.__Interactions[Object.Id] = {
+            Id = Object.Id,
+            Type = InteractionData.Type,
+            Tag = InteractionData.Tag,
+            Part = Object.Part,
+            Data = InteractionData,
+            Used = false,
+            Uses = 0,
+        }
+    end
+end
+
+function MissionClass.GetInteraction(self: Types.MissionClass, Id: string): Types.PlacedInteraction?
+    return self.__Interactions[Id]
+end
+
+function MissionClass.GetInteractions(self: Types.MissionClass, Type: string?, Tag: string?): {Types.PlacedInteraction}
+    local List = {}
+
+    for _, Interaction in self.__Interactions do
+        if (Type == nil or Interaction.Type == Type) and (Tag == nil or Interaction.Tag == Tag) then
+            table.insert(List, Interaction)
+        end
+    end
+
+    return List
+end
+
+--[[
+    Use an interaction: hand out its drops, apply its SetValues, tell the watchers, then
+    resolve its `Finished` the way an event's is resolved.
+
+    @return Whether it went through. False when the mission is not running, the id is
+            unknown, or a single-use interaction was already used.
+]]
+function MissionClass.Interact(self: Types.MissionClass, Id: string, Player: Types.StagePlayer?): boolean
+    local Interaction = self.__Interactions[Id]
+    if not Interaction or not self.__Active or self.__Is_Finished then
+        return false
+    end
+
+    local Data = Interaction.Data
+    if Interaction.Used and Data.Once ~= false then
+        return false
+    end
+
+    Interaction.Used = true
+    Interaction.Uses += 1
+
+    if Data.Drops and Player then
+        LootService:GiveLootToPlayer(Player:GetBase(), Data.Drops, true)
+    end
+
+    if Data.SetValues then
+        self:ApplySetValues(Data.SetValues)
+    end
+
+    self:__Notify({
+        Kind = 'Interaction',
+        Interaction = Id,
+        Type = Interaction.Type,
+        Tag = Interaction.Tag,
+        Player = Player,
+    })
+
+    if self.__Is_Finished then
+        return true
+    end
+
+    local Next = if typeof(Data.Finished) == 'function'
+        then Data.Finished(self.__Current_State, Interaction)
+        else Data.Finished
+
+    if typeof(Next) == 'string' then
+        self:__Advance(Next)
+    end
+
+    return true
+end
+
+-- ## Events
 
 function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Players: {Types.StagePlayer}, Replay_Event, Trigger: BasePart?)
     ---
@@ -197,21 +461,51 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
     end
 
     EventObject.Finished:Once(function(Next_Stage: string, Data: {[string]: any})
+        local Changes = {}
+
         for Key, Value in Data do
-            if self.__Current_State[Key] == nil then
-                self.__Current_State[Key] = Value
+            local Current = self.__Current_State[Key]
+
+            if Current == nil then
+                WriteValue(self, Key, Value, Changes)
             elseif typeof(Value) == 'number' then
-                self.__Current_State[Key] += Value
+                WriteValue(self, Key, Current + Value, Changes)
             end
         end
 
         local Values = EventObject:GetCompletionValueAdditions();
         for Keys, AddedValue in Values do
             if typeof(AddedValue) == 'boolean' then
-                self.__Current_State[Keys] = AddedValue
+                WriteValue(self, Keys, AddedValue, Changes)
             elseif typeof(AddedValue) == 'number' then
-                self.__Current_State[Keys] += AddedValue
+                WriteValue(self, Keys, (self.__Current_State[Keys] or 0) + AddedValue, Changes)
             end
+        end
+
+        --- Torn down by `Finish` rather than completed: nothing to record and nowhere to go.
+        if self.__Is_Finished then
+            return
+        end
+
+        self.__Completed_Events[Event] = (self.__Completed_Events[Event] or 0) + 1
+
+        local Tags = EventObject:GetTags()
+        for _, Tag in Tags do
+            self.__Completed_Tags[Tag] = (self.__Completed_Tags[Tag] or 0) + 1
+        end
+
+        FlushChanges(self, Changes)
+
+        self:__Notify({
+            Kind = 'Event',
+            Event = Event,
+            Tags = Tags,
+            Next = Next_Stage,
+        })
+
+        --- A watcher may have closed the mission out in response.
+        if self.__Is_Finished then
+            return
         end
 
         if (Next_Stage == "End" or Next_Stage == nil) then
@@ -258,7 +552,7 @@ function MissionClass.ObtainMissionRank(self: Types.MissionClass, Won: boolean)
     if not Won then
         return 'X'
     end
-    
+
     if self.__Mission_Type == 'Expedition' then
         local EventData = Stages:GetAct(self.__Stage, self.__Act)
         local RewardsTable = EventData and EventData.Completion and EventData.Completion.Rewards;

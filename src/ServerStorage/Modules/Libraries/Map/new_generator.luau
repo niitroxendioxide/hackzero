@@ -11,24 +11,18 @@ local RunService = game:GetService("RunService")
 
 
 --- Constants
-local SIZE_CONSTANT = 1 / 1.1
-local VIEW_TIME = 0.01
-local TILE_SIZE = 96
-local BASE_CFRAME = CFrame.new(0, 0, 0)
-local TILE_OFFSET = CFrame.new(0, 0, -(TILE_SIZE / 2)) * CFrame.Angles(0, math.pi, 0)
-local TILE_AREA_SIZE = vector.create(TILE_SIZE, TILE_SIZE, TILE_SIZE)
+const SIZE_CONSTANT = 1 / 1.1
+const VIEW_TIME = 0.01
+const TILE_SIZE = 96
+const BASE_CFRAME = CFrame.new(0, 0, 0)
+const TILE_OFFSET = CFrame.new(0, 0, -(TILE_SIZE / 2)) * CFrame.Angles(0, math.pi, 0)
+const TILE_AREA_SIZE = vector.create(TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
-local DEFAULT_ROOM_COUNT = 25
-local MAX_SEED = 2 ^ 31 - 1
+const DEFAULT_ROOM_COUNT = 25
+const MAX_SEED = 2 ^ 31 - 1
 
-local HALL_TAG = 'Hall'
-
---[[
-    Tag for the piece used to plug a doorway that leads nowhere. Optional: without one, any
-    closed room is used instead. Tag a small filler room with this and it becomes the
-    dedicated plug for those spots.
-]]
-local SEAL_TAG = 'Seal'
+const HALL_TAG = 'Hall'
+const SEAL_TAG = 'Seal'
 
 
 --- Generator Related
@@ -51,17 +45,11 @@ export type GeneratorState = {
     Trail: number,
     Source: Folder?,
     Warned_No_Closed_Room: boolean,
-
-    --[[
-        Doorways that were opened but never built through, collected during generation and
-        plugged once it finishes. A connector is destroyed the moment it is walked, so
-        without this the layout has no record of where its holes are.
-    ]]
     Open_Connectors: {CFrame},
     PlacedSeals: number,
 }
 
---- Every run gets a fresh state, nothing leaks between generations.
+
 local function NewState(): GeneratorState
     return {
         Rng = Random.new(),
@@ -106,7 +94,6 @@ local function GetMarkerFolder(): Folder
     return MarkerFolder
 end
 
---- Whether a tile slot is clear, used both when growing and when plugging holes.
 local function IsSlotFree(At: CFrame): boolean
     local BoundParams = OverlapParams.new()
     BoundParams.FilterDescendantsInstances = {GetMapFolder()}
@@ -185,8 +172,13 @@ local function ChooseFromSource(IsStarting: boolean, Hall: boolean, DeadEnds: De
     return Rooms[State.Rng:NextInteger(1, #Rooms)]
 end
 
---- Rooms get an area marker so the mission layer can turn them into triggers.
-local function CreateTriggerPart(BaseRoom: Model, Id: number): BasePart
+--[[
+    Rooms get an area marker so the mission layer can turn them into triggers.
+
+    @param Prefix Marker name prefix, 'Room_' by default. Seals count their ids separately, so
+           they need their own prefix or 'Seal 3' and 'Room 3' would share a marker name.
+]]
+local function CreateTriggerPart(BaseRoom: Model, Id: number, Prefix: string?): BasePart
     local Base = BaseRoom.PrimaryPart;
     local NewMarker = Instance.new("Part")
     NewMarker.Size = vector.create(TILE_SIZE / SIZE_CONSTANT, TILE_SIZE, TILE_SIZE) * SIZE_CONSTANT
@@ -197,7 +189,7 @@ local function CreateTriggerPart(BaseRoom: Model, Id: number): BasePart
     NewMarker.CanQuery = false
     NewMarker.Transparency = 1
     NewMarker.Color = Color3.new(1)
-    NewMarker.Name = 'Room_' .. tostring(Id)
+    NewMarker.Name = (Prefix or 'Room_') .. tostring(Id)
     NewMarker.Parent = GetMarkerFolder()
     NewMarker:SetAttribute("AreaSize", TILE_AREA_SIZE)
 
@@ -453,14 +445,15 @@ local function SealOpenConnectors()
         end
 
         --[[
-            No area marker on purpose. A plug is geometry, not somewhere a mission should
-            put an objective, and everything downstream already skips rooms without one.
+            A plug gets an area marker like any room. Without one every downstream consumer
+            (MissionBuilder, the generated trigger set) skipped it, so a dead end could never
+            hold an objective.
         ]]
         table.insert(State.Rooms, {
             Id = State.PlacedSeals,
             Name = Clone.Name,
             Model = Clone,
-            Marker = nil,
+            Marker = CreateTriggerPart(Clone, State.PlacedSeals, 'Seal_'),
             IsHall = false,
             IsSeal = true,
         })

@@ -446,6 +446,11 @@ return {
 		Begin = 1,
 		TriggerEnter = 2,
 		BreakStructure = 3,
+
+		-- Fired by the mission on every state change, payload carries `Change`.
+		ValueChanged = 4,
+		EventCompleted = 5,
+		Interaction = 6,
 	},
 
 	EntityBehaviorEvent = {

@@ -108,11 +108,12 @@ function MapLoader:Unpack(p_MapPath: string, p_SpawnToUse: string?): boolean
     return true
 end
 
-function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destructibles: {}, Chests: {}, NPCS: {}}
+function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destructibles: {}, Chests: {}, NPCS: {}, Interactions: {}}
     local MapData = {
         Destructibles = {},
         Chests = {},
         NPCS = {},
+        Interactions = {},
     }
     local Map = World:WaitForChild("Map")
     if not Map:FindFirstChild('Markers') then
@@ -175,6 +176,21 @@ function MapLoader:SetupMarkers(MarkerData: {[string]: Types.Marker}): {Destruct
             local Part = Map.Markers:FindFirstChild(MarkerId)
             if Part then
                 table.insert(MapData.NPCS, Part)
+            end
+        elseif MarkerObj.Type == 'Interaction' then
+            local Part = Map.Markers:FindFirstChild(MarkerId)
+            if Part then
+                --- Stamped on the part so the client side can find and label it without new replication.
+                Part:SetAttribute('InteractionId', MarkerId)
+                Part:SetAttribute('InteractionType', MarkerObj.Interaction_Type)
+                Part:SetAttribute('InteractionTag', MarkerObj.Tag)
+
+                table.insert(MapData.Interactions, {
+                    Id = MarkerId,
+                    Type = MarkerObj.Interaction_Type,
+                    Tag = MarkerObj.Tag,
+                    Part = Part,
+                })
             end
         end
     end

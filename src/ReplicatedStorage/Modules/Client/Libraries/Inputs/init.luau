@@ -339,6 +339,11 @@ function Inputs:GetMovementVector(): Vector3
 	return Relative
 end
 
+--- Whether `InputObject` is the finger currently driving the movement thumbstick.
+function Inputs:IsMovementTouch(InputObject: InputObject): boolean
+	return GlobalThumbstick ~= nil and GlobalThumbstick.enabled == true and GlobalThumbstick.moveTouchObject == InputObject
+end
+
 function Inputs:GetEnumFromKey(Name: string | Enum.KeyCode)
 	if typeof(Name) == "EnumItem" then
 		return Name

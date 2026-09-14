@@ -400,6 +400,33 @@ function EventClass.GetCorrectedState(self: Types.EventClass)
     return State
 end
 
+--- The event's key in the Guide. For a generated room that is its marker name, e.g. 'Room_4'.
+function EventClass.GetName(self: Types.EventClass): string
+    return self.__Event
+end
+
+function EventClass.GetData(self: Types.EventClass): {[string]: any}?
+    if self.__Is_Custom_Event then
+        return self.__Custom_Event_Data
+    end
+
+    return Stages:GetEvent(self.__Stage, self.__Act, self.__Event)
+end
+
+--[[
+    Labels authored on the event (`Tags = {'FinalBoss'}`). Separate from the name, which is
+    only ever the Guide key, so several events can share a role.
+]]
+function EventClass.GetTags(self: Types.EventClass): {string}
+    local EventData = self:GetData()
+
+    return (EventData and EventData.Tags) or {}
+end
+
+function EventClass.HasTag(self: Types.EventClass, Tag: string): boolean
+    return table.find(self:GetTags(), Tag) ~= nil
+end
+
 function EventClass.GetCompletionValueAdditions(self: Types.EventClass)
     local EventData = if self.__Is_Custom_Event then self.__Custom_Event_Data 
         else Stages:GetEvent(self.__Stage, self.__Act, self.__Event)

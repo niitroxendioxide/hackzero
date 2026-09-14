@@ -80,7 +80,7 @@ MissionBuilder.new = function(p_Config: {
             continue
         end
 
-        if Room.Id == 0 then
+        if Room.Id == 0 and not Room.IsSeal then
             self.__Spawn_Room = Room
             continue
         end
@@ -94,16 +94,27 @@ MissionBuilder.new = function(p_Config: {
     self.__Guide = {}
     self.__Destructibles = {}
     self.__Completion = nil
+    self.__Interactions = {}
+    self.__Watchers = {}
 
     return self
 end
 
-export type MissionEventEndFunction = (Event_State: {KillEnemies: number}, Mission_State: {[string]: any}) -> ()
+export type MissionEventEndFunction = (Event_State: {KillEnemies: number}, Mission_State: {[string]: any}) -> (string?)
 export type MissionEvent = {
-    Finished: MissionEventEndFunction,
+    Finished: (MissionEventEndFunction | string)?,
     Goal: { [string]: any },
     Objective: string,
-    Dialogue: { [number]: { Text: string, Speaker: string, NextDialogue: number }, },
+    Dialogue: { [number]: { Text: string, Speaker: string, NextDialogue: number }, }?,
+
+    --[[
+        Labels on top of the event's name, which for a room is only ever its marker name.
+        Read back with `Mission:HasCompletedTag('FinalBoss')` or `Event:HasTag`.
+    ]]
+    Tags: {string}?,
+    Cutscene: string?,
+    Global: boolean?,
+
     Enemies: {
         [number]: {
             [number]: { Name: string, Level: number, Amount: number, Extra: {}?, Affected_Aura: boolean? },
@@ -129,6 +140,8 @@ export type MissionBuilder = typeof(setmetatable({}, MissionBuilder)) & {
     __Destructibles: {[string]: any},
     __Completion: {[string]: any}?,
     __Dialogues: { [string]: {any} }?,
+    __Interactions: {[string]: Types.InteractionObject},
+    __Watchers: {Types.MissionWatcher},
 
     -- Reading the run
     GetSeed: (self: MissionBuilder) -> (number),
@@ -152,6 +165,8 @@ export type MissionBuilder = typeof(setmetatable({}, MissionBuilder)) & {
     AddNPC: (self: MissionBuilder, p_Room: Types.GeneratedRoom?, p_Name: string, p_Marker: {[string]: any}?, p_Offset: CFrame?) -> (string?),
     AddChest: (self: MissionBuilder, p_Room: Types.GeneratedRoom?, p_Items: {Types.LootItem}, p_Offset: CFrame?) -> (string?),
     AddDestructible: (self: MissionBuilder, p_Room: Types.GeneratedRoom?, p_Destructible_Id: string, p_Data: {[string]: any}?, p_Offset: CFrame?) -> (string?),
+    AddInteraction: (self: MissionBuilder, p_Room: Types.GeneratedRoom?, p_Interaction: Types.InteractionObject, p_Offset: CFrame?) -> (string?),
+    AddWatcher: (self: MissionBuilder, p_Watcher: Types.MissionWatcher) -> (),
     SetCompletion: (self: MissionBuilder, p_Completion: {[string]: any}) -> (),
 
     -- Output
@@ -280,7 +295,8 @@ function MissionBuilder.AddEvent(self: MissionBuilder, p_Room: Types.GeneratedRo
     if p_Event.Dialogue then
         if self.__Dialogues == nil then self.__Dialogues = {} end
 
-        local Index_Exists = 'EVENT_Room_'..p_Room.Id;
+        -- Off the marker name, not 'Room_' .. Id: seals count their own ids.
+        local Index_Exists = 'EVENT_' .. Name;
         if self.__Dialogues[Index_Exists] ~= nil then
             print("[MISSION_BUILDER] Rewriting dialogue for:", Index_Exists)
         end
@@ -436,6 +452,62 @@ function MissionBuilder.AddDestructible(self: MissionBuilder, p_Room: Types.Gene
     return Name
 end
 
+--[[
+    Drop an interaction into a room: something a player uses rather than breaks, like
+    picking up the suitcase.
+
+    This only sets the object up. `SetupMarkers` stamps the marker part with `InteractionId`,
+    `InteractionType` and `InteractionTag`, and whatever prompt gets wired to it calls
+    `MatchService:Interact(Player, InteractionId)`, which runs it through the mission.
+
+    @param p_Room Room to place it in.
+    @param p_Interaction Type / Tag / SetValues / Drops / Finished, see `Types.InteractionObject`.
+    @param p_Offset Offset from the room centre.
+
+    @return The marker name it was placed under, which is also its interaction id.
+]]
+function MissionBuilder.AddInteraction(self: MissionBuilder, p_Room: Types.GeneratedRoom?, p_Interaction: Types.InteractionObject, p_Offset: CFrame?): string?
+    if not p_Room then
+        return nil
+    end
+
+    if typeof(p_Interaction) ~= 'table' or typeof(p_Interaction.Type) ~= 'string' or typeof(p_Interaction.Tag) ~= 'string' then
+        warn("[MISSION_BUILDER] AddInteraction needs a Type and a Tag, got:", p_Interaction)
+
+        return nil
+    end
+
+    local Name = string.format('%s_%s_%d', p_Interaction.Type, p_Room.Marker.Name, self.__Marker_Count + 1)
+    self:CreateMarkerPart(p_Room, Name, p_Offset)
+
+    self.__Markers[Name] = {
+        Type = 'Interaction',
+        Interaction_Type = p_Interaction.Type,
+        Tag = p_Interaction.Tag,
+    } :: Types.Marker
+
+    self.__Interactions[Name] = p_Interaction
+
+    return Name
+end
+
+--[[
+    Run `p_Watcher` on every change the mission goes through: a progress value changing, an
+    event completing, an interaction being used. Returning a stage ('End', or a Guide event
+    name) moves the mission on, so objectives can be done in any order and still close it.
+
+    ```lua
+    Builder:AddWatcher(function(Mission, Change)
+        if Mission:GetProgressValue('Recovered') and Mission:HasCompletedTag('FinalBoss') then
+            return 'End'
+        end
+    end)
+    ```
+]]
+function MissionBuilder.AddWatcher(self: MissionBuilder, p_Watcher: Types.MissionWatcher): ()
+    table.insert(self.__Watchers, p_Watcher)
+end
+
 --- Rewards and rank handler for this mission. Same shape as a hand-authored `Completion`.
 function MissionBuilder.SetCompletion(self: MissionBuilder, p_Completion: {[string]: any}): ()
     self.__Completion = p_Completion
@@ -448,6 +520,8 @@ function MissionBuilder.Result(self: MissionBuilder): {[string]: any}
         Destructibles = self.__Destructibles,
         Completion = self.__Completion,
         Dialogues = self.__Dialogues,
+        Interactions = self.__Interactions,
+        Watchers = self.__Watchers,
     }
 end
 

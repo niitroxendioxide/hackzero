@@ -1,7 +1,7 @@
 return table.freeze({
     REPLICATE_CONSTANTS = {
         HITBOXES = false,
-        MARKERS = false,
+        MARKERS = true,
         ENEMY_LOCATIONS = false,
     },
 
@@ -29,14 +29,14 @@ return table.freeze({
         ]]
         SEED = 0,
         --[[
-            `AutoGenerationData`. This is the block a lobby mission NPC would fill in.
+            `AutoGenerationData`.
         ]]
         GENERATION = {
-            Rooms = 9, --- how many rooms to place (halls excluded)
-            Extent = 25, --- hard cap on total tiles, rooms + halls
-            Source = 'Rooms', --- folder of room models, relative to the stage's map asset
-            Infinite = false, --- reserved, room streaming is not implemented yet
-            Trail = 15, --- reserved, goes with Infinite
+            Rooms = 9,          ---|> how many rooms to place (halls excluded)
+            Extent = 25,        ---|> hard cap on total tiles, rooms + halls
+            Source = 'Rooms',   ---|> folder of room models, relative to the stage's map asset
+            Infinite = false,   ---|> reserved, room streaming is not implemented yet
+            Trail = 15,         ---|> reserved, goes with Infinite
         },
 
         --[[

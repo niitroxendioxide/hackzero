@@ -43,6 +43,9 @@ export type HookPayload = {
     Trigger: BasePart?,
     Players: {Types.StagePlayer}?,
     Agent: AgentTypes.ServerAgentClass?,
+
+    --- Set on ValueChanged / EventCompleted / Interaction hooks.
+    Change: Types.MissionChange?,
 }
 
 type HookData = {

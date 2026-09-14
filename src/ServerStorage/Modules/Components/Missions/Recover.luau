@@ -6,7 +6,8 @@
     generator just placed, and authors the mission into them.
 
     Reference implementation for "Recover my suitcase!":
-      - the item goes in the room furthest from spawn, behind a fight
+      - the item is a pickup in the room furthest from spawn, behind a fight
+      - picking it up and beating that fight end the mission, in either order (see the watcher)
       - a couple of rooms in between get filler fights
       - a handler NPC waits at spawn
 
@@ -95,6 +96,7 @@ Recover:OnBuild(function(Builder: MissionBuilder.MissionBuilder)
                 ['KillEnemies'] = BASE_ENEMY_COUNT + Index,
             },
             Enemies = EnemyList,
+            Tags = {'Filler'},
 
             Finished = 'None',
         })
@@ -110,13 +112,24 @@ Recover:OnBuild(function(Builder: MissionBuilder.MissionBuilder)
 
     Builder:AddDestructible(TargetRoom, 'Crate', {
         Drops = {
-            {Type = '_mission_object', Extra = {Name = "Suitcase"}, Amount = 1,},
             {Type = 'Money', Amount = 1500},
+        },
+    }, CFrame.new(0, 4, 0))
+
+    --[[
+        The item itself. Only set up here: the marker part carries InteractionId / Type / Tag,
+        and the pickup prompt wired to it calls `MatchService:Interact`.
+    ]]
+    Builder:AddInteraction(TargetRoom, {
+        Type = 'PickupItem',
+        Tag = TargetItem,
+        Drops = {
+            {Type = '_mission_object', Extra = {Name = TargetItem}, Amount = 1},
         },
         SetValues = {
             ['Recovered'] = true,
         },
-    }, CFrame.new(0, 4, 0))
+    }, CFrame.new(0, 2, 8))
 
     const Final_Room_Enemy_Count = Builder.__Random:NextInteger(8, 16)
     const Third_Part = Final_Room_Enemy_Count // 3;
@@ -143,17 +156,33 @@ Recover:OnBuild(function(Builder: MissionBuilder.MissionBuilder)
             Text = "There. They were sitting on it the whole time.",
             NextDialogue = 3,
         }},
+        Tags = {'FinalBoss'},
 
-        Finished = function(State, Mission_State)
-            if Mission_State.Recovered ~= true then
-                warn('Do somethin when they haven\'t recovered the item yet.')
-
-                return 'None'
-            end
-
-            return 'End'
-        end
+        -- The ending is the watcher's call, so the fight and the pickup can land in either order.
+        Finished = 'None',
     })
+
+    Builder:AddNamedEvent('Recovered', {
+        Objective = "Get the " .. TargetItem .. " out",
+        Goal = {},
+        Enemies = {},
+        -- Cutscene = 'Recover_Ending', -- the ending cutscene goes here
+        Dialogue = {{
+            Speaker = "Agency",
+            Text = "Got it. Pulling you out now.",
+            NextDialogue = 3,
+        }},
+        Global = true,
+        Finished = 'End',
+    })
+
+    Builder:AddWatcher(function(Mission, _Change)
+        if Mission:GetProgressValue('Recovered') == true and Mission:HasCompletedTag('FinalBoss') then
+            return 'Recovered'
+        end
+
+        return nil
+    end)
 
     Builder:SetCompletion({
         Experience = 750,

@@ -442,6 +442,8 @@ function Service:ResolveWorldData(Context: MatchContext): boolean
             Destructibles = Definition.Destructibles,
             Completion = Definition.Completion,
             Dialogues = Definition.Dialogues,
+            Interactions = Definition.Interactions,
+            Watchers = Definition.Watchers,
         }
 
         Context.Markers = Definition.Markers or (ActData and ActData.Markers) or {}
@@ -618,6 +620,7 @@ function Service:Begin()
     DestructibleService:SetupStage(Marker_Data.Destructibles, Context.Data.Destructibles or {})
     LootService:SetupChests(Marker_Data.Chests)
     NPCService:SetupNPCS(Marker_Data.NPCS)
+    MissionObject:RegisterInteractions(Marker_Data.Interactions, Context.Data.Interactions or {})
 
     Service.__Active_Match = MissionObject;
 
@@ -637,13 +640,7 @@ function Service:Begin()
 
     --
     DestructibleService.StructureSetValuesEvent:Connect(function(Values: {[string]: any})
-        for Key, Value in Values do
-            local IsAddition = typeof(Value) == 'number' and (string.sub(Key, #Key, #Key) == "+")
-            local CorrectedKey = IsAddition and string.sub(Key, 1, #Key - 1) or Key
-            local CorrectedValue = IsAddition and (MissionObject:GetProgressValue(CorrectedKey) or 0) + Value or Value
-
-            MissionObject:SetProgressValue(CorrectedKey, CorrectedValue)
-        end
+        MissionObject:ApplySetValues(Values)
     end)
 
     MissionObject.Finished:Once(function(Won: boolean)
@@ -720,6 +717,22 @@ end
 --- Seed the map was built with, 0 for a static map.
 function Service:GetSeed(): number
     return Service.__Context and Service.__Context.Seed or 0
+end
+
+--[[
+    Use a placed interaction on behalf of a player. This is what a pickup prompt calls, with
+    the id off the marker part's `InteractionId` attribute.
+
+    @return Whether it went through: false with no running match, an unknown id, or a
+            single-use interaction that was already used.
+]]
+function Service:Interact(Player: Player, InteractionId: string): boolean
+    local Mission = Service.__Active_Match
+    if not Mission then
+        return false
+    end
+
+    return Mission:Interact(InteractionId, PlayersLibrary:Get(Player))
 end
 
 -- ## Private event

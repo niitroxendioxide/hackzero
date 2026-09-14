@@ -113,16 +113,39 @@ function Camera:Init()
 	ParamsNew.FilterType = Enum.RaycastFilterType.Include
 	Camera.__Enemy_Params = ParamsNew
 
-	local RotationObject = nil; do
-		UserInputService.TouchStarted:Connect(function(Object: InputObject, GameProcessedState: boolean) 
+	--[[
+		The rotation finger is picked on its first move, not on TouchStarted. The thumbstick claims its
+		touch through ContextActionService with a Pass on Begin, so a stick finger that landed first
+		used to become the rotation finger: its moves were then sunk, and the second finger was never
+		considered because the slot was taken. Picking lazily lets a stick finger give the slot up.
+	]]
+	local RotationObject = nil;
+	local Candidates = setmetatable({}, {__mode = 'k'}); do
+		UserInputService.TouchStarted:Connect(function(Object: InputObject, GameProcessedState: boolean)
 			if GameProcessedState then return end
-			if RotationObject == nil then
-				RotationObject = Object;
-			end
+
+			Candidates[Object] = true
 		end)
 
-		UserInputService.TouchMoved:Connect(function(Object: InputObject, GameProcessedState: boolean) 
-			if GameProcessedState then return end
+		UserInputService.TouchMoved:Connect(function(Object: InputObject, GameProcessedState: boolean)
+			-- Checked before GameProcessedState: the stick sinks its own moves, and they still have
+			-- to release the slot if this finger was holding it.
+			if Inputs:IsMovementTouch(Object) then
+				Candidates[Object] = nil
+
+				if RotationObject == Object then
+					RotationObject = nil
+				end
+
+				return
+			end
+
+			if GameProcessedState or not Candidates[Object] then return end
+
+			if RotationObject == nil then
+				RotationObject = Object
+			end
+
 			if Object == RotationObject then
 				local TouchDelta = RotationObject.Delta;
 				local Transformed = Vector2.new(TouchDelta.X, TouchDelta.Y)
@@ -132,7 +155,9 @@ function Camera:Init()
 			end
 		end)
 
-		UserInputService.TouchEnded:Connect(function(Object, GameProcessedState: boolean) 
+		UserInputService.TouchEnded:Connect(function(Object, GameProcessedState: boolean)
+			Candidates[Object] = nil
+
 			if Object == RotationObject then
 				RotationObject = nil;
 			end

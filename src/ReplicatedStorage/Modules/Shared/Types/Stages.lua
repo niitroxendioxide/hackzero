@@ -37,6 +37,12 @@ export type Stage_Key_Event = {
 	Objective: string,
 	Goal: Goal,
 
+	--[[
+		Labels on top of the event's name (its Guide key, e.g. 'Room_4'), so a watcher can ask
+		"did the event tagged 'FinalBoss' finish" without knowing which room it landed in.
+	]]
+	Tags: {string}?,
+
 	Dialogue: {DialogueObject}?,
 
 	Active_Triggers: {string},
@@ -77,7 +83,7 @@ export type LootExtraData = {
 export type LootItem = {Type: LootType, Amount: number, Extra: LootExtraData?}
 
 export type Marker = {
-    Type: 'Trigger' | 'Chest' | 'Destructible' | 'NPC' | 'Switch',
+    Type: 'Trigger' | 'Chest' | 'Destructible' | 'NPC' | 'Switch' | 'Interaction',
 	Name: string?, -- Rename, if you want to, can just keep the same.
 
 	Destructible_Id: string?,
@@ -86,7 +92,77 @@ export type Marker = {
 	}?,
 
 	Dialogue: {DialogueObject}?,
+
+	-- Interaction markers only, copied off the `InteractionObject` they were placed with.
+	Interaction_Type: InteractionType?,
+	Tag: string?,
 }
+
+--[[
+	Something a player uses in the world rather than fights: picking up the suitcase, pulling
+	a lever. Authored through `MissionBuilder:AddInteraction`, placed on a marker like a
+	destructible, and run through `Mission:Interact`.
+]]
+export type InteractionType = "PickupItem" | string
+
+export type InteractionObject = {
+	Type: InteractionType,
+
+	--- What the object is, e.g. 'Suitcase'. Lands on the marker part as `InteractionTag`.
+	Tag: string,
+
+	--- Written to the mission state on use, same rules as a destructible's (`"Key+"` adds).
+	SetValues: {[string]: (number | boolean)?}?,
+
+	--- Loot handed to whoever used it.
+	Drops: {LootItem}?,
+
+	--- Usable a single time, defaults to true.
+	Once: boolean?,
+
+	--- Next stage, resolved like an event's: 'End', 'None', or a Guide event name to begin.
+	Finished: (string | (Mission_State: {[string]: any}, Interaction: PlacedInteraction) -> string?)?,
+}
+
+export type PlacedInteraction = {
+	Id: string,
+	Type: InteractionType,
+	Tag: string,
+	Part: BasePart?,
+	Data: InteractionObject,
+	Used: boolean,
+	Uses: number,
+}
+
+--[[
+	One thing that changed on a mission, handed to every watcher and to the
+	ValueChanged / EventCompleted / Interaction stage hooks.
+]]
+export type MissionChange = {
+	Kind: "Value" | "Event" | "Interaction",
+
+	-- Value
+	Key: string?,
+	Value: any?,
+	Previous: any?,
+
+	-- Event
+	Event: string?,
+	Tags: {string}?,
+	Next: string?,
+
+	-- Interaction
+	Interaction: string?,
+	Type: InteractionType?,
+	Tag: string?,
+	Player: StagePlayer?,
+}
+
+--[[
+	Called on every `MissionChange`. Returning a stage behaves like an event's `Finished`:
+	'End' closes the mission, a Guide event name begins it, nil / 'None' does nothing.
+]]
+export type MissionWatcher = (Mission: MissionClass, Change: MissionChange) -> string?
 
 
 export type Rating = "X" | "B" | "A" | "S" | "S+"
@@ -208,6 +284,10 @@ export type MissionClass = {
 	__Current_Events: {[string]: EventClass},
 	__Current_State: {[string]: any},
 	__Hooks: {[string]: (...any) -> ()},
+	__Watchers: {MissionWatcher},
+	__Interactions: {[string]: PlacedInteraction},
+	__Completed_Events: {[string]: number},
+	__Completed_Tags: {[string]: number},
 
 
 	--[[
@@ -237,6 +317,24 @@ export type MissionClass = {
 	GetHookPayload: (self: MissionClass, Extra: {[string]: any}?) -> ({[string]: any}),
 	GetProgressValue: (self: MissionClass, Key: string) -> (),
 	SetProgressValue: (self: MissionClass, Key: string, Value: any) -> (),
+	ApplySetValues: (self: MissionClass, Values: {[string]: any}) -> (),
+
+	--[[
+		Run a watcher on every value change, event completion and interaction.
+		Returns the function that unsubscribes it.
+	]]
+	Watch: (self: MissionClass, Watcher: MissionWatcher) -> (() -> ()),
+	IsEventCompleted: (self: MissionClass, Event: string) -> (boolean),
+	HasCompletedTag: (self: MissionClass, Tag: string) -> (boolean),
+	GetGuide: (self: MissionClass) -> ({[string]: Stage_Key_Event}),
+	GetPendingEvents: (self: MissionClass, Tag: string?) -> ({string}),
+	__Notify: (self: MissionClass, Change: MissionChange) -> (),
+	__Advance: (self: MissionClass, Next: string, Players: {StagePlayer}?) -> (),
+
+	RegisterInteractions: (self: MissionClass, Placed: {{Id: string, Part: BasePart}}?, Data: {[string]: InteractionObject}) -> (),
+	GetInteraction: (self: MissionClass, Id: string) -> (PlacedInteraction?),
+	GetInteractions: (self: MissionClass, Type: InteractionType?, Tag: string?) -> ({PlacedInteraction}),
+	Interact: (self: MissionClass, Id: string, Player: StagePlayer?) -> (boolean),
 
 	--[[
 		Sync with all clients the current events and information
@@ -291,6 +389,11 @@ export type EventClass = {
 	UpdateProgress: (self: EventClass, Type: Stage_Objective, Value: any) -> (),
 
 	GetCorrectedState: (self: EventClass) -> (),
+
+	GetName: (self: EventClass) -> (string),
+	GetData: (self: EventClass) -> ({[string]: any}?),
+	GetTags: (self: EventClass) -> ({string}),
+	HasTag: (self: EventClass, Tag: string) -> (boolean),
 }
 
 export type LootType = "Item" | "Artifact" | "Drive" | "Money" | "Gems"
@@ -346,7 +449,7 @@ export type GeneratedRoom = {
 
 	--[[
 		A plug plastered over a doorway that led nowhere, rather than part of the layout
-		proper. Carries no marker, so it is never a place a mission can put anything.
+		proper. Gets a `Seal_<n>` marker like any room, so a mission can still pick it.
 	]]
 	IsSeal: boolean?,
 }
