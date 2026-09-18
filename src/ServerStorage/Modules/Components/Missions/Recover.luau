@@ -35,6 +35,33 @@ const DEFAULT_FILLER_ROOMS = 2
 
 const Recover = StageClass.new()
 const NPC_CFRAME = CFrame.new(18, 3.67, -24) * CFrame.Angles(0, math.rad(135), 0)
+const Corners = {
+    vector.create(1, 0, 1),
+    vector.create(1, 0, -1),
+    vector.create(-1, 0, 1),
+    vector.create(-1, 0, -1),
+}
+
+const function AddCratesToRoom(Builder: MissionBuilder.MissionBuilder, Room: { read Id: number })
+    const RoomRNG = Random.new(Builder:GetSeed() + Room.Id);
+    const Amount = RoomRNG:NextInteger(0, 4)
+    if Amount == 0 then
+        return;
+    end
+
+    local Corner = Corners[ RoomRNG:NextInteger(1, #Corners) ]
+
+    for i = -Amount // 2, Amount // 2 do
+        local At = Corner * 30 + vector.create(i * 2.25, 2.5, -i * 2.25) ---vector.create(Corner.x * 30, 3.25, Corner.z * 30)
+
+
+        Builder:AddDestructible(Room, 'Crate', {
+            Drops = {
+                {Type = 'Money', Amount = 375},
+            },
+        }, CFrame.new(At))
+    end
+end
 
 Recover:OnBuild(function(Builder: MissionBuilder.MissionBuilder)
     const Data = Builder:GetData()
@@ -69,13 +96,15 @@ Recover:OnBuild(function(Builder: MissionBuilder.MissionBuilder)
     local TargetRoom = Builder:PickFurthestRoom() or Builder:PickRoom()
 
     local RoomActualIndex = 0;
-    for Index, Room in Builder:PickRooms(FillerRooms) do
+    local Rooms = Builder:PickRooms(FillerRooms)
+
+    for Index, Room in Rooms do
         const MIN_FIRST_WAVE = BASE_ENEMY_COUNT // 2;
         const MIN_SECOND_WAVE = BASE_ENEMY_COUNT - MIN_FIRST_WAVE;
         const WAVES_GENERATED = 2 + Builder.__Random:NextNumber(0.25 * RoomActualIndex, 0.5 * RoomActualIndex);
 
         const EnemyList = {};
-
+        
         for i = 1, WAVES_GENERATED do
             local MinCount = i == 1 and MIN_FIRST_WAVE + Index or MIN_SECOND_WAVE + Index
             EnemyList[i] = {}
@@ -85,7 +114,7 @@ Recover:OnBuild(function(Builder: MissionBuilder.MissionBuilder)
                 table.insert(EnemyList[i], {
                     Name = DEFAULT_ENEMY,
                     Level = Level,
-                    Amount = MinCount, -- WARNING: Must replace with actual code for better spread later
+                    Amount = MinCount,
                 })
             end
         end
@@ -101,6 +130,8 @@ Recover:OnBuild(function(Builder: MissionBuilder.MissionBuilder)
             Finished = 'None',
         })
 
+        AddCratesToRoom(Builder, Room);
+
         RoomActualIndex += 1;
     end
 
@@ -109,12 +140,6 @@ Recover:OnBuild(function(Builder: MissionBuilder.MissionBuilder)
 
         return
     end
-
-    Builder:AddDestructible(TargetRoom, 'Crate', {
-        Drops = {
-            {Type = 'Money', Amount = 1500},
-        },
-    }, CFrame.new(0, 4, 0))
 
     --[[
         The item itself. Only set up here: the marker part carries InteractionId / Type / Tag,
@@ -177,6 +202,7 @@ Recover:OnBuild(function(Builder: MissionBuilder.MissionBuilder)
     })
 
     Builder:AddWatcher(function(Mission, _Change)
+        print("Completed final boss?", Mission:HasCompletedTag('FinalBoss'))
         if Mission:GetProgressValue('Recovered') == true and Mission:HasCompletedTag('FinalBoss') then
             return 'Recovered'
         end

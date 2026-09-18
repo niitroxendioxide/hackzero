@@ -64,7 +64,9 @@ return table.freeze({
         ]]
         DATA = {
             --Mission_Seed = '12345-abcde-67890-fabcd',
+            Target_Item = "Object",
             Kind = 'Recover',
+            Filler_Rooms = 7,
             --MissionId = 'LeafVillage_P01',
             --Difficulty = 'EASY',
             --[[ChaosControlData = {

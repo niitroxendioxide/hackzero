@@ -89,6 +89,7 @@ const function RescaleJumpButton()
 	local TouchGui = Gui:FindFirstChild("TouchGui")
 	local JumpButton = TouchGui:FindFirstChild('TouchControlFrame'):FindFirstChild('JumpButton')
 	if JumpButton ~= nil then
+		TouchGui.DisplayOrder = 500;
 		JumpButton.Size = JUMP_BTN_SIZE
 		JumpButton.Position = JUMP_BTN_POS
 	end

@@ -23,6 +23,7 @@ const MAX_SEED = 2 ^ 31 - 1
 
 const HALL_TAG = 'Hall'
 const SEAL_TAG = 'Seal'
+const SEAL_PREFIX = "Seal_"
 
 
 --- Generator Related
@@ -434,7 +435,7 @@ local function SealOpenConnectors()
 
         local Clone = Piece:Clone()
         Clone.PrimaryPart.Transparency = 1
-        Clone.Name = 'Seal_' .. State.PlacedSeals
+        Clone.Name = SEAL_PREFIX .. State.PlacedSeals
         Clone:PivotTo(At)
         Clone.Parent = MapFolder
 
@@ -444,16 +445,19 @@ local function SealOpenConnectors()
             Connections:ClearAllChildren()
         end
 
+        ---
+        local RespectiveId = State.PlacedRooms + State.PlacedSeals;
+
         --[[
             A plug gets an area marker like any room. Without one every downstream consumer
             (MissionBuilder, the generated trigger set) skipped it, so a dead end could never
             hold an objective.
         ]]
         table.insert(State.Rooms, {
-            Id = State.PlacedSeals,
+            Id = RespectiveId,
             Name = Clone.Name,
             Model = Clone,
-            Marker = CreateTriggerPart(Clone, State.PlacedSeals, 'Seal_'),
+            Marker = CreateTriggerPart(Clone, RespectiveId, SEAL_PREFIX),
             IsHall = false,
             IsSeal = true,
         })

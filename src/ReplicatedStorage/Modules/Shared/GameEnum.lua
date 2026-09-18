@@ -128,6 +128,16 @@ return {
 		Empty = 2,
 	},
 
+	MatchInteraction = {
+		Create = 1,
+		BatchCreate = 2,
+		Remove = 3,
+		Triggered = 4,
+	},
+
+	MatchInteractionType = {
+		ItemPickup = 1,
+	},
 
 	Skills = {
 		Basic_Attack = 1,

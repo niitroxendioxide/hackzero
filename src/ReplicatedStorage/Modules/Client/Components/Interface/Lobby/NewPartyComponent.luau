@@ -19,6 +19,7 @@ local Tasks = require(ReplicatedStorage.Modules.Shared.Types.Tasks)
 local Network = require(Shared.Network)
 local Fetcher = require(Client.Libraries.Fetcher)
 local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
+local ScreenUtil = require(ReplicatedStorage.Modules.Shared.Utility.ScreenUtil)
 local String = require(ReplicatedStorage.Modules.Shared.Utility.String)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local GameEnum = require(Shared.GameEnum)
@@ -578,6 +579,7 @@ const function ConstructMission(MissionId: string, MissionData: MissionsDatabase
         ---
         local InfoDock = GetDock('Info')
         InfoDock.Description.Text = Is_Task and TextForType.ForMission(MissionData) or MissionData.Description or "No description available";
+        InfoDock.Description.TextSize = ScreenUtil:GetTextSize(18);
         InfoDock.LvlRec.Lvl.Text = Recommended_Level;
 
         SetDockState('Info', true)

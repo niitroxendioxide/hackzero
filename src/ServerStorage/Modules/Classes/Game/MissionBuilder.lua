@@ -126,6 +126,16 @@ export type MissionEvent = {
     Every method spelled out rather than inferred off the metatable, so autocomplete
     actually lists them where a builder is used.
 ]]
+export type Builder_Result = {
+    Instructions: {},
+    Markers: {},
+    Triggers: {},
+    Destructibles: {},
+    Completion: {},
+    Dialogues: {},
+    Watchers: {},
+}
+
 export type MissionBuilder = typeof(setmetatable({}, MissionBuilder)) & {
     __Seed: number,
     __Kind: string?,
@@ -170,7 +180,7 @@ export type MissionBuilder = typeof(setmetatable({}, MissionBuilder)) & {
     SetCompletion: (self: MissionBuilder, p_Completion: {[string]: any}) -> (),
 
     -- Output
-    Result: (self: MissionBuilder) -> ({[string]: any}),
+    Result: (self: MissionBuilder) -> (Builder_Result),
     IsEmpty: (self: MissionBuilder) -> (boolean),
 }
 
@@ -233,7 +243,6 @@ function MissionBuilder.PickRoom(self: MissionBuilder): Types.GeneratedRoom?
     return table.remove(self.__Available, Index)
 end
 
---- Claim several rooms. Returns fewer than asked for when the layout runs out.
 function MissionBuilder.PickRooms(self: MissionBuilder, p_Amount: number): {Types.GeneratedRoom}
     local Picked = {}
 
@@ -408,7 +417,7 @@ function MissionBuilder.AddChest(self: MissionBuilder, p_Room: Types.GeneratedRo
         return nil
     end
 
-    local Name = string.format('Chest_%s_%d', p_Room.Marker.Name, self.__Marker_Count + 1)
+    local Name = string.format('Chest/%s/%d', p_Room.Marker.Name, self.__Marker_Count + 1)
     self:CreateMarkerPart(p_Room, Name, p_Offset)
 
     self.__Markers[Name] = {
@@ -437,7 +446,7 @@ function MissionBuilder.AddDestructible(self: MissionBuilder, p_Room: Types.Gene
         return nil
     end
 
-    local Name = string.format('%s_%s_%d', p_Destructible_Id, p_Room.Marker.Name, self.__Marker_Count + 1)
+    local Name = string.format('%s/%s/%d', p_Destructible_Id, p_Room.Marker.Name, self.__Marker_Count + 1)
     self:CreateMarkerPart(p_Room, Name, p_Offset)
 
     self.__Markers[Name] = {
@@ -477,7 +486,7 @@ function MissionBuilder.AddInteraction(self: MissionBuilder, p_Room: Types.Gener
         return nil
     end
 
-    local Name = string.format('%s_%s_%d', p_Interaction.Type, p_Room.Marker.Name, self.__Marker_Count + 1)
+    local Name = string.format('%s/%s/%d', p_Interaction.Type, p_Room.Marker.Name, self.__Marker_Count + 1)
     self:CreateMarkerPart(p_Room, Name, p_Offset)
 
     self.__Markers[Name] = {
@@ -503,6 +512,8 @@ end
         end
     end)
     ```
+
+    Useful for any-order completion of objectives. This lets players have a fallback, and prevent any weird race bug
 ]]
 function MissionBuilder.AddWatcher(self: MissionBuilder, p_Watcher: Types.MissionWatcher): ()
     table.insert(self.__Watchers, p_Watcher)
