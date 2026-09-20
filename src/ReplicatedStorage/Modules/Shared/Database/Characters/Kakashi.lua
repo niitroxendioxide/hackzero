@@ -235,6 +235,7 @@ return {
 					Daze = 22,
 					Affliction = 'Electric',
 					Affliction_Buildup = 93,
+					NoKill = true,
 				},
 				Sosenko_Dash_Hit = {
 					HitType = 'Slash',

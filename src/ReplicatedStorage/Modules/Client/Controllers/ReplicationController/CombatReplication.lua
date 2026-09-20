@@ -8,6 +8,7 @@ local Assets = ReplicatedStorage.Assets
 
 local CombatController = require(ReplicatedStorage.Modules.Client.Controllers.CombatController)
 local Animation = require(ReplicatedStorage.Modules.Client.Libraries.Animation)
+local Prompts = require(ReplicatedStorage.Modules.Client.Libraries.Prompts)
 local Structures = require(ReplicatedStorage.Modules.Client.Libraries.Structures)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
@@ -94,6 +95,10 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 			return;
 		end
 
+		if RepId == Players.LocalPlayer.UserId then
+			Prompts:EnableAll()
+		end
+
 		for _, Agent in Characters:GetCharacters(RepId) do
 			Agent:SetLimitArea(nil)
 			Agent:SetColliderGroupEnabled(Colliders[TriggerObject], false)
@@ -112,6 +117,10 @@ function Controller:SetColliderArea(Buffer: buffer, TriggerObject: BasePart)
 			Agent:SetLimitArea(TriggerObject)
 			Agent:SetColliderGroupEnabled(Colliders[TriggerObject], true)
 		end
+	end
+
+	if RepId == Players.LocalPlayer.UserId then
+		Prompts:DisableAll()
 	end
 
 	if not TriggerObject or Colliders[TriggerObject] then

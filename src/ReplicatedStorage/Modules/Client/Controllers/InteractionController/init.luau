@@ -1,27 +1,31 @@
-local Players = game:GetService("Players")
-local ProximityPromptService = game:GetService("ProximityPromptService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+const Players = game:GetService("Players")
+const ProximityPromptService = game:GetService("ProximityPromptService")
+const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 
-local Client = ReplicatedStorage.Modules.Client
-local Shared = ReplicatedStorage.Modules.Shared
-local Database = ReplicatedStorage.Modules.Shared.Database
-local Assets = ReplicatedStorage.Assets.Interface
+const Client = ReplicatedStorage.Modules.Client
+const Shared = ReplicatedStorage.Modules.Shared
+const Database = ReplicatedStorage.Modules.Shared.Database
+const Assets = ReplicatedStorage.Assets.Interface
 
-local Inputs = require(ReplicatedStorage.Modules.Client.Libraries.Inputs)
-local InterfaceController = require(script.Parent.InterfaceController)
-local LocalData = require(ReplicatedStorage.Modules.Client.Libraries.LocalData)
-local NPCS = require(ReplicatedStorage.Modules.Client.Libraries.NPCS)
-local Prompts = require(ReplicatedStorage.Modules.Client.Libraries.Prompts)
-local Navigation = require(ReplicatedStorage.Modules.Client.States.Navigation)
-local Places = require(ReplicatedStorage.Modules.Shared.Places)
-local Effects = require(ReplicatedStorage.Modules.Shared.Utility.Effects)
-local StageDatabase = require(Database.Stages)
-local MissionsDatabase = require(Database.Missions)
-local Chests = require(Client.Libraries.Chests)
-local Network = require(Shared.Network)
-local GameEnum = require(Shared.GameEnum)
-local Npcs = require(Client.Controllers.LobbyController.NPCS)
+-- local
+const MatchInteractions = require("@self/MatchInteractions")
+
+-- outside
+const LobbyNpcs = require(Client.Controllers.LobbyController.NPCS)
+const NPCS = require(Client.Libraries.NPCS)
+const Inputs = require(Client.Libraries.Inputs)
+const Places = require(Shared.Places)
+const Chests = require(Client.Libraries.Chests)
+const Effects = require(Shared.Utility.Effects)
+const Prompts = require(Client.Libraries.Prompts)
+const Network = require(Shared.Network)
+const GameEnum = require(Shared.GameEnum)
+const LocalData = require(Client.Libraries.LocalData)
+const Navigation = require(Client.States.Navigation)
+const StageDatabase = require(Database.Stages)
+const MissionsDatabase = require(Database.Missions)
+const InterfaceController = require(script.Parent.InterfaceController)
 
 local Controller = {
     __Current_Action = {},
@@ -74,6 +78,13 @@ function Controller:Init()
     ProximityPromptService.PromptTriggered:Connect(function(Prompt, Player)
         local PromptType = Prompt:GetAttribute("Type")
 
+        if Prompt:HasTag('MatchInteraction') then
+            const InteractionId = Prompt:GetAttribute("InteractionId")
+            MatchInteractions:Trigger(InteractionId, false)
+
+            return;
+        end
+
         if PromptType == GameEnum.InteractionType.Chest then
             local ChestId = Prompt:GetAttribute("ChestId")
             local ChestObject = Chests:GetById(ChestId)
@@ -98,7 +109,7 @@ function Controller:Init()
         elseif PromptType == GameEnum.InteractionType.NPC then
             Controller:InteractWithNPC(Prompt)
         elseif PromptType == GameEnum.InteractionType.LobbyNPC then
-            Npcs:TalkToNPC(Prompt:GetAttribute("NpcId"))
+            LobbyNpcs:TalkToNPC(Prompt:GetAttribute("NpcId"))
         end
     end)
 
@@ -140,6 +151,8 @@ function Controller:Init()
             Count += 1
         end
     end)
+
+    Network:On("MatchInteraction", MatchInteractions.OnEvent)
 end
 
 function Controller:CreatePromptWithCustomDesign(Prompt: ProximityPrompt)

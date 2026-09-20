@@ -487,14 +487,16 @@ function MissionBuilder.AddInteraction(self: MissionBuilder, p_Room: Types.Gener
     end
 
     local Name = string.format('%s/%s/%d', p_Interaction.Type, p_Room.Marker.Name, self.__Marker_Count + 1)
-    self:CreateMarkerPart(p_Room, Name, p_Offset)
+    local MarkerObjectPart = self:CreateMarkerPart(p_Room, Name, p_Offset)
 
     self.__Markers[Name] = {
         Type = 'Interaction',
         Interaction_Type = p_Interaction.Type,
         Tag = p_Interaction.Tag,
+        Collider = MarkerObjectPart,
     } :: Types.Marker
 
+    p_Interaction.Collider = MarkerObjectPart;
     self.__Interactions[Name] = p_Interaction
 
     return Name

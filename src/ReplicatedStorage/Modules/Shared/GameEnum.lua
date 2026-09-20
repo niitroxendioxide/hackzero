@@ -103,6 +103,7 @@ return {
 		NPC = 2,
 		LobbyNPC = 3,
 		UIInteraction = 4,
+		ItemPickup = 5,
 	},
 
 	MarketplaceRequestTypes = {

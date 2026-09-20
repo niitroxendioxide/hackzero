@@ -11,7 +11,7 @@ function Prompts:SetState(Prompt: ProximityPrompt, State: boolean)
     States[Prompt] = State
 end
 
-function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number, ActionText: string, ObjectText: string, Distance: number?)
+function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number | any, ActionText: string, ObjectText: string, Distance: number?, Tags: { string }?)
     local Attachment = Instance.new("Attachment")
     Attachment.Name = "PromptAttachment"
     Attachment.Parent = BasePart
@@ -29,6 +29,12 @@ function Prompts:CreatePromptOnPart(BasePart: BasePart, Type: number, ActionText
         Prompt.Style = Enum.ProximityPromptStyle.Custom
         Prompt.HoldDuration = 0.01
     --end
+
+    if typeof(Tags) == 'table' and typeof(Tags[1]) == 'string' then
+        for _, Tag in Tags do
+            Prompt:AddTag(Tag)
+        end
+    end
     
     Prompt.Parent = Attachment
 

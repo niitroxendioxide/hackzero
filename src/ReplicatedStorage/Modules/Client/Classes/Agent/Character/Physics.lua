@@ -27,9 +27,6 @@ function PhysicsClass.new(States: Types.StatesClass, Height: number, debug_t: bo
 	self.__Normal = Vector3.yAxis
 	self.__Position = WorldSpawn.Position + Vector3.new(0, self.__Height, 0)
 	self.__Rotation = Vector3.zAxis
-	-- Cosmetic error left over from a smoothed server correction. __Position is
-	-- always the authoritative value; this offset is what keeps the render from
-	-- jumping, and it decays to zero every frame in Update.
 	self.__CorrectionOffset = Vector3.zero
 	self.__RotationGoal = Vector3.zAxis
 	self.__Enemy_Collisions_Enabled = true
@@ -125,16 +122,6 @@ function PhysicsClass:RemoveForwardImpulse(Obj: {})
 	end
 end
 
---[[
-	Every velocity contribution summed, matching ServerCharacterClass.GetTotalVelocity
-	so both sides extrapolate a position the same way.
-]]
---[[
-	True while a dash/knockback impulse is decaying. Callers use this to skip
-	position extrapolation: the velocity is large and changing fast, so
-	projecting it forward magnifies any timing difference between the two
-	simulations rather than correcting for it.
-]]
 function PhysicsClass:HasActiveImpulse(): boolean
 	return #self.__Forward_Velocities > 0 or #self.__Linear_Movements > 0
 end
@@ -151,20 +138,6 @@ function PhysicsClass:GetPivot()
 end
 
 --[[
-	Apply a position correction received from the server.
-
-	Unlike PivotTo, which is an unconditional teleport, this decides what the
-	correction actually deserves:
-
-	  * closer than Replication_Ignore_Distance -- discarded. Sub stud noise is
-	    not worth moving the character for, and correcting it is what made
-	    remote agents jitter.
-	  * further than Replication_Snap_Distance -- a real teleport (a switch, an
-	    ability, a respawn). Applied instantly, as it should be.
-	  * anything between -- the authoritative position is taken, but the visual
-	    error is parked in __CorrectionOffset and bled off over the next few
-	    frames, so the agent slides into place instead of popping.
-
 	@return true when the correction was a hard snap
 ]]
 function PhysicsClass:CorrectTo(To: CFrame): boolean

@@ -154,12 +154,15 @@ export type HitEnemyData = {
 	Affliction: Default.Element,
 	Attack_Type: Default.AgentMovesetAbility,
 	Affliction_Buildup: number?,
-	DontChargeEnergy: boolean,
-	DontChargeUlt: boolean,
 	HitsAirborne: boolean,
 	Airborne: boolean,
-	NoRotate: boolean?,
 	AnimId: number?,
+	
+	-- negative ones
+	DontChargeEnergy: boolean,
+	DontChargeUlt: boolean,
+	NoRotate: boolean?,
+	NoKill: boolean,
 
 	Knockback: {number | number | number}?,
 }

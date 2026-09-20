@@ -34,6 +34,7 @@ local AgentService = require(ServerStorage.Modules.Services.Combat.AgentService)
 local CompanionService = require(ServerStorage.Modules.Services.Combat.CompanionService)
 local DataService = require(ServerStorage.Modules.Services.Data.DataService)
 local ChaosControlService = require(ServerStorage.Modules.Services.Lobby.ChaosControlService)
+local MatchInteractionService = require(ServerStorage.Modules.Services.Match.MatchInteractionService)
 local Rewards = require(ServerStorage.Modules.Services.Match.MatchService.Rewards)
 local settings = require(ServerStorage.Modules[".testenv"].settings)
 local GameEnum = require(Shared.GameEnum)
@@ -620,6 +621,7 @@ function Service:Begin()
     DestructibleService:SetupStage(Marker_Data.Destructibles, Context.Data.Destructibles or {})
     LootService:SetupChests(Marker_Data.Chests)
     NPCService:SetupNPCS(Marker_Data.NPCS)
+    MatchInteractionService:BatchAddInteraction(Context.Data.Interactions or {})
     MissionObject:RegisterInteractions(Marker_Data.Interactions, Context.Data.Interactions or {})
 
     Service.__Active_Match = MissionObject;
@@ -643,6 +645,12 @@ function Service:Begin()
         MissionObject:ApplySetValues(Values)
     end)
 
+    MatchInteractionService.triggered:Connect(function(_, Data)
+        if typeof(Data.SetValues) == 'table' then
+            MissionObject:ApplySetValues(Data.SetValues)
+        end
+    end)
+
     MissionObject.Finished:Once(function(Won: boolean)
         Service:End(Won)
     end)
@@ -657,11 +665,6 @@ function Service:Begin()
         end)
     end
 
-    --[[
-        Started last, on purpose. `Begin` runs the first event synchronously and a goalless
-        one can finish the mission on the spot, which would fire `Finished` before anything
-        above had subscribed to it.
-    ]]
     MissionObject:Begin()
 end
 
@@ -709,12 +712,10 @@ function Service:Lose()
     Service.__Active_Match:Finish(false)
 end
 
---- Context this server is running, nil outside a match.
 function Service:GetContext(): MatchContext?
     return Service.__Context
 end
 
---- Seed the map was built with, 0 for a static map.
 function Service:GetSeed(): number
     return Service.__Context and Service.__Context.Seed or 0
 end

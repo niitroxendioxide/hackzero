@@ -103,7 +103,7 @@ export type Marker = {
 	a lever. Authored through `MissionBuilder:AddInteraction`, placed on a marker like a
 	destructible, and run through `Mission:Interact`.
 ]]
-export type InteractionType = "PickupItem" | string
+export type InteractionType = "ItemPickup" | string
 
 export type InteractionObject = {
 	Type: InteractionType,

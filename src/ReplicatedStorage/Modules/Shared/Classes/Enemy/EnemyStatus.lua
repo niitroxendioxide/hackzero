@@ -132,7 +132,8 @@ function EnemyStatus:SetHealth(Health: number)
 end
 
 function EnemyStatus:Damage(Amount: number)
-	assert(typeof(Amount) == 'number' and Amount > 0, 'Cannot take negative damage')
+	print(Amount)
+	assert(typeof(Amount) == 'number' and Amount >= 0, 'Cannot take negative damage')
 	
 	self.__Health = math.clamp(self.__Health - Amount, 0, math.huge)
 end

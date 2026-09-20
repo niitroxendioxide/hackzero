@@ -177,6 +177,15 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 		})
 	end
 
+	const CanKill = Data.NoKill ~= true;
+	if not CanKill then
+		local Health = Enemy:GetHealth()
+
+		if (Health - Final_Damage) <= 0 then
+			Final_Damage = (Health - 1)
+		end
+	end
+
 	local EnemyDied = Enemy:TakeDamage(Final_Damage)
 
 	-- Run hooks after damage was dealt, this is the last hook

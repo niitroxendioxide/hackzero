@@ -141,12 +141,8 @@ Recover:OnBuild(function(Builder: MissionBuilder.MissionBuilder)
         return
     end
 
-    --[[
-        The item itself. Only set up here: the marker part carries InteractionId / Type / Tag,
-        and the pickup prompt wired to it calls `MatchService:Interact`.
-    ]]
     Builder:AddInteraction(TargetRoom, {
-        Type = 'PickupItem',
+        Type = 'ItemPickup',
         Tag = TargetItem,
         Drops = {
             {Type = '_mission_object', Extra = {Name = TargetItem}, Amount = 1},
