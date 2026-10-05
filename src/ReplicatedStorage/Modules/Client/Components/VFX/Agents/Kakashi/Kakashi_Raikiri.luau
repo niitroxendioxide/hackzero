@@ -74,6 +74,18 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
     
     if State == 'Charge' then
         ---
+        local Highlight = Instance.new("Highlight");
+        Highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
+        Highlight.Parent = Model
+        Highlight.FillColor = Color3.fromRGB(255, 94, 62)
+        Highlight.OutlineColor = Color3.new(1, 1, 1)
+        Highlight.FillTransparency = 2.5
+        Highlight.OutlineTransparency = 0
+
+        Effects:Tween(Highlight, { 0.3, 'Sine' }, { FillTransparency = 1, OutlineTransparency = 1 })
+        Effects:CleanUp(Highlight, 0.3)
+
+        ---
         local CastEffect = Effects:Create(KakashiVfx.TriggerEffect, 2);
         CastEffect:PivotTo(Caster:GetModel():GetPivot());
         Effects:Emit(CastEffect, true)

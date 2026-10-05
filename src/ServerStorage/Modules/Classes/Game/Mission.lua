@@ -292,6 +292,28 @@ function MissionClass.GetPendingEvents(self: Types.MissionClass, Tag: string?): 
     return Pending
 end
 
+--[[
+    Arena of a fight in progress that contains `Position`, nil when that spot is not
+    mid-fight. Checked on X/Z only, so someone mid-jump or knocked up still counts as inside.
+    Spatial on purpose: an agent's LimitArea is only set for whoever was in the room when
+    the barriers went up.
+]]
+function MissionClass.GetCombatAreaAt(self: Types.MissionClass, Position: Vector3): Types.Arena?
+    for _, Event in self.__Current_Events do
+        local Arena = if Event:IsFinished() then nil else Event:GetCombatArea()
+        if not Arena then
+            continue
+        end
+
+        local Offset = Arena.CFrame:PointToObjectSpace(Position)
+        if math.abs(Offset.X) <= Arena.Size.X / 2 and math.abs(Offset.Z) <= Arena.Size.Z / 2 then
+            return Arena
+        end
+    end
+
+    return nil
+end
+
 -- ## Interactions
 
 --[[

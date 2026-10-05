@@ -22,6 +22,7 @@ local GearService = require(script.Parent.Match.GearService)
 local PartyService = require(script.Parent.Lobby.PartyService)
 local SummonService = require(script.Parent.Items.SummonService)
 local AbilityService = require(script.Parent.Combat.AbilityService)
+local RecruitService = require(script.Parent.Combat.RecruitService)
 
 local TeleportService = require(script.Parent.Data.TeleportService)
 local Places = require(Shared.Places)
@@ -96,6 +97,25 @@ function HandlePlayerChat(Player: Player)
 			World:SetSpeed(Speed)
 
 			Network:FireForAll('Commands', 'WorldSpeed', Speed)
+
+		-- Recruit testing, Studio only: a stray /recruithit could fail someone's escort.
+		elseif split[1] == '/recruit' and RunService:IsStudio() then
+			if current_agent then
+				RecruitService:Create(split[2] or 'Template', Player, current_agent:GetPivot() * CFrame.new(0, 0, 6))
+			end
+		elseif split[1] == '/recruitowner' and RunService:IsStudio() then
+			local NewOwner = Players:FindFirstChild(split[2] or '')
+			local Led = RecruitService:GetRecruits(Player)[1]
+
+			if Led and NewOwner and NewOwner:IsA('Player') then
+				RecruitService:SetOwner(Led, NewOwner)
+			end
+		elseif split[1] == '/recruithit' and RunService:IsStudio() then
+			local Led = RecruitService:GetRecruits(Player)[1]
+
+			if Led then
+				Led:TakeHit(nil, {Shield_Hits = tonumber(split[2]) or 1})
+			end
 		end
 	end)
 end

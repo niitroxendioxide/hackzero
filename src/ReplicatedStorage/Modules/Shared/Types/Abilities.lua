@@ -165,6 +165,12 @@ export type HitEnemyData = {
 	NoKill: boolean,
 
 	Knockback: {number | number | number}?,
+
+	--[[
+		Shield this hit takes off a Recruit, whose shield counts hits rather than damage.
+		Defaults to 1, flag heavy attacks with more.
+	]]
+	Shield_Hits: number?,
 }
 
 export type AbilityHitRequest = HitEnemyData & {
@@ -217,7 +223,7 @@ export type AbilityHitInfo = {
 	Damage: number,
 	Burst: boolean,
 	IsKill: boolean,
-	Hit_Type: 'Entity' | 'Structure',
+	Hit_Type: 'Entity' | 'Structure' | 'Recruit',
 }
 export type InputState = 'Begin' | 'End'
 export type SkillContext = {IsSignal: boolean?, Target: Agents.Enemy?, M1_Count: number?, Buffer: { any }}

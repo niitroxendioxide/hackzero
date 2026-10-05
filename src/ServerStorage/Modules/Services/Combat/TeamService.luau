@@ -20,6 +20,7 @@ local AbilityService = require(Services.Combat.AbilityService)
 local DataService = require(Services.Data.DataService)
 local AgentService = require(Services.Combat.AgentService)
 local EnemyService = require(Services.Combat.EnemyService)
+local RecruitService = require(Services.Combat.RecruitService)
 local TeleportService = require(Services.Data.TeleportService)
 local PlayersLibrary = require(Modules.Libraries.Players)
 local Replicator = require(Modules.Libraries.Replicator)
@@ -130,9 +131,12 @@ function Service:Sync(Player: Player)
 	end
 
     EnemyService:LoadEnemies(Player)
+    RecruitService:Load(Player)
 end
 
 function Service:Clear(Player: Player): ()
+    RecruitService:ReleasePlayer(Player)
+
     for _, Character in AgentService:GetCharacters(Player) do
 		AgentService:RemoveAgent(Player, Character.Name)
 	end

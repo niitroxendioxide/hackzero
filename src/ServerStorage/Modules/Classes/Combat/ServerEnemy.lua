@@ -15,6 +15,7 @@ local AgentsLibrary = require(Libraries.Agents)
 
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
+local RecruitTypes = require(Shared.Types.Recruits)
 local Signal = require(Shared.Utility.Signal)
 local EnemyStatus = require(Shared.Classes.Enemy.EnemyStatus)
 local MovementClass = require(Shared.Classes.Enemy.EnemyMovement)
@@ -23,6 +24,7 @@ local EnemyDatabase = require(Shared.Database.Enemies)
 local EnemyLibrary = require(Shared.Libraries.Enemies)
 local MovesetLibrary = require(Libraries.Movesets)
 local Targets = require(Libraries.Targets)
+local RecruitList = require(Libraries.RecruitList)
 
 
 --
@@ -458,7 +460,7 @@ function ServerEnemy:FindRandomAggro()
 	local At = self.__Movement.__Position
 	local MaxDistance = 120 --math.huge
 	local CurrentDistance = MaxDistance
-	local Chosen: AgentTypes.ServerAgentClass = nil
+	local Chosen: (AgentTypes.ServerAgentClass | RecruitTypes.ServerRecruitClass)? = nil
 
 	local Options = {}
 	for _, Agent in Agents do
@@ -474,6 +476,19 @@ function ServerEnemy:FindRandomAggro()
 			Chosen = Agent
 		elseif Distance < MaxDistance then
 			table.insert(Options, {Agent, Distance})
+		end
+	end
+
+	-- Recruits are picked like agents, they just look `Aggro_Weight` times farther away.
+	for _, Recruit in RecruitList:GetTargetable() do
+		local Distance = (Recruit:GetPivot().Position - At).Magnitude * Recruit:GetAggroWeight()
+
+		if Distance < CurrentDistance then
+			table.insert(Options, {Recruit, Distance})
+			CurrentDistance = Distance
+			Chosen = Recruit
+		elseif Distance < MaxDistance then
+			table.insert(Options, {Recruit, Distance})
 		end
 	end
 

@@ -32,6 +32,7 @@ local Network = require(Shared.Network)
 local Targets = require(ServerStorage.Modules.Libraries.Targets)
 local AgentService = require(ServerStorage.Modules.Services.Combat.AgentService)
 local CompanionService = require(ServerStorage.Modules.Services.Combat.CompanionService)
+local RecruitService = require(ServerStorage.Modules.Services.Combat.RecruitService)
 local DataService = require(ServerStorage.Modules.Services.Data.DataService)
 local ChaosControlService = require(ServerStorage.Modules.Services.Lobby.ChaosControlService)
 local MatchInteractionService = require(ServerStorage.Modules.Services.Match.MatchInteractionService)
@@ -613,6 +614,9 @@ function Service:Begin()
     })
 
     Map:AssignCurrentMission(MissionObject)
+
+    --- Before Begin, so the mission's Begin hook can already spawn its recruits.
+    RecruitService:BindMission(MissionObject)
 
     NPCService.__Stage = Context.Stage
     NPCService.__Act = Context.Act

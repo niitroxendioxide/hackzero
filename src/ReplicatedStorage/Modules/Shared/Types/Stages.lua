@@ -264,6 +264,15 @@ export type MissionConfig = {
 
 export type MissionType = "Mission" | "Expedition" | "ChaosControl"
 
+--[[
+	Box a fight is held in while its barriers are up: the one the barrier walls are built
+	around, so anything checking "is this spot mid-fight" agrees with the walls.
+]]
+export type Arena = {
+	CFrame: CFrame,
+	Size: Vector3,
+}
+
 export type MissionClass = {
 	--- Fired with (Won, FinalState) once the mission closes out.
 	Finished: Signal<boolean, {[string]: any}>,
@@ -324,6 +333,12 @@ export type MissionClass = {
 		Returns the function that unsubscribes it.
 	]]
 	Watch: (self: MissionClass, Watcher: MissionWatcher) -> (() -> ()),
+
+	--[[
+		Arena of a fight in progress that contains `Position` (checked on X/Z only), nil when
+		that spot is not mid-fight.
+	]]
+	GetCombatAreaAt: (self: MissionClass, Position: Vector3) -> (Arena?),
 	IsEventCompleted: (self: MissionClass, Event: string) -> (boolean),
 	HasCompletedTag: (self: MissionClass, Tag: string) -> (boolean),
 	GetGuide: (self: MissionClass) -> ({[string]: Stage_Key_Event}),
@@ -358,6 +373,7 @@ export type EventClass = {
 	__Current_Barrier_State: boolean,
 	__Players: {StagePlayer},
 	__Current_Barriers: {BasePart},
+	__Arena: Arena?,
 	__Finish_Status: boolean,
 	__Event: string,
 	__Stage: string,
@@ -381,6 +397,11 @@ export type EventClass = {
 	GetPlayerObjects: (self: EventClass) -> ({Player}),
 	CreateEventAreaModel: (self: EventClass, Trigger: BasePart) -> (),
 	SetBarrierCollision: (self: EventClass, State: boolean) -> (),
+
+	--[[
+		The arena the event's barriers are built around, only while they are up.
+	]]
+	GetCombatArea: (self: EventClass) -> (Arena?),
 	--[[
 		Update the progress in teh current mission
 		@param Type : `Goal` the goal type to be updated

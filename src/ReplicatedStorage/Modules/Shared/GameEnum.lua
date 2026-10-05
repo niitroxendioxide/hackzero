@@ -71,10 +71,37 @@ return {
 		AddTagEnemy = 92,
 		RemoveTagEnemy = 93,
 
-		-- 
+		--
 		ClearPlayerData = 150,
 		SetColliderArea = 152,
 		PlayVisualEffect = 250,
+	},
+
+	--[[
+		Packets on the 'Entities' channel, for match entities that are neither agents nor
+		enemies. Sent by `Libraries/EntityReplicator`, read by `Controllers/EntityController`.
+	]]
+	EntityReplication = {
+		CreateRecruit = 1,
+		RemoveRecruit = 2,
+		MoveRecruit = 3,
+		SnapRecruit = 4,
+		HitRecruit = 5,
+		SetRecruitShield = 6,
+		SetRecruitOwner = 7,
+		SetRecruitState = 8,
+	},
+
+	EntityRemoveReason = {
+		Removed = 0,
+		Defeated = 1,
+	},
+
+	--- What an enemy skill is aimed at, in the EnemyUseSkill packet.
+	TargetKind = {
+		None = 0,
+		Agent = 1,
+		Recruit = 2,
 	},
 
 	ChaosControlAction = {
@@ -235,6 +262,7 @@ return {
 	},
 
 	Agent_States = {"Attacking", "Dashing", "Idle", "Frozen", "Stunned", "Airborne", "TrueStun"},
+	RecruitStates = {"Idle", "Following", "Hiding", "Flinching"},
 	PartyStates = {
 		Idle = 1,
 		Queueing = 2,

@@ -6,8 +6,10 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Types = require(Shared.Types.Agents)
 
 local StructureTypes = require(Shared.Types.Structures)
+local RecruitTypes = require(Shared.Types.Recruits)
 local Agents = require(script.Parent.Agents)
 local Structures = require(script.Parent.StructureList)
+local Recruits = require(script.Parent.RecruitList)
 
 --
 local Hitbox = {}
@@ -44,6 +46,26 @@ function Hitbox:ForStructuresInZone(Size: Vector3, At: CFrame, fn: (Structure: S
 			task.spawn(fn, StructureAssigned)
 		end
 
+	end
+end
+
+--- Recruits that can be hit (owned, standing, in the run) inside the box.
+function Hitbox:ForRecruitsInZone(Size: Vector3, At: CFrame, fn: (Recruit: RecruitTypes.ServerRecruitClass) -> ())
+	local Map, Colliders = Recruits:GetAllColliders()
+	if #Colliders == 0 then
+		return
+	end
+
+	local Params = OverlapParams.new()
+	Params.FilterType = Enum.RaycastFilterType.Include
+	Params.FilterDescendantsInstances = Colliders
+
+	for _, Part in workspace:GetPartBoundsInBox(At, Size, Params) do
+		local Recruit = Map[Part]
+
+		if Recruit then
+			task.spawn(fn, Recruit)
+		end
 	end
 end
 

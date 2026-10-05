@@ -3,14 +3,15 @@ return table.freeze({
         HITBOXES = false,
         MARKERS = true,
         ENEMY_LOCATIONS = false,
+        RECRUIT_LOCATIONS = false, ---|> visible copy of every recruit's server hitbox
     },
 
     MISSION = {
         --- Types: ChaosControl, Mission, Expedition
-        TYPE = 'Mission',
+        TYPE = 'Expedition',
         STAGE = {
             --- LeafVillage, Training, Testing, DailyImprovement, DungeonEx, HuecoMundo
-            Stage = 'DungeonEx',
+            Stage = 'Training',
             Act = 'Intro',
         },
 
@@ -22,7 +23,7 @@ return table.freeze({
             true -> force a procedural run
             false-> force a static run even on an AutoGenerate act
         ]]
-        PROCEDURAL = nil,
+        PROCEDURAL = false,
 
         --[[
             The run seed. Falls back to DATA.Mission_Seed, both unset = Generator creates random
@@ -32,7 +33,7 @@ return table.freeze({
             `AutoGenerationData`.
         ]]
         GENERATION = {
-            Rooms = 1,          ---|> how many rooms to place (halls excluded)
+            Rooms = 12,          ---|> how many rooms to place (halls excluded)
             Extent = 25,        ---|> hard cap on total tiles, rooms + halls
             Source = 'Rooms',   ---|> folder of room models, relative to the stage's map asset
             Infinite = false,   ---|> reserved, room streaming is not implemented yet
@@ -65,8 +66,9 @@ return table.freeze({
         DATA = {
             --Mission_Seed = '12345-abcde-67890-fabcd',
             Target_Item = "Object",
-            Kind = 'Recover',
+            --Kind = 'Escort',
             Filler_Rooms = 7,
+            Escorted = "Template",
             --MissionId = 'LeafVillage_P01',
             --Difficulty = 'EASY',
             --[[ChaosControlData = {

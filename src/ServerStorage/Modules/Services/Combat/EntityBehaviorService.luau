@@ -315,7 +315,8 @@ local function UpdateEntityBehavior(Behavior: BehaviorTypes.EntityBehaviorState,
             Behavior.CurrentPattern = ''
         end
 
-        local TargetPing = Ping:Get(EntityTarget.__Player_Assigned)
+        -- A recruit has no player to wait on, nothing about it is client-predicted.
+        local TargetPing = if EntityTarget.__Player_Assigned then Ping:Get(EntityTarget.__Player_Assigned) else 0
         local AttackerId = Entity:GetId()
 		local ReplicationSkillId = Moveset:GetSkillId(SkillName)
 

@@ -13,6 +13,7 @@ local Enemies = require(Shared.Libraries.Enemies)
 
 local Types = require(Shared.Types.Abilities)
 local AgentTypes = require(Shared.Types.Agents)
+local RecruitTypes = require(Shared.Types.Recruits)
 local Signal = require(Shared.Utility.Signal)
 local Hitbox = require(Shared.Utility.Hitbox)
 local Sequence = require(Shared.Utility.Sequence)
@@ -80,6 +81,9 @@ function ServerAbilityClass:CreateHitbox(Caster: (AgentTypes.ServerAgentClass & 
 
 	if (StringCaster == 'EnemyClass') then
 		self:CreateAgentHitbox(At, Offset, Size, Event, Time, Repeat, typeof(Caster) == 'table' and Caster or nil, Targets)
+
+		-- Same Targets table, so a NoRepeat moving hitbox lands on a recruit only once too.
+		self:CreateRecruitHitbox(At, Offset, Size, Event, Time, Repeat, Targets)
 	elseif StringCaster == 'ServerAgentClass' or StringCaster == 'CFrame' then
 		if StringCaster == 'ServerAgentClass' then
 			for _, GrabbedEnemy in GrabService:GetGrabbedEnemies(Caster) do
@@ -219,6 +223,46 @@ function ServerAbilityClass:CreateAgentHitbox(At: CFrame, Offset: Vector3, Size:
 			end
 
 			Event(Target, ...)
+		end)
+	end
+
+	if Time then
+		local Began = os.clock()
+
+		task.spawn(function()
+			while os.clock() - Began < Time do
+				Process()
+
+				task.wait()
+			end
+		end)
+	else
+		task.spawn(Process)
+	end
+end
+
+--[[
+	CreateAgentHitbox for recruits. No dodges or verification hooks here, a recruit that is
+	down, unowned or still shrugging off its last hit is simply skipped.
+]]
+function ServerAbilityClass:CreateRecruitHitbox(At: CFrame, Offset: Vector3, Size: Vector3, Event: (Recruit: RecruitTypes.ServerRecruitClass) -> (), Time: number?, Repeat: boolean?, Targets: {}?)
+	Targets = Targets or {}
+
+	local function Process()
+		ServerHitboxUtil:ForRecruitsInZone(Size, At * CFrame.new(Offset), function(Recruit: RecruitTypes.ServerRecruitClass)
+			if Targets[Recruit] then
+				return
+			end
+
+			if not Repeat then
+				Targets[Recruit] = true
+			end
+
+			if not Recruit:IsActive() or Recruit:HasTag('Invulnerability') then
+				return
+			end
+
+			Event(Recruit)
 		end)
 	end
 
@@ -506,6 +550,21 @@ local function HitAgent(Perpetrator: AgentTypes.Enemy, Target: AgentTypes.Server
 	}
 end
 
+--[[
+	A recruit's shield counts hits, so only `Shield_Hits` matters here, damage is ignored.
+	No ping wait like an agent gets: nothing about a recruit is client-predicted.
+]]
+local function HitRecruit(Perpetrator: AgentTypes.Enemy, Recruit: RecruitTypes.ServerRecruitClass, Data: Types.HitEnemyData)
+	local Taken = Recruit:TakeHit(Perpetrator, Data)
+
+	return {
+		Caster = Perpetrator,
+		Recruit = Recruit,
+		Hit_Type = 'Recruit',
+		Shield_Hits = Taken,
+	}
+end
+
 local function HitStructure(Caster, Structure, Data)
 	local IsKill = Structure:TakeDamage(Caster, Data.Damage)
 	if IsKill and Caster.__Player_Assigned then
@@ -551,6 +610,7 @@ function ServerAbilityClass:Hit(Perpetrator: any, Target: any, Data: Types.HitEn
 	local Result;
 	local IsAgent = tostring(Target) == 'ServerAgentClass'
 	local IsEnemy = tostring(Target) == 'EnemyClass'
+	local IsRecruit = tostring(Target) == 'RecruitClass'
 
 	if IsAgent then
 		local PlayerPing = Ping:Get(Target.__Player_Assigned)
@@ -561,6 +621,8 @@ function ServerAbilityClass:Hit(Perpetrator: any, Target: any, Data: Types.HitEn
 		local OnCastUniqueToken = self:Get(Perpetrator, 'CasterUniqueUseToken')
 
 		Result = HitEnemy(Perpetrator, Target, Data, self.__Skill_Type, OnCastUniqueToken)
+	elseif IsRecruit then
+		Result = HitRecruit(Perpetrator, Target, Data)
 	else
 		Result = HitStructure(Perpetrator, Target, Data)
 	end

@@ -21,6 +21,17 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
     local Model = Caster:GetModel()
     
     if State == 'Charge' then
+        local Highlight = Instance.new("Highlight");
+        Highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
+        Highlight.Parent = Model
+        Highlight.FillColor = Color3.fromRGB(255, 94, 62)
+        Highlight.OutlineColor = Color3.new(1, 1, 1)
+        Highlight.FillTransparency = 1
+        Highlight.OutlineTransparency = 1
+
+        Effects:Tween(Highlight, { 0.5, 'Sine' }, { OutlineTransparency = 0 })
+        Effects:Tween(Highlight, { 0.8, 'Sine', 'In' }, { FillTransparency = 2.75 })
+
         local ChargeVFX = Effects:Create(KakashiVfx.ChargingRaikiri2, 5)
         ChargeVFX:PivotTo(Model:GetPivot() * ChargeOffset)
 
@@ -33,6 +44,7 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
         end)
         
         Cache[Caster] = function()
+            Effects:CleanUp(Highlight)
             Effects:Toggle(ChargeVFX, false)
             Effects:CleanUp(ChargeVFX, 0.5)
         end

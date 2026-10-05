@@ -12,9 +12,9 @@ local Prompts = require(ReplicatedStorage.Modules.Client.Libraries.Prompts)
 local Structures = require(ReplicatedStorage.Modules.Client.Libraries.Structures)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
 local AgentTypes = require(ReplicatedStorage.Modules.Shared.Types.Agents)
-local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Movesets = require(Client.Libraries.Movesets)
 local Characters = require(Client.Libraries.Characters)
+local Recruits = require(Client.Libraries.Recruits)
 local GameEnum = require(Shared.GameEnum)
 local Enemies = require(Shared.Libraries.Enemies)
 local Effects = require(Client.Libraries.Effects)
@@ -173,7 +173,7 @@ function Controller:EnemyUseSkill(Buffer: buffer)
 	local SkillId = buffer.readu8(Buffer, 1)
 	local EnemyId = buffer.readu8(Buffer, 2)
 	local State = buffer.readu8(Buffer, 3) == 1 and 'Begin' or 'End'
-	local PlayerId, TargetId = Math:Decodeu2u6(Buffer, 4)
+	local TargetKind = buffer.readu8(Buffer, 4)
 
 	local Enemy = Enemies:GetEnemy(EnemyId)
 	local CharacterMoveset = Movesets:Get(Enemy.Name, true)
@@ -183,8 +183,10 @@ function Controller:EnemyUseSkill(Buffer: buffer)
 	end
 
 	local Target = nil;
-	if TargetId > 0 then
-		Target = Characters:GetAgent(PlayerId, TargetId)
+	if TargetKind == GameEnum.TargetKind.Agent then
+		Target = Characters:GetAgent(buffer.readu8(Buffer, 5), buffer.readu8(Buffer, 6))
+	elseif TargetKind == GameEnum.TargetKind.Recruit then
+		Target = Recruits:Get(buffer.readu8(Buffer, 5))
 	end
 
 	local SkillName = CharacterMoveset:GetSkillById(SkillId)

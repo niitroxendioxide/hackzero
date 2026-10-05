@@ -12,6 +12,7 @@ local CompanionsDatabase = require(Shared.Database.Companions)
 local Math = require(ReplicatedStorage.Modules.Shared.Utility.Math)
 local Types = require(Shared.Types)
 local AgentTypes = require(Shared.Types.Agents)
+local RecruitTypes = require(Shared.Types.Recruits)
 local Network = require(Shared.Network)
 local Characters = require(Database.Characters)
 local Enemies = require(Database.Enemies)
@@ -385,17 +386,28 @@ function Replicator:PromptChainAttack(Agent: AgentTypes.ServerAgentClass, Target
 	Network:Fire('Replicate', Agent.__Player_Assigned, Object)
 end
 
-function Replicator:EnemyUseSkill(EnemyId: number, SkillId: number, State: string, Target: AgentTypes.ServerAgentClass)
-	local Id: number = (Target.__Player_Assigned :: Player):GetAttribute('ReplicationId') :: number
-	local AgentId = Agents:GetIdForPlayer(Id, Target)
-
+--[[
+	From byte 4 the packet says what the skill is aimed at: a `GameEnum.TargetKind`, then an
+	agent's player ReplicationId and agent index, or a recruit's id. The ReplicationId gets a
+	whole byte, it runs 1-255 and used to be squeezed into 2 bits next to the agent index.
+]]
+function Replicator:EnemyUseSkill(EnemyId: number, SkillId: number, State: string, Target: (AgentTypes.ServerAgentClass | RecruitTypes.ServerRecruitClass)?)
 	local Object = buffer.create(8)
 	buffer.writeu8(Object, 0, GameEnum.Replication.EnemyUseSkill)
 	buffer.writeu8(Object, 1, SkillId or 0)
 	buffer.writeu8(Object, 2, EnemyId or 0)
 	buffer.writeu8(Object, 3, State == 'Begin' and 1 or 0)
-	Math:Encodeu2u6(Id, AgentId, Object, 4)
-	
+
+	if Target and tostring(Target) == 'RecruitClass' then
+		buffer.writeu8(Object, 4, GameEnum.TargetKind.Recruit)
+		buffer.writeu8(Object, 5, Target:GetId())
+	elseif Target and Target.__Player_Assigned then
+		local Id: number = (Target.__Player_Assigned :: Player):GetAttribute('ReplicationId') :: number
+
+		buffer.writeu8(Object, 4, GameEnum.TargetKind.Agent)
+		buffer.writeu8(Object, 5, Id)
+		buffer.writeu8(Object, 6, Agents:GetIdForPlayer(Id, Target))
+	end
 
 	Network:FireForAll('ReliableReplication', Object)
 end

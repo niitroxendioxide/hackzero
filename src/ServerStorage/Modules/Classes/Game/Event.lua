@@ -53,6 +53,7 @@ EventClass.new = function(Stage: string, Act: string, Event: string)
     self.__Current_Barriers = {};
     self.__Current_Mission_State_Link = {};
     self.__Current_Barrier_State = false;
+    self.__Arena = nil;
 
     if typeof(Stage) == 'table' then
         self.__Is_Custom_Event = true;
@@ -181,6 +182,13 @@ function EventClass.CreateEventAreaModel(self: Types.EventClass, Trigger: BasePa
     local SIZE_K = workspace.World.Map.Design:GetAttribute("Generated") and 1.1 or 1.25
     local Size = (Trigger:GetAttribute("AreaSize") or (Trigger.Size * SIZE_K)) :: Vector3
     local BaseOffset = CFrame.new(Trigger:GetAttribute("AreaOffset") or Vector3.new()) :: CFrame
+
+    -- The box the walls go around, kept so "is this spot mid-fight" agrees with the walls.
+    self.__Arena = {
+        CFrame = Trigger:GetPivot() * BaseOffset,
+        Size = Size,
+    }
+
     local Sizes = {
         Vector3.new(Size.X + 1, Size.Y + 15, 1), CFrame.new(0, 0, -Size.Z/2 - 1),
         Vector3.new(Size.X + 1, Size.Y + 15, 1), CFrame.new(0, 0, Size.Z/2 - 1),
@@ -210,6 +218,15 @@ function EventClass.CreateEventAreaModel(self: Types.EventClass, Trigger: BasePa
     end
 
     self:SetBarrierCollision(true)
+end
+
+--- The arena this event's barriers are built around, only while they are up.
+function EventClass.GetCombatArea(self: Types.EventClass): Types.Arena?
+    if not self.__Current_Barrier_State then
+        return nil
+    end
+
+    return self.__Arena
 end
 
 function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, FromData: {}?, Trigger: BasePart?)
