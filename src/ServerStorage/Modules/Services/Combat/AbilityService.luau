@@ -43,6 +43,7 @@ local Service = {
 
 	--- Signals
 	DodgeSuccesful = nil :: Signal.ScriptSignal<AgentTypes.Enemy>,
+	SkillCasted = nil :: Signal.ScriptSignal<AgentTypes.ServerAgentClass, number, AgentTypes.Enemy?, number>,
 	--DodgeSuccesful = nil :: Signal.ScriptSignal<AgentTypes.Enemy>,
 }
 
@@ -201,6 +202,7 @@ end
 
 function Service:Init()
 	Service.DodgeSuccesful = Signal.new();
+	Service.SkillCasted = Signal.new();
 
 	--MovesetLibrary:Init()
 	AgentService.AgentAdded:Connect(function(NewAgent: AgentTypes.ServerAgentClass)
@@ -531,11 +533,20 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 				ActiveAgent:UseEnergy(Info.Base.Required_Energy)
 			end
 		elseif SpacelessSkill == "Ultimate" then
-			if ActiveAgent:GetUltimate() < 100 then
-				return false;
-			end
+			local Required_Meter = Info.Base.Required_Meter
+			if Required_Meter then
+				if ActiveAgent:GetMeter(Required_Meter.Name) < Required_Meter.Amount then
+					return false;
+				end
 
-			ActiveAgent:UseUltimate();
+				ActiveAgent:UpdateMeter(Required_Meter.Name, -Required_Meter.Amount)
+			else
+				if ActiveAgent:GetUltimate() < 100 then
+					return false;
+				end
+
+				ActiveAgent:UseUltimate();
+			end
 		end
 	elseif SpacelessSkill == 'Dodge' then
 		for _, Character in AgentLibrary:GetAll(Player:GetAttribute('ReplicationId') :: number) do
@@ -595,6 +606,8 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 				SkillId = SkillId,
 			})
 		end)
+
+		Service.SkillCasted:Fire(ActiveAgent, SkillId, Enemy, StateId)
 
 		--[[local Chance = Random.new():NextInteger(1, 100)
 		if (Chance <= CHAIN_ASSIST_CHANCE) and (SkillId == GameEnum.Skills.EX_Special or SkillId == GameEnum.Skills.Dodge_Counter) then

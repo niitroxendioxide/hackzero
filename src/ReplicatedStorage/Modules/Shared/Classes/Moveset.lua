@@ -118,6 +118,10 @@ function MovesetClass:Begin(Type: string, Agent: Types.Caster, Context: {IsSigna
 			Type = "EX Special"
 
 			Info = self:GetInfoForSkill('EX Special')
+		elseif Type == 'Ultimate' and Info.Base.Required_Meter then
+			if Agent:GetMeter(Info.Base.Required_Meter.Name) < Info.Base.Required_Meter.Amount then
+				return false
+			end
 		elseif Type == 'Ultimate' and (Agent :: AgentTypes.AgentClass):GetUltBar() < 100 then
 			return false
 		elseif Type == 'Basic Attack' and Agent:HasTag('Dodge_Counter_Tag') then

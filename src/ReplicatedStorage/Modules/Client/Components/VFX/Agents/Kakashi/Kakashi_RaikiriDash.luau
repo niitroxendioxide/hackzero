@@ -95,6 +95,12 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
             end
         end
 
+        task.delay(1 / 8, function()
+            local ParticlesDashVFX = Effects:Create(KakashiVfx.DashVFX.ParticlesDash, 2.5)
+            ParticlesDashVFX:PivotTo(EndCFrame * CFrame.new(0, 0, ForwardAt/2));
+            Effects:Emit(ParticlesDashVFX, true)
+        end)
+
         ----
         local Meshes = {KakashiVfx.DashVFX.DashWind3rdEffect, KakashiVfx.DashVFX.DashLineEffect, KakashiVfx.DashVFX.DashAccompaniedEffect}
         local MeshScales = { 0.92, 1, 1.18 }

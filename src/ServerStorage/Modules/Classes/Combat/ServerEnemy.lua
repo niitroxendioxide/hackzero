@@ -112,7 +112,7 @@ function ServerEnemy:Attack()
 	local MovesetData = EnemyDatabase:GetMovesetData(self.__Name)
 	local Target = self:GetTarget()
 
-	if Target == nil then
+	if Target == nil or self:HasTag('Blinded') then
 		return
 	end
 
@@ -240,7 +240,12 @@ function ServerEnemy.Update(self: Types.ServerEnemyClass, delta: number)
 	local TargetActive = if CurrentTarget ~= nil then (CurrentTarget:IsActive() or CurrentTarget:HasTag('CanBeTargetted')) else false
 	if not IsAttacking and (os.clock() - FocusTarget > 1 / 2) or (os.clock() - FocusTarget > 1 / 6 and not TargetActive) then
 		self.__Clocks.Focus = os.clock()
-		self:FindRandomAggro()
+
+		if self:HasTag('Blinded') then
+			self.__Current_Target = nil
+		else
+			self:FindRandomAggro()
+		end
 	end
 
 	if os.clock() - self.__Snapfix > 1 / 5 or self:IsAbilityMoving() then

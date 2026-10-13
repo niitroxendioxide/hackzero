@@ -163,6 +163,7 @@ export type HitEnemyData = {
 	DontChargeUlt: boolean,
 	NoRotate: boolean?,
 	NoKill: boolean,
+	Forced_Affliction: boolean?,
 
 	Knockback: {number | number | number}?,
 
