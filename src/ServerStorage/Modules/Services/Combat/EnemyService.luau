@@ -82,7 +82,7 @@ function Service:LoadEnemies(Player: Player)
 	end
 end
 
-function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string | number}})
+function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string | number}}, Area: string?)
 	if not(Service:__CanSpawn()) then return end
 
 	if not EnemiesDatabase:GetEnemyData(Type) and Type ~= "any" then
@@ -95,7 +95,7 @@ function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string
 		Type = EnemyNames[math.random(1, #EnemyNames)]
 	end
 
-	local Spawn = workspace.World.Map.Triggers:FindFirstChild(Tag)
+	local Spawn = workspace.World.Map.Triggers:FindFirstChild(Area or Tag)
 	if not Spawn then
 		local RandomSpawn = Service:GetSpawns()
 

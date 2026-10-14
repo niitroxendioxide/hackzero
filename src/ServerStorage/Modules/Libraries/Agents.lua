@@ -3,10 +3,12 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Types = require(ReplicatedStorage.Modules.Shared.Types.Agents)
 local Statics = require(ReplicatedStorage.Modules.Shared.Database.Statics)
+local Signal = require(ReplicatedStorage.Modules.Shared.Utility.Signal)
 
 --
 local Agents = {
-	__Players = {}
+	__Players = {},
+	Defeated = Signal.new(),
 }
 
 function Agents:Add(UserId: number, Agent)

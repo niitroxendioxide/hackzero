@@ -123,6 +123,17 @@ function Service:AddInteraction(Data: CreationData, __no_trigger: boolean): bool
     return Object
 end
 
+function Service:RemoveInteraction(Id: number)
+    for Index, Obj in Service.objects do
+        if Obj.Id == Id then
+            table.remove(Service.objects, Index)
+            Network:FireForAll(EVENT_NAME, GameEnum.MatchInteraction.Remove, Id)
+
+            return
+        end
+    end
+end
+
 function Service:BatchAddInteraction(DataList: { CreationData } )
     
     local Added = {}

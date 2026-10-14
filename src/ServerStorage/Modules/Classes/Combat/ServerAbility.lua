@@ -438,6 +438,13 @@ local function KnockEnemy(_: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enem
 end
 
 local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.Enemy, Data: Types.HitEnemyData, SkillId: number, CasterUniqueUseToken: any)
+	if ((Agent :: any).__Corrupted_Until or 0) > os.clock() then
+		Data = Table.CopyDeep(Data)
+		Data.Affliction = 'Physical'
+		Data.Affliction_Buildup = 0
+		Data.Forced_Affliction = nil
+	end
+
 	local AgentPivot = Agent:GetPivot()
 	-- local EnemyPivot = Enemy:GetPivot()
 

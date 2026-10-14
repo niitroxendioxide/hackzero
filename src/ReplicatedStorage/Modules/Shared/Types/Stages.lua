@@ -276,8 +276,10 @@ export type Arena = {
 export type MissionClass = {
 	--- Fired with (Won, FinalState) once the mission closes out.
 	Finished: Signal<boolean, {[string]: any}>,
+	EventStarted: Signal<string, EventClass, {[string]: any}>,
 
 	__Is_Chaos_Control: boolean,
+	__Start_Clock: number?,
 	__Custom_Data: {
 		[string]: any,
 	},
@@ -323,6 +325,8 @@ export type MissionClass = {
 	SummonEnemyWave: (self: MissionClass, Wave: number) -> (),
 	Finish: (self: MissionClass, Won: boolean?) -> (),
 	ObtainMissionRank: (self: MissionClass, Won: boolean) -> (Rating),
+	EvaluateObjectives: (self: MissionClass) -> ({boolean}),
+	GetElapsed: (self: MissionClass) -> (number),
 	GetHookPayload: (self: MissionClass, Extra: {[string]: any}?) -> ({[string]: any}),
 	GetProgressValue: (self: MissionClass, Key: string) -> (),
 	SetProgressValue: (self: MissionClass, Key: string, Value: any) -> (),

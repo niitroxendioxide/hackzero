@@ -49,6 +49,10 @@ local PlayersLibrary = require(Modules.Libraries.Players)
 local AbilityService = require(Services.Combat.AbilityService)
 local TeleportService = require(Services.Data.TeleportService);
 local DestructibleService = require(Services.Match.DestructibleService)
+local CorruptionService = require(Services.Match.CorruptionService)
+local CleanserService = require(Services.Match.CleanserService)
+local TravelService = require(Services.Match.TravelService)
+local AgentsLibrary = require(Modules.Libraries.Agents)
 
 --
 local RANK_ORDER = {"B", "A", "S"}
@@ -283,7 +287,7 @@ function Service:GetHandler(Context: MatchContext): any?
         return Context.Handler
     end
 
-    Context.Handler = StageHandlers:Resolve(Context.Kind, Context.Stage, Context.Act) or false
+    Context.Handler = StageHandlers:Resolve(Context.Kind, Context.Stage, Context.Act, Context.Mission_Id) or false
 
     if Context.Kind and not StageHandlers:GetMission(Context.Kind) then
         Debugger:WarnLine(
@@ -315,7 +319,9 @@ function Service:CreateMap(Context: MatchContext): boolean
     end
 
     if not Context.Procedural then
-        return Map:Unpack(StageInformation.Map)
+        local MissionInfo = Context.Mission_Id and MissionDatabase:Get(Context.Mission_Id)
+
+        return Map:Unpack(StageInformation.Map, MissionInfo and MissionInfo.Spawn)
     end
 
     local Generated = Map:Generate(StageInformation.Map, Context.Generation)
@@ -446,6 +452,8 @@ function Service:ResolveWorldData(Context: MatchContext): boolean
             Dialogues = Definition.Dialogues,
             Interactions = Definition.Interactions,
             Watchers = Definition.Watchers,
+            Cleansers = Definition.Cleansers,
+            Corruption = Definition.Corruption,
         }
 
         Context.Markers = Definition.Markers or (ActData and ActData.Markers) or {}
@@ -485,6 +493,62 @@ local function GetCompletion(Context: MatchContext): {Experience: number, Reward
     }
 end
 
+--- A rank outside the reward ladder (a loss ranks 'X') simply earns nothing.
+local function BuildRewards(RawRewards: {[string]: {any}}, RankTier: number?, ClaimedTier: number): {any}
+    local List = {}
+
+    for Tier, LetterRank in RANK_ORDER do
+        if RankTier == nil or Tier > RankTier or Tier <= ClaimedTier or RawRewards[LetterRank] == nil then
+            continue
+        end
+
+        for _, Object in RawRewards[LetterRank] do
+            if ((Object.Type == 'Money' or Object.Type == 'Gold') or Object.Type == 'Gems') then
+                local Edited = false
+                for _, Item in List do
+                    if Item.Type ~= Object.Type then continue end
+
+                    Edited = true
+                    Item.Amount += Object.Amount;
+                end
+
+                if Edited then
+                    continue
+                end
+            end
+
+            table.insert(List, {Type = Object.Type, Amount = Object.Amount, Extra = Object.Extra})
+        end
+    end
+
+    return List
+end
+
+local function RecordStoryCompletion(Player: Player, MissionId: string, RankTier: number?, Results: {boolean}): number
+    local Key = 'Missions/Completed/' .. MissionId
+    local Record = DataService:Get(Player, Key)
+    local PreviousTier = (Record and table.find(RANK_ORDER, Record.Rank)) or 0
+
+    if RankTier == nil then
+        return PreviousTier
+    end
+
+    local BestTier = math.max(PreviousTier, RankTier)
+    local Objectives = {}
+    for Index, Done in Results do
+        Objectives[Index] = Done or (Record and Record.Objectives and Record.Objectives[Index] == true) or false
+    end
+
+    DataService:Set(Player, Key, {
+        Rank = RANK_ORDER[BestTier],
+        Objectives = Objectives,
+        Clears = ((Record and Record.Clears) or 0) + 1,
+        Full = BestTier == #RANK_ORDER,
+    })
+
+    return PreviousTier
+end
+
 function Service:End(Won: boolean)
     if not Service.__Active_Match or not Service.__Active_Match:IsFinished() then
         return
@@ -505,33 +569,10 @@ function Service:End(Won: boolean)
     local Completion = GetCompletion(Context)
     local Rank = Service.__Active_Match:ObtainMissionRank(Won);
     local RawRewards = Completion.Rewards
-    local CompletionRewards = {}
     local RankTier = table.find(RANK_ORDER, Rank)
-
-    --- A rank outside the reward ladder (a loss ranks 'X') simply earns nothing.
-    for Tier, LetterRank in RANK_ORDER do
-        if RankTier == nil or Tier > RankTier or RawRewards[LetterRank] == nil then
-            continue
-        end
-
-        for _, Object in RawRewards[LetterRank] do
-            if ((Object.Type == 'Money' or Object.Type == 'Gold') or Object.Type == 'Gems') then
-                local Edited = false
-                for _, Item in CompletionRewards do
-                    if Item.Type ~= Object.Type then continue end
-
-                    Edited = true
-                    Item.Amount += Object.Amount;
-                end
-
-                if Edited then
-                    continue
-                end
-            end
-
-            table.insert(CompletionRewards, {Type = Object.Type, Amount = Object.Amount, Extra = Object.Extra})
-        end
-    end
+    local CompletionRewards = BuildRewards(RawRewards, RankTier, 0)
+    local Objectives = Context.Data.Completion and Context.Data.Completion.Objectives
+    local ObjectiveResults = Objectives and Service.__Active_Match:EvaluateObjectives()
 
     local MatchCompletionData = {
         Stage = {
@@ -554,6 +595,16 @@ function Service:End(Won: boolean)
     end
 
     Service.__Active_Match = nil
+
+    if Context.Mission_Id and ObjectiveResults then
+        for _, StagePlayer in PlayersLibrary:GetAll() do
+            local ClaimedTier = RecordStoryCompletion(StagePlayer:GetBase(), Context.Mission_Id, RankTier, ObjectiveResults)
+
+            Rewards:SpreadRewards({StagePlayer}, BuildRewards(RawRewards, RankTier, ClaimedTier), MatchCompletionData)
+        end
+
+        return
+    end
 
     Rewards:SpreadRewards(PlayersLibrary:GetAll(), CompletionRewards, MatchCompletionData)
 end
@@ -653,6 +704,14 @@ function Service:Begin()
         if typeof(Data.SetValues) == 'table' then
             MissionObject:ApplySetValues(Data.SetValues)
         end
+    end)
+
+    CleanserService:Bind(MissionObject, Context.Data.Cleansers)
+    TravelService:Bind(MissionObject)
+    CorruptionService:Bind(MissionObject, Context.Data.Corruption)
+
+    AgentsLibrary.Defeated:Connect(function()
+        MissionObject:ApplySetValues({['Agents_Lost+'] = 1})
     end)
 
     MissionObject.Finished:Once(function(Won: boolean)

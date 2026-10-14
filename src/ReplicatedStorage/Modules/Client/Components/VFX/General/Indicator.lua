@@ -39,7 +39,9 @@ local Gradients = {
 
 	['Weak'] = {White, Sequence{Key(0, White), Key(1, Color3.new())}},
 
-	['Shatter'] = {White, Sequence{Key(0, Color3.fromRGB(143, 236, 255)), Key(1, White)}}
+	['Shatter'] = {White, Sequence{Key(0, Color3.fromRGB(143, 236, 255)), Key(1, White)}},
+
+	['Corrupted'] = {Color3.fromRGB(190, 90, 255), Sequence{Key(0, White), Key(0.4, Color3.fromRGB(205, 120, 255)), Key(1, Color3.fromRGB(60, 0, 110))}},
 }
 
 local INDICATOR_LIMIT = 3

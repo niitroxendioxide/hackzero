@@ -165,6 +165,8 @@ return {
 
 	MatchInteractionType = {
 		ItemPickup = 1,
+		AnimaCleanser = 2,
+		Ship = 3,
 	},
 
 	Skills = {

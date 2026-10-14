@@ -83,6 +83,7 @@ MissionClass.__index = MissionClass
 MissionClass.new = function(p_Config: Types.MissionConfig): Types.MissionClass
     local self = setmetatable({}, MissionClass)
     self.Finished = Signal.new()
+    self.EventStarted = Signal.new()
 
     self.__Is_Finished = false
     self.__Active = false
@@ -145,6 +146,7 @@ function MissionClass.Begin(self: Types.MissionClass)
     end
 
     self.__Active = true
+    self.__Start_Clock = os.clock()
 
     self.__Hooks:ExecuteHooks(GameEnum.StageHook.Begin, self, self:GetHookPayload())
 
@@ -555,6 +557,10 @@ function MissionClass.BeginEvent(self: Types.MissionClass, Event: string, Player
     if Success == false and not (IsGoallessEvent == true) then
         warn('Error on event: ', Event, "Errorcode:", IsGoallessEvent)
     end
+
+    if Success ~= false and not EventObject:IsFinished() then
+        self.EventStarted:Fire(Event, EventObject, EventData)
+    end
 end
 
 function MissionClass.DetectAreaTriggers(self: Types.MissionClass)
@@ -590,7 +596,41 @@ function MissionClass.ObtainMissionRank(self: Types.MissionClass, Won: boolean)
         return (Completion.Handler(self.__Current_State) or 'B')
     end
 
+    if Completion and Completion.Objectives then
+        local Results = self:EvaluateObjectives()
+        local Met = 0
+        for _, Done in Results do
+            if Done then
+                Met += 1
+            end
+        end
+
+        if Met >= #Results then
+            return 'S'
+        elseif Met * 2 >= #Results then
+            return 'A'
+        end
+
+        return 'B'
+    end
+
     return 'S';
+end
+
+function MissionClass.EvaluateObjectives(self: Types.MissionClass): {boolean}
+    local Completion = self.__Custom_Data.Completion
+    local Results = {}
+
+    for Index, Objective in (Completion and Completion.Objectives or {}) do
+        local Ran, Done = pcall(Objective.Check, self.__Current_State)
+        Results[Index] = Ran and Done == true
+    end
+
+    return Results
+end
+
+function MissionClass.GetElapsed(self: Types.MissionClass): number
+    return os.clock() - (self.__Start_Clock or os.clock())
 end
 
 function MissionClass.AddTrigger(self: Types.MissionClass, Area: BasePart)
@@ -602,6 +642,10 @@ function MissionClass.AddTrigger(self: Types.MissionClass, Area: BasePart)
                 local ReachPlace = false;
 
                 for EventName, Event: Types.EventClass in self.__Current_Events do
+                    if Event:IsFinished() then
+                        continue
+                    end
+
                     if Event:HasGoal("ReachPlace") then
                         Event:UpdateProgress("ReachPlace", Area.Name)
                         ReachPlace = true
@@ -615,6 +659,11 @@ function MissionClass.AddTrigger(self: Types.MissionClass, Area: BasePart)
 
                 if not ReachPlace then
                     if self.__Current_Events[Area.Name] then
+                        return;
+                    end
+
+                    local Data = self:GetGuide()[Area.Name]
+                    if Data and Data.After and not self:IsEventCompleted(Data.After) then
                         return;
                     end
 
@@ -640,6 +689,8 @@ function MissionClass.Finish(self: Types.MissionClass, Won: boolean?)
     if self.__Is_Finished then
         return
     end
+
+    self.__Current_State.Elapsed = self:GetElapsed()
 
     self.__Active = false
     self.__Is_Finished = true

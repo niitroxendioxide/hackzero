@@ -260,7 +260,7 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
 
 
         for i = 1, EnemyCount do
-            EnemyService:Spawn(EnemyType, EnemyLevel, self.__Event, NewBuffs)
+            EnemyService:Spawn(EnemyType, EnemyLevel, self.__Event, NewBuffs, EventData.Area)
         end
     end
 

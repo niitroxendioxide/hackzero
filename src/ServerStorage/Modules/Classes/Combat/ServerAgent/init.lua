@@ -19,6 +19,7 @@ local MovementClass = require(Classes.Combat.ServerAgent.ServerMovement)
 local AgentStatus = require(Shared.Classes.Agents.Status)
 local AgentItems = require(Shared.Classes.Agents.Items)
 local Replicator = require(ServerStorage.Modules.Libraries.Replicator)
+local AgentsLibrary = require(ServerStorage.Modules.Libraries.Agents)
 
 --
 local ServerAgentClass = {}
@@ -471,6 +472,7 @@ function ServerAgentClass.TakeDamage(self: Types.ServerAgentClass, Amount: numbe
 		Replicator:KillAgent(self, Amount);
 
 		self:Stop()
+		AgentsLibrary.Defeated:Fire(self)
 	else
 		Replicator:DamageAgent(self, Amount)
 

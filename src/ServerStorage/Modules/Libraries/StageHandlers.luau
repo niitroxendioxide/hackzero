@@ -17,6 +17,7 @@ local Components = ServerStorage.Modules.Components
 local Handlers = {
     __Stages = {},
     __Missions = {},
+    __ById = {},
     __Ready = false,
 }
 
@@ -79,12 +80,34 @@ function Handlers:Init()
     end
 
     for _, Mission in (Missions and Missions:GetChildren() or {}) do
+        if Mission:IsA('Folder') then
+            for _, Module in Mission:GetChildren() do
+                local Handler = LoadHandler(Module, 'mission: ' .. Module.Name)
+
+                if Handler then
+                    Handlers.__ById[Module.Name] = Handler
+                end
+            end
+
+            continue
+        end
+
         local Handler = LoadHandler(Mission, 'mission kind: ' .. Mission.Name)
 
         if Handler then
             Handlers.__Missions[Mission.Name] = Handler
         end
     end
+end
+
+function Handlers:GetById(MissionId: string?)
+    Handlers:Init()
+
+    if MissionId == nil then
+        return nil
+    end
+
+    return Handlers.__ById[MissionId]
 end
 
 --- Component for a stage's act, nil when that act has none.
@@ -116,8 +139,8 @@ end
     The component that should run this mission: its kind's handler when there is one,
     otherwise the stage act's.
 ]]
-function Handlers:Resolve(Kind: string?, Stage: string?, Act: string?)
-    return Handlers:GetMission(Kind) or Handlers:Get(Stage, Act)
+function Handlers:Resolve(Kind: string?, Stage: string?, Act: string?, MissionId: string?)
+    return Handlers:GetById(MissionId) or Handlers:GetMission(Kind) or Handlers:Get(Stage, Act)
 end
 
 --- Every registered mission kind, for validating a packet before it is sent.

@@ -43,7 +43,9 @@ const Controller = {
 }
 
 const ReverseLookups = {
-    ItemPickup = "Pick Up Item"
+    ItemPickup = "Pick Up Item",
+    AnimaCleanser = "Activate Cleanser",
+    Ship = "Travel",
 } :: { [InteractionType]: string }
 
 -- // PRIVATE
@@ -137,6 +139,8 @@ function Controller.OnEvent(Type: number, ...)
             Controller:AddInteraction(Object)
         end
 
+    elseif Type == GameEnum.MatchInteraction.Remove then
+        Controller:RemoveInteraction(Args[1])
     end
 
 end
@@ -225,6 +229,8 @@ function Controller:Trigger(Id: number, Bypass: boolean, TriggerData: {}?)
         Network:Fire(EVENT_NAME, GameEnum.MatchInteraction.Triggered, Object.Id);
 
         ItemPickupAction(Object, ReplicationIdTrigger)
+    else
+        Network:Fire(EVENT_NAME, GameEnum.MatchInteraction.Triggered, Object.Id);
     end
     
     Controller:RemoveInteraction(Object.Id);

@@ -11,7 +11,7 @@ local Mock = require(Shared.Utility.Mock)
 local Settings = require(Client.Packages.Settings)
 local ForgeVFX = require(ReplicatedStorage.Packages.ForgeVFX)
 
-local Non_Effects = {'Indicator', 'EnemyStats', 'Barrier', 'Warning'}
+local Non_Effects = {'Indicator', 'EnemyStats', 'Barrier', 'Warning', 'Corrupted'}
 local Effects = {
 	__Cached = {}
 }
