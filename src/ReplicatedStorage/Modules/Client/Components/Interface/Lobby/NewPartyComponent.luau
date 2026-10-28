@@ -37,8 +37,8 @@ local DockPositions = {
     },
 
     Maps = {
-        Open = UDim2.fromScale(0.769, 0.512),
-        Closed = UDim2.fromScale(1.25, 0.5),
+        Open = UDim2.fromScale(0.5, 0.512),
+        Closed = UDim2.fromScale(.5, 0.425),
     },
 
     Mission = {
@@ -57,8 +57,8 @@ local DockPositions = {
     },
 
     Info = {
-        Open = UDim2.fromScale(0.918, 0.343),
-        Closed = UDim2.fromScale(.77, 0.343),
+        Open = UDim2.fromScale(0.5, 0.5),
+        Closed = UDim2.fromScale(.5, 0.6),
     }
 }
 
@@ -264,7 +264,7 @@ function SetDockState(DockName: string, State: boolean)
         Effects:Tween(DockFrame.UIScale, { 0.2, 'Cubic' }, { Scale = 1 })
         Effects:Tween(DockFrame, { 0.2, 'Cubic' }, { Position = Positions.Open })
 
-        if DockName == 'Mission' or DockName == 'Info' or DockName == 'Companions' then
+        if DockName == 'Mission' or DockName == 'Info' or DockName == "Maps" or DockName == 'Companions' then
             DockFrame.Parent = MainFrame.Transition
             MainFrame.Transition.GroupTransparency = 1
 
@@ -544,11 +544,12 @@ const function ConstructMission(MissionId: string, MissionData: MissionsDatabase
     else 
         StagesDatabase:GetStage(string.split(MissionData.Stage_Act, "/")[1])
 
-    const CurrentCount = #MapsDock.List:GetChildren()
-    const Recommended_Level = 'Lv.'..(MissionData.Recommended_Level or MissionData.Level or 1)
+    const RecLevel = (MissionData.Recommended_Level or MissionData.Level or 1)
+    -- const CurrentCount = #MapsDock.List:GetChildren()
+    const Recommended_Level = 'Lv.'..RecLevel
     local Object = Assets.Lobby.Party.MissionObject:Clone()
     Object.Parent = MapsDock.List
-    Object.LayoutOrder = (Is_Task and 0 or 500) + CurrentCount;
+    Object.LayoutOrder = (Is_Task and 2500 or 0) + RecLevel;
     Object.MissionName.Text = MissionData.Display_Name or (Is_Task and TextForType.ForMissionTitle(MissionData)) or MissionId
     Object.Name = MissionId
     Object.LvlRec.Text = Recommended_Level;
@@ -786,11 +787,17 @@ end
 function HandleMissionSelect()
     local Dock = GetDock('Info')
 
+    Dock.CloseButton.Button.MouseButton1Click:Connect(function()
+        SetDockState("Info", false)
+    end)
+    
     Dock.SelectBtn.Button.MouseButton1Click:Connect(function()
         States.MissionId = States.SelectedMission
         RequestMissionChange()
         Dock.SelectBtn.UIScale.Scale = 0.9
         Effects:Tween(Dock.SelectBtn.UIScale, {0.3, 'Back'}, {Scale = 1})
+        SetDockState("Maps", false)
+        -- SetDockState("Info", false)
     end)
     Dock.SelectBtn.Button.MouseEnter:Connect(function()
         Effects:Tween(Dock.SelectBtn.OuterStroke, {0.3, 'Quad'}, {Color = Color3.fromRGB(34, 255, 0)})
