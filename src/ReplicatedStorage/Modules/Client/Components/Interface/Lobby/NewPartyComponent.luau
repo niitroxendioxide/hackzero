@@ -536,19 +536,45 @@ function GetDock(DockName: string)
     return Component:GetFrame():FindFirstChild(DockName) or Component:GetFrame().Transition:FindFirstChild(DockName)
 end
 
+const function CreateSection(SectionName: string)
+    const Dock = GetDock("Maps")
+    const NewSection = Assets.Lobby.Party.Section:Clone();
+    NewSection.Name = SectionName;
+    NewSection.MissionName.Text = SectionName;
+    NewSection.Parent = Dock.List;
+    
+    return NewSection;
+end
+
+const function GetSection(SectionName: string)
+    const Dock = GetDock("Maps")
+    local SectionFound = Dock.List:FindFirstChild(SectionName)
+
+    if not SectionFound then 
+        SectionFound = CreateSection(SectionName)
+    end
+
+    return SectionFound
+end
+
 const function ConstructMission(MissionId: string, MissionData: MissionsDatabase.Mission & Tasks.AgencyTaskMission, Is_Task: boolean): ()
     local MapsDock = GetDock('Maps')
 
+    const Stage = string.split(MissionData.Stage_Act or "", "/")[1]
     local StageInfo = if Is_Task then 
         StagesDatabase:GetStage(MissionData.World)
     else 
-        StagesDatabase:GetStage(string.split(MissionData.Stage_Act, "/")[1])
+        StagesDatabase:GetStage(Stage)
+    -----
+
+
+    local BelongingSection = Is_Task and "Tasks" or (StageInfo.Name)
 
     const RecLevel = (MissionData.Recommended_Level or MissionData.Level or 1)
     -- const CurrentCount = #MapsDock.List:GetChildren()
     const Recommended_Level = 'Lv.'..RecLevel
     local Object = Assets.Lobby.Party.MissionObject:Clone()
-    Object.Parent = MapsDock.List
+    Object.Parent = GetSection(BelongingSection).List;
     Object.LayoutOrder = (Is_Task and 2500 or 0) + RecLevel;
     Object.MissionName.Text = MissionData.Display_Name or (Is_Task and TextForType.ForMissionTitle(MissionData)) or MissionId
     Object.Name = MissionId
@@ -614,6 +640,12 @@ local function UpdateMissions(Unlocked: {})
 
     for MissionId, MissionData in Missions do
         ConstructMission(MissionId, MissionData)
+    end
+
+    if #AcceptedTasks > 0 then
+        CreateSection("Tasks")
+    else
+        return;
     end
 
     for _, MissionData in AcceptedTasks do
