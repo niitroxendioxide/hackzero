@@ -590,10 +590,12 @@ const function ConstructMission(MissionId: string, MissionData: MissionsDatabase
             Effects:Tween(Object.UIScale, { 0.3, 'Quad' }, {Scale = 1})
             return
         elseif States.SelectedMission ~= nil then
-            local OldObj = MapsDock.List:FindFirstChild(States.SelectedMission)
-            Effects:Tween(OldObj.UIShadow, { 0.25, 'Quad' }, {Transparency = 1})
-            Effects:Tween(OldObj.Outer, { 0.2, 'Quart' }, {Color = Color3.new(0, 0, 0), Thickness = 0.045})
-            Effects:Tween(OldObj.UIScale, { 0.3, 'Quad' }, {Scale = 1})
+            const OldObj = GetSection(BelongingSection).List:FindFirstChild(States.SelectedMission)
+            if OldObj then
+                Effects:Tween(OldObj:FindFirstChild("UIShadow"), { 0.25, 'Quad' }, {Transparency = 1})
+                Effects:Tween(OldObj.Outer, { 0.2, 'Quart' }, {Color = Color3.new(0, 0, 0), Thickness = 0.045})
+                Effects:Tween(OldObj.UIScale, { 0.3, 'Quad' }, {Scale = 1})
+            end
         end
 
         States.SelectedMission = MissionId;

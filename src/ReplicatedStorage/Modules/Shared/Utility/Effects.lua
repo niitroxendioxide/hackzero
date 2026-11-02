@@ -53,6 +53,10 @@ export type TweenGoals = {
 
 function EffectUtil:Tween(Object: Instance, Info: {number | string | boolean | nil}, Goals: TweenGoals)
 	--
+	if (Object == nil) then
+		return
+	end
+
 	local Time, Ease, Direction = Info[1] :: number, (Info[2] or 'Linear') :: string, (Info[3] or 'Out') :: string;
 	local Reverse, Delay = Info[5] or false, Info[6] or 0
 	local NewInfo = typeof(Info) == 'TweenInfo' and Info or TweenInfo.new(

@@ -12,6 +12,7 @@ local World = require(ReplicatedStorage.Modules.Shared.World)
 local LocalData = require(Client.Libraries.LocalData)
 local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
+local Missions = require(Shared.Database.Missions)
 
 --
 local EventStates = require(Client.States.Events)
@@ -19,6 +20,7 @@ local Cutscenes = require(Client.Libraries.Cutscenes)
 local InterfaceController = require(script.Parent.InterfaceController)
 local CombatController = require(script.Parent.CombatController)
 local Camera = require(Client.Libraries.Camera)
+local DistanceIndicator = require(Client.Libraries.DistanceIndicator)
 
 local Controller = {
     __Began = false :: boolean,
@@ -156,6 +158,7 @@ function Controller:MatchEnded(ServerData: {})
     local Component = InterfaceController:GetComponent("NewEndScreen")
     local Objective = InterfaceController:GetComponent("Objective")
 
+    DistanceIndicator:Clear()
     World:SetEndScreenMode(true)
     World:TweenSpeed(0.01, 2)
 
@@ -177,6 +180,35 @@ function Controller:BeginEvent(Event: string)
     local Component = InterfaceController:GetComponent("Objective")
 
     Component:CreateEvent(Event)
+    Controller:UpdateIndicator(Event)
+end
+
+function Controller:UpdateIndicator(Event: string)
+    local MissionId = LocalData:GetStageData().MissionId
+    local MissionData = MissionId and Missions:Get(MissionId)
+    if not MissionData then
+        return
+    end
+
+    if MissionData.Triggers[Event] and MissionData.Triggers[Event].Indicator then
+        DistanceIndicator:Hide()
+
+        return
+    end
+
+    for _, Data in MissionData.Triggers do
+        if Data.Indicator and Data.After == Event then
+            task.spawn(function()
+                local Triggers = workspace:WaitForChild("World"):WaitForChild("Map"):WaitForChild("Triggers", 10)
+                local Area = Triggers and Triggers:WaitForChild(Data.Indicator, 10)
+                if Area then
+                    DistanceIndicator:Show(Area)
+                end
+            end)
+
+            return
+        end
+    end
 end
 
 function Controller:EndEvent(Event: string)

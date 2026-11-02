@@ -65,10 +65,10 @@ return table.freeze({
         ]]
         DATA = {
             --Mission_Seed = '12345-abcde-67890-fabcd',
-            Target_Item = "Object",
+            --Target_Item = "Object",
             --Kind = 'Escort',
-            Filler_Rooms = 7,
-            Escorted = "Template",
+            --Filler_Rooms = 7,
+            --Escorted = "Template",
             MissionId = 'Namek_P01',
             --Difficulty = 'EASY',
             --[[ChaosControlData = {

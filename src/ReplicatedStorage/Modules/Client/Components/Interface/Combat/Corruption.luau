@@ -64,7 +64,7 @@ function Component:Init()
 
 	local function Update()
 		local Value = Player:GetAttribute(ATTRIBUTE)
-		if Value == nil then
+		if Value == nil or Value <= 0 then
 			Frame.Visible = false
 
 			return

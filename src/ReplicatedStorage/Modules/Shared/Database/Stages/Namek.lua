@@ -12,6 +12,7 @@ end
 return {
     Name = "Namek",
     Map = "Dragon Ball/Namek",
+    Icon = 86254361185477,
 
     Acts = {
         Story = {

@@ -7,6 +7,7 @@ local FrictionValues = {} :: {number}
 local World = {
 	CharacterAcceleration = 10,
 	StepHeight = 1.895,
+	MaxSlopeAngle = 45,
 	CurrentSpeed = 1,
 	EndScreenMode = false,
 	TweenThread = nil,

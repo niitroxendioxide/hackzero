@@ -140,7 +140,7 @@ return {
         Stage_Act = 'Namek/Story',
         Difficulty = 'EASY',
 
-        Corruption = {Rate = 0.8, Decay = 6},
+        Corruption = {Rate = 0, Decay = 6},
 
         Triggers = {
             Begin = Event({
@@ -155,19 +155,21 @@ return {
             GoTo_Plateau = GoTo("Head to the plateau ruins", 'I1_Plateau'),
 
             I1_Plateau = Event({
+                Indicator = "I1_Plateau",
                 After = 'GoTo_Plateau',
                 Objective = "Clear the static-touched invaders {objective[KillEnemies]}",
                 Enemies = {
-                    [1] = {Affected('SandShinobi', 6, 3)},
-                    [2] = {Affected('Sorcerer', 7, 3)},
+                    [1] = {Affected('SandShinobi', 5, 12)},
+                    [2] = {Affected('Sorcerer', 7, 9), Affected('Saiyan', 9, 7)},
                 },
                 Dialogue = {Say("Agency", "Those aren't Namekians. The static is pulling fighters in from other worlds.")},
                 Finished = 'GoTo_Village',
             }),
 
-            GoTo_Village = GoTo("Find the village below the plateau", 'I1_Village'),
+            GoTo_Village = GoTo("Find the village below the plateau", 'I1_PlateauCenter'),
 
-            I1_Village = Event({
+            I1_PlateauCenter = Event({
+                Indicator = "I1_PlateauCenter",
                 After = 'GoTo_Village',
                 Objective = "Drive the static out of the village {objective[KillEnemies]}",
                 Enemies = {
