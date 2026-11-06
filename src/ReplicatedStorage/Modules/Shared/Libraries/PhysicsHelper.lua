@@ -28,6 +28,7 @@ function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir:
 	local SideCount = 8
 	local Wide = math.rad(90)
 	local Params = World:GetCollisionParams(nil, Blocks, CollisionsEnabled) :: RaycastParams
+	local MaxSlopeY = math.cos(math.rad(World.MaxSlopeAngle))
 	for i = -1.5, 1.5, 1.5 do
 		for x = 0, SideCount do
 			local OriginPoint = (Origin * CFrame.new(0, i, 0))
@@ -40,7 +41,7 @@ function PhysicsHelper:CalculateCharacterCollisions(Origin: CFrame, MovementDir:
 				DrawDebugLine(OriginPoint.Position, Direction, Length, Delta, Result ~= nil)
 			end
 
-			if Result then
+			if Result and Result.Normal.Y < MaxSlopeY and (not hasResult or Result.Distance < hasResult.Distance) then
 				hasResult = Result
 			end
 		end

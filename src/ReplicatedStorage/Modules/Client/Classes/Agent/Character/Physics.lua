@@ -373,12 +373,13 @@ function PhysicsClass:Update(Delta: number)
 		local HeightExtra = self.__Height + Extra
 		local CanReachFloor = workspace:Raycast(self.__Position + Moved, Vector3.yAxis * -HeightExtra, AddedColliderParams)
 		local Collision = PhysicsHelper:CalculateCharacterCollisions(Origin, TotalDisplacement, Delta, self.__Added_Colliders, self.__Enemy_Collisions_Enabled)
-		local NoCollide = (not Collision or Collision.Normal:Dot(Vector3.new(0, 1, 0)) > 0.1)
+		local NoCollide = not Collision
 		local FeetY = self.__Position.Y - self.__Height
 		local MaxSlopeY = math.cos(math.rad(World.MaxSlopeAngle))
 		local TooSteep = CanReachFloor and CanReachFloor.Position.Y > FeetY and CanReachFloor.Normal.Y < MaxSlopeY
+		local Ahead = workspace:Raycast(self.__Position + Moved.Unit * 2, Vector3.yAxis * -(self.__Height + 2), AddedColliderParams)
 
-		if CanReachFloor and (CanReachFloor.Position.Y - FeetY) < World.StepHeight then
+		if CanReachFloor and Ahead and (CanReachFloor.Position.Y - FeetY) < World.StepHeight then
 			if TooSteep then
 				if NoCollide then
 					local Wall = Vector3.new(CanReachFloor.Normal.X, 0, CanReachFloor.Normal.Z).Unit
