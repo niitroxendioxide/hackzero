@@ -646,7 +646,8 @@ function MissionClass.AddTrigger(self: Types.MissionClass, Area: BasePart)
                         continue
                     end
 
-                    if Event:HasGoal("ReachPlace") then
+                    --- Only the place a GoTo is waiting on counts, any other trigger still starts its own event.
+                    if Event:GetGoal("ReachPlace") == Area.Name then
                         Event:UpdateProgress("ReachPlace", Area.Name)
                         ReachPlace = true
 

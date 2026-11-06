@@ -227,6 +227,8 @@ function AppearanceClass:JoinTo(BasePart: BasePart, Responsiveness: number?)
 
 	Att0.Rotation = Vector3.new(0, 0, self.__Tilt)
 
+	self.__Model:PivotTo(BasePart.CFrame) --CFrame.new(0, 0, self.__Tilt)
+
 	AlignPosition.Visible = true
 	AlignPosition.Attachment0, AlignPosition.Attachment1 = Att0, Att1
 	AlignOrientation.Attachment0, AlignOrientation.Attachment1 = Att0, Att1
@@ -243,9 +245,18 @@ function AppearanceClass:JoinTo(BasePart: BasePart, Responsiveness: number?)
 	self.__Position = AlignPosition
 	self.__Root_Attachment = Att0
 	self.__Target_Attachment = Att1
+	self.__FollowingBp = BasePart;
 
 	self.__Trove:Add(Att0)
 	self.__Trove:Add(Att1)
+end
+
+function AppearanceClass:Snap()
+	if (self.__FollowingBp == nil) then
+		return
+	end
+
+	self.__Model:PivotTo(self.__FollowingBp.CFrame) -- CFrame.new(0, 0, self.__Tilt)
 end
 
 function AppearanceClass:CloneModel()

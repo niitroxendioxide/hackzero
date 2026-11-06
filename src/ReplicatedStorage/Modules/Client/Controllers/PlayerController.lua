@@ -22,6 +22,8 @@ local AgentClass = require(Client.Classes.Agent)
 local CameraLibrary = require(Client.Libraries.Camera)
 local CharacterLibrary = require(Client.Libraries.Characters)
 local CutscenesLibrary = require(Client.Libraries.Cutscenes)
+local Settings = require(Client.Packages.Settings)
+local TargetStates = require(Client.States.Targets)
 
 
 local Match = require(Client.Controllers.MatchController)
@@ -34,6 +36,8 @@ local NavStates = require(Client.States.Navigation)
 local SwapPackage = require(Client.Components.Movesets.Swap)
 
 --
+local M1_DRIFT_SPEED = 10
+
 local INPUT_DIRECTIONS = {
 	['Front'] = Vector3.new(0, 0, -1),
 	['Back'] = Vector3.new(0, 0, 1),
@@ -186,12 +190,29 @@ function Controller:Init(): ()
 		end
 
 		local CanAction = CurrentCharacter:GetState() ~= 'Attacking' and not CurrentCharacter:HasTag('Movlock') and not CurrentCharacter:HasTag('Switching')
+		local CanDrift = CharacterState == 'Attacking' and CurrentCharacter:GetCurrentSkill() == 'Basic_Attack'
+			and Direction.Magnitude > 0 and not CutscenesLibrary:IsInCutscene()
+
+		CurrentCharacter:SetDrift(if CanDrift and CurrentCharacter:IsAlive() then Direction.Unit * M1_DRIFT_SPEED else Vector3.zero)
+
 		if CurrentCharacter:IsAlive() then
 			if (Direction.Magnitude > 0 and not CutscenesLibrary:IsInCutscene()) and CanAction then
 				CurrentCharacter:Look(Direction.Unit)
 				CurrentCharacter:Move()
 			else
 				CurrentCharacter:Stop()
+
+				local CameraLook = CameraLibrary:HorizontalVector()
+				local AimingM1 = CharacterState == 'Attacking' and CurrentCharacter:GetCurrentSkill() == 'Basic_Attack'
+					and Settings:Get('Aim_With_Camera', 'QOL') == true and not TargetStates.Current_Target
+
+				if CameraLook.Magnitude > 0 and not CutscenesLibrary:IsInCutscene() then
+					if CharacterState == 'Idle' and CanAction then
+						CurrentCharacter:Look(CameraLook.Unit)
+					elseif AimingM1 then
+						CurrentCharacter:Look(CameraLook.Unit, false, true)
+					end
+				end
 			end
 
 			CurrentCharacter.__Swapped = false

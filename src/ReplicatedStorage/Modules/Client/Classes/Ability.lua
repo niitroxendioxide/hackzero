@@ -7,6 +7,7 @@ local Client = ReplicatedStorage.Modules.Client
 local Shared = ReplicatedStorage.Modules.Shared
 
 local TargetStates = require(Client.States.Targets)
+local Settings = require(Client.Packages.Settings)
 local _Debugger = require(Shared.Utility.Debugger)
 local World = require(Shared.World)
 local AnimLibrary = require(Client.Libraries.Animation)
@@ -200,8 +201,14 @@ function AbilityClass:Connect(Agent: AgentTypes.AgentClass, StateId: number, IsC
 		local Range = self:FromData("Range", nil, nil, 50)
 		local IsBasicAttack = self.__Name == 'Basic_Attack'
 		local LookAtEnemy = self:FromData('NoAutoTrack') ~= true
+		local AimWithCamera = Settings:Get('Aim_With_Camera', 'QOL') == true and not TargetStates.Current_Target
 		local EnemyId, Enemy;
-		if LookAtEnemy then
+		if AimWithCamera and self.__Name ~= 'Dodge' and StateId == 1 then
+			local CameraLook = workspace.CurrentCamera.CFrame.LookVector * Vector3.new(1, 0, 1)
+			if CameraLook.Magnitude > 0 then
+				Agent:Look(CameraLook.Unit, true, true)
+			end
+		elseif LookAtEnemy then
 			if TargetStates.Current_Target then
 				Enemy = TargetStates.Current_Target
 				EnemyId = TargetStates.Current_Target:GetId()

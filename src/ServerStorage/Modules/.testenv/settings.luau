@@ -1,7 +1,7 @@
 return table.freeze({
     REPLICATE_CONSTANTS = {
         HITBOXES = false,
-        MARKERS = true,
+        MARKERS = false,
         ENEMY_LOCATIONS = false,
         RECRUIT_LOCATIONS = false, ---|> visible copy of every recruit's server hitbox
     },
@@ -10,7 +10,7 @@ return table.freeze({
         --- Types: ChaosControl, Mission, Expedition
         TYPE = 'Mission',
         STAGE = {
-            --- LeafVillage, Training, Testing, DailyImprovement, DungeonEx, HuecoMundo
+            --- Namek, LeafVillage, Training, Testing, DailyImprovement, DungeonEx, HuecoMundo
             Stage = 'Namek',
             Act = 'Intro',
         },
@@ -109,9 +109,9 @@ return table.freeze({
 
     TEST_COMPANION = '8bdc68f8-cb56-4576-a193-689bb87043df',
     TEST_AGENTS = {
-        'Lelouch',
-        'Naruto',
         'Kakashi',
+        'Goku',
+        'Naruto',
     },
 
     --REPLACE_AFFLICTION = 'Fire',

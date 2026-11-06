@@ -86,6 +86,11 @@ return {
                     Destructible_Id = 'Crystals',
                 },
 
+                ['SpawnTarget'] = {
+                    Type = 'Trigger',
+                    Name = 'SpawnTarget',
+                },
+
                 ['EndArea'] = {
                     Type = 'Trigger',
                     Name = "End",
@@ -102,7 +107,7 @@ return {
                     },
                     Enemies = {
                         [1] = {
-                            {Name = "Sorcerer", Amount = 1, Level = 60, Affected_Aura = false},
+                            --{Name = "Sorcerer", Amount = 1, Level = 60, Affected_Aura = false},
                             --{Name = "SandShinobi", Amount = 1, Level = 60, Affected_Aura = true},
                         }
                     },
@@ -134,6 +139,22 @@ return {
 
                     Finished = function()
                         return "End"
+                    end,
+                },
+
+                SpawnTarget = {
+                    --Objective = "Train with your agents.",
+                    Goal = {KillEnemies = 1},
+                    EnemyBuffs = {},
+                    NoBarriers = true,
+                    Enemies = {
+                        [1] = {
+                            {Name = "Sorcerer", Amount = 1, Level = 10, Affected_Aura = true},
+                            --{Name = "SandShinobi", Amount = 1, Level = 60, Affected_Aura = true},
+                        }
+                    },
+                    Finished = function(State: Types.EventHandlerState): string
+                        return "SpawnTarget"
                     end
                 },
 

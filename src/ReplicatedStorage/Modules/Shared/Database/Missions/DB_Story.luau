@@ -159,11 +159,22 @@ return {
                 After = 'GoTo_Plateau',
                 Objective = "Clear the static-touched invaders {objective[KillEnemies]}",
                 Enemies = {
-                    [1] = {Affected('SandShinobi', 5, 12)},
-                    [2] = {Affected('Sorcerer', 7, 9), Affected('Saiyan', 9, 7)},
+                    [1] = {Affected('SandShinobi', 2, 7)},
+                    [2] = {Affected('Sorcerer', 3, 4), Affected('Saiyan', 4, 5)},
                 },
                 Dialogue = {Say("Agency", "Those aren't Namekians. The static is pulling fighters in from other worlds.")},
                 Finished = 'GoTo_Village',
+            }),
+
+            I1_Forest = Event({
+                Objective = "Wipe {objective[KillEnemies]} anomalies",
+                Enemies = {
+                    [1] = {Affected('Saiyan', 1, 5)},
+                    [2] = {Affected('Saiyan', 2, 5)},
+                    [3] = {Affected('Saiyan', 5, 3), Affected('Sorcerer', 5, 3)},
+                },
+                Dialogue = {Say("Agency", "Those aren't Namekians. The static is pulling fighters in from other worlds.")},
+                Finished = 'None',
             }),
 
             GoTo_Village = GoTo("Find the village below the plateau", 'I1_PlateauCenter'),

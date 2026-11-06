@@ -121,7 +121,8 @@ function Characters:Switch(ReplicationId: number, Direction: number, EnemyTarget
 
 	PreviousAgent:Stop()
 
-	if Marked and (Marked.AssistCharacterId or 0) > 0 then
+	local IsAssist = Marked ~= nil and (Marked.AssistCharacterId or 0) > 0
+	if IsAssist then
 		Data.Active = Marked.AssistCharacterId :: number
 		Characters:MarkTarget(Players.LocalPlayer, nil)
 		Characters.SwitchedToAssist:Fire()
@@ -152,7 +153,7 @@ function Characters:Switch(ReplicationId: number, Direction: number, EnemyTarget
 	end
 
 	local CurrentAgentDataId = Data.Active
-	local Result = Characters:HandleSwitchFor(ReplicationId, CurrentCharacter, NewCFrame, false, TargetObject ~= nil)
+	local Result = Characters:HandleSwitchFor(ReplicationId, CurrentCharacter, NewCFrame, false, TargetObject ~= nil or IsAssist)
 
 	return Result, CurrentAgentDataId, Seed
 end
@@ -192,6 +193,8 @@ function Characters:HandleSwitchFor(RepId: number, Previous: Types.AgentClass, A
 		return false
 	end
 
+	Previous:SetDrift(Vector3.zero)
+
 	if Switch_Threads[NewCharacter] then
 		task.cancel(Switch_Threads[NewCharacter])
 		Switch_Threads[NewCharacter] = nil;
@@ -220,6 +223,7 @@ function Characters:HandleSwitchFor(RepId: number, Previous: Types.AgentClass, A
 	NewCharacter:SetVisible(true)
 
 	if not NewCharacter:HasTag("CharacterStatic") then
+		NewCharacter:ClearMotion()
 		NewCharacter:PivotTo(At, Snap)
 
 		if not HasTarget then

@@ -10,6 +10,8 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 local LelouchController = require(script.Parent.LelouchGameplayController)
 
 --
+local FOCUS_FIRE_ENABLED = false
+
 local Ability = AbilityClass.new()
 
 Ability:OnCancel(function(Caster: Types.GenericClass)
@@ -101,7 +103,9 @@ function Ability:Play(Caster: Types.GenericClass, _, State, Ctx): ()
 
 	Sequence:Start()
 
-	FocusFire(Caster, Token)
+	if FOCUS_FIRE_ENABLED then
+		FocusFire(Caster, Token)
+	end
 end
 
 return Ability

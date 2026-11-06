@@ -12,6 +12,7 @@ local AbilityClass = require(Client.Classes.Ability)
 local Ability = AbilityClass.new()
 
 const GEASS_COLOR = Color3.fromRGB(171, 97, 255)
+const FOCUS_FIRE_ENABLED = false
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = Ability:FromData('Geass_Shot')})
@@ -100,7 +101,9 @@ function Ability:Play(Caster: Types.ClientAgent, _, State)
 		end}
 	})
 
-	FocusFire(Caster, Token)
+	if FOCUS_FIRE_ENABLED then
+		FocusFire(Caster, Token)
+	end
 end
 
 return Ability

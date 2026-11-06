@@ -35,6 +35,7 @@ function PhysicsClass.new(States: Types.StatesClass, Height: number, debug_t: bo
 	self.__SurfaceVelocity = Vector3.zero
 	self.__LastMovementVelocity = Vector3.zero
 	self.__Velocity = Vector3.zero
+	self.__DriftVelocity = Vector3.zero
 	self.__ActiveThread = nil
 	self.__PhysicsSpeed = 1
 	self.__Moving = false
@@ -122,6 +123,20 @@ function PhysicsClass:RemoveForwardImpulse(Obj: {})
 	end
 end
 
+--- Drops leftover momentum and impulses. Impulses follow the current facing, so one left over
+--- from a dodge would push a freshly switched-in agent wherever it now looks.
+function PhysicsClass:ClearMotion()
+	table.clear(self.__Forward_Velocities)
+	self.__Velocity = Vector3.zero
+	self.__LastMovementVelocity = Vector3.zero
+	self.__DriftVelocity = Vector3.zero
+end
+
+--- Small movement that ignores facing, e.g. stepping around while M1'ing.
+function PhysicsClass:SetDrift(Velocity: Vector3)
+	self.__DriftVelocity = Velocity
+end
+
 function PhysicsClass:HasActiveImpulse(): boolean
 	return #self.__Forward_Velocities > 0 or #self.__Linear_Movements > 0
 end
@@ -198,7 +213,7 @@ function PhysicsClass:SetMovementVelocity(Velocity: number)
 end
 
 function PhysicsClass:GetAdditionalVelocities()
-	local Total = Vector3.zero
+	local Total = self.__DriftVelocity
 
 	for _, Object in self.__Linear_Movements do
 		Total += Object[1]
@@ -288,6 +303,7 @@ function PhysicsClass:Update(Delta: number)
 	-- The visual smoothing lives one layer up, in the AlignOrientation that welds
 	-- the model to the collider (Appearance:JoinTo / SetRotationResponsiveness),
 	-- where it cannot desync the simulation.
+	local Turned = self.__Rotation ~= self.__RotationGoal
 	self.__Rotation = self.__RotationGoal
 
 	if self.__CorrectionOffset.Magnitude > 0 then
@@ -307,6 +323,10 @@ function PhysicsClass:Update(Delta: number)
 	local TempIsMoving = (MovementVelocity + Velocity + self.__SurfaceVelocity + self.__LastMovementVelocity).Magnitude > 0
 
 	if (TempIsMoving == false) then
+		if Turned and Collider then
+			Collider:PivotTo(self:GetPivot())
+		end
+
 		return;
 	end
 

@@ -21,6 +21,7 @@ return {
                 ['I1_Plateau'] = Area('I1_Plateau'),
                 ['I1_PlateauCenter'] = Area('I1_PlateauCenter'),
                 ['I1_PlateauEast'] = Area('I1_PlateauEast'),
+                ['I1_Forest'] = Area('I1_Forest'),
                 ['I1_Village'] = Area('I1_Village'),
                 ['I1_SouthCrater'] = Area('I1_SouthCrater'),
                 ['I1_EastVillage'] = Area('I1_EastVillage'),

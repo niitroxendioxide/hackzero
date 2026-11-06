@@ -33,7 +33,7 @@ function EnemyClass.new(At: Vector3, Name: string, Level: number): Types.EnemyCl
 	self.__Status = EnemyStatus.new(self.Name, Level)
 	self.__Movement = MovementClass.new(At, EnemyDBData.Stats.Movement_Speed, EnemyDBData.Appearance.Height)
 	self.__Animator = AnimatorClass.new(self, self.Name)
-	self.__Appearance = AppearanceClass.new(self.Name, 'Enemies')
+	self.__Appearance = AppearanceClass.new(self.Name, 'Enemies', true)
 	self.__EnemyId = 0
 	self.__Tags = {}
 
@@ -269,15 +269,21 @@ function EnemyClass.IsGrabbed(self: Types.EnemyClass)
 	return (GrabPart ~= nil)
 end
 
-function EnemyClass:Init(Key: number)
+function EnemyClass:Init(Key: number, HasSpawnAnim: boolean)
 	self.__EnemyId = Key
 	--
-	self.__Appearance:Tilt(90)
-	self.__Appearance:JoinTo(self.__Movement.__Collider)
 	self.__Animator:Init()
 
 	self.__Movement:SnapToFirstGround()
+
+	self.__Appearance:Tilt(90)
+	self.__Appearance:JoinTo(self.__Movement.__Collider)
 	self.__Appearance:SetRotationResponsiveness(30)
+
+	--
+	if not HasSpawnAnim then
+		self.__Appearance:SetVisible(true)
+	end
 end
 
 function EnemyClass:Update(Delta: number)

@@ -223,6 +223,7 @@ function MapLoader:SetupTrigger(Map: Folder & {Markers: Folder}, MarkerId: strin
         return 
     end
 
+    Part.Transparency = 1
     Part.CanQuery = false
     Part.CanCollide = false
 

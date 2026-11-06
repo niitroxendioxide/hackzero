@@ -31,11 +31,17 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | num
 
 	
 	---
-	local NewEnemy = EnemyClass.new(At, Name, Level)
-	NewEnemy:Init(EnemyId)
+	const NewEnemy = EnemyClass.new(At, Name, Level)
 	
+	local IsCorrupted = false;
+
 	if typeof(Buffs) == 'table' then
 		for _, Buff in Buffs do
+			if Buff[1] == "Affected_Aura" then
+				IsCorrupted = true
+				continue
+			end
+
 			NewEnemy:AddEffect({
 				Type = Buff[1], 
 				Value = Buff[2],
@@ -43,9 +49,12 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | num
 			})
 		end
 	end
-	
+
+	NewEnemy:Init(EnemyId, IsCorrupted)
+	Effects:Play("Spawn", NewEnemy, IsCorrupted)
+
 	--Effects:Play('EnemyStats', NewEnemy)
-	EnemyOverheadGui:AddIndicator(EnemyId, NewEnemy)
+	
 	Enemies:AddEnemy(EnemyId, NewEnemy)
 end
 

@@ -129,7 +129,7 @@ function EventClass.Start(self: Types.EventClass, Trigger: BasePart?, Mission_St
 
     --
     if #EventData.Enemies > 0 then
-        if Trigger then
+        if Trigger and not EventData.NoBarriers then
             self:CreateEventAreaModel(Trigger)
         end
 
@@ -260,7 +260,9 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
 
 
         for i = 1, EnemyCount do
-            EnemyService:Spawn(EnemyType, EnemyLevel, self.__Event, NewBuffs, EventData.Area)
+            task.delay((i - 1) * 0.1, function()
+                EnemyService:Spawn(EnemyType, EnemyLevel, self.__Event, NewBuffs, EventData.Area)
+            end)
         end
     end
 
@@ -297,6 +299,10 @@ function EventClass.HasGoal(self: Types.EventClass, Type: Types.Stage_Objective)
     end
 
     return self.__Current_Goals[Type] ~= nil
+end
+
+function EventClass.GetGoal(self: Types.EventClass, Type: Types.Stage_Objective): any
+    return self.__Current_Goals and self.__Current_Goals[Type]
 end
 
 function EventClass.UpdateProgress(self: Types.EventClass, GoalType: Types.Stage_Objective, Value: any)

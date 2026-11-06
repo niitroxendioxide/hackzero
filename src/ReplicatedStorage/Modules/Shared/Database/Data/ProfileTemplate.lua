@@ -37,6 +37,7 @@ return {
         },
         QOL = {
             MultipleIndicators = false,
+            Aim_With_Camera = false,
         },
         Keybinds = {
             

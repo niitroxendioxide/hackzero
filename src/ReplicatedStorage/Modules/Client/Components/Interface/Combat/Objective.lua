@@ -101,7 +101,7 @@ function Component:CreateEvent(Event: string)
         break 
     end
 
-    if not Enabled then return end
+    if not Enabled or (typeof(EventData.Objective) ~= "string") or string.len(EventData.Objective) <= 0 then return end
 
     local Values = EventStates:New(Event, EventData.Goal)
     local Object = Assets.Combat.Objective.GoalObject:Clone()

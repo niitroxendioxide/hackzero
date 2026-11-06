@@ -56,6 +56,7 @@ export type AppearanceController = {
 	UnbindParticles: (self: AppearanceController, ParticleHolder: Instance) -> (),
 	SetVisible: (self: AppearanceController, State: boolean) -> (),
 	JoinTo: (self: AppearanceController, BasePart: BasePart, Responsiveness: number?) -> (),
+	Snap: (self: AppearanceController) -> (),
 
 	EditPartValue: (self: AppearanceController, Part: BasePart, Value: number) -> (),
 	Destroy: (self: AppearanceController) -> (),

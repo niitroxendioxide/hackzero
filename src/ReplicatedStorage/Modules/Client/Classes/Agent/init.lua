@@ -364,6 +364,16 @@ function AgentClass:Walk(Time: number, Mod: number?, Linear: boolean?)
 	return Object--self.__Character.__Controller:AddLinearMovement(Direction, Time)
 end
 
+function AgentClass:ClearMotion()
+	self.__current_walking_object = nil
+
+	return self.__Character.__Controller:ClearMotion()
+end
+
+function AgentClass:SetDrift(Velocity: Vector3)
+	return self.__Character.__Controller:SetDrift(Velocity)
+end
+
 function AgentClass:WalkBack(Time: number, Mod: number?, Linear: boolean)
 	Mod = Mod or 1
 

@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Effects = require(Shared.Utility.Effects)
 local GameEnum = require(Shared.GameEnum)
 local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Client.Classes.Ability)
@@ -32,12 +33,12 @@ const function RaikiriIssen(Caster: Types.ClientAgent, Context: Types.ClientSkil
 	const Attack_State_Time = Ability:FromData('Attack_State_Time')
 	const Startup_Time = Ability:FromData('Startup_Time')
 	const Dash_Time = Ability:FromData('Dash_Time')
-	const Dash_Power = Ability:FromData('Dash_Power')
+	const Teleport_Distance = Ability:FromData('Teleport_Distance')
 	const Hitbox_Size = Ability:FromData('Hitbox_Size')
-	const Hitbox_Offset = Ability:FromData('Hitbox_Offset')
 
 	local Track: AnimationTrack = nil;
 	local Single_Hit = false;
+	local Origin: CFrame = nil;
 
 	Ability:Begin(Caster, {
 		{0, function()
@@ -53,16 +54,27 @@ const function RaikiriIssen(Caster: Types.ClientAgent, Context: Types.ClientSkil
 		end},
 
 		{Startup_Time, function()
-			Ability:Effect('Kakashi_RaikiriDash', Caster, '', Caster:GetPivot())
-			Caster:Walk(Dash_Time, Dash_Power, true)
+			local Pos = Caster:GetPivot().Position
+			local Look = Caster:GetPivot().LookVector
+			local Direction = vector.normalize(vector.create(Look.X, 0, Look.Z))
+			local Cast = Effects:CastMapRaycast(Pos, Direction * Teleport_Distance)
+			local EndCFrame = CFrame.lookAlong(Pos, Direction) * CFrame.new(0, 0, -Teleport_Distance)
+			if Cast then
+				EndCFrame = CFrame.lookAlong(Cast.Position - Direction * 2, Direction)
+			end
+
+			Origin = CFrame.lookAlong(Pos, Direction)
+			Ability:Effect('Kakashi_RaikiriDash', Caster, '_', Origin)
+			Caster:PivotTo(EndCFrame)
 		end},
 
 		{Startup_Time, Startup_Time + Dash_Time, function()
-			if Single_Hit then
+			if Single_Hit or not Origin then
 				return
 			end
 
-			Ability:CreateHitbox(Caster, Hitbox_Offset, Hitbox_Size, function(Enemy)
+			local Offset = Caster:GetPivot():ToObjectSpace(Origin * CFrame.new(0, 0, -Hitbox_Size.z/2)).Position
+			Ability:CreateHitbox(Caster, Offset, Hitbox_Size, function(Enemy)
 				if Single_Hit then
 					return
 				end

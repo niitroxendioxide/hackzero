@@ -32,11 +32,10 @@ const function RaikiriIssen(Caster: Types.ServerAgent, Context: Types.SkillConte
 	const Attack_State_Time = Ability:FromData('Attack_State_Time')
 	const Startup_Time = Ability:FromData('Startup_Time')
 	const Dash_Time = Ability:FromData('Dash_Time')
-	const Dash_Power = Ability:FromData('Dash_Power')
 	const Hitbox_Size = Ability:FromData('Hitbox_Size')
-	const Hitbox_Offset = Ability:FromData('Hitbox_Offset')
 
 	local Single_Hit = false;
+	local Origin: CFrame = nil;
 
 	Ability:Begin(Caster, {
 		{0, function()
@@ -48,15 +47,19 @@ const function RaikiriIssen(Caster: Types.ServerAgent, Context: Types.SkillConte
 		end},
 
 		{Startup_Time, function()
-			Caster:Walk(Dash_Time, Dash_Power, true)
+			local Pos = Caster:GetPivot().Position
+			local Look = Caster:GetPivot().LookVector
+
+			Origin = CFrame.lookAlong(Pos, vector.normalize(vector.create(Look.X, 0, Look.Z)))
 		end},
 
 		{Startup_Time, Startup_Time + Dash_Time, function()
-			if Single_Hit then
+			if Single_Hit or not Origin then
 				return
 			end
 
-			Ability:CreateHitbox(Caster, Hitbox_Offset, Hitbox_Size, function(Enemy)
+			local Offset = Caster:GetPivot():ToObjectSpace(Origin * CFrame.new(0, 0, -Hitbox_Size.z/2)).Position
+			Ability:CreateHitbox(Caster, Offset, Hitbox_Size, function(Enemy)
 				if Single_Hit then
 					return
 				end

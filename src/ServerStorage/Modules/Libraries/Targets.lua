@@ -38,10 +38,18 @@ function Targets:FreeTarget(Target: any)
 end
 
 function Targets:IsMarked(Target: any, Attacker: any)
+    if (typeof(Target) == 'table' and Target.__Player_Assigned) then
+        Target = Target.__Player_Assigned
+    end
+
     return Targets.__Marked_Targets[Target] == Attacker:GetId()
 end
 
 function Targets:RefreshLastAttackedTime(Target: any, Attacker: any)
+    if (typeof(Target) == 'table' and Target.__Player_Assigned) then
+        Target = Target.__Player_Assigned
+    end
+
     if not Hits[Target] then
         Hits[Target] = {
             Last = os.clock(),
@@ -56,6 +64,10 @@ end
 function Targets:CanAttackTarget(Target: any, Attacker: any)
     if (string.lower(Targets.__Current_Difficulty) == 'passive') then
         return false
+    end
+
+    if (typeof(Target) == 'table' and Target.__Player_Assigned) then
+        Target = Target.__Player_Assigned
     end
 
     if not Hits[Target] then

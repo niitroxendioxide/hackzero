@@ -49,17 +49,17 @@ return {
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = 0.05,
-				Speed = 1.6,
-				Animation_Speed = 1,
+				Speed = 1.75,
+				Animation_Speed = 1.1,
 				Attack_State_Time = 0.65,
 
 				Attack_Data = {
 					-- The "?" symbol means it can be there or not.
 					-- Movement Moment, Hit time, Endlag, Movement Time?, Movement Strength?, Movement Linear?
-					[1]   = {0.35, .46, .61, 0.25, 1.35},
-					[2]   = {.12, .38, .6, 0.27, 1.1},
-					[3]   = {0,.45, .9},
-					[4]   = {0.03, .9, 1.45}
+					[1]   = {0.35, .46, .48, 0.175, 1},
+					[2]   = {.12, .38, .48, 0.15, 1.1},
+					[3]   = {0,.45, .68},
+					[4]   = {0.03, .85, .85}
 				},
 
 				StunTimes = {

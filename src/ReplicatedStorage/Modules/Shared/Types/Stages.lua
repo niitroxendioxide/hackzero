@@ -397,6 +397,7 @@ export type EventClass = {
 	Destroy: (self: EventClass) -> (),
 
 	HasGoal: (self: EventClass, Type: Stage_Objective) -> (boolean),
+	GetGoal: (self: EventClass, Type: Stage_Objective) -> (any),
 	IsFinished: (self: EventClass) -> (),
 	GetPlayerObjects: (self: EventClass) -> ({Player}),
 	CreateEventAreaModel: (self: EventClass, Trigger: BasePart) -> (),

@@ -393,9 +393,8 @@ return {
 
 				Startup_Time = 0.25,
 				Dash_Time = 0.35,
-				Dash_Power = 2.4,
-				Hitbox_Size = vector.create(10, 6, 26),
-				Hitbox_Offset = vector.create(0, 0, -12),
+				Teleport_Distance = 40,
+				Hitbox_Size = vector.create(10, 6, 42),
 
 				Hit = {
 					HitType = 'Slash',
