@@ -21,12 +21,10 @@ local RecruitsDatabase = require(Shared.Database.Recruits)
 local MovementClass = require(Shared.Classes.Recruit.RecruitMovement)
 local AppearanceClass = require(Client.Classes.Appearance)
 local Effects = require(Client.Libraries.Effects)
+local RecruitHealth = require(Client.Components.Interface.Combat.RecruitHealth)
 local AnimatorClass = require(script.Animator)
 
 --
-local FULL_PIP = Color3.fromRGB(110, 200, 255)
-local EMPTY_PIP = Color3.fromRGB(45, 45, 55)
-
 local function CreateAnchor(At: CFrame, Id: number): BasePart
 	local Entities = workspace.World.Entities
 	local Parent = Entities:FindFirstChild('Recruits') or Instance.new('Folder')
@@ -45,48 +43,6 @@ local function CreateAnchor(At: CFrame, Id: number): BasePart
 	Part.Parent = Parent
 
 	return Part
-end
-
---- Name and shield pips over its head, built in code until there is an asset for it.
-local function CreateIndicator(Model: Model, DisplayName: string): BillboardGui
-	local Adornee = Model:FindFirstChild('Head') or Model.PrimaryPart
-
-	local Gui = Instance.new('BillboardGui')
-	Gui.Name = 'RecruitIndicator'
-	Gui.Size = UDim2.fromScale(4, 1)
-	Gui.StudsOffset = Vector3.new(0, 2.25, 0)
-	Gui.LightInfluence = 0
-	Gui.MaxDistance = 150
-	Gui.Adornee = Adornee
-
-	local Label = Instance.new('TextLabel')
-	Label.Name = 'DisplayName'
-	Label.BackgroundTransparency = 1
-	Label.Size = UDim2.fromScale(1, 0.55)
-	Label.Font = Enum.Font.GothamBold
-	Label.TextScaled = true
-	Label.TextColor3 = Color3.new(1, 1, 1)
-	Label.TextStrokeTransparency = 0.4
-	Label.Text = DisplayName
-	Label.Parent = Gui
-
-	local Pips = Instance.new('Frame')
-	Pips.Name = 'Pips'
-	Pips.BackgroundTransparency = 1
-	Pips.Position = UDim2.fromScale(0, 0.6)
-	Pips.Size = UDim2.fromScale(1, 0.3)
-	Pips.Parent = Gui
-
-	local Layout = Instance.new('UIListLayout')
-	Layout.FillDirection = Enum.FillDirection.Horizontal
-	Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	Layout.SortOrder = Enum.SortOrder.LayoutOrder
-	Layout.Padding = UDim.new(0.02, 0)
-	Layout.Parent = Pips
-
-	Gui.Parent = Adornee
-
-	return Gui
 end
 
 --- Brief white flash on the model, the hit equivalent of the Death effect's highlight.
@@ -135,8 +91,8 @@ function ClientRecruit.new(Id: number, Name: string, At: CFrame, Visuals: {Model
 
 	--- Seeded off the id, so a model folder with variants gives every client the same pick.
 	self.__Appearance = AppearanceClass.new(Model, 'Recruits', false, Random.new(Id))
-	self.__Animator = AnimatorClass.new(self, Model)
-	self.__Indicator = nil
+	--- Allies are not animated at all.
+	self.__Animator = if Data.Ally then nil else AnimatorClass.new(self, Model)
 	self.__Connection = nil
 
 	return self
@@ -151,8 +107,10 @@ function ClientRecruit.Init(self: Types.ClientRecruitClass)
 	Model:PivotTo(self.__Anchor.CFrame)
 
 	self.__Appearance:JoinTo(self.__Anchor)
-	self.__Animator:Init()
-	self.__Indicator = CreateIndicator(Model, self.__Display_Name)
+	if self.__Animator then
+		self.__Animator:Init()
+	end
+
 	self:SetShield(self.__Shield, self.__Max_Shield)
 
 	self.__Connection = RunService.PreRender:Connect(function(Delta: number)
@@ -202,7 +160,10 @@ end
 
 function ClientRecruit.DisplayHit(self: Types.ClientRecruitClass, Hits: number, Shield: number)
 	self:SetShield(Shield, self.__Max_Shield)
-	self.__Animator:Hit()
+
+	if self.__Animator then
+		self.__Animator:Hit()
+	end
 
 	local Model = self.__Appearance:GetModel()
 	Flash(Model)
@@ -211,35 +172,12 @@ function ClientRecruit.DisplayHit(self: Types.ClientRecruitClass, Hits: number, 
 	Effects:Play('Indicator', Model:GetPivot().Position, {Text = `-{Hits}`, Affliction = 'Enemy'})
 end
 
+--- Shield is its hp, shown through the RecruitHealth component.
 function ClientRecruit.SetShield(self: Types.ClientRecruitClass, Shield: number, Max: number)
 	self.__Shield = Shield
 	self.__Max_Shield = Max
 
-	local Indicator = self.__Indicator
-	if not Indicator then
-		return
-	end
-
-	local Pips = Indicator:FindFirstChild('Pips') :: Frame
-	local Width = UDim2.fromScale(math.min(0.9 / math.max(Max, 1), 0.18), 1)
-
-	for _, Pip in Pips:GetChildren() do
-		local Index = tonumber(Pip.Name)
-
-		if Index and Index > Max then
-			Pip:Destroy()
-		end
-	end
-
-	for Index = 1, Max do
-		local Pip = (Pips:FindFirstChild(tostring(Index)) or Instance.new('Frame')) :: Frame
-		Pip.Name = tostring(Index)
-		Pip.LayoutOrder = Index
-		Pip.BorderSizePixel = 0
-		Pip.Size = Width
-		Pip.BackgroundColor3 = if Index <= Shield then FULL_PIP else EMPTY_PIP
-		Pip.Parent = Pips
-	end
+	RecruitHealth:Update(self, Max, Shield)
 end
 
 function ClientRecruit.SetOwner(self: Types.ClientRecruitClass, OwnerId: number)
@@ -281,17 +219,17 @@ function ClientRecruit.Destroy(self: Types.ClientRecruitClass, Reason: number?)
 		self.__Connection = nil
 	end
 
-	if self.__Indicator then
-		self.__Indicator:Destroy()
-		self.__Indicator = nil
-	end
+	RecruitHealth:Remove(self)
 
 	--- Death clones the model before anything yields, so destroying it right after is safe.
 	if Reason == GameEnum.EntityRemoveReason.Defeated then
 		Effects:Play('Death', self)
 	end
 
-	self.__Animator:Destroy()
+	if self.__Animator then
+		self.__Animator:Destroy()
+	end
+
 	self.__Appearance:Destroy()
 	self.__Anchor:Destroy()
 end

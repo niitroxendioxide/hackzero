@@ -31,6 +31,17 @@ function List:Has(Recruit: Types.ServerRecruitClass): boolean
 	return List.__Stored[Recruit:GetId()] == Recruit
 end
 
+--- Whether `Thing` (anything an enemy might target) is a standing recruit.
+function List:IsRecruit(Thing: any): boolean
+	for _, Recruit in List.__Stored do
+		if Recruit == Thing then
+			return true
+		end
+	end
+
+	return false
+end
+
 function List:GetAll(): {[number]: Types.ServerRecruitClass}
 	return List.__Stored
 end

@@ -454,6 +454,11 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 		return;
 	end
 	
+	--- Pulls it off any ally/escort it was going after.
+	if Enemy.Provoke then
+		Enemy:Provoke(Agent)
+	end
+
 	local Dealt_Daze, Is_Dazed = DamageLibrary:Daze(Agent, Enemy, Data.Daze, SkillId)
 	local EnergyAmount = DamageLibrary:CalculateEnergyForHit(Enemy, Dealt_Damage)
 

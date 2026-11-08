@@ -137,8 +137,9 @@ function ServerRecruit.IsAlive(self: Types.ServerRecruitClass): boolean
 	return not self.__Defeated
 end
 
+--- Targetable and hittable: in the run, standing, and either led by someone or an ally.
 function ServerRecruit.IsActive(self: Types.ServerRecruitClass): boolean
-	return self.__Active and not self.__Defeated and self.__Owner ~= nil
+	return self.__Active and not self.__Defeated and (self.__Owner ~= nil or self.__Data.Ally == true)
 end
 
 function ServerRecruit.AddTag(self: Types.ServerRecruitClass, Tag: string, Time: number?)

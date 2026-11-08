@@ -157,12 +157,19 @@ return {
             I1_Plateau = Event({
                 Indicator = "I1_Plateau",
                 After = 'GoTo_Plateau',
-                Objective = "Clear the static-touched invaders {objective[KillEnemies]}",
+                Objective = "Protect the Namekians, clear the invaders {objective[KillEnemies]}",
                 Enemies = {
                     [1] = {Affected('SandShinobi', 2, 7)},
                     [2] = {Affected('Sorcerer', 3, 4), Affected('Saiyan', 4, 5)},
                 },
-                Dialogue = {Say("Agency", "Those aren't Namekians. The static is pulling fighters in from other worlds.")},
+                --- Spawned on the arena border, gone when the fight is won. One dying fails the run.
+                Allies = {
+                    {Name = 'Namekian', Amount = 3},
+                },
+                Dialogue = {
+                    Say("Agency", "Those aren't Namekians. The static is pulling fighters in from other worlds."),
+                    Say("Agency", "There are villagers caught in there. Don't let a single one fall."),
+                },
                 Finished = 'GoTo_Village',
             }),
 

@@ -8,6 +8,8 @@
 	- Hide: while its owner is in a fight, walk to the nearest free corner of the arena and
 	  stay there.
 	- Leash: when it is too far from where it should be, or stuck, teleport there.
+	- Wander: an ally (`Data.Ally`) with no owner shuffles between random spots near where
+	  it spawned, like it is too scared to stand still.
 ]]
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
@@ -120,6 +122,9 @@ function Brain.new(Recruit: Types.ServerRecruitClass): Types.RecruitBrainClass
 	self.__Corner = 0
 	self.__Stuck_From = nil
 	self.__Stuck_Time = 0
+	self.__Home = nil
+	self.__Wander_Goal = nil
+	self.__Next_Wander = 0
 
 	return self
 end
@@ -146,6 +151,12 @@ function Brain.GetHidingSpot(self: Types.RecruitBrainClass): (StageTypes.Arena?,
 end
 
 function Brain.Think(self: Types.RecruitBrainClass, Delta: number, Context: Types.RecruitStepContext)
+	if Context.Leader == nil and self.__Recruit.__Data.Ally then
+		self:__Wander(Delta)
+
+		return
+	end
+
 	if Context.Leader == nil then
 		self:Reset()
 		self.__Recruit.__Movement:Stop()
@@ -258,6 +269,42 @@ function Brain.__Hide(self: Types.RecruitBrainClass, Delta: number, Context: Typ
 
 	if self:__IsStuck(Delta) then
 		self:__Teleport(Spot)
+	end
+end
+
+function Brain.__Wander(self: Types.RecruitBrainClass, Delta: number)
+	local Recruit = self.__Recruit
+	local Movement = Recruit.__Movement
+
+	Recruit:__SetState('Idle')
+
+	--- Home is taken on the first think, after the spawn has dropped it onto the floor.
+	self.__Home = self.__Home or Movement.__Position
+
+	local Goal = self.__Wander_Goal
+
+	--- Got there (or got stuck): stop and fidget in place for a moment before the next spot.
+	if Goal and (Flat(Goal - Movement.__Position).Magnitude <= REACH or self:__IsStuck(Delta)) then
+		Goal = nil
+		self.__Wander_Goal = nil
+		self.__Next_Wander = os.clock() + 0.5 + math.random() * 1.5
+	end
+
+	if Goal then
+		self:__WalkTo(Goal)
+
+		return
+	end
+
+	Movement:Stop()
+	self.__Stuck_From = nil
+	self.__Stuck_Time = 0
+
+	if os.clock() >= self.__Next_Wander then
+		local Radius = Recruit.__Data.Wander.Radius
+		local Angle = math.random() * math.pi * 2
+
+		self.__Wander_Goal = (self.__Home :: Vector3) + Vector3.new(math.cos(Angle), 0, math.sin(Angle)) * math.random() * Radius
 	end
 end
 

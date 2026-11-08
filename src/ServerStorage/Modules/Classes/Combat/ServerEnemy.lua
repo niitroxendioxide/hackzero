@@ -29,6 +29,8 @@ local RecruitList = require(Libraries.RecruitList)
 
 --
 local Rng = Random.new()
+-- Seconds an enemy hit off a recruit keeps chasing whoever hit it.
+local PROVOKE_TIME = 4
 local ServerEnemy = {} :: {new: (At: Vector3, Name: string) -> (), [string]: (self: Types.ServerEnemyClass, any) -> (any)}
 ServerEnemy.__index = ServerEnemy
 ServerEnemy.__tostring = function()
@@ -51,6 +53,8 @@ function ServerEnemy.new(At: Vector3, Name: string, Level: number)
 	self.__EnemyId = -1
 	self.__Next = 1
 	self.__TargetRepeatedCount = 0;
+	self.__Provoker = nil
+	self.__Provoked_Until = 0
 	self.__Next_Attack = 'Skill 1'
 	self.__Tags = {}
 	self.__Snapfix = os.clock()
@@ -460,7 +464,31 @@ function ServerEnemy:TrackCurrentTarget()
 	self:Rotate(At)
 end
 
+--[[
+	Hit by `Agent` while going after a recruit (an ally, an escort): it drops the recruit and
+	chases `Agent` for PROVOKE_TIME, so players can pull enemies off whoever they protect.
+]]
+function ServerEnemy:Provoke(Agent: AgentTypes.ServerAgentClass)
+	if not RecruitList:IsRecruit(self.__Current_Target) then
+		return
+	end
+
+	self.__Provoker = Agent
+	self.__Provoked_Until = os.clock() + PROVOKE_TIME
+	self.__Current_Target = Agent
+end
+
 function ServerEnemy:FindRandomAggro()
+	--- Provoked: stay on whoever pulled it while they are still in the fight.
+	local Provoker = self.__Provoker
+	if Provoker and os.clock() < self.__Provoked_Until and Provoker:IsAlive() and Provoker:IsActive() then
+		self.__Current_Target = Provoker
+
+		return
+	end
+
+	self.__Provoker = nil
+
 	local Agents = AgentsLibrary:GetAllAliveAgents()
 	local At = self.__Movement.__Position
 	local MaxDistance = 120 --math.huge

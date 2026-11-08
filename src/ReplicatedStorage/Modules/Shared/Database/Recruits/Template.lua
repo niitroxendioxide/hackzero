@@ -8,6 +8,14 @@ return {
 	--- Model under `Assets.Characters.Recruits`, falls back to the shared Template rig.
 	Model = 'Template',
 
+	--- An ally to protect instead of a follower: never owned, enemies can still go for it, and
+	--- it shuffles around `Wander.Radius` studs from where it spawned. Not animated.
+	Ally = false,
+
+	Wander = {
+		Radius = 6,
+	},
+
 	Appearance = {
 		Height = 3.15,
 	},

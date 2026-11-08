@@ -360,6 +360,60 @@ function Service:BindMission(Mission: StageTypes.MissionClass)
 			Standing:SetActive(false)
 		end
 	end)
+
+	Mission.EventStarted:Connect(function(_Name: string, EventObject: any, EventData: {[string]: any})
+		if typeof(EventData.Allies) == 'table' then
+			Service:SpawnAllies(EventObject, EventData.Allies)
+		end
+	end)
+end
+
+--[[
+	Spawn the allies of a fight along the inside of its arena walls. They are gone again once
+	the fight is won; if one goes down first, its `On_Defeat` decides (Namekians fail the run).
+
+	```lua
+	Allies = {
+		{Name = 'Namekian', Amount = 3},
+		{Name = 'Namekian', Amount = 1, Overrides = {Display_Name = 'Elder'}},
+	},
+	```
+]]
+function Service:SpawnAllies(EventObject: any, Allies: {{Name: string, Amount: number?, Overrides: {[string]: any}?}})
+	local Arena = EventObject:GetCombatArea()
+	if not Arena then
+		Debugger:WarnLine("RecruitService::SpawnAllies", "The event has no arena to put its allies in.", 1)
+
+		return
+	end
+
+	local Spawned = {}
+
+	for _, Entry in Allies do
+		local Overrides = table.clone(Entry.Overrides or {})
+		Overrides.Ally = true
+
+		for _ = 1, Entry.Amount or 1 do
+			--- A random spot on a random wall, a few studs in from it.
+			local HalfX, HalfZ = math.max(Arena.Size.X / 2 - 4, 0), math.max(Arena.Size.Z / 2 - 4, 0)
+			local Along = math.random() * 2 - 1
+			local Side = if math.random() < 0.5 then -1 else 1
+			local Offset = if math.random() < 0.5 then Vector3.new(Along * HalfX, 0, Side * HalfZ) else Vector3.new(Side * HalfX, 0, Along * HalfZ)
+			local At = Arena.CFrame:PointToWorldSpace(Offset)
+			local Center = Arena.CFrame.Position
+
+			local New = Service:Create(Entry.Name, nil, CFrame.lookAt(At, Vector3.new(Center.X, At.Y, Center.Z)), Overrides)
+			if New then
+				table.insert(Spawned, New)
+			end
+		end
+	end
+
+	EventObject.Finished:Once(function()
+		for _, Ally in Spawned do
+			Service:Remove(Ally)
+		end
+	end)
 end
 
 --- Catch a player who joined late up on every recruit (TeamService:Sync).

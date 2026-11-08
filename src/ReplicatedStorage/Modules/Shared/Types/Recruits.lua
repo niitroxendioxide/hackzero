@@ -9,6 +9,11 @@ local Signal = require(script.Parent.Parent.Utility.Signal)
 export type RecruitData = {
 	Display_Name: string,
 	Model: string,
+	Ally: boolean?,
+
+	Wander: {
+		Radius: number,
+	},
 
 	Appearance: {
 		Height: number,
@@ -95,6 +100,9 @@ export type RecruitBrainClass = {
 	__Corner: number,
 	__Stuck_From: Vector3?,
 	__Stuck_Time: number,
+	__Home: Vector3?,
+	__Wander_Goal: Vector3?,
+	__Next_Wander: number,
 
 	Think: (self: RecruitBrainClass, Delta: number, Context: RecruitStepContext) -> (),
 	Reset: (self: RecruitBrainClass) -> (),
@@ -105,6 +113,7 @@ export type RecruitBrainClass = {
 
 	__Follow: (self: RecruitBrainClass, Delta: number, Context: RecruitStepContext) -> (),
 	__Hide: (self: RecruitBrainClass, Delta: number, Context: RecruitStepContext) -> (),
+	__Wander: (self: RecruitBrainClass, Delta: number) -> (),
 	__WalkTo: (self: RecruitBrainClass, Goal: Vector3) -> (),
 	__IsStuck: (self: RecruitBrainClass, Delta: number) -> (boolean),
 	__BehindLeader: (self: RecruitBrainClass, Leader: Leader) -> (Vector3),
@@ -201,8 +210,7 @@ export type ClientRecruitClass = {
 	__Correction: Vector3,
 	__Anchor: BasePart,
 	__Appearance: Default.AppearanceController,
-	__Animator: {[string]: any},
-	__Indicator: BillboardGui?,
+	__Animator: {[string]: any}?,
 	__Connection: RBXScriptConnection?,
 
 	Init: (self: ClientRecruitClass) -> (),
