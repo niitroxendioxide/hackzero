@@ -8,13 +8,9 @@ return {
 	--- Model under `Assets.Characters.Recruits`, falls back to the shared Template rig.
 	Model = 'Template',
 
-	--- An ally to protect instead of a follower: never owned, enemies can still go for it, and
-	--- it shuffles around `Wander.Radius` studs from where it spawned. Not animated.
+	--- An ally to protect instead of a follower: never owned, but enemies can still go for it.
+	--- In a fight it behaves like any recruit: runs for a corner, and somewhere safer when hit.
 	Ally = false,
-
-	Wander = {
-		Radius = 6,
-	},
 
 	Appearance = {
 		Height = 3.15,
@@ -26,6 +22,9 @@ return {
 
 		--- Studs per second it walks at. Agents jog at 20-25.
 		Walk_Speed = 20,
+
+		--- Studs per second it runs at in a fight, to its corner or away from a hit. Agents sprint at ~30.
+		Run_Speed = 30,
 
 		--- Shield regained per second while out of combat.
 		Shield_Regen_Rate = 0.25,

@@ -5,11 +5,13 @@
 	  it in line). It holds still while the leader is close and drops the trail, so a player
 	  walking back into it never makes it back away. It only sets off again once the player
 	  has passed it and got `Follow.Distance` away on the other side, which keeps it behind.
-	- Hide: while its owner is in a fight, walk to the nearest free corner of the arena and
-	  stay there.
-	- Leash: when it is too far from where it should be, or stuck, teleport there.
-	- Wander: an ally (`Data.Ally`) with no owner shuffles between random spots near where
-	  it spawned, like it is too scared to stand still.
+	- Hide: in a fight (its owner's, or the one it stands in for an ally) run to the nearest
+	  free corner of the arena and stay there.
+	- Flee: hit while hiding, run to the safest place: whichever of the other corners or the
+	  spot behind its protector (owner's agent, or nearest agent) is farthest from enemies.
+	  Behind the protector keeps following them, with the protector between it and the enemies.
+	- Leash: following, when it is too far behind its leader or stuck, teleport there. Never
+	  in a fight: there it always runs, and picks another spot when stuck.
 ]]
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
@@ -17,6 +19,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 
 local World = require(Shared.World)
 local Types = require(Shared.Types.Recruits)
+local RecruitMovement = require(Shared.Classes.Recruit.RecruitMovement)
 local StageTypes = require(Shared.Types.Stages)
 
 --
@@ -27,6 +30,11 @@ local HYSTERESIS = 1
 -- Studs it has to cover inside `Stuck_Time` to not count as stuck.
 local STUCK_PROGRESS = 0.5
 local MAX_TRAIL = 64
+-- How far behind its protector it stands when it hides there.
+local BEHIND_DISTANCE = 5
+-- Each recruit stands this far (min, max) off the spot it picked, so a group sharing a corner
+-- spreads around it like people instead of stacking on one point.
+local SPREAD = {2, 4.5}
 
 local CORNERS = {
 	Vector3.new(1, 0, 1),
@@ -40,7 +48,7 @@ local function Flat(Vector: Vector3): Vector3
 end
 
 local function FindFloor(At: Vector3, Height: number): Vector3?
-	local Cast = workspace:Raycast(At, Vector3.yAxis * -(Height + 20), World:GetMapParams(false) :: RaycastParams)
+	local Cast = workspace:Raycast(At, Vector3.yAxis * -(Height + 20), RecruitMovement.GetWorldParams())
 	if not Cast then
 		return nil
 	end
@@ -56,7 +64,7 @@ end
 	@return Corner index to spot.
 ]]
 local function GetCorners(Arena: StageTypes.Arena, Level: number, Inset: number, Height: number): {[number]: Vector3}
-	local MapParams = World:GetMapParams(false) :: RaycastParams
+	local MapParams = RecruitMovement.GetWorldParams()
 	local Center = Arena.CFrame.Position
 	local Middle = Vector3.new(Center.X, Level, Center.Z)
 	local HalfX = math.max(Arena.Size.X / 2 - Inset, 0)
@@ -108,6 +116,51 @@ local function PickSpot(Arena: StageTypes.Arena, From: Vector3, Level: number, I
 	return FindFloor(Vector3.new(Center.X, Level + 1, Center.Z), Height) or Vector3.new(Center.X, Level, Center.Z), 0
 end
 
+--- Distance from `Spot` to the closest enemy, huge when there is none.
+local function Safety(Spot: Vector3, Threats: {Vector3}): number
+	local Closest = math.huge
+
+	for _, Threat in Threats do
+		Closest = math.min(Closest, Flat(Threat - Spot).Magnitude)
+	end
+
+	return Closest
+end
+
+--[[
+	BEHIND_DISTANCE behind `Protector`, on the side away from the enemy closest to them, kept
+	inside the arena. Nil when a wall is in the way or there is no floor there.
+]]
+local function BehindProtector(Protector: Types.Leader, Threats: {Vector3}, Arena: StageTypes.Arena, Inset: number, Height: number): Vector3?
+	local Pivot = Protector:GetPivot()
+	local Position = Pivot.Position
+	local Nearest, NearestDistance = nil, math.huge
+
+	for _, Threat in Threats do
+		local Distance = Flat(Threat - Position).Magnitude
+
+		if Distance < NearestDistance then
+			Nearest, NearestDistance = Threat, Distance
+		end
+	end
+
+	local Away = if Nearest then Flat(Position - Nearest) else -Flat(Pivot.LookVector)
+	if Away.Magnitude < 1e-3 then
+		return nil
+	end
+
+	local Local = Arena.CFrame:PointToObjectSpace(Position + Away.Unit * BEHIND_DISTANCE)
+	local HalfX = math.max(Arena.Size.X / 2 - Inset, 0)
+	local HalfZ = math.max(Arena.Size.Z / 2 - Inset, 0)
+	local Point = Arena.CFrame:PointToWorldSpace(Vector3.new(math.clamp(Local.X, -HalfX, HalfX), Local.Y, math.clamp(Local.Z, -HalfZ, HalfZ)))
+
+	if workspace:Raycast(Position, Point - Position, RecruitMovement.GetWorldParams()) then
+		return nil
+	end
+
+	return FindFloor(Point + Vector3.yAxis, Height)
+end
+
 --
 local Brain = {}
 Brain.__index = Brain
@@ -122,9 +175,11 @@ function Brain.new(Recruit: Types.ServerRecruitClass): Types.RecruitBrainClass
 	self.__Corner = 0
 	self.__Stuck_From = nil
 	self.__Stuck_Time = 0
-	self.__Home = nil
-	self.__Wander_Goal = nil
-	self.__Next_Wander = 0
+	self.__Flee = false
+	self.__Behind = false
+
+	local Angle = math.random() * math.pi * 2
+	self.__Offset = Vector3.new(math.cos(Angle), 0, math.sin(Angle)) * (SPREAD[1] + math.random() * (SPREAD[2] - SPREAD[1]))
 
 	return self
 end
@@ -137,6 +192,13 @@ function Brain.Reset(self: Types.RecruitBrainClass)
 	self.__Arena = nil
 	self.__Spot = nil
 	self.__Corner = 0
+	self.__Flee = false
+	self.__Behind = false
+end
+
+--- Hurt: next think it runs for the safest place it can find (only matters mid-fight).
+function Brain.Flee(self: Types.RecruitBrainClass)
+	self.__Flee = true
 end
 
 function Brain.ClearTrail(self: Types.RecruitBrainClass)
@@ -151,24 +213,15 @@ function Brain.GetHidingSpot(self: Types.RecruitBrainClass): (StageTypes.Arena?,
 end
 
 function Brain.Think(self: Types.RecruitBrainClass, Delta: number, Context: Types.RecruitStepContext)
-	if Context.Leader == nil and self.__Recruit.__Data.Ally then
-		self:__Wander(Delta)
-
-		return
-	end
-
-	if Context.Leader == nil then
+	if Context.Arena then
+		self:__Hide(Delta, Context)
+	elseif Context.Leader then
+		self.__Flee = false
+		self:__Follow(Delta, Context)
+	else
 		self:Reset()
 		self.__Recruit.__Movement:Stop()
 		self.__Recruit:__SetState('Idle')
-
-		return
-	end
-
-	if Context.Arena then
-		self:__Hide(Delta, Context)
-	else
-		self:__Follow(Delta, Context)
 	end
 end
 
@@ -231,26 +284,45 @@ function Brain.__Hide(self: Types.RecruitBrainClass, Delta: number, Context: Typ
 	local Recruit = self.__Recruit
 	local Movement = Recruit.__Movement
 	local Arena = Context.Arena :: StageTypes.Arena
+	local Inset = Recruit.__Data.Combat.Corner_Inset
 
 	Recruit:__SetState('Hiding')
 
+	--- A new fight: run for the nearest free corner.
 	if self.__Arena ~= Arena or self.__Spot == nil then
-		local Level = Context.Level or (Context.Leader :: Types.Leader):GetPivot().Position.Y
-
 		self.__Arena = Arena
-		self.__Spot, self.__Corner = PickSpot(Arena, Movement.__Position, Level, Recruit.__Data.Combat.Corner_Inset, Movement.__Height, Context.ClaimedCorners)
+		self.__Behind = false
+		self.__Flee = false
+		self.__Spot, self.__Corner = PickSpot(Arena, Movement.__Position, Context.Level :: number, Inset, Movement.__Height, Context.ClaimedCorners)
 		self.__Holding = false
 		self:ClearTrail()
+	end
+
+	if self.__Flee then
+		self.__Flee = false
+		self:__PickSafest(Context)
+	end
+
+	--- Behind its protector moves with them; when that spot stops working it goes back to a corner.
+	if self.__Behind then
+		local Behind = Context.Protector and BehindProtector(Context.Protector, Context.Threats, Arena, Inset / 2, Movement.__Height)
+
+		if Behind then
+			self.__Spot = Behind
+		else
+			self.__Behind = false
+			self.__Spot, self.__Corner = PickSpot(Arena, Movement.__Position, Context.Level :: number, Inset, Movement.__Height, Context.ClaimedCorners)
+		end
 	end
 
 	if self.__Corner > 0 then
 		Context.ClaimedCorners[self.__Corner] = true
 	end
 
-	local Spot = self.__Spot :: Vector3
+	local Spot = self:__Spread(self.__Spot :: Vector3)
 	local Distance = Flat(Spot - Movement.__Position).Magnitude
 
-	if Distance <= REACH then
+	if Distance <= (if self.__Behind then REACH + HYSTERESIS else REACH) then
 		Movement:Stop()
 
 		self.__Stuck_From = nil
@@ -259,60 +331,68 @@ function Brain.__Hide(self: Types.RecruitBrainClass, Delta: number, Context: Typ
 		return
 	end
 
-	if Distance > Recruit.__Data.Follow.Leash then
-		self:__Teleport(Spot)
+	--- Always runs there, however far: a fight's corners can be farther than the follow leash.
+	self:__WalkTo(Spot, Recruit.__Data.Stats.Run_Speed)
 
-		return
-	end
-
-	self:__WalkTo(Spot)
-
+	--- Stuck mid-fight: try somewhere else rather than teleport in front of everyone.
 	if self:__IsStuck(Delta) then
-		self:__Teleport(Spot)
+		self.__Stuck_From = nil
+		self.__Stuck_Time = 0
+		self:__PickSafest(Context)
 	end
 end
 
-function Brain.__Wander(self: Types.RecruitBrainClass, Delta: number)
+--[[
+	Hurt mid-fight: pick whichever is farthest from every enemy out of the other corners and
+	the spot behind its protector. Stays put when nothing qualifies.
+]]
+function Brain.__PickSafest(self: Types.RecruitBrainClass, Context: Types.RecruitStepContext)
 	local Recruit = self.__Recruit
 	local Movement = Recruit.__Movement
+	local Arena = Context.Arena :: StageTypes.Arena
+	local Inset = Recruit.__Data.Combat.Corner_Inset
 
-	Recruit:__SetState('Idle')
+	local Best, BestCorner, BestBehind, BestSafety = nil, 0, false, -1
 
-	--- Home is taken on the first think, after the spawn has dropped it onto the floor.
-	self.__Home = self.__Home or Movement.__Position
+	for Index, Spot in GetCorners(Arena, Context.Level :: number, Inset, Movement.__Height) do
+		if Index == self.__Corner and not self.__Behind then
+			continue
+		end
 
-	local Goal = self.__Wander_Goal
-
-	--- Got there (or got stuck): stop and fidget in place for a moment before the next spot.
-	if Goal and (Flat(Goal - Movement.__Position).Magnitude <= REACH or self:__IsStuck(Delta)) then
-		Goal = nil
-		self.__Wander_Goal = nil
-		self.__Next_Wander = os.clock() + 0.5 + math.random() * 1.5
+		local Safe = Safety(Spot, Context.Threats)
+		if Safe > BestSafety then
+			Best, BestCorner, BestBehind, BestSafety = Spot, Index, false, Safe
+		end
 	end
 
-	if Goal then
-		self:__WalkTo(Goal)
+	if Context.Protector and not self.__Behind then
+		local Behind = BehindProtector(Context.Protector, Context.Threats, Arena, Inset / 2, Movement.__Height)
 
-		return
+		if Behind and Safety(Behind, Context.Threats) > BestSafety then
+			Best, BestCorner, BestBehind = Behind, 0, true
+		end
 	end
 
-	Movement:Stop()
-	self.__Stuck_From = nil
-	self.__Stuck_Time = 0
-
-	if os.clock() >= self.__Next_Wander then
-		local Radius = Recruit.__Data.Wander.Radius
-		local Angle = math.random() * math.pi * 2
-
-		self.__Wander_Goal = (self.__Home :: Vector3) + Vector3.new(math.cos(Angle), 0, math.sin(Angle)) * math.random() * Radius
+	if Best then
+		self.__Spot, self.__Corner, self.__Behind = Best, BestCorner, BestBehind
+		self:ClearTrail()
 	end
 end
 
-function Brain.__WalkTo(self: Types.RecruitBrainClass, Goal: Vector3)
+--- Its own place around `Spot` (see SPREAD), or `Spot` itself when a wall or a drop is in the way.
+function Brain.__Spread(self: Types.RecruitBrainClass, Spot: Vector3): Vector3
+	if workspace:Raycast(Spot, self.__Offset, RecruitMovement.GetWorldParams()) then
+		return Spot
+	end
+
+	return FindFloor(Spot + self.__Offset + Vector3.yAxis, self.__Recruit.__Movement.__Height) or Spot
+end
+
+function Brain.__WalkTo(self: Types.RecruitBrainClass, Goal: Vector3, Speed: number?)
 	local Recruit = self.__Recruit
 	local Movement = Recruit.__Movement
 
-	Movement:Move(Flat(Goal - Movement.__Position), Recruit.__Data.Stats.Walk_Speed)
+	Movement:Move(Flat(Goal - Movement.__Position), Speed or Recruit.__Data.Stats.Walk_Speed)
 end
 
 --[[
@@ -370,7 +450,7 @@ function Brain.__BehindLeader(self: Types.RecruitBrainClass, Leader: Types.Leade
 	Back = if Back.Magnitude > 1e-3 then Back.Unit else Vector3.zAxis
 
 	local Behind = LeaderPosition - Back * Follow.Distance
-	local Blocked = workspace:Raycast(LeaderPosition, Behind - LeaderPosition, World:GetMapParams(false) :: RaycastParams)
+	local Blocked = workspace:Raycast(LeaderPosition, Behind - LeaderPosition, RecruitMovement.GetWorldParams())
 
 	if not Blocked then
 		local Spot = FindFloor(Behind + Vector3.yAxis, Height)

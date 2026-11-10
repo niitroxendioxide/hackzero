@@ -6,7 +6,8 @@
 	floor snapping. It owns no Instances, each side moves its own part off `GetPivot`.
 
 	Walls are the map and destructibles only. Arena barriers are left out on purpose: a
-	recruit still outside when a fight locks the room walks in through them to hide.
+	recruit still outside when a fight locks the room walks in through them to hide. So are
+	the map's `Triggers` and `Markers`, invisible boxes that would otherwise block it.
 ]]
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
@@ -28,10 +29,20 @@ local function Flat(Vector: Vector3): Vector3
 	return Vector3.new(Vector.X, 0, Vector.Z)
 end
 
+-- Folders under the map that are not solid: trigger volumes and marker boxes.
+local NOT_SOLID = {Triggers = true, Markers = true}
+
 local function GetWallParams(): RaycastParams
 	local Camera = workspace:FindFirstChildOfClass('Camera')
 	local Entities = WorldFolder:FindFirstChild('Entities')
-	local List = {WorldFolder:FindFirstChild('Map')}
+	local Map = WorldFolder:FindFirstChild('Map')
+	local List = {workspace:FindFirstChild('Baseplate')}
+
+	for _, Child in (if Map then Map:GetChildren() else {}) do
+		if not NOT_SOLID[Child.Name] then
+			table.insert(List, Child)
+		end
+	end
 
 	-- Server keeps destructible colliders under the camera, clients under Entities.
 	local ServerDestructibles = Camera and Camera:FindFirstChild('Destructibles')
@@ -85,6 +96,9 @@ end
 --
 local RecruitMovement = {}
 RecruitMovement.__index = RecruitMovement
+
+--- What a recruit treats as solid, walls and floor alike. Brain checks its spots against the same.
+RecruitMovement.GetWorldParams = GetWallParams
 
 function RecruitMovement.new(At: CFrame, Speed: number, Height: number?): Types.RecruitMovementClass
 	local self = setmetatable({}, RecruitMovement)
@@ -171,8 +185,7 @@ function RecruitMovement.Update(self: Types.RecruitMovementClass, Delta: number)
 		return
 	end
 
-	local FloorParams = World:GetMapParams(false) :: RaycastParams
-	local Floor = workspace:Raycast(self.__Position + Step, Vector3.yAxis * -(self.__Height + DROP), FloorParams)
+	local Floor = workspace:Raycast(self.__Position + Step, Vector3.yAxis * -(self.__Height + DROP), GetWallParams())
 	if not Floor then
 		return
 	end
@@ -182,8 +195,7 @@ end
 
 --- Drop onto whatever floor is under it, for spawning and teleports.
 function RecruitMovement.SnapToGround(self: Types.RecruitMovementClass)
-	local FloorParams = World:GetMapParams(false) :: RaycastParams
-	local Floor = workspace:Raycast(self.__Position + Vector3.yAxis * 2, Vector3.yAxis * -100, FloorParams)
+	local Floor = workspace:Raycast(self.__Position + Vector3.yAxis * 2, Vector3.yAxis * -100, GetWallParams())
 
 	if Floor then
 		self.__Position = Floor.Position + Vector3.yAxis * self.__Height

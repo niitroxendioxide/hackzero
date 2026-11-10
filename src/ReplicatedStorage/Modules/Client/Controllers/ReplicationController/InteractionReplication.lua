@@ -28,7 +28,8 @@ function Controller:CreateNPC(Buffer: buffer, Part: BasePart)
 end
 
 function Controller:PlayEventDialogue(Buffer: buffer)
-	const EventName = buffer.readstring(Buffer, 1, buffer.len(Buffer)-1)
+	const Wave = buffer.readu8(Buffer, 1)
+	const EventName = buffer.readstring(Buffer, 2, buffer.len(Buffer)-2)
 	const AllocatedDialogueData = LocalData:GetAllocatedDialogueData()
 	local EventData;
 
@@ -50,11 +51,16 @@ function Controller:PlayEventDialogue(Buffer: buffer)
 
 	end
 	local Dialogue = InterfaceController:GetComponent("Dialogue")
-	if EventData == nil or typeof(EventData.Dialogue) ~= 'table' then
+	--- Wave 0 is the event's own Dialogue, anything else that wave's WaveDialogue.
+	const Lines = if EventData == nil then nil
+		elseif Wave > 0 then (EventData.WaveDialogue or {})[Wave]
+		else EventData.Dialogue
+
+	if typeof(Lines) ~= 'table' then
 		return
 	end
 
-	Dialogue:PlaySequence(EventData.Dialogue)
+	Dialogue:PlaySequence(Lines)
 end
 
 return Controller

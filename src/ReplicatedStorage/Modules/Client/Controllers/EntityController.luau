@@ -19,6 +19,7 @@ const Statics = require(Shared.Database.Statics)
 const RecruitsDatabase = require(Shared.Database.Recruits)
 const Recruits = require(Client.Libraries.Recruits)
 const RecruitClass = require(Client.Classes.Recruit)
+const Scenes = require(Client.Libraries.Scenes)
 const ReplicationController = require(script.Parent.ReplicationController)
 
 const CHANNEL = 'Entities'
@@ -115,6 +116,20 @@ Handlers[GameEnum.EntityReplication.SetRecruitState] = function(Buffer: buffer)
     if Recruit and State then
         Recruit:SetState(State)
     end
+end
+
+Handlers[GameEnum.EntityReplication.SetScene] = function(_: buffer, Event: string, Entries: {any})
+    for _, Entry in Entries do
+        if typeof(Entry.Type) == 'number' then
+            Entry.Type = GameEnum.KeyLookup(GameEnum.SceneItemType, Entry.Type)
+        end
+    end
+
+    Scenes:Set(Event, Entries)
+end
+
+Handlers[GameEnum.EntityReplication.ClearScene] = function(_: buffer, Event: string, Slots: {number})
+    Scenes:Clear(Event, Slots)
 end
 
 --

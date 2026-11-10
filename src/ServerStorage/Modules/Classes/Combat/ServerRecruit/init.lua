@@ -1,8 +1,9 @@
 --[[
 	@class ServerRecruit
 
-	Someone the players escort: follows one player around, hides in a corner while that
-	player is in a fight, and soaks enemy hits on a shield counted in hits rather than damage.
+	Someone the players escort or protect: follows one player around (allies follow nobody),
+	runs for a corner of any fight it is in and somewhere safer whenever it is hit, and
+	soaks enemy hits on a shield counted in hits rather than damage.
 
 	It never looks the world up on its own. RecruitService works out who it follows, whether
 	a fight is on and whether anything is after it, and hands that over through `Step`, so
@@ -212,6 +213,7 @@ function ServerRecruit.TakeHit(self: Types.ServerRecruitClass, Perpetrator: any,
 	self.__Flinch_Until = os.clock() + Stats.Flinch_Time
 
 	self:AddTag('Invulnerability', Stats.Hit_Invulnerability)
+	self.__Brain:Flee()
 	self.Hit:Fire(Hits, Perpetrator)
 
 	if self.__Shield <= 0 then
@@ -300,6 +302,13 @@ function ServerRecruit.SetActive(self: Types.ServerRecruitClass, State: boolean)
 	self.__Active = State
 end
 
+--- The fight it was in is won: it stands down where it is (like SetActive(false)) and celebrates.
+function ServerRecruit.Celebrate(self: Types.ServerRecruitClass)
+	self.__Active = false
+	self.__Movement:Stop()
+	self:__SetState('Celebrating')
+end
+
 function ServerRecruit.PivotTo(self: Types.ServerRecruitClass, At: CFrame)
 	self.__Movement:PivotTo(At)
 	self.__Brain:ClearTrail()
@@ -315,7 +324,10 @@ function ServerRecruit.Step(self: Types.ServerRecruitClass, Delta: number, Conte
 
 	if not self.__Active then
 		self.__Movement:Stop()
-		self:__SetState('Idle')
+
+		if self.__State ~= 'Celebrating' then
+			self:__SetState('Idle')
+		end
 	elseif os.clock() < self.__Flinch_Until then
 		self.__Movement:Stop()
 		self:__SetState('Flinching')

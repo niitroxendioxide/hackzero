@@ -36,6 +36,7 @@ local ServerRecruit = require(Modules.Classes.Combat.ServerRecruit)
 local RecruitList = require(Modules.Libraries.RecruitList)
 local EntityReplicator = require(Modules.Libraries.EntityReplicator)
 local AgentService = require(Modules.Services.Combat.AgentService)
+local SceneService = require(Modules.Services.Match.SceneService)
 
 --
 const MAX_RECRUITS = 64
@@ -44,6 +45,8 @@ const UPDATE_RATE = 1 / 24
 const MAX_DELTA = 0.2
 const SNAP_INTERVAL = 1
 const MOVE_INTERVAL = 0.1
+-- Seconds a fight's allies stay, celebrating, after it is won before they fade out.
+const DEFAULT_LINGER = 15
 -- Heading change past which a new MoveRecruit goes out, as a cosine (8 degrees).
 const MOVE_TURN = math.cos(math.rad(8))
 
@@ -115,6 +118,19 @@ local function FindNearestOwner(Target: Recruit, Excluding: Player?): Player?
 	end
 
 	return Nearest
+end
+
+--- Where every living enemy stands, what a recruit running for safety runs from.
+local function GetThreats(): {Vector3}
+	local Threats = {}
+
+	for _, Enemy in Enemies:GetAll() do
+		if Enemy:IsAlive() then
+			table.insert(Threats, Enemy:GetPivot().Position)
+		end
+	end
+
+	return Threats
 end
 
 --- Everything some living enemy is after right now.
@@ -361,25 +377,31 @@ function Service:BindMission(Mission: StageTypes.MissionClass)
 		end
 	end)
 
-	Mission.EventStarted:Connect(function(_Name: string, EventObject: any, EventData: {[string]: any})
+	Mission.EventStarted:Connect(function(Name: string, EventObject: any, EventData: {[string]: any})
 		if typeof(EventData.Allies) == 'table' then
-			Service:SpawnAllies(EventObject, EventData.Allies)
+			Service:SpawnAllies(Name, EventObject, EventData.Allies)
 		end
 	end)
 end
 
 --[[
-	Spawn the allies of a fight along the inside of its arena walls. They are gone again once
-	the fight is won; if one goes down first, its `On_Defeat` decides (Namekians fail the run).
+	Spawn the allies of a fight. Each takes a scene slot linked to its kind when the event has
+	one (`Ally = 'Namekian'`, see SceneService) and stands where that model was posed; the
+	rest huddle together at one spot along the inside of the arena walls. If one goes down,
+	its `On_Defeat` decides (Namekians fail the run).
+
+	Once the fight is won they stay where they are, celebrate, and fade out after `Linger`
+	seconds (DEFAULT_LINGER when left out). With `Talk`, the first ally of that entry can be
+	talked to while it celebrates and says that line.
 
 	```lua
 	Allies = {
 		{Name = 'Namekian', Amount = 3},
-		{Name = 'Namekian', Amount = 1, Overrides = {Display_Name = 'Elder'}},
+		{Name = 'Namekian', Amount = 1, Linger = 30, Talk = "Thank you!", Overrides = {Display_Name = 'Elder'}},
 	},
 	```
 ]]
-function Service:SpawnAllies(EventObject: any, Allies: {{Name: string, Amount: number?, Overrides: {[string]: any}?}})
+function Service:SpawnAllies(Event: string, EventObject: any, Allies: {{Name: string, Amount: number?, Linger: number?, Talk: string?, Overrides: {[string]: any}?}})
 	local Arena = EventObject:GetCombatArea()
 	if not Arena then
 		Debugger:WarnLine("RecruitService::SpawnAllies", "The event has no arena to put its allies in.", 1)
@@ -387,31 +409,57 @@ function Service:SpawnAllies(EventObject: any, Allies: {{Name: string, Amount: n
 		return
 	end
 
+	--- Where the ones without a scene slot huddle: a random spot on a random wall, a few studs in.
+	local HalfX, HalfZ = math.max(Arena.Size.X / 2 - 5, 0), math.max(Arena.Size.Z / 2 - 5, 0)
+	local Along = math.random() * 2 - 1
+	local Side = if math.random() < 0.5 then -1 else 1
+	local Huddle = Arena.CFrame:PointToWorldSpace(if math.random() < 0.5 then Vector3.new(Along * HalfX, 0, Side * HalfZ) else Vector3.new(Side * HalfX, 0, Along * HalfZ))
+	local Center = Arena.CFrame.Position
+
 	local Spawned = {}
 
 	for _, Entry in Allies do
-		local Overrides = table.clone(Entry.Overrides or {})
-		Overrides.Ally = true
+		for Index = 1, Entry.Amount or 1 do
+			local Overrides = table.clone(Entry.Overrides or {})
+			Overrides.Ally = true
 
-		for _ = 1, Entry.Amount or 1 do
-			--- A random spot on a random wall, a few studs in from it.
-			local HalfX, HalfZ = math.max(Arena.Size.X / 2 - 4, 0), math.max(Arena.Size.Z / 2 - 4, 0)
-			local Along = math.random() * 2 - 1
-			local Side = if math.random() < 0.5 then -1 else 1
-			local Offset = if math.random() < 0.5 then Vector3.new(Along * HalfX, 0, Side * HalfZ) else Vector3.new(Side * HalfX, 0, Along * HalfZ)
-			local At = Arena.CFrame:PointToWorldSpace(Offset)
-			local Center = Arena.CFrame.Position
+			--- Only the first of the group gets to speak.
+			if Index == 1 and Entry.Talk then
+				Overrides.Talk = Entry.Talk
+			end
 
-			local New = Service:Create(Entry.Name, nil, CFrame.lookAt(At, Vector3.new(Center.X, At.Y, Center.Z)), Overrides)
+			local Link, At = SceneService:Claim(Event, 'Ally', Entry.Name)
+			if Link then
+				Overrides.Scene = Link
+			else
+				local Spot = Huddle + Vector3.new(math.random() * 4 - 2, 0, math.random() * 4 - 2)
+				At = CFrame.lookAt(Spot, Vector3.new(Center.X, Spot.Y, Center.Z))
+			end
+
+			local New = Service:Create(Entry.Name, nil, At :: CFrame, Overrides)
 			if New then
-				table.insert(Spawned, New)
+				Spawned[New] = Entry.Linger or DEFAULT_LINGER
 			end
 		end
 	end
 
 	EventObject.Finished:Once(function()
-		for _, Ally in Spawned do
-			Service:Remove(Ally)
+		--- Lost (an ally died and failed the run): nothing to celebrate, they just stand down with the mission.
+		local Mission = Service.__Mission
+		if Mission and Mission:IsFinished() and (Mission :: any).__Won == false then
+			return
+		end
+
+		for Ally, Linger in Spawned do
+			if not RecruitList:Has(Ally) then
+				continue
+			end
+
+			Ally:Celebrate()
+
+			task.delay(Linger, function()
+				Service:Remove(Ally, GameEnum.EntityRemoveReason.Vanished)
+			end)
 		end
 	end)
 end
@@ -449,6 +497,7 @@ end
 function Service:__Update(Delta: number)
 	local Mission = Service.__Mission
 	local Targeted = GetEnemyTargets()
+	local Threats = GetThreats()
 
 	--- A line whose owner left, or lost every agent while someone else still stands, changes hands.
 	for Owner, Line in table.clone(Service.__Lines) do
@@ -489,6 +538,8 @@ function Service:__Update(Delta: number)
 				Arena = Arena,
 				Level = if AgentPosition then AgentPosition.Y else nil,
 				ClaimedCorners = if Arena then Claimed[Arena] else {},
+				Protector = Agent,
+				Threats = Threats,
 			})
 
 			Service:__Regen(Led, Delta, Arena == nil and not OwnerTargeted and not Targeted[Led])
@@ -503,14 +554,26 @@ function Service:__Update(Delta: number)
 			continue
 		end
 
+		--- Nobody to follow, but a fight it stands in still sends it for a corner, with the
+		--- nearest player as the one to hide behind.
+		local Position = Standing:GetPivot().Position
+		local Arena = if Mission then Mission:GetCombatAreaAt(Position) else nil
+		local Nearest = FindNearestOwner(Standing)
+
+		if Arena and not Claimed[Arena] then
+			Claimed[Arena] = {}
+		end
+
 		Standing:Step(Delta, {
 			Leader = nil,
-			Arena = nil,
-			Level = nil,
-			ClaimedCorners = {},
+			Arena = Arena,
+			Level = Position.Y,
+			ClaimedCorners = if Arena then Claimed[Arena] else {},
+			Protector = if Nearest then GetActiveAgent(Nearest) else nil,
+			Threats = Threats,
 		})
 
-		Service:__Regen(Standing, Delta, not Targeted[Standing])
+		Service:__Regen(Standing, Delta, Arena == nil and not Targeted[Standing])
 		Service:__Replicate(Standing)
 	end
 end

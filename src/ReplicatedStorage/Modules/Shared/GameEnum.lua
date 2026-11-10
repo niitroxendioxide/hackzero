@@ -90,14 +90,21 @@ return {
 		SetRecruitShield = 6,
 		SetRecruitOwner = 7,
 		SetRecruitState = 8,
+		SetScene = 9,
+		ClearScene = 10,
+	},
+
+	SceneItemType = {
+		Effect = 1,
+		Model = 2,		
 	},
 
 	EntityRemoveReason = {
 		Removed = 0,
 		Defeated = 1,
+		Vanished = 2,
 	},
 
-	--- What an enemy skill is aimed at, in the EnemyUseSkill packet.
 	TargetKind = {
 		None = 0,
 		Agent = 1,
@@ -264,7 +271,7 @@ return {
 	},
 
 	Agent_States = {"Attacking", "Dashing", "Idle", "Frozen", "Stunned", "Airborne", "TrueStun"},
-	RecruitStates = {"Idle", "Following", "Hiding", "Flinching"},
+	RecruitStates = {"Idle", "Following", "Hiding", "Flinching", "Celebrating"},
 	PartyStates = {
 		Idle = 1,
 		Queueing = 2,

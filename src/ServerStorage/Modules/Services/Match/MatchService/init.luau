@@ -51,6 +51,7 @@ local TeleportService = require(Services.Data.TeleportService);
 local DestructibleService = require(Services.Match.DestructibleService)
 local CorruptionService = require(Services.Match.CorruptionService)
 local CleanserService = require(Services.Match.CleanserService)
+local SceneService = require(Services.Match.SceneService)
 local TravelService = require(Services.Match.TravelService)
 local AgentsLibrary = require(Modules.Libraries.Agents)
 
@@ -668,6 +669,7 @@ function Service:Begin()
 
     --- Before Begin, so the mission's Begin hook can already spawn its recruits.
     RecruitService:BindMission(MissionObject)
+    SceneService:Bind(MissionObject)
 
     NPCService.__Stage = Context.Stage
     NPCService.__Act = Context.Act

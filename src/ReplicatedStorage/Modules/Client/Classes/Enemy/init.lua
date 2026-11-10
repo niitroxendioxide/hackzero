@@ -24,7 +24,8 @@ EnemyClass.__tostring = function(_)
 	return 'EnemyClass'
 end
 
-function EnemyClass.new(At: Vector3, Name: string, Level: number): Types.EnemyClass
+--- @param Model A scene's posed model to become (Libraries/Scenes), a fresh one is made otherwise.
+function EnemyClass.new(At: Vector3, Name: string, Level: number, Model: Model?): Types.EnemyClass
 	local EnemyDBData = Enemies:GetEnemyData(Name)
 	local self = setmetatable({}, EnemyClass)
 	self.Name = Name or 'EnemyTemplate'
@@ -33,7 +34,7 @@ function EnemyClass.new(At: Vector3, Name: string, Level: number): Types.EnemyCl
 	self.__Status = EnemyStatus.new(self.Name, Level)
 	self.__Movement = MovementClass.new(At, EnemyDBData.Stats.Movement_Speed, EnemyDBData.Appearance.Height)
 	self.__Animator = AnimatorClass.new(self, self.Name)
-	self.__Appearance = AppearanceClass.new(self.Name, 'Enemies', true)
+	self.__Appearance = AppearanceClass.new(Model or self.Name, 'Enemies', Model == nil)
 	self.__EnemyId = 0
 	self.__Tags = {}
 

@@ -8,6 +8,7 @@ local Characters = require(ReplicatedStorage.Modules.Client.Libraries.Characters
 local Enemies = require(Shared.Libraries.Enemies)
 local EnemyDatabase = require(Shared.Database.Enemies)
 local EnemyClass = require(Client.Classes.Enemy)
+local Scenes = require(Client.Libraries.Scenes)
 local GameEnum = require(Shared.GameEnum)
 local Effects = require(Client.Libraries.Effects)
 local EnemyOverheadGui = require(Client.Libraries.EnemyStatusIndicator)
@@ -17,7 +18,7 @@ local Controller = {
 	GrabbedEnemies = {}
 }
 
-function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | number} })
+function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | number} }, Scene: {Event: string, Slot: number}?)
 	local EnemyId = buffer.readu8(Buffer, 1)
 	local EnemyNameId = buffer.readu8(Buffer, 2)
 	local Level = buffer.readu8(Buffer, 3)
@@ -31,7 +32,9 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | num
 
 	
 	---
-	const NewEnemy = EnemyClass.new(At, Name, Level)
+	--- Spawned for a scene slot: it becomes the posed model already standing there.
+	const SceneModel = Scenes:Take(Scene)
+	const NewEnemy = EnemyClass.new(At, Name, Level, SceneModel)
 	
 	local IsCorrupted = false;
 
@@ -50,8 +53,14 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | num
 		end
 	end
 
-	NewEnemy:Init(EnemyId, IsCorrupted)
-	Effects:Play("Spawn", NewEnemy, IsCorrupted)
+	if SceneModel then
+		NewEnemy:Init(EnemyId, false)
+		--- The Spawn effect is what normally adds the overhead, and scene enemies skip it.
+		EnemyOverheadGui:AddIndicator(EnemyId, NewEnemy)
+	else
+		NewEnemy:Init(EnemyId, IsCorrupted)
+		Effects:Play("Spawn", NewEnemy, IsCorrupted)
+	end
 
 	--Effects:Play('EnemyStats', NewEnemy)
 	

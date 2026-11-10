@@ -82,7 +82,11 @@ function Service:LoadEnemies(Player: Player)
 	end
 end
 
-function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string | number}}, Area: string?)
+--[[
+	@param Scene   Scene slot it takes over (SceneService:Claim): the client turns that posed model into it.
+	@param SceneAt Where that slot stands, it spawns there instead of a random spot.
+]]
+function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string | number}}, Area: string?, Scene: {Event: string, Slot: number}?, SceneAt: CFrame?)
 	if not(Service:__CanSpawn()) then return end
 
 	if not EnemiesDatabase:GetEnemyData(Type) and Type ~= "any" then
@@ -96,7 +100,7 @@ function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string
 	end
 
 	local Spawn = workspace.World.Map.Triggers:FindFirstChild(Area or Tag)
-	if not Spawn then
+	if not Spawn and not SceneAt then
 		local RandomSpawn = Service:GetSpawns()
 
 		Spawn = RandomSpawn[math.random(1, #RandomSpawn)]
@@ -106,8 +110,10 @@ function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string
 		end
 	end
 
-	local At = Service:__GenerateLocation(Spawn)
+	local At = SceneAt or Service:__GenerateLocation(Spawn)
 	local Enemy = ServerEnemy.new(At.Position, Type, Level)
+	Enemy.Scene = Scene
+
 	local Key = Service:__Add(Enemy, Buffs)
 
 	Enemy.Died:Once(function()
@@ -121,6 +127,10 @@ function Service:Spawn(Type: string, Level: number, Tag: string, Buffs: {{string
 	
 	table.insert(Service.__Tag_Enemies[Tag], Enemy)
 	Enemy:Init(Key)
+
+	if SceneAt then
+		Enemy:Rotate(SceneAt.Position + SceneAt.LookVector)
+	end
 	
 	EntityBehaviorService:InitializeBehaviors(Enemy)
 

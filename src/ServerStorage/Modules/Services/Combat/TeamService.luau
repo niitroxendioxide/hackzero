@@ -21,6 +21,7 @@ local DataService = require(Services.Data.DataService)
 local AgentService = require(Services.Combat.AgentService)
 local EnemyService = require(Services.Combat.EnemyService)
 local RecruitService = require(Services.Combat.RecruitService)
+local SceneService = require(Services.Match.SceneService)
 local TeleportService = require(Services.Data.TeleportService)
 local PlayersLibrary = require(Modules.Libraries.Players)
 local Replicator = require(Modules.Libraries.Replicator)
@@ -130,6 +131,8 @@ function Service:Sync(Player: Player)
 		AgentService:Sync(OtherPlayer, Player)
 	end
 
+    --- Scenes first, so the enemies and recruits below can take their models.
+    SceneService:Load(Player)
     EnemyService:LoadEnemies(Player)
     RecruitService:Load(Player)
 end

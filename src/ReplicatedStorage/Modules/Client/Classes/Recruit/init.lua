@@ -21,10 +21,17 @@ local RecruitsDatabase = require(Shared.Database.Recruits)
 local MovementClass = require(Shared.Classes.Recruit.RecruitMovement)
 local AppearanceClass = require(Client.Classes.Appearance)
 local Effects = require(Client.Libraries.Effects)
+local Prompts = require(Client.Libraries.Prompts)
+local InterfaceController = require(Client.Controllers.InterfaceController)
 local RecruitHealth = require(Client.Components.Interface.Combat.RecruitHealth)
+local Scenes = require(Client.Libraries.Scenes)
+local Characters = require(Client.Libraries.Characters)
 local AnimatorClass = require(script.Animator)
 
 --
+-- How fast an ally turns to keep its eyes on the local player.
+local LOOK_RATE = 4
+
 local function CreateAnchor(At: CFrame, Id: number): BasePart
 	local Entities = workspace.World.Entities
 	local Parent = Entities:FindFirstChild('Recruits') or Instance.new('Folder')
@@ -71,7 +78,7 @@ end
 	@param At      Where the server has it.
 	@param Visuals What to draw it as, resolved server side so mission overrides show up.
 ]]
-function ClientRecruit.new(Id: number, Name: string, At: CFrame, Visuals: {Model: string?, Display_Name: string?, Height: number?}?): Types.ClientRecruitClass
+function ClientRecruit.new(Id: number, Name: string, At: CFrame, Visuals: {Model: string?, Display_Name: string?, Height: number?, Scene: {Event: string, Slot: number}?, Talk: string?}?): Types.ClientRecruitClass
 	local Data = RecruitsDatabase:GetData(Name)
 	local Drawn = Visuals or {}
 	local Model = Drawn.Model or Data.Model
@@ -85,14 +92,18 @@ function ClientRecruit.new(Id: number, Name: string, At: CFrame, Visuals: {Model
 	self.__Shield = Data.Stats.Shield
 	self.__Max_Shield = Data.Stats.Shield
 	self.__Display_Name = Drawn.Display_Name or Data.Display_Name
+	self.__Talk = Drawn.Talk
+	self.__Prompt = nil
 	self.__Movement = MovementClass.new(At, Data.Stats.Walk_Speed, Drawn.Height or Data.Appearance.Height)
 	self.__Correction = Vector3.zero
 	self.__Anchor = CreateAnchor(At, Id)
+	self.__Ally = Data.Ally == true
+	self.__Facing = At.LookVector
 
 	--- Seeded off the id, so a model folder with variants gives every client the same pick.
-	self.__Appearance = AppearanceClass.new(Model, 'Recruits', false, Random.new(Id))
-	--- Allies are not animated at all.
-	self.__Animator = if Data.Ally then nil else AnimatorClass.new(self, Model)
+	--- Spawned for a scene slot: it becomes the posed model already standing there.
+	self.__Appearance = AppearanceClass.new(Scenes:Take(Drawn.Scene) or Model, 'Recruits', false, Random.new(Id))
+	self.__Animator = AnimatorClass.new(self, Model)
 	self.__Connection = nil
 
 	return self
@@ -107,9 +118,7 @@ function ClientRecruit.Init(self: Types.ClientRecruitClass)
 	Model:PivotTo(self.__Anchor.CFrame)
 
 	self.__Appearance:JoinTo(self.__Anchor)
-	if self.__Animator then
-		self.__Animator:Init()
-	end
+	self.__Animator:Init()
 
 	self:SetShield(self.__Shield, self.__Max_Shield)
 
@@ -127,7 +136,25 @@ function ClientRecruit.Update(self: Types.ClientRecruitClass, Delta: number)
 		self.__Correction = Vector3.zero
 	end
 
-	self.__Anchor.CFrame = self:GetPivot()
+	local Pivot = self:GetPivot()
+
+	--- An ally standing still keeps turning to watch the local player, only on this screen.
+	local Agent = if self.__Ally and not self:IsMoving() then Characters:GetCurrent() else nil
+	if Agent then
+		local Toward = Agent:GetPivot().Position - Pivot.Position
+		Toward = Vector3.new(Toward.X, 0, Toward.Z)
+
+		if Toward.Magnitude > 1e-3 then
+			local Facing = self.__Facing:Lerp(Toward.Unit, Math:SmoothAlpha(LOOK_RATE, Delta))
+			self.__Facing = if Facing.Magnitude > 0.05 then Facing.Unit else Toward.Unit
+			self.__Anchor.CFrame = CFrame.lookAlong(Pivot.Position, self.__Facing)
+
+			return
+		end
+	end
+
+	self.__Facing = Pivot.LookVector
+	self.__Anchor.CFrame = Pivot
 end
 
 function ClientRecruit.Move(self: Types.ClientRecruitClass, Direction: Vector3, Speed: number)
@@ -161,9 +188,7 @@ end
 function ClientRecruit.DisplayHit(self: Types.ClientRecruitClass, Hits: number, Shield: number)
 	self:SetShield(Shield, self.__Max_Shield)
 
-	if self.__Animator then
-		self.__Animator:Hit()
-	end
+	self.__Animator:Hit()
 
 	local Model = self.__Appearance:GetModel()
 	Flash(Model)
@@ -186,6 +211,22 @@ end
 
 function ClientRecruit.SetState(self: Types.ClientRecruitClass, State: Types.RecruitState)
 	self.__State = State
+
+	--- Won the fight and has something to say: put a Talk prompt on it.
+	if State == 'Celebrating' and self.__Talk and not self.__Prompt then
+		local Model = self.__Appearance:GetModel()
+		local Root = Model:FindFirstChild('HumanoidRootPart') or Model.PrimaryPart
+
+		if Root then
+			local Prompt = Prompts:CreatePromptOnPart(Root, 0, 'Talk', self.__Display_Name, 10)
+
+			Prompt.Triggered:Connect(function()
+				InterfaceController:GetComponent('Dialogue'):ShowDialogue({Speaker = self.__Display_Name, Text = self.__Talk, NextDialogue = 3}, false)
+			end)
+
+			self.__Prompt = Prompt
+		end
+	end
 end
 
 function ClientRecruit.IsOwner(self: Types.ClientRecruitClass, Player: Player): boolean
@@ -224,11 +265,19 @@ function ClientRecruit.Destroy(self: Types.ClientRecruitClass, Reason: number?)
 	--- Death clones the model before anything yields, so destroying it right after is safe.
 	if Reason == GameEnum.EntityRemoveReason.Defeated then
 		Effects:Play('Death', self)
+	elseif Reason == GameEnum.EntityRemoveReason.Vanished then
+		self.__Appearance:SetVisible(false)
+
+		task.delay(0.45, function()
+			self.__Animator:Destroy()
+			self.__Appearance:Destroy()
+			self.__Anchor:Destroy()
+		end)
+
+		return
 	end
 
-	if self.__Animator then
-		self.__Animator:Destroy()
-	end
+	self.__Animator:Destroy()
 
 	self.__Appearance:Destroy()
 	self.__Anchor:Destroy()

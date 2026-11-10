@@ -12,17 +12,21 @@ local Trove = require(Shared.Utility.Trove)
 local EffectsUtil = require(Shared.Utility.Effects)
 
 --
-local AppearanceClass = {} :: {[string]: (self: Types.AppearanceController, any) -> (), new: (ModelName: string, Directory: string?, BeginTransparet: boolean?, Generator: Random?) -> Types.AppearanceController}
+local AppearanceClass = {} :: {[string]: (self: Types.AppearanceController, any) -> (), new: (ModelName: string | Model, Directory: string?, BeginTransparet: boolean?, Generator: Random?) -> Types.AppearanceController}
 AppearanceClass.__index = AppearanceClass
 
-function AppearanceClass.new(ModelName: string, Directory: string?, BeginTransparet: boolean?, Generator: Random): Types.AppearanceController
+--- `ModelName` can also be a model that already exists (a scene's, see Libraries/Scenes): it is used as is, not cloned.
+function AppearanceClass.new(ModelName: string | Model, Directory: string?, BeginTransparet: boolean?, Generator: Random): Types.AppearanceController
+	if typeof(ModelName) == 'Instance' then
+		return AppearanceClass.__Build(ModelName, BeginTransparet)
+	end
+
 	local FolderToLookIn = Directory and Assets:FindFirstChild(Directory) or Assets
 
 	if not FolderToLookIn:FindFirstChild(ModelName, true) then
 		ModelName = "Template"
 	end
 
-	local World = workspace:FindFirstChild('World')
 	local AssetsModel = FolderToLookIn:FindFirstChild(ModelName, true)
 	if AssetsModel == nil then
 		AssetsModel = Assets.Agents:FindFirstChild('Template')
@@ -38,12 +42,18 @@ function AppearanceClass.new(ModelName: string, Directory: string?, BeginTranspa
 		end
 	end
 
+	return AppearanceClass.__Build(AssetsModel:Clone(), BeginTransparet)
+end
+
+function AppearanceClass.__Build(Model: Model, BeginTransparet: boolean?): Types.AppearanceController
+	local World = workspace:FindFirstChild('World')
+
 	local self = setmetatable({}, AppearanceClass)
 	self.__Tilt = 0
 	self.__Extra_Height = 0
 	self.__Current_Height_Tween = nil :: Tween?
 	self.__Current_Height_Thread = nil :: thread?
-	self.__Model = AssetsModel:Clone() :: Types.Rig
+	self.__Model = Model :: Types.Rig
 	self.__Visible = true
 	self.__Particles = {}
 	self.__Bound_Objects = {}

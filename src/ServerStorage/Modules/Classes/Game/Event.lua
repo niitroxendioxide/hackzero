@@ -19,13 +19,16 @@ local Network = require(Shared.Network)
 local GameEnum = require(Shared.GameEnum)
 local Replicator = require(Modules.Libraries.Replicator)
 local EnemyService = require(Modules.Services.Combat.EnemyService)
+local SceneService = require(Modules.Services.Match.SceneService)
 local ServerCutscenesLibrary = require(Modules.Libraries.Cutscenes)
 
 --
-local function ReplicateEvent(Player: Player, EventName: string)
-    local Obj = buffer.create(1 + #EventName)
+--- `Wave` plays that wave's `WaveDialogue` instead of the event's `Dialogue` (0 / nil).
+local function ReplicateEvent(Player: Player, EventName: string, Wave: number?)
+    local Obj = buffer.create(2 + #EventName)
     buffer.writeu8(Obj, 0, GameEnum.Replication.PlayEventDialogue)
-    buffer.writestring(Obj, 1, EventName)
+    buffer.writeu8(Obj, 1, Wave or 0)
+    buffer.writestring(Obj, 2, EventName)
 
     Network:Fire("Replicate", Player, Obj)
 end
@@ -243,6 +246,13 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
 
     Network:FireForAll("Match", GameEnum.MatchEvents.UpdateWave, WaveNumber)
 
+    --- Lines said as this wave comes in, see `WaveDialogue` in the mission data.
+    if EventData.WaveDialogue and EventData.WaveDialogue[WaveNumber] then
+        for _, StagePlayer in self:GetPlayerObjects() do
+            ReplicateEvent(StagePlayer, self.__Event, WaveNumber)
+        end
+    end
+
     local Total = 0
     local CurrentWave = EnemyWaves[WaveNumber]
 
@@ -261,7 +271,10 @@ function EventClass.SummonEnemyWave(self: Types.EventClass, WaveNumber: number, 
 
         for i = 1, EnemyCount do
             task.delay((i - 1) * 0.1, function()
-                EnemyService:Spawn(EnemyType, EnemyLevel, self.__Event, NewBuffs, EventData.Area)
+                --- A posed scene model of this kind takes the spawn, see SceneService.
+                local Link, At = SceneService:Claim(self.__Event, 'Enemy', EnemyType)
+
+                EnemyService:Spawn(EnemyType, EnemyLevel, self.__Event, NewBuffs, EventData.Area, Link, At)
             end)
         end
     end

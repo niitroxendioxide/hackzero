@@ -2,7 +2,7 @@
 	Packets for the 'Entities' channel: match entities that are neither agents nor enemies,
 	recruits for now. Same idea as Replicator, with its own enum (`GameEnum.EntityReplication`)
 	and its own remote so it grows without touching the agent and enemy packets. Read by
-	`Client/Controllers/EntityController`.
+	`Client/Controllers/EntityController`. Also carries the pre-fight scenes (SceneService).
 
 	Every packet starts `[action u8][entity id u8]`. Anything taking a `Target` sends to that
 	player alone (a late joiner being caught up), everyone otherwise.
@@ -70,6 +70,8 @@ function EntityReplicator:CreateRecruit(Recruit: Types.ServerRecruitClass, Targe
 		Model = Data.Model,
 		Display_Name = Data.Display_Name,
 		Height = Data.Appearance.Height,
+		Scene = Data.Scene,
+		Talk = Data.Talk,
 	})
 end
 

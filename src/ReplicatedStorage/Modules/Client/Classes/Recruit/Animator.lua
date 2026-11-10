@@ -1,6 +1,7 @@
 --[[
-	Recruit animations: Idle and Jog blended off whether it is moving, a hit reaction, and a
-	cower while it hides. Movement tracks come from the model's own `Movement` folder when it
+	Recruit animations: Idle, Jog and Sprint blended off how fast it moves (it sprints when
+	running for cover in a fight), a hit reaction, a cower while it hides, and a one-off
+	`General.Interact.Gratification` when a fight it was in is won. Movement tracks come from the model's own `Movement` folder when it
 	has one, `Animations.General.Movement` otherwise (Animation:GetMovementAnim). A cower is
 	only played when `Animations.Recruits.<Model>.Cower` or `Animations.Recruits.Cower` exists.
 ]]
@@ -17,6 +18,11 @@ local AnimLibrary = require(Client.Libraries.Animation)
 --
 local NON_ZERO = 0.001
 local JOG_SPEED = 0.95
+local SPRINT_SPEED = 0.825
+-- Moving faster than this (studs/s) plays Sprint instead of Jog.
+local SPRINT_FROM = 24
+-- Run speed the Sprint track is timed for, an agent's sprint.
+local SPRINT_REFERENCE = 30
 -- Walk speed the Jog track is timed for, an agent's jog.
 local REFERENCE_SPEED = 20
 
@@ -43,6 +49,7 @@ function AnimatorClass:Init()
 
 	self:Play('Idle', {Priority = Enum.AnimationPriority.Core})
 	self:Play('Jog', {Weight = NON_ZERO, Speed = JOG_SPEED})
+	self:Play('Sprint', {Weight = NON_ZERO, Speed = SPRINT_SPEED})
 
 	self.__Thread = RunService.PostSimulation:Connect(function(Delta: number)
 		self:Update(Delta)
@@ -80,16 +87,31 @@ function AnimatorClass:Update(_: number)
 	local Moving = Recruit:IsMoving()
 	local Idle = self.__Tracks.Idle
 	local Jog = self.__Tracks.Jog
+	local Sprint = self.__Tracks.Sprint
+	local _, Speed = Recruit.__Movement:GetDirection()
+	local Sprinting = Moving and Speed >= SPRINT_FROM and Sprint ~= nil
 
 	if Jog then
-		local _, Speed = Recruit.__Movement:GetDirection()
-
-		Jog:AdjustWeight(if Moving then 1 else NON_ZERO)
+		Jog:AdjustWeight(if Moving and not Sprinting then 1 else NON_ZERO)
 		Jog:AdjustSpeed(JOG_SPEED * (math.max(Speed, 1) / REFERENCE_SPEED) * World:GetSpeed())
+	end
+
+	if Sprint then
+		Sprint:AdjustWeight(if Sprinting then 1 else NON_ZERO)
+		Sprint:AdjustSpeed(SPRINT_SPEED * (math.max(Speed, 1) / SPRINT_REFERENCE) * World:GetSpeed())
 	end
 
 	if Idle then
 		Idle:AdjustWeight(if Moving then NON_ZERO else 1)
+	end
+
+	if Recruit:GetState() == 'Celebrating' and not self.__Tracks.Celebrate then
+		local Track = AnimLibrary:Play(Recruit:GetModel(), AnimLibrary:GetAnim('General.Interact.Gratification'), 0.2, 1, 1)
+
+		if Track then
+			Track.Priority = Enum.AnimationPriority.Action
+			self.__Tracks.Celebrate = Track
+		end
 	end
 
 	local Cowering = Recruit:GetState() == 'Hiding' and not Moving

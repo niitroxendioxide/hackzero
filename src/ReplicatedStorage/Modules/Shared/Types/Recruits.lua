@@ -11,9 +11,11 @@ export type RecruitData = {
 	Model: string,
 	Ally: boolean?,
 
-	Wander: {
-		Radius: number,
-	},
+	--- Line it says when talked to once the fight it was in is won (an ally with a Talk prompt).
+	Talk: string?,
+
+	--- Scene slot it took over (SceneService), so clients reuse that posed model.
+	Scene: {Event: string, Slot: number}?,
 
 	Appearance: {
 		Height: number,
@@ -22,6 +24,7 @@ export type RecruitData = {
 	Stats: {
 		Shield: number,
 		Walk_Speed: number,
+		Run_Speed: number,
 		Shield_Regen_Rate: number,
 		Shield_Regen_Delay: number,
 		Hit_Invulnerability: number,
@@ -46,7 +49,7 @@ export type RecruitData = {
 	},
 }
 
-export type RecruitState = "Idle" | "Following" | "Hiding" | "Flinching"
+export type RecruitState = "Idle" | "Following" | "Hiding" | "Flinching" | "Celebrating"
 
 --- Anything a recruit can follow: an agent, or the recruit ahead of it in line.
 export type Leader = {
@@ -69,6 +72,12 @@ export type RecruitStepContext = {
 
 	--- Corners of `Arena` other recruits already hide in, by index. A new pick is added to it.
 	ClaimedCorners: {[number]: boolean},
+
+	--- Who it hides behind when that is the safest spot: its owner's agent, or the nearest one.
+	Protector: Leader?,
+
+	--- Where every living enemy stands.
+	Threats: {Vector3},
 }
 
 export type RecruitMovementClass = {
@@ -100,21 +109,23 @@ export type RecruitBrainClass = {
 	__Corner: number,
 	__Stuck_From: Vector3?,
 	__Stuck_Time: number,
-	__Home: Vector3?,
-	__Wander_Goal: Vector3?,
-	__Next_Wander: number,
+	__Flee: boolean,
+	__Behind: boolean,
+	__Offset: Vector3,
 
 	Think: (self: RecruitBrainClass, Delta: number, Context: RecruitStepContext) -> (),
 	Reset: (self: RecruitBrainClass) -> (),
 	ClearTrail: (self: RecruitBrainClass) -> (),
+	Flee: (self: RecruitBrainClass) -> (),
 
 	--- Arena it is hiding in and which corner of it (0 for the centre), nil when not hiding.
 	GetHidingSpot: (self: RecruitBrainClass) -> (Stages.Arena?, number),
 
 	__Follow: (self: RecruitBrainClass, Delta: number, Context: RecruitStepContext) -> (),
 	__Hide: (self: RecruitBrainClass, Delta: number, Context: RecruitStepContext) -> (),
-	__Wander: (self: RecruitBrainClass, Delta: number) -> (),
-	__WalkTo: (self: RecruitBrainClass, Goal: Vector3) -> (),
+	__PickSafest: (self: RecruitBrainClass, Context: RecruitStepContext) -> (),
+	__Spread: (self: RecruitBrainClass, Spot: Vector3) -> (Vector3),
+	__WalkTo: (self: RecruitBrainClass, Goal: Vector3, Speed: number?) -> (),
 	__IsStuck: (self: RecruitBrainClass, Delta: number) -> (boolean),
 	__BehindLeader: (self: RecruitBrainClass, Leader: Leader) -> (Vector3),
 	__Teleport: (self: RecruitBrainClass, At: Vector3) -> (),
@@ -189,6 +200,7 @@ export type ServerRecruitClass = {
 	GetDirection: (self: ServerRecruitClass) -> (Vector3, number),
 	GetHidingSpot: (self: ServerRecruitClass) -> (Stages.Arena?, number),
 	SetActive: (self: ServerRecruitClass, State: boolean) -> (),
+	Celebrate: (self: ServerRecruitClass) -> (),
 	PivotTo: (self: ServerRecruitClass, At: CFrame) -> (),
 	Step: (self: ServerRecruitClass, Delta: number, Context: RecruitStepContext) -> (),
 	Destroy: (self: ServerRecruitClass) -> (),
@@ -209,8 +221,12 @@ export type ClientRecruitClass = {
 	__Movement: RecruitMovementClass,
 	__Correction: Vector3,
 	__Anchor: BasePart,
+	__Ally: boolean,
+	__Talk: string?,
+	__Prompt: ProximityPrompt?,
+	__Facing: Vector3,
 	__Appearance: Default.AppearanceController,
-	__Animator: {[string]: any}?,
+	__Animator: {[string]: any},
 	__Connection: RBXScriptConnection?,
 
 	Init: (self: ClientRecruitClass) -> (),

@@ -7,6 +7,10 @@ local function Affected(Name: string, Level: number, Amount: number)
     return {Name = Name, Level = Level, Amount = Amount, Affected_Aura = true}
 end
 
+local function DefEnemy(Name: string, Level: number, Amount: number)
+    return {Name = Name, Level = Level, Amount = Amount}
+end
+
 local function Event(Data: {[string]: any})
     Data.Goal = Data.Goal or {}
     Data.Enemies = Data.Enemies or {}
@@ -132,6 +136,19 @@ local function Rewards(Money: number, Gems: number, Capsule: boolean?)
     }
 end
 
+const function SceneAlly(ally: string, src: string, anim: string, at: CFrame)
+    return {Type = "Model", Ally = ally, Src = "Characters."..src, Animation = anim, At = at};
+    
+end
+
+const function SceneEnemy(enemy: string, src: string, anim: string, at: CFrame)
+    return {Type = "Model", Enemy = enemy, Src = "Characters."..src, Animation = anim, At = at};
+end
+
+const function SceneVFX(Src: string, at: CFrame)
+    return {Type = 'Effect', Src = "Effects."..Src, At = at}
+end
+
 return {
     ['Namek_P01'] = {
         Display_Name = "Static Over Namek",
@@ -159,16 +176,53 @@ return {
                 After = 'GoTo_Plateau',
                 Objective = "Protect the Namekians, clear the invaders {objective[KillEnemies]}",
                 Enemies = {
-                    [1] = {Affected('SandShinobi', 2, 7)},
+                    [1] = {DefEnemy('Saiyan', 2, 7)},
                     [2] = {Affected('Sorcerer', 3, 4), Affected('Saiyan', 4, 5)},
                 },
-                --- Spawned on the arena border, gone when the fight is won. One dying fails the run.
+
+                --- Run for the corners when the fight starts; celebrate and fade out `Linger` (15) seconds after it is won. One dying fails the run.
                 Allies = {
-                    {Name = 'Namekian', Amount = 3},
+                    {Name = 'Namekian', Amount = 3, Talk = "We greatly appreciate your help!"},
+                },
+
+                --- Posed before anyone walks in, `At` relative to the trigger (see SceneService).
+                --- `Enemy`/`Ally` hand the model to the first spawn of that kind; without either it is scenery.
+                Scene = {
+                    SceneEnemy("Saiyan", 'Enemies.Saiyan', 'Missions.Namek.SaiyanChill2', 
+                        CFrame.new(2.814, -15.386, -3.256) * CFrame.Angles(0, math.rad(-91.541), 0)
+                    ),
+                    SceneEnemy("Saiyan", 'Enemies.Saiyan', 'Missions.Namek.SaiyanChill1', 
+                        CFrame.new(-1.674, -15.386, -44.394) * CFrame.Angles(0, math.rad(-80.52), 0)
+                    ),
+                    SceneAlly("Namekian", 'Recruits.Namekian', 'Missions.Namek.NamekianBeg1', 
+                        CFrame.new(15.345, -15.386, -32.55) * CFrame.Angles(0, math.rad(92.418), 0)
+                    ),
+                    SceneAlly("Namekian", 'Recruits.Namekian', 'Missions.Namek.NamekianBeg2', 
+                        CFrame.new(15.516, -15.386, -37.638) * CFrame.Angles(0, math.rad(87.458), 0)
+                    ),
+                    SceneAlly("Namekian", 'Recruits.Namekian', 'Missions.Namek.NamekianBeg3', 
+                        CFrame.new(18.703, -15.386, -35.247) * CFrame.Angles(0, math.rad(96.659), 0)
+                    ),
+
+                    --- Main threat
+                    SceneEnemy("Saiyan", 'Enemies.Saiyan', 'Missions.Namek.SaiyanThreat1', 
+                        CFrame.new(10.153, -15.386, -35.597) * CFrame.Angles(0, math.rad(-91.541), 0)
+                    ),
+                    SceneVFX("Enemies.Saiyan.SaiyanAura", 
+                        CFrame.new(10.153, -15.386, -35.597) * CFrame.Angles(0, math.rad(-91.541), 0)
+                    ),
+                    SceneVFX("Enemies.Saiyan.ChargingKiBlast", 
+                        CFrame.new(13.293, -15.116, -35.391) * CFrame.Angles(0, math.rad(-91.541), 0)
+                    ),
                 },
                 Dialogue = {
-                    Say("Agency", "Those aren't Namekians. The static is pulling fighters in from other worlds."),
-                    Say("Agency", "There are villagers caught in there. Don't let a single one fall."),
+                    Say("Agency", "Those aren't Namekians. The Anima around here seems to have distorted the world, those guys shouldn't be here."),
+                    Say("Agency", "Don't let any of them die, take care of this anomaly, beat every single one of those saiyans, we must restore the original story."),
+                },
+
+                --- Said when that wave spawns, keyed by wave number.
+                WaveDialogue = {
+                    [2] = {Say("Agency", "Huh, those are not saiyans... this is unusual activity, why are they here?")},
                 },
                 Finished = 'GoTo_Village',
             }),
@@ -176,11 +230,14 @@ return {
             I1_Forest = Event({
                 Objective = "Wipe {objective[KillEnemies]} anomalies",
                 Enemies = {
-                    [1] = {Affected('Saiyan', 1, 5)},
-                    [2] = {Affected('Saiyan', 2, 5)},
-                    [3] = {Affected('Saiyan', 5, 3), Affected('Sorcerer', 5, 3)},
+                    [1] = {Affected('Sorcerer', 1, 5)},
+                    [2] = {Affected('Saiyan', 2, 3), Affected('Sorcerer', 2, 2)},
+                    [3] = {Affected('Sorcerer', 5, 3)},
                 },
-                Dialogue = {Say("Agency", "Those aren't Namekians. The static is pulling fighters in from other worlds.")},
+                Dialogue = {Say("Agency", "These guys... they're sorcerers, what are they doing here?!")},
+                WaveDialogue = {
+                    [3] = {Say("Agency", "I sense nobody else nearby, these should be the last.")},
+                },
                 Finished = 'None',
             }),
 

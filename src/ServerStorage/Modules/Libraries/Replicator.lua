@@ -307,10 +307,13 @@ function Replicator:AddEnemy(Id: number, Enemy: Types.ServerEnemyClass, Buffs: {
 	buffer.writeu8(Object, 2, Enemies:GetIdForEnemy(Enemy.__Name))
 	buffer.writeu8(Object, 3, Enemy.__Status.__Level)
 
+	--- Scene slot it took over, if any (SceneService), so the client reuses that model.
+	local Scene = (Enemy :: any).Scene
+
 	if Target == nil then
-		Network:FireForAll('Replicate', Object, Enemy:GetPivot().Position, Buffs)
+		Network:FireForAll('Replicate', Object, Enemy:GetPivot().Position, Buffs, Scene)
 	else
-		Network:Fire('Replicate', Target, Object, Enemy:GetPivot().Position, Buffs)
+		Network:Fire('Replicate', Target, Object, Enemy:GetPivot().Position, Buffs, Scene)
 	end
 end
 
