@@ -149,7 +149,7 @@ return {
                     NoBarriers = true,
                     Enemies = {
                         [1] = {
-                            {Name = "Sorcerer", Amount = 1, Level = 10, Affected_Aura = true},
+                            {Name = "Sorcerer", Amount = 1, Level = 60, Affected_Aura = true},
                             --{Name = "SandShinobi", Amount = 1, Level = 60, Affected_Aura = true},
                         }
                     },

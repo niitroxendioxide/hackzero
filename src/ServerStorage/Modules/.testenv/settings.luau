@@ -8,10 +8,10 @@ return table.freeze({
 
     MISSION = {
         --- Types: ChaosControl, Mission, Expedition
-        TYPE = 'Mission',
+        TYPE = 'Expedition',
         STAGE = {
             --- Namek, LeafVillage, Training, Testing, DailyImprovement, DungeonEx, HuecoMundo
-            Stage = 'Namek',
+            Stage = 'Training',
             Act = 'Intro',
         },
 
@@ -64,12 +64,12 @@ return table.freeze({
                    Mission = { Triggers = {...}, Completion = {...} }
         ]]
         DATA = {
+            --MissionId = 'Namek_P01',
             --Mission_Seed = '12345-abcde-67890-fabcd',
             --Target_Item = "Object",
             --Kind = 'Escort',
             --Filler_Rooms = 7,
             --Escorted = "Template",
-            MissionId = 'Namek_P01',
             --Difficulty = 'EASY',
             --[[ChaosControlData = {
                 Type = 'DailyImprovement',

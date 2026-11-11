@@ -73,6 +73,7 @@ const function CastSosenko(Caster: Types.ServerAgent, Context: Types.SkillContex
 			Caster:PivotTo(LookAtCFrame);]]
 
 			table.clear(Hit_Enemies)
+			Caster:ImpulseForward(20, 0.35)
 		end},
 
 		{1.4, 1.6, function()

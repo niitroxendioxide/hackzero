@@ -67,21 +67,20 @@ const function RaijuTsuiga(Caster: Types.ClientAgent, Context: Types.ClientSkill
 end
 
 const function ShishiRendan(Caster: Types.ClientAgent, Context: Types.ClientSkillContext)
-	const Attack_State_Time = Ability:FromData('Attack_State_Time')
+	const Attack_State_Time = Ability:FromData('Shishi_Attack_State_Time')
 	const Startup_Time = Ability:FromData('Startup_Time')
-	const Kick_Count = Ability:FromData('Rendan_Kick_Count')
-	const Kick_Frequency = Ability:FromData('Rendan_Kick_Frequency')
 	const Slam_Time = Ability:FromData('Rendan_Slam_Time')
 	const Slam_Radius = Ability:FromData('Rendan_Slam_Radius')
 	const Hitbox_Size = Ability:FromData('Hitbox_Size')
 	const Hitbox_Offset = Ability:FromData('Hitbox_Offset')
 
 	local Track: AnimationTrack = nil;
+	local HasHit = false;
 
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Attack_State_Time)
-			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.DodgeCounter.ShishiRendan', {Fade = 0.1})
+			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Dodge.ShishiRendan', {Fade = 0.1})
 
 			if Context.Target then
 				Caster:LookAtTarget(Context.Target)
@@ -89,32 +88,37 @@ const function ShishiRendan(Caster: Types.ClientAgent, Context: Types.ClientSkil
 		end},
 
 		{Startup_Time, function()
-			-- Spawned so the yielding kick loop doesn't hold up the slam frame below.
-			task.spawn(function()
-				for Index = 1, Kick_Count do
-					Ability:CreateHitbox(Caster, Hitbox_Offset, Hitbox_Size, function(Enemy)
-						Ability:Hit(Caster, Enemy, {
-							NoHitStop = true,
-							HitAirborne = true,
-							EffectData = HIT_EFFECT_DATA,
-						})
-					end)
-
-					if Index < Kick_Count then
-						task.wait(Kick_Frequency)
-					end
+			Ability:CreateHitbox(Caster, Hitbox_Offset, Hitbox_Size, function(Enemy)
+				if not HasHit then
+					HasHit = true
 				end
+
+				Ability:Hit(Caster, Enemy, {
+					NoHitStop = true,
+					HitAirborne = true,
+					Track = "Characters.Kakashi.Abilities.Dodge.ShishiVictim",
+					EffectData = HIT_EFFECT_DATA,
+				})
 			end)
 		end},
 
-		{Slam_Time, function()
-			if Track and Track.IsPlaying then
-				Track:Stop(0.1)
+		{0.7, function()
+			if HasHit then
+				Ability:Effect("Kakashi_Raikiri", Caster, 'Charge', true)
+
+				return
 			end
 
-			Ability:PlayAnimation(Caster, 'Kakashi.Abilities.DodgeCounter.RaikiriSlam', {Fade = 0})
-			Ability:Effect('Kakashi_RaikiriSlam', Caster, Caster:GetPivot())
+			Track:Stop(0.15)
+		end},
 
+		{Slam_Time, function()
+			Ability:Effect("Kakashi_Raikiri", Caster, 'Delete')
+
+			if not HasHit then
+				return;
+			end
+		
 			Ability:CreateHitbox(Caster, vector.zero, vector.create(Slam_Radius, 12, Slam_Radius), function(Enemy)
 				Ability:Hit(Caster, Enemy, {
 					HitAirborne = true,
@@ -122,15 +126,23 @@ const function ShishiRendan(Caster: Types.ClientAgent, Context: Types.ClientSkil
 				})
 			end)
 		end},
+
+		{1.35, function()
+			if not HasHit then
+				return
+			end
+
+			Caster:ImpulseForward(-35, 0.5)
+		end}
 	})
 end
 
 function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
-	if Caster:HasTag('LightningMode') then
+	--if Caster:HasTag('LightningMode') then
 		ShishiRendan(Caster, Context)
-	else
-		RaijuTsuiga(Caster, Context)
-	end
+	--else
+		--RaijuTsuiga(Caster, Context)
+	--end
 end
 
 return Ability

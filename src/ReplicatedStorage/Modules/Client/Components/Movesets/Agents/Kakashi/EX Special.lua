@@ -120,6 +120,7 @@ const function CastSosenko(Caster: Types.ClientAgent, Context: Types.ClientSkill
 			local End = Ability:Get(Caster, 'EndingCFrame')
 
 			Caster:PivotTo(End)
+			Caster:ImpulseForward(20, 0.35)
 		end},
 
 		{1.4, 1.6, function(Sequence)			

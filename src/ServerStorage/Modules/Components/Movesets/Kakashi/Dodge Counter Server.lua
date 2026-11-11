@@ -12,6 +12,7 @@ local ServerStorage = game:GetService('ServerStorage')
 local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
+local GrabService = require(ServerStorage.Modules.Services.Combat.GrabService)
 local Table = require(Shared.Utility.Table)
 local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Classes.Combat.ServerAbility)
@@ -68,19 +69,18 @@ end
 --[[ Lightning Mode variant: kick the target up, then slam the ground with Raikiri. ]]
 const function ShishiRendan(Caster: Types.ServerAgent, Context: Types.SkillContext)
 	const SkillLevel = Caster:GetSkillLevel(Ability.Name)
-	const KickData = Table.CopyDeep(Ability:FromData('Rendan_Hit', nil, SkillLevel))
+	const KickData = Table.CopyDeep(Ability:FromData('RendanKickHit', nil, SkillLevel))
 	const SlamData = Table.CopyDeep(Ability:FromData('Rendan_Slam_Hit', nil, SkillLevel))
 	const Attack_State_Time = Ability:FromData('Attack_State_Time')
 	const Startup_Time = Ability:FromData('Startup_Time')
 	const Paralyze_Time = Ability:FromData('Paralyze_Time')
 
-	const Kick_Count = Ability:FromData('Rendan_Kick_Count')
-	const Kick_Frequency = Ability:FromData('Rendan_Kick_Frequency')
 	const Slam_Time = Ability:FromData('Rendan_Slam_Time')
 	const Slam_Radius = Ability:FromData('Rendan_Slam_Radius')
 
 	const Hitbox_Size = Ability:FromData('Hitbox_Size')
 	const Hitbox_Offset = Ability:FromData('Hitbox_Offset')
+	local HasHit = false;
 
 	Ability:Begin(Caster, {
 		{0, function()
@@ -92,23 +92,20 @@ const function ShishiRendan(Caster: Types.ServerAgent, Context: Types.SkillConte
 		end},
 
 		{Startup_Time, function()
-			-- Spawned so the yielding kick loop doesn't hold up the slam frame below.
-			task.spawn(function()
-				-- Rising kicks: each one carries the target up with the caster.
-				for Index = 1, Kick_Count do
-					Ability:CreateHitbox(Caster, Hitbox_Offset, Hitbox_Size, function(Enemy)
-						Ability:Hit(Caster, Enemy, KickData)
-					end)
-
-					if Index < Kick_Count then
-						task.wait(Kick_Frequency)
-					end
+			Ability:CreateHitbox(Caster, Hitbox_Offset, Hitbox_Size, function(Enemy)
+				const Grabbed = GrabService:GrabEnemy(Caster, Enemy, 1, CFrame.new(0, 0, -4.1))
+				if Grabbed then
+					HasHit = true
+					Ability:Hit(Caster, Enemy, KickData)
 				end
 			end)
 		end},
 
 		{Slam_Time, function()
-			-- Raikiri hits the ground: everything launched comes back down electrified.
+			if not HasHit then
+				return;
+			end
+
 			Ability:CreateHitbox(Caster, vector.zero, vector.create(Slam_Radius, 12, Slam_Radius), function(Enemy)
 				Ability:Hit(Caster, Enemy, SlamData)
 				KakashiController:Paralyze(Enemy, Paralyze_Time, Caster)
@@ -116,15 +113,23 @@ const function ShishiRendan(Caster: Types.ServerAgent, Context: Types.SkillConte
 
 			KakashiController:AddCharge(Caster, 1)
 		end},
+
+		{1.35, function()
+			if not HasHit then
+				return
+			end
+
+			Caster:ImpulseForward(-35, 0.5)
+		end}
 	})
 end
 
 function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
-	if KakashiController:IsLightningMode(Caster) then
+	--if KakashiController:IsLightningMode(Caster) then
 		ShishiRendan(Caster, Context)
-	else
-		RaijuTsuiga(Caster, Context)
-	end
+	--else
+	--	RaijuTsuiga(Caster, Context)
+	--end
 end
 
 return Ability

@@ -309,7 +309,8 @@ return {
 		['Dodge Counter'] = {
 			Base = {
 				Cooldown = 0.5,
-				Attack_State_Time = 1.1,
+				Shishi_Attack_State_Time = 1.2,
+				Attack_State_Time = 0.9,
 				Speed = 1,
 				Animation_Speed = 1,
 				Range = 90,
@@ -340,26 +341,24 @@ return {
 				-- Lightning Mode variant
 				Rendan_Kick_Count = 3,
 				Rendan_Kick_Frequency = 0.14,
-				Rendan_Slam_Time = 0.75,
+				Rendan_Slam_Time = 1.183,
 				Rendan_Slam_Radius = 18,
 
-				Rendan_Hit = {
+				RendanKickHit = {
 					HitType = 'Blunt',
-					Damage = 96,
+					Damage = 106,
 					Stun = 0.3,
-					Daze = 18,
-					Affliction = 'Electric',
-					Affliction_Buildup = 42,
-					Airborne = true,
-					HitsAirborne = true,
+					Daze = 39,
+					Affliction = 'Physical',
+					Affliction_Buildup = 31,
 				},
 				Rendan_Slam_Hit = {
 					HitType = 'Slash',
-					Damage = 340,
+					Damage = 374,
 					Stun = 0.6,
 					Daze = 45,
 					Affliction = 'Electric',
-					Affliction_Buildup = 130,
+					Affliction_Buildup = 140,
 					HitsAirborne = true,
 				},
 			},
@@ -370,7 +369,7 @@ return {
 					Daze = 0.3,
 					Affliction_Buildup = 1.2,
 				},
-				Rendan_Hit = {
+				RendanKickHit = {
 					Damage = 0.8,
 					Daze = 0.2,
 					Affliction_Buildup = 0.6,
