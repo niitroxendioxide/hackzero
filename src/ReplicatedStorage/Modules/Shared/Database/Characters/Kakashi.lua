@@ -200,9 +200,7 @@ return {
 				Second_Run_Time = .5,
 
 				-- Lightning Mode replaces Raiden with 'Raikiri: Denko Rensen' (zig-zag multi-hit).
-				Denko_Rensen_Startup_Time = 0.35,
-				Denko_Rensen_Dash_Count = 4,
-				Denko_Rensen_Dash_Time = 0.18,
+				Denko_Rensen_Startup_Time = 0.425,
 				Denko_Rensen_Dash_Power = 2.1,
 				Denko_Rensen_Hitbox_Size = vector.create(14, 5, 12),
 
@@ -315,9 +313,9 @@ return {
 				Animation_Speed = 1,
 				Range = 90,
 
-				Startup_Time = 0.2,
-				Dog_Speed = 90,
-				Dog_Max_Time = 0.9,
+				Startup_Time = 0.55,
+				Dog_Speed = 130,
+				Dog_Max_Time = 0.35,
 				Dog_Size = vector.create(7, 7, 9),
 				Paralyze_Time = 2.5,
 
@@ -339,6 +337,7 @@ return {
 				},
 
 				-- Lightning Mode variant
+				Rendan_Startup_Time = 0.2,
 				Rendan_Kick_Count = 3,
 				Rendan_Kick_Frequency = 0.14,
 				Rendan_Slam_Time = 1.183,

@@ -17,6 +17,7 @@ local AbilityClass = require(Client.Classes.Ability)
 --
 local Ability = AbilityClass.new()
 
+const RAIJU_ID =  "RaijuTsuigaDodgeCounter"
 const HIT_EFFECT_DATA = {
 	HueShift = 175,
 	Highlight = true,
@@ -31,44 +32,33 @@ const function RaijuTsuiga(Caster: Types.ClientAgent, Context: Types.ClientSkill
 	const Attack_State_Time = Ability:FromData('Attack_State_Time')
 	const Startup_Time = Ability:FromData('Startup_Time')
 	const Dog_Max_Time = Ability:FromData('Dog_Max_Time')
-
-	local Track: AnimationTrack = nil;
+	const Dog_Speed = Ability:FromData("Dog_Speed")
 
 	Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Attack_State_Time)
-			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Shared.RaijuTsuiga', {Fade = 0.1})
+			Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Shared.RaijuTsuiga', {Fade = 0.1})
 
 			if Context.Target then
 				Caster:LookAtTarget(Context.Target)
 			end
+
+			Caster:ImpulseForward(-45, 1 / 2.5)
+		end},
+
+		{0.1, function()
+			Ability:Effect('Kakashi_Raiju', Caster, 'Prepare')
 		end},
 
 		{Startup_Time, function()
-			Ability:Effect('Kakashi_RaijuTsuiga', Caster, 'Create', Dog_Max_Time)
-
-			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Shared.RaijuTsuigaLoop', {Fade = 0.1})
-
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -14), vector.create(9, 7, 28), function(Enemy)
-				Ability:Hit(Caster, Enemy, {
-					EffectData = HIT_EFFECT_DATA,
-				})
-			end)
-		end},
-
-		{Startup_Time + Dog_Max_Time, function()
-			if Track and Track.IsPlaying then
-				Track:Stop(0.15)
-			end
-
-			Ability:Effect('Kakashi_RaijuTsuiga', Caster, 'Delete')
+			Ability:Effect('Kakashi_Raiju', Caster, 'Summon', RAIJU_ID, Dog_Max_Time, Dog_Speed)
 		end},
 	})
 end
 
 const function ShishiRendan(Caster: Types.ClientAgent, Context: Types.ClientSkillContext)
 	const Attack_State_Time = Ability:FromData('Shishi_Attack_State_Time')
-	const Startup_Time = Ability:FromData('Startup_Time')
+	const Startup_Time = Ability:FromData('Rendan_Startup_Time')
 	const Slam_Time = Ability:FromData('Rendan_Slam_Time')
 	const Slam_Radius = Ability:FromData('Rendan_Slam_Radius')
 	const Hitbox_Size = Ability:FromData('Hitbox_Size')
@@ -118,8 +108,15 @@ const function ShishiRendan(Caster: Types.ClientAgent, Context: Types.ClientSkil
 			if not HasHit then
 				return;
 			end
+
+			local Hit = false;
 		
 			Ability:CreateHitbox(Caster, vector.zero, vector.create(Slam_Radius, 12, Slam_Radius), function(Enemy)
+				if not Hit then
+					Hit = true;
+					Ability:Effect("Kakashi_Crash", Enemy:GetPivot())
+				end
+				
 				Ability:Hit(Caster, Enemy, {
 					HitAirborne = true,
 					EffectData = HIT_EFFECT_DATA,
@@ -138,11 +135,11 @@ const function ShishiRendan(Caster: Types.ClientAgent, Context: Types.ClientSkil
 end
 
 function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
-	--if Caster:HasTag('LightningMode') then
+	if Caster:HasTag('LightningMode') then
 		ShishiRendan(Caster, Context)
-	--else
-		--RaijuTsuiga(Caster, Context)
-	--end
+	else
+		RaijuTsuiga(Caster, Context)
+	end
 end
 
 return Ability

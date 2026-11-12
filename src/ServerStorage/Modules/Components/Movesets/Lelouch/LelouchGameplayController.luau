@@ -29,11 +29,10 @@ const HIT_EFFECT_DATA = {
 }
 
 const KNIGHT_OFFSETS = {
-    CFrame.new(-4, 0, 3),
-    CFrame.new(4, 0, 3),
-    CFrame.new(-7, 0, 0),
-    CFrame.new(7, 0, 0),
-    CFrame.new(0, 0, 5),
+    CFrame.new(-6, 0, 4),
+    CFrame.new(6, 0, 4),
+    CFrame.new(-7, 0, -1),
+    CFrame.new(7, 0, -1),
 }
 
 const PassiveData = CharacterDatabase:GetMovesetData('Lelouch').Passive
@@ -194,12 +193,15 @@ function Controller:SummonKnights(Caster: AgentTypes.ServerAgentClass, Count: nu
         const Slot = (Controller.__Knight_Slot[Caster] or 0) % #KNIGHT_OFFSETS + 1
         Controller.__Knight_Slot[Caster] = Slot
 
-        const Knight = TurretClass.new(Caster, At * KNIGHT_OFFSETS[Slot], {
+        const KnightmareAt = At * KNIGHT_OFFSETS[Slot];
+        const Knight = TurretClass.new(Caster, KnightmareAt, {
             Lifetime = KnightData.Lifetime,
             Range = KnightData.Range,
             Interval = if Controller.__Focus[Caster] then KnightData.Focus_Interval else KnightData.Interval,
             Size = KnightData.Size,
         })
+
+        Replicator:Effect("Lelouch_Knightmare", {Slot, 1, KnightmareAt}, true)
 
         Knight.Destroyed:Connect(function()
             const Index = table.find(Knights, Knight)

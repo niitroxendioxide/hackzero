@@ -709,7 +709,7 @@ function EffectUtil:ShakeCamera(Preset: CamShakePreset)
 
 	local Camera = workspace.CurrentCamera
 	local NewCamShake = (CameraShaker :: any).new(Enum.RenderPriority.Last.Value, function(shakeCf)
-		Camera.CFrame = Camera.CFrame * shakeCf
+		Camera.CFrame = Camera.CFrame * shakeCf :: any
 	end)
 
 	NewCamShake:Start()
@@ -722,7 +722,12 @@ export type ClientProjectile = {
 	SetSpeed: (self: ClientProjectile, Speed: number) -> (),
 }
 
-function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: (Target: any, ...any) -> (boolean), PassedParams: OverlapParams, Step_fn: (Delta: number, ...any) -> ()): {}
+type MoveClass = {
+	Disconnect: () -> (),
+	SetSpeed: (Speed: number) -> (),
+	Speed: number,
+}
+function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Time: number, Hit: (Target: any, ...any) -> (boolean), PassedParams: OverlapParams, Step_fn: (Delta: number, ...any) -> ()): MoveClass
 	local Loop do
 		local Class = {
 			Speed = Speed,
@@ -795,7 +800,7 @@ function EffectUtil:MoveProjectile(Model: Model, Size: vector, Speed: number, Ti
 			Loop:Disconnect()
 		end
 
-		return Class
+		return Class :: MoveClass
 	end
 end
 

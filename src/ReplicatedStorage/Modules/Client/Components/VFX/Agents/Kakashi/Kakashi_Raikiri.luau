@@ -66,7 +66,8 @@ end]]
 return function(Caster: Types.AgentClass, State: string, ...): ()
     local Args = {...}
 
-    local UseBothArms = Args[1]
+    const UseBothArms = Args[1]
+    const DisableLightning = Args[2];
     local KakashiVfx = Assets.Effects.Agents.Kakashi
     local Model = typeof(Caster) == 'Instance' and Caster:IsA("Model") and Caster or Caster:GetModel()
     local RightArm = Model:FindFirstChild("Right Arm");
@@ -123,7 +124,7 @@ return function(Caster: Types.AgentClass, State: string, ...): ()
         Cache[Caster] = {VFX = EffectsList, Thread = nil, Active = true}
         Cache[Caster].Thread = task.spawn(function()
             local Disabled = Settings:Get('DisableLightningEffects', 'Graphics');
-            if Disabled then
+            if Disabled or DisableLightning then
                 return;
             end
 

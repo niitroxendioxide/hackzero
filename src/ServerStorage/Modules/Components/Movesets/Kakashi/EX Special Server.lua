@@ -229,12 +229,10 @@ const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContex
 	const Startup_Time = Ability:FromData('Denko_Rensen_Startup_Time')
 	const Dash_Count = Ability:FromData('Denko_Rensen_Dash_Count')
 	const Dash_Time = Ability:FromData('Denko_Rensen_Dash_Time')
-	const Dash_Power = Ability:FromData('Denko_Rensen_Dash_Power')
 	const Hitbox_Size = Ability:FromData('Denko_Rensen_Hitbox_Size')
 
 	const Total_Time = Dash_Count * Dash_Time
 	const Skill_Usage_Time = Startup_Time + Total_Time + 0.3;
-	local LastHit = 0;
 
 	local Sequence = Ability:Begin(Caster, {
 		{0, function()
@@ -244,25 +242,37 @@ const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContex
 				Caster:LookAtTarget(Context.Target)
 			end
 		end},
-
-		{Startup_Time, function()
-			Caster:Walk(Total_Time, Dash_Power, true)
-		end},
-
-		{Startup_Time, Startup_Time + Total_Time, function()
-			if (os.clock() - LastHit) < Dash_Time then
-				return
-			end
-
-			LastHit = os.clock()
-
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
-				Ability:Hit(Caster, Enemy, HitData)
-			end)
-		end},
 	}, true);
 
+	const DashObj = {}
+	for i = 0, 8 do
+		const Id = i+1;
+		const Walk_Time = 0.2 + (1 - Id/9)*0.15
+		const Walk_Mod = 0.75 + 0.02*Id
+	
+		Sequence:Add(0.4 + i*0.2, 0.633 + i*0.2, function()
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+				if DashObj[Id][Enemy] then
+					Caster:Walk(Walk_Time, Walk_Mod)
+					return;
+				end
+
+				DashObj[Id][Enemy] = true;
+				
+				Ability:Hit(Caster, Enemy, {
+					NoHitStop = true,
+					EffectData = {
+						HueShift = 175,
+						Highlight = true,
+						HighlightColor = Color3.fromRGB(117, 150, 244),
+					},
+				})
+			end)
+		end)
+	end
+
 	Sequence:After(function(_self: Types.Sequence)
+		Caster:Walk(0.5, 0.8)
 		Ability:Save(Caster, 'using_raiden', false);
 	end)
 
@@ -270,16 +280,16 @@ const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContex
 end
 
 function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
-	const IsRaiden = Context.Buffer[1] == true;
+	const IsRaiden = true --Context.Buffer[1] == true;
 	if IsRaiden then
 		Ability:Save(Caster, 'next_use_raiden', false)
 
 		-- In Lightning Mode the follow-up becomes Denko Rensen instead of Raiden (moveset.md).
-		if KakashiController:IsLightningMode(Caster) then
+		--if KakashiController:IsLightningMode(Caster) then
 			DenkoRensen(Caster, Context)
-		else
-			Raiden(Caster, Context)
-		end
+		--else
+			--Raiden(Caster, Context)
+		--end
 	else
 		CastSosenko(Caster, Context)
 	end

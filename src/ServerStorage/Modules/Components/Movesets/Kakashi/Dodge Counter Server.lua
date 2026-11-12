@@ -19,6 +19,7 @@ local AbilityClass = require(Classes.Combat.ServerAbility)
 local KakashiController = require(script.Parent.KakashiGameplayController)
 
 --
+const RAIJU_ID =  "RaijuTsuigaDodgeCounter"
 local Ability = AbilityClass.new()
 
 Ability:OnCancel(function(Caster: Types.ServerAgent)
@@ -49,11 +50,17 @@ const function RaijuTsuiga(Caster: Types.ServerAgent, Context: Types.SkillContex
 		end},
 
 		{Startup_Time, function()
-			const Origin = Caster:GetPivot() * CFrame.new(0, -1, -3)
+			const Origin = Caster:GetPivot()
+			local HasHit = false;
 
 			Ability:CreateMovingHitbox(Caster, Origin, Dog_Size, Dog_Speed, Dog_Max_Time, function(Enemy)
 				if Hit_List[Enemy] then
 					return
+				end
+
+				if not HasHit then
+					HasHit = true
+					Ability:Effect('Kakashi_Raiju', {Caster, 'DeleteEXP', RAIJU_ID, Enemy:GetId()}, true)
 				end
 
 				Hit_List[Enemy] = true
@@ -72,7 +79,7 @@ const function ShishiRendan(Caster: Types.ServerAgent, Context: Types.SkillConte
 	const KickData = Table.CopyDeep(Ability:FromData('RendanKickHit', nil, SkillLevel))
 	const SlamData = Table.CopyDeep(Ability:FromData('Rendan_Slam_Hit', nil, SkillLevel))
 	const Attack_State_Time = Ability:FromData('Attack_State_Time')
-	const Startup_Time = Ability:FromData('Startup_Time')
+	const Startup_Time = Ability:FromData('Rendan_Startup_Time')
 	const Paralyze_Time = Ability:FromData('Paralyze_Time')
 
 	const Slam_Time = Ability:FromData('Rendan_Slam_Time')
@@ -125,11 +132,11 @@ const function ShishiRendan(Caster: Types.ServerAgent, Context: Types.SkillConte
 end
 
 function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
-	--if KakashiController:IsLightningMode(Caster) then
+	if KakashiController:IsLightningMode(Caster) then
 		ShishiRendan(Caster, Context)
-	--else
-	--	RaijuTsuiga(Caster, Context)
-	--end
+	else
+		RaijuTsuiga(Caster, Context)
+	end
 end
 
 return Ability

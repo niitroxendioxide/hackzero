@@ -327,59 +327,109 @@ end
 
 
 const function DenkoRensen(Caster: Types.ClientAgent, Context: Types.ClientSkillContext)
-	const Startup_Time = Ability:FromData('Denko_Rensen_Startup_Time')
-	const Dash_Count = Ability:FromData('Denko_Rensen_Dash_Count')
 	const Dash_Time = Ability:FromData('Denko_Rensen_Dash_Time')
 	const Dash_Power = Ability:FromData('Denko_Rensen_Dash_Power')
 	const Hitbox_Size = Ability:FromData('Denko_Rensen_Hitbox_Size')
 
-	const Total_Time = Dash_Count * Dash_Time
-	const Skill_Usage_Time = Startup_Time + Total_Time + 0.3;
 	local LastHit = 0;
 	local Track: AnimationTrack = nil;
 
+	const Last_Dash = 9
+	const Side_Offset = 4.682
+
+	const function DashSide(Id: number): number
+		if Id <= 0 or Id >= Last_Dash then
+			return 0
+		end
+
+		return if Id % 2 == 1 then Side_Offset else -Side_Offset
+	end
+
+	const DashObj = {}
+	const function Dash(Id: number, Window: number)
+		const Walk_Time = 0.2 + (1 - Id/Last_Dash)*0.15
+		const Walk_Mod = 0.75 + 0.02*Id
+
+		if DashObj[Id] == nil then
+			DashObj[Id] = {}
+			Ability:Effect('Afterimage', Caster)
+			Ability:Effect('Kakashi_DenkoRensen', Caster, Walk_Time, Walk_Mod, Window, DashSide(Id - 1), DashSide(Id))
+		end
+
+		Caster:Walk(Walk_Time, Walk_Mod)
+
+		if (os.clock() - LastHit) < Dash_Time then
+			return
+		end
+
+		Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+			if DashObj[Id][Enemy] then
+				return;
+			end
+
+			DashObj[Id][Enemy] = true;
+			
+			Ability:Hit(Caster, Enemy, {
+				NoHitStop = true,
+				EffectData = {
+					HueShift = 175,
+					Highlight = true,
+					HighlightColor = Color3.fromRGB(117, 150, 244),
+				},
+			})
+		end)
+	end
+
 	local Sequence = Ability:Begin(Caster, {
 		{0, function()
-			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, Skill_Usage_Time)
-			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Special.DenkoRensenBegin', {Fade = 0.1})
-			Ability:Effect('Kakashi_Raikiri', Caster, 'Charge', true)
+			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, 2.8)
+			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Special.DenkoRensen', {Fade = 0.1})
+			Ability:Effect('Kakashi_Raikiri', Caster, 'Charge', nil, true)
 
 			if Context.Target then
 				Caster:LookAtTarget(Context.Target)
 			end
 		end},
 
-		{Startup_Time, function()
-			Caster:Walk(Total_Time, Dash_Power, true)
+		{0.433, 0.633, function()
+			Dash(1, 0.3)
 		end},
 
-		{Startup_Time, Startup_Time + Total_Time, function()
-			if (os.clock() - LastHit) < Dash_Time then
-				return
-			end
+		{0.717, 0.917, function()
+			Dash(2, 0.3)
+		end},
 
-			LastHit = os.clock()
+		{1.05, 1.25, function()
+			Dash(3, 0.3)
+		end},
 
-			Ability:Effect('Kakashi_RaikiriDash', Caster, '_', Caster:GetPivot())
+		{1.417, 1.617, function()
+			Dash(4, 0.3)
+		end},
 
-			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
-				Ability:Hit(Caster, Enemy, {
-					NoHitStop = true,
-					EffectData = {
-						HueShift = 175,
-						Highlight = true,
-						HighlightColor = Color3.fromRGB(117, 150, 244),
-					},
-				})
-			end)
+		{1.417, 1.617, function()
+			Dash(5, 0.3)
+		end},
+
+		{1.65, 1.85, function()
+			Dash(6, 0.3)
+		end},
+
+		{1.883, 2.083, function()
+			Dash(7, 0.3)
+		end},
+
+		{2.1, 2.3, function()
+			Dash(8, 0.3)
+		end},
+
+		{2.35, 2.5, function()
+			Dash(9, 0.25)
 		end},
 	}, true)
 
 	Sequence:After(function(_self: Types.Sequence)
-		if Track and Track.IsPlaying then
-			Track:Stop(0.15)
-		end
-
+		Caster:Walk(0.5, 0.8)
 		Ability:Effect('Kakashi_Raikiri', Caster, 'Delete')
 	end)
 
@@ -400,17 +450,17 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster
 end)
 
 function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
-	local IsRaiden = Ability:Get(Caster, 'next_use_raiden') == true
+	local IsRaiden = true --Ability:Get(Caster, 'next_use_raiden') == true
 	Ability:Save(Caster, 'LastCast', os.clock())
 
 	if IsRaiden then
 		Ability:Save(Caster, 'next_use_raiden', false)
 
-		if Caster:HasTag('LightningMode') then
+		--if Caster:HasTag('LightningMode') then
 			DenkoRensen(Caster, Context)
-		else
-			Raiden(Caster, Context)
-		end
+		--else
+			--Raiden(Caster, Context)
+		--end
 	else
 		CastSosenko(Caster, Context)
 	end
