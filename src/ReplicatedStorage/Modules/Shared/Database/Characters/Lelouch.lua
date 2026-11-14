@@ -60,14 +60,14 @@ return {
 				Max = 5,
 				Lifetime = 8,
 				Range = 70,
-				Interval = 1,
+				Interval = 1 / 10,
 				Focus_Interval = 0.5,
 				Focus_Daze_Multiplier = 1.5,
 				Size = vector.create(2, 5, 2),
 
 				Hit = {
 					HitType = 'Blunt',
-					Damage = 14,
+					Damage = 2,
 					Daze = 26,
 					Stun = 0.1,
 					Affliction = 'Physical',

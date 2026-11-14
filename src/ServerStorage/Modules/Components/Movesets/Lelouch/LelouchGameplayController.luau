@@ -5,6 +5,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Modules = ServerStorage.Modules
 
+local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 local Table = require(Shared.Utility.Table)
 local AgentTypes = require(Shared.Types.Agents)
 local AbilityTypes = require(Shared.Types.Abilities)
@@ -23,10 +24,7 @@ const FLASHED_TAG = 'Flashed'
 const SUBJUGATED_TAG = 'Subjugated'
 const PARALYZE_IMMUNE_TAG = 'LelouchParalyzeImmune'
 
-const HIT_EFFECT_DATA = {
-    Highlight = true,
-    HighlightColor = Color3.fromRGB(171, 97, 255),
-}
+const HIT_EFFECT_DATA = {}
 
 const KNIGHT_OFFSETS = {
     CFrame.new(-6, 0, 4),
@@ -92,9 +90,20 @@ function Controller:GetStrategy(Caster: AgentTypes.ServerAgentClass)
     }
 
     const ReplicationId = Caster.__Player_Assigned:GetAttribute('ReplicationId')
-    for _, Agent in AgentLibrary:GetAll(ReplicationId) do
+    const Agents = AgentLibrary:GetAll(ReplicationId);
+    for i = 1, #Agents do
+        const Agent = Agents[i]
         if Agent == Caster then
             continue
+        end
+
+        if #Agents >= 3 then
+            local Other = nil; 
+            for _, v in Agents do
+                if v ~= Caster and v ~= Agent and Agent ~= Caster then
+                    Other = v;
+                end
+            end
         end
 
         const AgentData = CharacterDatabase:GetCharacterData(Agent.Name)
@@ -167,13 +176,18 @@ local function GetTurretTarget(Caster: AgentTypes.ServerAgentClass, Turret: any,
     return Nearest
 end
 
-local function KnightFire(Caster: AgentTypes.ServerAgentClass, Target: AbilityTypes.ServerEnemy)
+local function KnightFire(Caster: AgentTypes.ServerAgentClass, Target: AbilityTypes.ServerEnemy, KnightId: number)
     const HitData = Controller:ApplyStrategy(Caster, KnightData.Hit)
     if Controller.__Focus[Caster] then
         HitData.Daze *= KnightData.Focus_Daze_Multiplier
     end
 
     TurretAbility:Hit(Caster, Target, HitData)
+
+    const Element = GameEnum.Afflictions[HitData.Affliction];
+    --print(Element, HitData.Affliction, GameEnum.Afflictions)
+
+    Replicator:Effect("Lelouch_KShoot", {KnightId, Element, Target:GetId()}, true)
     Controller:ReplicateHit(Target)
 end
 
@@ -201,7 +215,8 @@ function Controller:SummonKnights(Caster: AgentTypes.ServerAgentClass, Count: nu
             Size = KnightData.Size,
         })
 
-        Replicator:Effect("Lelouch_Knightmare", {Slot, 1, KnightmareAt}, true)
+        const KnightId = GetKnightId(#Knights + 1, Caster)
+        Replicator:Effect("Lelouch_Knightmare", {KnightId, 1, KnightmareAt}, true)
 
         Knight.Destroyed:Connect(function()
             const Index = table.find(Knights, Knight)
@@ -209,13 +224,16 @@ function Controller:SummonKnights(Caster: AgentTypes.ServerAgentClass, Count: nu
                 table.remove(Knights, Index)
             end
 
+            Replicator:Effect("Lelouch_Knightmare", {KnightId, 2}, true)
+
             Caster:UpdateMeter(METER_NAME, 1)
         end)
 
         Knight:Start(function(Turret)
             return GetTurretTarget(Caster, Turret, KnightData.Range)
         end, function(_, Target)
-            KnightFire(Caster, Target)
+            print(Caster.Name)
+            KnightFire(Caster, Target, KnightId)
         end)
 
         table.insert(Knights, Knight)
@@ -234,12 +252,20 @@ function Controller:SetFocusFire(Caster: AgentTypes.ServerAgentClass, State: boo
     end
 end
 
+function GetKnightId(BaseId: number, Caster: AgentTypes.ServerAgentClass)
+    const RepId = Caster.__Player_Assigned:GetAttribute("ReplicationId") :: number;
+    const NewId = BaseId + RepId * 256;
+
+    return NewId;
+end
+
 function Controller:Volley(Caster: AgentTypes.ServerAgentClass, Target: any)
-    for _, Knight in Controller.__Knights[Caster] or {} do
+    for Id, Knight in Controller.__Knights[Caster] or {} do
         const KnightTarget = if Knight:CanFireAt(Target) then Target else GetTurretTarget(Caster, Knight, KnightData.Range)
+        const KnightId = GetKnightId(Id, Caster)
 
         if Knight:CanFireAt(KnightTarget) then
-            KnightFire(Caster, KnightTarget)
+            KnightFire(Caster, KnightTarget, KnightId)
         end
     end
 end
