@@ -23,6 +23,7 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeCancel, function(Caster: Types.C
 end)
 
 local function Shoot(Caster: Types.ClientAgent, EffectData: {[string]: any})
+	Ability:Effect("Lelouch_UsShoot", Caster);
 	Ability:CreateHitbox(Caster, vector.create(0, 0, -25), vector.create(3, 3, 50), function(Enemy)
 		Ability:Hit(Caster, Enemy, {EffectData = EffectData, NoCameraShake = true, NoHitStop = true})
 	end)
@@ -80,7 +81,7 @@ function Ability:Play(Caster: Types.ClientAgent, _, State)
 		{0, function()
 			local Track = Ability:Get(Caster, "M1_Track")
 			if not Track then
-				Track = Ability:PlayAnimation(Caster, 'Lelouch.Abilities.M1.Shoot', {
+				Track = Ability:PlayAnimation(Caster, 'Lelouch.Abilities.M1.Shoot'..math.random(1, 3), {
 					Fade = .1,
 				})
 
