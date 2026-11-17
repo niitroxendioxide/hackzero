@@ -16,7 +16,7 @@ return function(
     local ClonedModel = Effects:Create(Caster:GetModel(), 2)
 
     for _, BasePart in ClonedModel:GetDescendants() do
-        if BasePart:IsA("WeldConstraint") or BasePart:IsA("Motor6D") or BasePart:IsA("Weld") or BasePart:IsA('Highlight') then
+        if BasePart:IsA("WeldConstraint") or BasePart:IsA("Motor6D") or BasePart:IsA("Weld") or BasePart:IsA('Highlight') or BasePart:IsA("ParticleEmitter") or BasePart:IsA("PointLight") then
             BasePart:Destroy()
             continue
         end

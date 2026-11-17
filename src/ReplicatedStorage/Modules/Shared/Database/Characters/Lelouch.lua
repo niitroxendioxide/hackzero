@@ -49,13 +49,13 @@ return {
 		['Passive'] = {
 			Black_Knights = {
 				Max = 5,
-				Lifetime = 8,
+				Lifetime = 14,
 				Range = 70,
 				Interval = 1 / 10,
 
 				Hit = {
 					HitType = 'Blunt',
-					Damage = 2,
+					Damage = 2.5,
 					Daze = 26,
 					Stun = 0.1,
 					Affliction = 'Physical',
@@ -154,6 +154,18 @@ return {
 			Base = {
 				Range = 75,
 				Required_Energy = 45,
+				Attack_State_Time = 0.55,
+				Speed = 1,
+				Animation_Speed = 1,
+
+				Geass_Area = vector.create(10, 5, 10),
+				Yield_Command = {
+					Type = "Defense",
+					Value = "15%",
+					Time = 10,
+					Tag = "Yield",
+				},
+
 			},
 			Upgrade = {},
 		}

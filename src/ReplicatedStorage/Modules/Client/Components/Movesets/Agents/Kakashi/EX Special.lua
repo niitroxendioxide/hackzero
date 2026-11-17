@@ -456,7 +456,7 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster
 
 	if IsSecondUse then
 		Ability:Save(Caster, 'SecondUse', false)
-	elseif (os.clock() - LastCast < 5) and not IsSecondUse then
+	elseif (os.clock() - LastCast < 10) and not IsSecondUse then
 		Ability:Save(Caster, 'next_use_raiden', true)
 		Ability:Save(Caster, 'SecondUse', true)
 		Ability:PushToContextBuffer(true)
@@ -464,17 +464,17 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Caster
 end)
 
 function Ability:Play(Caster: Types.ClientAgent, _, _, Context)
-	local IsRaiden = true --Ability:Get(Caster, 'next_use_raiden') == true
+	local IsRaiden = Ability:Get(Caster, 'next_use_raiden') == true
 	Ability:Save(Caster, 'LastCast', os.clock())
 
 	if IsRaiden then
 		Ability:Save(Caster, 'next_use_raiden', false)
 
-		--if Caster:HasTag('LightningMode') then
+		if Caster:HasTag('LightningMode') then
 			DenkoRensen(Caster, Context)
-		--else
-			--Raiden(Caster, Context)
-		--end
+		else
+			Raiden(Caster, Context)
+		end
 	else
 		CastSosenko(Caster, Context)
 	end

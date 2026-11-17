@@ -109,12 +109,13 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 
 	Affliction_Damage *= Multipliers.Affliction;
 
-	local Crit_Damage = 1 + Agent:GetStat('Critical_Damage') / 100
-	local Penetration = Agent:GetStat('Penetration')
-	local Pen_Ratio = Agent:GetStat('Pen_Ratio')
-	local Affliction_Aptitude = Agent:GetStat('Affliction_Aptitude')
-	local Level = Agent.__Level
-	local Damage_Bonus_Mult = 1 + (Agent.GetMultBonus and (Agent:GetMultBonus(Data.Affliction :: DefaultTypes.Element) + Agent:GetMultBonus(Data.Attack_Type)) or 0)
+	const Affliction_Resistance = 1 / (1 + Enemy:GetStat(Data.Affliction.."_Affliction_Resistance"))
+	const Crit_Damage = 1 + Agent:GetStat('Critical_Damage') / 100
+	const Penetration = Agent:GetStat('Penetration')
+	const Pen_Ratio = Agent:GetStat('Pen_Ratio')
+	const Affliction_Aptitude = Agent:GetStat('Affliction_Aptitude')
+	const Level = Agent.__Level
+	const Damage_Bonus_Mult = 1 + (Agent.GetMultBonus and (Agent:GetMultBonus(Data.Affliction :: DefaultTypes.Element) + Agent:GetMultBonus(Data.Attack_Type)) or 0)
 
 	local Enemy_Crit_Defense = 1 - (Enemy:GetStat("Critical_Defense") or 0) 
 
@@ -137,11 +138,10 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 	local Affliction_Type = Element_Multiplier < 1 and 'Weak' or Data.Affliction
 	local Dazed_State_Multiplier = EnemyStatus:IsKnocked() and EnemyStatus:GetDazeMultiplier() or 1
 
-	local Final_Damage = math.max(Base_Damage * Multipliers.Damage * Skill_Damage_Boost * Damage_Bonus_Mult * Crit_Mult * Defense_Mult * Affliction_Damage * Element_Multiplier * Resistance_Multiplier * Damage_Taken_Mult * Dazed_State_Multiplier * Damage_Type_Extra * Affliction_Boost, 1)
+	local Final_Damage = math.max(Base_Damage * Multipliers.Damage * Skill_Damage_Boost * Damage_Bonus_Mult * Crit_Mult * Defense_Mult * Affliction_Damage * Element_Multiplier * Resistance_Multiplier * Damage_Taken_Mult * Dazed_State_Multiplier * Damage_Type_Extra * Affliction_Boost * Affliction_Resistance, 1)
 	local Percent_Bonus = (Final_Damage / EnemyStatus:GetStat('Max_Health')) / 0.63
 	local Filled_Affliction = ((Data.Affliction_Buildup or 1) / 100) * (1 + Affliction_Aptitude/90) * (1 + Percent_Bonus) * Multipliers.Affliction_Buildup
 	local Burst_Damage = 0
-
 
 	-- Run any hook regarding before-hit or before-affliction
 	AgentGear:RunHook(GameEnum.GearHookType.BeforeHit, {Caster = Agent, Target = Enemy, HitData = Data})
@@ -156,6 +156,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 
 	AgentGear:RunHook(GameEnum.GearHookType.AfterAffliction, {Caster = Agent, Target = Enemy, HitData = Data})
 
+	
 	local AfflictionTriggered = false;
 
 	if (Enemy:GetAffliction(Data.Affliction) or 0) >= 100 then

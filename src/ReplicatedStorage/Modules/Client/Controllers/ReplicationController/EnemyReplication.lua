@@ -53,6 +53,9 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | num
 		end
 	end
 
+	--- Registered before the overhead is added: AddIndicator ignores enemies that aren't the live one for their id.
+	Enemies:AddEnemy(EnemyId, NewEnemy)
+
 	if SceneModel then
 		NewEnemy:Init(EnemyId, false)
 		--- The Spawn effect is what normally adds the overhead, and scene enemies skip it.
@@ -63,8 +66,6 @@ function Controller:AddEnemy(Buffer: buffer, At: Vector3, Buffs: { {string | num
 	end
 
 	--Effects:Play('EnemyStats', NewEnemy)
-	
-	Enemies:AddEnemy(EnemyId, NewEnemy)
 end
 
 function Controller:RemoveEnemy(Buffer: buffer)

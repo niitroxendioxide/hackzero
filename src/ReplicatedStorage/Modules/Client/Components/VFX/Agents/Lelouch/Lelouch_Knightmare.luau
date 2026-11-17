@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const Assets = ReplicatedStorage.Assets
@@ -9,7 +10,7 @@ const Cache = require("@game/ReplicatedStorage/Modules/Client/Packages/Knightmar
 return function(...)
     const Args = {...}
     const Characters = Assets.Characters.Agents;
-    --const LelouchAssets = Assets.Effects.Agents.Lelouch;
+    const LelouchVFX = Assets.Effects.Agents.Lelouch;
 
     const Id = Args[1] :: number;
     const State = Args[2] :: number; 
@@ -40,7 +41,7 @@ return function(...)
                 const Transparency = k.Transparency;
                 k.Transparency = 1;
 
-                task.delay(0.05, function()
+                task.delay(0.15, function()
                     Effects:Tween(k, { 0.1 }, {Transparency = Transparency})
                 end)
             end
@@ -49,15 +50,38 @@ return function(...)
         Model:PivotTo(Coordinates)
         Model.Parent = workspace;
 
-        const LandingTrack = Animation:Play(Model, Land);
-        LandingTrack.Stopped:Once(function()
-            Animation:Play(Model, Idle);
+        task.delay(0.075, function()
+            const LandingTrack = Animation:Play(Model, Land);
+            LandingTrack.Stopped:Once(function()
+                Animation:Play(Model, Idle);
+            end)
+
+            task.wait(0.225)
+
+            local Ground = Effects:CastMapRaycast(At.Position, vector.create(0, -250))
+            if Ground then
+                if (workspace.CurrentCamera.CFrame.Position - Ground.Position).Magnitude < 25 then
+                    Effects:ShakeCamera("Hit")
+                end
+
+                const Explosion = Effects:Create(LelouchVFX.Landing, 4)
+                Explosion:PivotTo(CFrame.new(Ground.Position + Ground.Normal * 2) * CFrame.Angles(0, Effects:Random(-math.pi, math.pi), 0))
+                Effects:Emit(Explosion, true)
+
+                Effects:CreateRocks(Ground, vector.create(1.95, 0.75, 1.95), {7, 9}, {6, 9}, {-13, 13})
+            end
         end)
 
         Cache[Id] = {
             Model = Model,
             Cleanup = function()
-                Model:Destroy()
+                for _, k in Model:GetDescendants() do
+                    if k:IsA('BasePart') then
+                        Effects:Tween(k, { 0.3 }, {Transparency = 1})
+                    end
+                end
+                
+                Effects:CleanUp(Model, .5)
             end,
         };
     end

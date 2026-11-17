@@ -30,6 +30,11 @@ const DAZE_SHRED_RESISTANCE_TAG = "KkResShred";
 const DAZE_SHRED_RESISTANCE_STAT = "Daze_Resistance";
 const DAZE_SHRED_RESISTANCE_VAL = -0.05;
 
+-- Lightning Mode energy buff (0.5 = +50%)
+const ENERGY_BUFF_TAG = 'LightningEnergy';
+const ENERGY_PER_HIT_BONUS = 0.5;
+const ENERGY_REGEN_BONUS = 1;
+
 ---
 local Kakashi = {
     __Lightning_Mode = {},
@@ -74,6 +79,13 @@ function Kakashi:EnterLightningMode(Caster: Types.ServerAgentClass, Time: number
 
     Kakashi.__Lightning_Mode[Caster] = true
     Caster:AddTag('LightningMode', Duration, true)
+    Caster:AddEffect({
+        Tag = ENERGY_BUFF_TAG,
+        Types = { 'Energy_Gain', 'Energy_Regeneration' },
+        Values = { ENERGY_PER_HIT_BONUS, ENERGY_REGEN_BONUS },
+        Time = Duration,
+        Unique = true,
+    })
 
     Replicator:Effect('Kakashi_LightningMode', {Caster, Duration, true}, true)
 
@@ -98,6 +110,11 @@ function Kakashi:ExitLightningMode(Caster: Types.ServerAgentClass)
 
     Caster:UpdateMeter(METER_NAME, -99)
     Caster:RemoveTag('LightningMode')
+
+    const EnergyBuff = Caster:GetEffect(ENERGY_BUFF_TAG)
+    if EnergyBuff then
+        Caster:RemoveEffect(EnergyBuff.Id)
+    end
 
     Replicator:Effect('Kakashi_LightningMode', {Caster, 0, false}, true)
 end

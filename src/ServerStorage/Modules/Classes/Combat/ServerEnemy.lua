@@ -73,10 +73,6 @@ function ServerEnemy:SetWorldSpeed(Speed: number, Time: number?)
 end
 
 function ServerEnemy:GetStat(Stat: string)
-	if Stat == 'Speed' then
-		return 1
-	end
-
 	return self.__Status:GetStat(Stat)
 end
 

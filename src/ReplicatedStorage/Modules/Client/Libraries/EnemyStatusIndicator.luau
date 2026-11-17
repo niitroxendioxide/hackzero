@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Effects = require(Shared.Utility.Effects)
 local Types = require(Shared.Types.Abilities)
 local IconDatabase = require(Shared.Database.Icons)
+local Enemies = require(Shared.Libraries.Enemies)
 
 ---
 local Lib = {
@@ -16,8 +17,19 @@ local Lib = {
 }
 
 function Lib:AddIndicator(Id: number, Enemy: Types.ClientEnemy)
-    if Lib.__Cache[Id] then
-        return    
+    -- Spawn adds the indicator on a delay; by then this enemy may be dead and its id reused.
+    if Enemies:GetEnemy(Id) ~= Enemy then
+        return
+    end
+
+    local Existing = Lib.__Cache[Id]
+    if Existing then
+        if Existing[2] == Enemy then
+            return
+        end
+
+        -- Leftover from a previous enemy with this id: drop it so updates don't go to a dead bar.
+        Lib:RemoveIndicator(Id)
     end
 
     local Indicator = Effects:Create(Assets.Interface.Combat.BillboardFight, 10)
@@ -31,6 +43,9 @@ function Lib:AddIndicator(Id: number, Enemy: Types.ClientEnemy)
 	Gui.Meters.Health.Main.UIGradient.Offset = Vector2.new(.2, 0)
 
     Lib.__Cache[Id] = {Gui, Enemy}
+
+    -- Damage that landed before the indicator existed (spawn delay) was dropped; catch up.
+    Lib:UpdateHealth(Id, Enemy.__Status.__Health)
 end
 
 function Lib:UpdateHealth(Id: number, Current: number)
@@ -115,7 +130,7 @@ function Lib:RemoveIndicator(Id: number)
         return
     end
 
-    if typeof(Cache[1]) == 'Instance' and Cache[1]:IsDescendantOf(workspace) then
+    if typeof(Cache[1]) == 'Instance' then
         Cache[1]:Destroy()
     end
 

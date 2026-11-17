@@ -7,6 +7,7 @@ const EnemiesLib = require("@game/ReplicatedStorage/Modules/Shared/Libraries/Ene
 const Effects = require("@game/ReplicatedStorage/Modules/Shared/Utility/Effects")
 local GameEnum = require(ReplicatedStorage.Modules.Shared.GameEnum)
 const KnightmareCache = require("@game/ReplicatedStorage/Modules/Client/Packages/KnightmareCache")
+const VFXLib = require("@game/ReplicatedStorage/Modules/Client/Libraries/Effects")
 
 const ElementColors = {
     ['Wind'] = Color3.fromRGB(95, 255, 46),
@@ -19,6 +20,26 @@ const ElementColors = {
     ['Antimatter'] = Color3.fromRGB(114, 43, 121),
     ['Physical'] = Color3.fromRGB(171, 103, 54),
 }
+
+const TORSO_YAW_OFFSET = math.rad(-26.2)
+
+-- Average hue (degrees) of the colored emitters in General.Combat.SmallHit (they range 12°-42°, orange).
+-- Each element's hit gets shifted by (element hue - this) so it matches the muzzle color.
+const SMALL_HIT_BASE_HUE = 28
+
+const HitEffectData = {} :: {[string]: {Emitter: string, HueShift: number}}
+for Element, ElementColor in ElementColors do
+    const Hue = ElementColor:ToHSV()
+    local Shift = (Hue * 360 - SMALL_HIT_BASE_HUE) % 360
+    if Shift > 180 then
+        Shift -= 360 -- shortest way round the wheel
+    end
+
+    HitEffectData[Element] = {
+        Emitter = "SmallHit",
+        HueShift = Shift,
+    }
+end
 
 return function(...)
     const Args = {...}
@@ -34,17 +55,28 @@ return function(...)
     if KnightmareObj then
         const EnemyObject = EnemiesLib:GetEnemy(TargetId);
         const KnightmareModel = KnightmareObj.Model;
-        const Vxz = vector.create(1, 0, 1)
-        const Pos = KnightmareModel:GetPivot().Position
-        const EPos = EnemyObject:GetPivot().Position
-        const At = CFrame.lookAlong(Pos, CFrame.lookAt(Pos * Vxz, EPos * Vxz).LookVector)
 
         if KnightmareModel == nil or not KnightmareModel:IsDescendantOf(workspace) or KnightmareModel:FindFirstChild("RootPart") == nil then
             return;
         end
 
-        const Gun = KnightmareModel.RootPart:FindFirstChild("Gun", true);
-        Effects:Tween(KnightmareModel.RootPart, {0.2, 'Quad'}, {CFrame = At})
+        const RootPart = KnightmareModel.RootPart :: BasePart;
+        const Gun = RootPart:FindFirstChild("Gun", true);
+        const UpperTorso = RootPart:FindFirstChild("UpperTorso") :: Bone?;
+
+        if UpperTorso and EnemyObject then
+            local Rest = UpperTorso:GetAttribute("RestCFrame") :: CFrame?
+            if Rest == nil then
+                Rest = UpperTorso.CFrame
+                UpperTorso:SetAttribute("RestCFrame", Rest)
+            end
+
+            const Dir = RootPart.CFrame:VectorToObjectSpace(EnemyObject:GetPivot().Position - RootPart.Position)
+            const Yaw = math.atan2(-Dir.X, -Dir.Z) + TORSO_YAW_OFFSET
+            Effects:Tween(UpperTorso, {0.2, 'Quad'}, {
+                CFrame = CFrame.new(Rest.Position) * CFrame.Angles(0, Yaw, 0) * Rest.Rotation
+            })
+        end
 
         for _, Vfx in Gun.Att:GetDescendants() do
             if Vfx:IsA('ParticleEmitter') then
@@ -54,5 +86,7 @@ return function(...)
                 Effects:Emit(Vfx, true)
             end
         end
+
+        VFXLib:Play("Hit", TargetId, HitEffectData[Element] or HitEffectData.Physical)
     end
 end

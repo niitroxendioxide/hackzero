@@ -461,6 +461,10 @@ local function HitEnemy(Agent: AgentTypes.ServerAgentClass, Enemy: AgentTypes.En
 
 	local Dealt_Daze, Is_Dazed = DamageLibrary:Daze(Agent, Enemy, Data.Daze, SkillId)
 	local EnergyAmount = DamageLibrary:CalculateEnergyForHit(Enemy, Dealt_Damage)
+	if Agent.__Status then
+		-- 'Energy_Gain' effects boost energy per hit (e.g. Value = 0.5 -> +50%)
+		EnergyAmount *= 1 + Agent.__Status:GetStatEffects('Energy_Gain')
+	end
 
 	if Enemy.__Status:IsKnocked() then
 		Enemy:Rotate(Agent:GetPivot().Position)

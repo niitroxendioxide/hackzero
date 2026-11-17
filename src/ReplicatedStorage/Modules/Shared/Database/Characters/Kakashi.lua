@@ -162,7 +162,7 @@ return {
 				Hit_Count = 5,
 				Range = 100,
 				Raikiri_Run_Time = .5,
-				Required_Energy = 40,
+				Required_Energy = 30,
 
 				Hit = {
 					Damage = 87,
@@ -195,7 +195,7 @@ return {
 				Attack_State_Time = 2,
 				Speed = 1,
 				Range = 100,
-				Required_Energy = 40,
+				Required_Energy = 30,
 				First_Run_Time = .5,
 				Second_Run_Time = .5,
 

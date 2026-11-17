@@ -27,6 +27,7 @@ const function TryEnterLightningMode(Caster: Types.ServerAgent): boolean
 	end
 
 	Ability:Save(Caster, 'SkillHeld', true)
+	const Track = Ability:PlayAnimation(Caster, "Kakashi.Abilities.M1.LightningMode", {})
 
 	const Count = Caster:GetMeter("Lightning")
 	const Hold_Time = Ability:FromData('Lightning_Mode_Hold_Time')
@@ -38,6 +39,7 @@ const function TryEnterLightningMode(Caster: Types.ServerAgent): boolean
 		const Was_Held = (os.clock() - HoldStart) >= Hold_Time
 
 		if Was_Held then
+			Caster:AddTag("LightningMode")
 			Ability:Effect('Kakashi_LightningMode', Caster, 'Enter')
 
 			return true
@@ -45,6 +47,8 @@ const function TryEnterLightningMode(Caster: Types.ServerAgent): boolean
 
 		task.wait()
 	end
+
+	Track:Stop(.15)
 
 	return false
 end

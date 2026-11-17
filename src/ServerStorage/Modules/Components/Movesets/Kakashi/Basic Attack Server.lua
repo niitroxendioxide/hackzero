@@ -62,6 +62,7 @@ function Ability:Play(Caster: Types.ServerAgent, _, State, Ctx): ()
 
 	local Sequence = Ability:Begin(Caster, {}, true)
 
+	local ElectricHasHit = false;
 	local AttackData = Ability:FromData("Attack_Data")
 	for Step = M1_Count, M1_Count + 1, 0.1 do
 		local Tick = AttackData[Step];
@@ -82,6 +83,11 @@ function Ability:Play(Caster: Types.ServerAgent, _, State, Ctx): ()
 			Size = Size,
 			Offset = Offset,
 			Hit_Function = function(Target)
+				if M1_Count == 3 and not ElectricHasHit then
+					ElectricHasHit = true
+					KakashiController:AddCharge(Caster, 1)
+				end
+
 				HitData.Damage = Ability:FromData("Damage", Step, SkillLevel)
 				HitData.Daze = Ability:FromData("Daze", Step, SkillLevel)
 
@@ -94,8 +100,6 @@ function Ability:Play(Caster: Types.ServerAgent, _, State, Ctx): ()
 
 				if Is_Electric_Step then
 					KakashiController:ShredResistance(Target, Daze_Shred_Time)
-				elseif HitData.Affliction == 'Electric' then
-					KakashiController:AddCharge(Caster, 1)
 				end
 			end
 		})

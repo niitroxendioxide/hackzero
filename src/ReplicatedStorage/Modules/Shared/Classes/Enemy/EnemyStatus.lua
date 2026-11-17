@@ -118,11 +118,9 @@ function EnemyStatus:GetStat(Name: string)
 		return self.__Max_Daze + self:GetStatEffects(Name)
 	end
 
-	if not self.__Stats[Name] then
-		return nil
-	end
+	const BaseStat = if Name == 'Speed' then 1 else (self.__Stats[Name] or 0);
 
-	return self.__Stats[Name] + self:GetStatEffects(Name)
+	return BaseStat + (self:GetStatEffects(Name))
 end
 
 function EnemyStatus:SetHealth(Health: number)

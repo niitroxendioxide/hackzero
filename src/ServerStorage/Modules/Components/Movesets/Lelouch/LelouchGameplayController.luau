@@ -19,9 +19,6 @@ local TurretClass = require(Modules.Classes.Combat.ServerTurret)
 
 ---
 const KNIGHT_ID_OFFSET = 256
-const HIT_EFFECT_DATA = {
-    Emitter = "SmallHit",
-}
 
 const KNIGHT_OFFSETS = {
     CFrame.new(-6, 0, 4),
@@ -48,6 +45,7 @@ type AgentKnights = {
 const Controller = {
     __Agents = {} :: { [AgentTypes.ServerAgentClass]: AgentKnights },
     __Targets = {} :: { [AgentTypes.ServerAgentClass]: AbilityTypes.ServerEnemy },
+    __Commands = {} :: { [AgentTypes.ServerAgentClass]: { [AbilityTypes.ServerEnemy]: {CommandData} } }
 }
 
 local function GetAgentKnights(Caster: AgentTypes.ServerAgentClass): AgentKnights
@@ -88,7 +86,6 @@ local function KnightFire(Caster: AgentTypes.ServerAgentClass, Knight: Knight, T
     KnightAbility:Hit(Caster, Target, HitData)
 
     Replicator:Effect("Lelouch_KShoot", {Knight.Id, GameEnum.Afflictions[HitData.Affliction], Target:GetId()}, true)
-    Replicator:Effect('Hit', {Target:GetId(), HIT_EFFECT_DATA}, true)
 end
 
 -- // Target
@@ -207,6 +204,53 @@ function Controller:DestroyKnights(Caster: AgentTypes.ServerAgentClass)
     for _, Knight in GetAgentKnights(Caster).Knights do
         Knight.Turret:Destroy()
     end
+end
+
+export type CommandData = {
+    Tag: string,
+    Time: number,
+}
+
+const function GetOrInit(Caster, Target)
+    const CommandsList = Controller.__Commands
+
+    if CommandsList[Caster] == nil then
+        CommandsList[Caster] = {}
+    end
+
+    if CommandsList[Caster][Target] == nil then
+        CommandsList[Caster][Target] = {}
+    end
+    return CommandsList[Caster][Target]
+end
+
+function Controller:HasCommand(Caster: AgentTypes.ServerAgentClass, Target: AbilityTypes.ServerEnemy, DataToMatch: CommandData?)
+    const TargetCommands = GetOrInit(Caster, Target);
+    
+    if (typeof(DataToMatch) ~= "table" or typeof(DataToMatch.Tag) ~= 'string') and #TargetCommands > 0 then
+        return true;
+    end
+    
+    for _, Item in TargetCommands do
+        if Item.Tag == DataToMatch.Tag then
+            return true;
+        end
+    end
+
+    return false;
+end
+
+function Controller:ApplyCommand(Caster: AgentTypes.ServerAgentClass, Target: AbilityTypes.ServerEnemy, Data: CommandData)
+    const TargetCommands = GetOrInit(Caster, Target);
+    const Id = #TargetCommands + 1;
+
+    table.insert(TargetCommands, Data);
+
+    if Data.Time then
+        task.delay(Data.Time, table.remove, TargetCommands, Id)
+    end
+
+    Target:AddEffect(Data)
 end
 
 return Controller

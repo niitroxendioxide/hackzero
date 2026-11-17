@@ -291,16 +291,16 @@ const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContex
 end
 
 function Ability:Play(Caster: Types.ServerAgent, _, _, Context): ()
-	const IsRaiden = true --Context.Buffer[1] == true;
+	const IsRaiden = Context.Buffer[1] == true;
 	if IsRaiden then
 		Ability:Save(Caster, 'next_use_raiden', false)
 
 		-- In Lightning Mode the follow-up becomes Denko Rensen instead of Raiden (moveset.md).
-		--if KakashiController:IsLightningMode(Caster) then
+		if KakashiController:IsLightningMode(Caster) then
 			DenkoRensen(Caster, Context)
-		--else
-			--Raiden(Caster, Context)
-		--end
+		else
+			Raiden(Caster, Context)
+		end
 	else
 		CastSosenko(Caster, Context)
 	end

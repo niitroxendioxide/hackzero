@@ -50,6 +50,10 @@ return function(
 	local Offset = Data.Offset or CFrame.new()
 	local BaseCFrame = typeof(Enemy) == 'table' and Enemy:GetModel():GetPivot() or Enemy
 	
+	if EmitterId == 'SmallHit' then
+		Offset = CFrame.new(Effects:Random(-1.5, 1.5), Effects:Random(-1, 1), Effects:Random(-1, 1))
+	end
+
 	local Object = Effects:Create(CombatFolder[EmitterId], 25)
 	Object.CFrame = BaseCFrame * Offset
 
