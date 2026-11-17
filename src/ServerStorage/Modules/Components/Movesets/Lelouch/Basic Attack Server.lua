@@ -30,9 +30,16 @@ const function Geass(Caster: Types.GenericClass)
 
 	Ability:Save(Caster, "Holding", true)
 
-	const GeassHit = Ability:FromData("Geass_Hit", nil, Caster:GetSkillLevel(Ability.Name))
+	const Start = os.clock();
+	while (os.clock() - Start) < 0.25 do
+		if Ability:Get(Caster, "Holding") ~= true then
+			return false
+		end
 
-	local Track = nil;
+		task.wait()
+	end
+
+	const GeassHit = Ability:FromData("Geass_Hit", nil, Caster:GetSkillLevel(Ability.Name))
 	const Sequence = Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState('Attacking', 0.5)
@@ -44,21 +51,6 @@ const function Geass(Caster: Types.GenericClass)
 			end)
 		end},
 	})
-	
-	const Start = os.clock();
-	while (os.clock() - Start) < 0.25 do
-		if Ability:Get(Caster, "Holding") ~= true then
-			if Track and Track.IsPlaying then
-				Track:Stop()
-			end
-
-			Sequence:Destroy()
-
-			return false
-		end
-
-		task.wait()
-	end
 
 	Ability:Save(Caster, "GeassCD", true)
 	task.delay(7, function()

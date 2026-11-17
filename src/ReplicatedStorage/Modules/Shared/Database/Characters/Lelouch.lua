@@ -69,7 +69,7 @@ return {
 		['Basic Attack'] = {
 			Base = {
 				Cooldown = 0.01,
-				Attack_State_Time = 0.2,
+				Attack_State_Time = 0.15,
 				Speed = 1,
 				Animation_Speed = 1,
 				Range = 75,
@@ -116,6 +116,47 @@ return {
 				},
 			},
 		},
+
+		['Special'] = {
+			Base = {
+				Cooldown = 1.5,
+				Attack_State_Time = 0.15,
+				Speed = 1,
+				Animation_Speed = 1,
+				Range = 75,
+				Required_Energy = 45,
+
+				Throw_Distance = 30,
+				Grenade_Speed = 90,
+				Grenade_Lift = 0.15,
+				Grenade_Size = vector.create(7, 7, 7),
+
+				Hit = {
+					HitType = 'Blunt',
+					Damage = 55,
+					Daze = 60,
+					Stun = 0.4,
+					Affliction = 'Physical',
+					Affliction_Buildup = 35,
+					HitsAirborne = true,
+					NoRotate = true,
+				},
+			},
+			Upgrade = {
+				Hit = {
+					Damage = .9,
+					Daze = .6,
+				},
+			},
+		},
+
+		['EX Special'] = {
+			Base = {
+				Range = 75,
+				Required_Energy = 45,
+			},
+			Upgrade = {},
+		}
 	},
 
 	Ascension_Data = {

@@ -1,0 +1,68 @@
+--
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService('ServerStorage')
+
+local Shared = ReplicatedStorage.Modules.Shared
+local Classes = ServerStorage.Modules.Classes
+
+local Math = require(Shared.Utility.Math)
+local Types = require(Shared.Types)
+local AbilityClass = require(Classes.Combat.ServerAbility)
+
+--
+local Ability = AbilityClass.new()
+
+const function GetLandPosition(Caster: Types.GenericClass, Target: any?): Vector3
+	const Pivot = Caster:GetPivot()
+	const Range = Ability:FromData("Range")
+
+	if Target == nil then
+		return (Pivot * CFrame.new(0, 0, -Ability:FromData("Throw_Distance"))).Position
+	end
+
+	const Offset = Pivot:PointToObjectSpace(Target:GetPivot().Position)
+	if Offset.Magnitude > Range then
+		return Pivot:PointToWorldSpace(Offset.Unit * Range)
+	end
+
+	return Target:GetPivot().Position
+end
+
+const function Shoot(Caster: Types.GenericClass, Land: Vector3, HitData)
+	const Offset = Caster:GetPivot():PointToObjectSpace(Land)
+
+	Ability:CreateHitbox(Caster, Offset, Ability:FromData("Grenade_Size"), function(Enemy)
+		Ability:Hit(Caster, Enemy, HitData)
+	end)
+end
+
+const function Throw(Caster: Types.GenericClass, Target: any?)
+	const HitData = Ability:FromData("Hit", nil, Caster:GetSkillLevel(Ability.__Name))
+	const Start = Caster:GetPivot().Position
+	const Land = GetLandPosition(Caster, Target)
+	const FlightTime = Math:GetArc(Start, Land, Ability:FromData("Grenade_Speed"), Ability:FromData("Grenade_Lift"))
+
+	task.delay(FlightTime, Shoot, Caster, Land, HitData)
+end
+
+function Ability:Play(Caster: Types.GenericClass, _, State, Ctx): ()
+	if State ~= 'Begin' then
+		return
+	end
+
+	Ability:Begin(Caster, {
+		{0, function()
+			if Ctx.Target then
+				Caster:LookAtTarget(Ctx.Target)
+			end
+
+			Caster:SwitchState('Attacking', Ability:FromData('Attack_State_Time'))
+		end},
+
+		{0.267, function()
+			Throw(Caster, Ctx.Target)
+		end},
+	})
+end
+
+return Ability

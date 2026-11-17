@@ -268,7 +268,20 @@ return {
 					Stun = 0.3,
 					Daze = 24,
 					Affliction = 'Electric',
-					Affliction_Buildup = 105,
+					Affliction_Buildup = 127,
+				},
+				Denko_Rensen_Hit_Final = {
+					HitType = 'Slash',
+					Damage = 78,
+					Stun = 0.225,
+					Daze = 33,
+					Affliction = 'Electric',
+					Affliction_Buildup = 65,
+					Knockback = {
+						vector.create(0, 0, 1),
+						55,
+						0.4
+					}
 				},
 			},
 

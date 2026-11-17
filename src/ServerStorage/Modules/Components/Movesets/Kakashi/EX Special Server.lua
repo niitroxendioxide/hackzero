@@ -225,6 +225,7 @@ end
 const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContext)
 	const SkillLevel = Caster:GetSkillLevel(Ability.Name)
 	const HitData = Table.CopyDeep(Ability:FromData('Denko_Rensen_Hit', nil, SkillLevel))
+	const FinalHitData = Table.CopyDeep(Ability:FromData('Denko_Rensen_Hit_Final', nil, SkillLevel))
 
 	const Startup_Time = Ability:FromData('Denko_Rensen_Startup_Time')
 	const Dash_Count = Ability:FromData('Denko_Rensen_Dash_Count')
@@ -244,14 +245,26 @@ const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContex
 		end},
 	}, true);
 
+	const Grabbed = {}
 	const DashObj = {}
+
 	for i = 0, 8 do
 		const Id = i+1;
 		const Walk_Time = 0.2 + (1 - Id/9)*0.15
 		const Walk_Mod = 0.75 + 0.02*Id
-	
+		if DashObj[Id] == nil then
+			DashObj[Id] = {}
+		end
+
 		Sequence:Add(0.4 + i*0.2, 0.633 + i*0.2, function()
 			Ability:CreateHitbox(Caster, vector.create(0, 0, -6), Hitbox_Size, function(Enemy)
+				if not Grabbed[Enemy] then
+					const GrabResult = GrabService:GrabEnemy(Caster, Enemy, 2.75, CFrame.new(0, 0, -3.5))
+					if GrabResult then
+						Grabbed[Enemy] = true;
+					else return end
+				end
+
 				if DashObj[Id][Enemy] then
 					Caster:Walk(Walk_Time, Walk_Mod)
 					return;
@@ -259,19 +272,17 @@ const function DenkoRensen(Caster: Types.ServerAgent, Context: Types.SkillContex
 
 				DashObj[Id][Enemy] = true;
 				
-				Ability:Hit(Caster, Enemy, {
-					NoHitStop = true,
-					EffectData = {
-						HueShift = 175,
-						Highlight = true,
-						HighlightColor = Color3.fromRGB(117, 150, 244),
-					},
-				})
+				Ability:Hit(Caster, Enemy, HitData)
 			end)
 		end)
 	end
 
 	Sequence:After(function(_self: Types.Sequence)
+		for GrabbedEnemy in Grabbed do
+			GrabService:ForceStopGrab(GrabbedEnemy)
+			Ability:Hit(Caster, GrabbedEnemy, FinalHitData)
+		end
+
 		Caster:Walk(0.5, 0.8)
 		Ability:Save(Caster, 'using_raiden', false);
 	end)

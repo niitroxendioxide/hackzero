@@ -332,4 +332,14 @@ function Math:ValueSubOnMul(SubtractedValue: number)
     end})
 end
 
+function Math:GetArc(Start: Vector3, Land: Vector3, Speed: number, Lift: number): (number, number)
+    const Distance = (Land - Start).Magnitude
+
+    return math.max(Distance / Speed, 1 / 60), Distance * Lift
+end
+
+function Math:GetArcPosition(Start: Vector3, Land: Vector3, Height: number, Alpha: number): Vector3
+    return Start:Lerp(Land, Alpha) + Vector3.yAxis * (4 * Height * Alpha * (1 - Alpha))
+end
+
 return Math

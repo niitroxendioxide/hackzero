@@ -16,7 +16,7 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
 end)
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeCancel, function(Caster: Types.ClientAgent)
-	Ability:Save(Caster, 'HoldToken', nil)
+	Ability:Save(Caster, 'Holding', false)
 end)
 
 const function Shoot(Caster: Types.ClientAgent)
@@ -32,11 +32,19 @@ const function Geass(Caster: Types.ClientAgent)
 	end
 	Ability:Save(Caster, "Holding", true)
 
-	local Track = nil;
+	const Start = os.clock();
+	while (os.clock() - Start) < 0.25 do
+		if Ability:Get(Caster, "Holding") ~= true then
+			return false
+		end
+
+		task.wait()
+	end
+
 	const Sequence = Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState('Attacking', 0.5)
-			Track = Ability:PlayAnimation(Caster, 'Lelouch.Abilities.M1.Geass', {
+			Ability:PlayAnimation(Caster, 'Lelouch.Abilities.M1.Geass', {
 				Fade = .1,
 			})
 		end},
@@ -47,21 +55,6 @@ const function Geass(Caster: Types.ClientAgent)
 			end)
 		end},
 	})
-	
-	const Start = os.clock();
-	while (os.clock() - Start) < 0.25 do
-		if Ability:Get(Caster, "Holding") ~= true then
-			if Track and Track.IsPlaying then
-				Track:Stop()
-			end
-
-			Sequence:Destroy()
-
-			return false
-		end
-
-		task.wait()
-	end
 
 	Ability:Save(Caster, "GeassCD", true)
 	task.delay(7, function()
@@ -87,7 +80,7 @@ function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
 		CanReshoot = false;
 	end
 
-	local Time = (0.33)
+	local Time = (0.3)
 	if CanReshoot then
 		Time = 0
 	else
@@ -118,7 +111,7 @@ function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
 			Caster:LookAtTarget(Context.Target)
 		end
 
-		Caster:WalkBack(0.15, 1.15)
+		Caster:WalkBack(0.15, .33)
 
 		Shoot(Caster)
 	end)

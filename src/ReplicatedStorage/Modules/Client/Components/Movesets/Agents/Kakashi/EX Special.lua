@@ -5,6 +5,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Modules.Shared
 local Client = ReplicatedStorage.Modules.Client
 
+local Settings = require(ReplicatedStorage.Modules.Client.Packages.Settings)
+local Enemies = require(ReplicatedStorage.Modules.Shared.Libraries.Enemies)
 local Animation = require(Client.Libraries.Animation)
 local Camera = require(Client.Libraries.Camera)
 local Replicator = require(Client.Libraries.Replicator)
@@ -325,15 +327,15 @@ const function Raiden(Caster: Types.ClientAgent, Context: Types.ClientSkillConte
 	Sequence:Start()
 end
 
+const function IsLocalPlr(Caster: any)
+	return Caster.__Player_Assigned == Players.LocalPlayer
+end
 
 const function DenkoRensen(Caster: Types.ClientAgent, Context: Types.ClientSkillContext)
 	const Dash_Time = Ability:FromData('Denko_Rensen_Dash_Time')
-	const Dash_Power = Ability:FromData('Denko_Rensen_Dash_Power')
 	const Hitbox_Size = Ability:FromData('Denko_Rensen_Hitbox_Size')
 
 	local LastHit = 0;
-	local Track: AnimationTrack = nil;
-
 	const Last_Dash = 9
 	const Side_Offset = 4.682
 
@@ -345,6 +347,7 @@ const function DenkoRensen(Caster: Types.ClientAgent, Context: Types.ClientSkill
 		return if Id % 2 == 1 then Side_Offset else -Side_Offset
 	end
 
+	const AimWCam = Settings:Get("Aim_With_Camera", "QOL") == true
 	const DashObj = {}
 	const function Dash(Id: number, Window: number)
 		const Walk_Time = 0.2 + (1 - Id/Last_Dash)*0.15
@@ -354,6 +357,17 @@ const function DenkoRensen(Caster: Types.ClientAgent, Context: Types.ClientSkill
 			DashObj[Id] = {}
 			Ability:Effect('Afterimage', Caster)
 			Ability:Effect('Kakashi_DenkoRensen', Caster, Walk_Time, Walk_Mod, Window, DashSide(Id - 1), DashSide(Id))
+		end
+
+		const TargetId = Context.Target and Context.Target:GetId() or -1
+		if IsLocalPlr(Caster) then
+			if AimWCam or DashObj[TargetId] then
+				Caster:Look(Camera:GetPivot().LookVector, false, true )
+			else
+				if Context.Target then
+					Caster:LookAtTarget(Context.Target)
+				end
+			end
 		end
 
 		Caster:Walk(Walk_Time, Walk_Mod)
@@ -383,7 +397,7 @@ const function DenkoRensen(Caster: Types.ClientAgent, Context: Types.ClientSkill
 	local Sequence = Ability:Begin(Caster, {
 		{0, function()
 			Caster:SwitchState(Types.CHARACTER_STATES.Attacking, 2.8)
-			Track = Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Special.DenkoRensen', {Fade = 0.1})
+			Ability:PlayAnimation(Caster, 'Kakashi.Abilities.Special.DenkoRensen', {Fade = 0.1})
 			Ability:Effect('Kakashi_Raikiri', Caster, 'Charge', nil, true)
 
 			if Context.Target then
