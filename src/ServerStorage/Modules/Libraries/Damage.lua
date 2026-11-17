@@ -73,7 +73,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 		Affliction_Buildup = 1,
 	}
 
-	local Crit_Rate = Agent:GetStat('Critical_Rate') + EnemyStatus:GetStatEffects('Critical_Rate_Taken')
+	local Crit_Rate = Agent:GetStat('Critical_Rate')
 	local Is_Critical = RNG:NextNumber(0, 100) <= Crit_Rate
 
 	local AgentData = Characters:GetCharacterData(Agent.Name, true)
@@ -139,7 +139,7 @@ function DamageLibrary:Deal(Agent: any, Enemy:AgentTypes.Enemy, Data: Types.HitE
 
 	local Final_Damage = math.max(Base_Damage * Multipliers.Damage * Skill_Damage_Boost * Damage_Bonus_Mult * Crit_Mult * Defense_Mult * Affliction_Damage * Element_Multiplier * Resistance_Multiplier * Damage_Taken_Mult * Dazed_State_Multiplier * Damage_Type_Extra * Affliction_Boost, 1)
 	local Percent_Bonus = (Final_Damage / EnemyStatus:GetStat('Max_Health')) / 0.63
-	local Filled_Affliction = ((Data.Affliction_Buildup or 1) / 100) * (1 + Affliction_Aptitude/90) * (1 + Percent_Bonus) * Multipliers.Affliction_Buildup * (1 + EnemyStatus:GetStatEffects('Affliction_Buildup_Taken'))
+	local Filled_Affliction = ((Data.Affliction_Buildup or 1) / 100) * (1 + Affliction_Aptitude/90) * (1 + Percent_Bonus) * Multipliers.Affliction_Buildup
 	local Burst_Damage = 0
 
 

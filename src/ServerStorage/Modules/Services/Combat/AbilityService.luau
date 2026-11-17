@@ -533,20 +533,11 @@ function Service:PlaySkill(Player: Player, SkillId: number, EnemyId: number, Sta
 				ActiveAgent:UseEnergy(Info.Base.Required_Energy)
 			end
 		elseif SpacelessSkill == "Ultimate" then
-			local Required_Meter = Info.Base.Required_Meter
-			if Required_Meter then
-				if ActiveAgent:GetMeter(Required_Meter.Name) < Required_Meter.Amount then
-					return false;
-				end
-
-				ActiveAgent:UpdateMeter(Required_Meter.Name, -Required_Meter.Amount)
-			else
-				if ActiveAgent:GetUltimate() < 100 then
-					return false;
-				end
-
-				ActiveAgent:UseUltimate();
+			if ActiveAgent:GetUltimate() < 100 then
+				return false;
 			end
+
+			ActiveAgent:UseUltimate();
 		end
 	elseif SpacelessSkill == 'Dodge' then
 		for _, Character in AgentLibrary:GetAll(Player:GetAttribute('ReplicationId') :: number) do

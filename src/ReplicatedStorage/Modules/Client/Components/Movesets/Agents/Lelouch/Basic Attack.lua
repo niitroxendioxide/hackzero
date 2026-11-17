@@ -9,10 +9,7 @@ local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Client.Classes.Ability)
 
 --
-local Ability = AbilityClass.new()
-
-const GEASS_COLOR = Color3.fromRGB(171, 97, 255)
-const FOCUS_FIRE_ENABLED = false
+const Ability = AbilityClass.new()
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
 	Ability:Increase(Agent, 'Count', {Limit = Ability:FromData('Geass_Shot')})
@@ -22,50 +19,73 @@ Ability:ConnectHook(GameEnum.AbilityHooks.BeforeCancel, function(Caster: Types.C
 	Ability:Save(Caster, 'HoldToken', nil)
 end)
 
-local function Shoot(Caster: Types.ClientAgent, EffectData: {[string]: any})
+const function Shoot(Caster: Types.ClientAgent)
 	Ability:Effect("Lelouch_UsShoot", Caster);
 	Ability:CreateHitbox(Caster, vector.create(0, 0, -25), vector.create(3, 3, 50), function(Enemy)
-		Ability:Hit(Caster, Enemy, {EffectData = EffectData, NoCameraShake = true, NoHitStop = true})
+		Ability:Hit(Caster, Enemy, {EffectData = {}, NoCameraShake = true, NoHitStop = true})
 	end)
 end
 
-local function FocusFire(Caster: Types.ClientAgent, Token: {})
-	local Hold_Time = Ability:FromData('Focus_Hold_Time')
-	local Shot_Interval = Ability:FromData('Focus_Shot_Interval')
-	local HoldStart = os.clock()
-
-	local function IsHeld()
-		return Ability:Get(Caster, 'HoldToken') == Token
+const function Geass(Caster: Types.ClientAgent)
+	if Ability:Get(Caster, "GeassCD") then
+		return false
 	end
+	Ability:Save(Caster, "Holding", true)
 
-	while IsHeld() and (os.clock() - HoldStart) < Hold_Time do
+	local Track = nil;
+	const Sequence = Ability:Begin(Caster, {
+		{0, function()
+			Caster:SwitchState('Attacking', 0.5)
+			Track = Ability:PlayAnimation(Caster, 'Lelouch.Abilities.M1.Geass', {
+				Fade = .1,
+			})
+		end},
+
+		{0.35, function()
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -25), vector.create(4, 4, 50), function(Enemy)
+				Ability:Effect("Lelouch_GeassAffect", Enemy:GetId());
+			end)
+		end},
+	})
+	
+	const Start = os.clock();
+	while (os.clock() - Start) < 0.25 do
+		if Ability:Get(Caster, "Holding") ~= true then
+			if Track and Track.IsPlaying then
+				Track:Stop()
+			end
+
+			Sequence:Destroy()
+
+			return false
+		end
+
 		task.wait()
 	end
 
-	while IsHeld() and not Caster:IsMoving() do
-		Caster:SwitchState('Attacking', Shot_Interval + 0.1)
-		Ability:PlayAnimation(Caster, 'Lelouch.Abilities.M1.Repeat', {
-			Fade = .05,
-		})
+	Ability:Save(Caster, "GeassCD", true)
+	task.delay(7, function()
+		Ability:Save(Caster, "GeassCD", false)
+	end)
 
-		Shoot(Caster, {Highlight = true})
-
-		task.wait(Shot_Interval)
-	end
+	return Sequence
 end
 
-function Ability:Play(Caster: Types.ClientAgent, _, State)
-	if State == 'Release' then
-		Ability:Save(Caster, 'HoldToken', nil)
+function Ability:Play(Caster: Types.ClientAgent, _, State, Context)
+	local CanReshoot = Ability:Get(Caster, 'M1_Track') and Ability:Get(Caster, 'M1_Track').IsPlaying;
+	local AddedTime = 0;
+	
+	if State ~= 'Begin' then
+		Ability:Save(Caster, "Holding", false)
 
-		return
+		return;
 	end
 
-	local Token = {}
-	Ability:Save(Caster, 'HoldToken', Token)
-
-	local Is_Geass = Ability:Get(Caster, 'Count') == Ability:FromData('Geass_Shot')
-	local CanReshoot = Ability:Get(Caster, 'M1_Track') and Ability:Get(Caster, 'M1_Track').IsPlaying
+	const ResultSequence = Geass(Caster)
+	if ResultSequence ~= false then
+		AddedTime = 0.33;
+		CanReshoot = false;
+	end
 
 	local Time = (0.33)
 	if CanReshoot then
@@ -76,35 +96,35 @@ function Ability:Play(Caster: Types.ClientAgent, _, State)
 
 	---
 	local Attack_State_Time = Ability:FromData("Attack_State_Time") + Time;
+	const UsedSequence = ResultSequence ~= false and ResultSequence or Ability:Begin(Caster, {}, true)
 
-	local _ = Ability:Begin(Caster, {
-		{0, function()
-			local Track = Ability:Get(Caster, "M1_Track")
-			if not Track then
-				Track = Ability:PlayAnimation(Caster, 'Lelouch.Abilities.M1.Shoot'..math.random(1, 3), {
-					Fade = .1,
-				})
+	UsedSequence:Add(0 + AddedTime, function()
+		local Track = Ability:Get(Caster, "M1_Track")
+		if not Track then
+			Track = Ability:PlayAnimation(Caster, 'Lelouch.Abilities.M1.Shoot'..math.random(1, 3), {
+				Fade = .1,
+			})
 
-				Ability:Save(Caster, 'M1_Track', Track)
-			else
-				Track.TimePosition = 0.317
-			end
+			Ability:Save(Caster, 'M1_Track', Track)
+		else
+			Track.TimePosition = 0.3
+		end
 
-			Caster:SwitchState('Attacking', Attack_State_Time)
-		end,},
+		Caster:SwitchState('Attacking', Attack_State_Time)
+	end)
 
-		{Time, function()
-			if Is_Geass then
-				Ability:Effect('Glow', Caster, {Color = GEASS_COLOR})
-			end
+	UsedSequence:Add(Time + AddedTime, function()
+		if Context.Target then
+			Caster:LookAtTarget(Context.Target)
+		end
 
-			Shoot(Caster, if Is_Geass then {Highlight = true, HighlightColor = GEASS_COLOR} else {Highlight = true})
-		end}
-	})
+		Caster:WalkBack(0.15, 1.15)
 
-	if FOCUS_FIRE_ENABLED then
-		FocusFire(Caster, Token)
-	end
+		Shoot(Caster)
+	end)
+
+
+	UsedSequence:Start()
 end
 
 return Ability

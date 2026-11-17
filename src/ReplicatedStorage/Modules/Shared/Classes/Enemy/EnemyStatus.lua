@@ -146,7 +146,7 @@ end
 function EnemyStatus:GetDamageTakenMultiplier()
 	local BaseDamageTakenMultiplier = 1;
 
-	return BaseDamageTakenMultiplier + self:GetStatEffects('Damage_Taken');
+	return BaseDamageTakenMultiplier;
 end
 
 function EnemyStatus:GetResistanceMultiplier()
@@ -161,8 +161,7 @@ function EnemyStatus.GetElementMultiplier(self: Types.EnemyStatus, Element: Type
 
 	local BaseMultiplier = (IsInWeakness and ElementDatabase.Weakness_Multiplier) or (IsInStrengths and ElementDatabase.Strength_Multiplier) or 1;
 	local Multipliers = self:GetStat('Affliction_Resistance') or 0
-	local Element_Resistance = self:GetStatEffects('RES_' .. Element)
-	local Total = (BaseMultiplier) / math.max(1 + Multipliers + Element_Resistance, 0.001)
+	local Total = (BaseMultiplier) / math.max(1 + Multipliers, 0.001)
 
 	return Total
 end

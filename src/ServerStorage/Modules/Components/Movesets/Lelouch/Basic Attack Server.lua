@@ -6,17 +6,15 @@ local Shared = ReplicatedStorage.Modules.Shared
 local Classes = ServerStorage.Modules.Classes
 
 local Types = require(Shared.Types)
+local AbilityTypes = require(Shared.Types.Abilities)
 local AbilityClass = require(Classes.Combat.ServerAbility)
 local LelouchController = require(script.Parent.LelouchGameplayController)
 
 --
-local FOCUS_FIRE_ENABLED = false
-
 local Ability = AbilityClass.new()
 
 Ability:OnCancel(function(Caster: Types.GenericClass)
-	Ability:Save(Caster, 'HoldToken', nil)
-	LelouchController:SetFocusFire(Caster, false)
+	Ability:Save(Caster, 'Holding', false)
 end)
 
 local function Shoot(Caster: Types.GenericClass, HitData)
@@ -25,39 +23,54 @@ local function Shoot(Caster: Types.GenericClass, HitData)
 	end)
 end
 
-local function FocusFire(Caster: Types.GenericClass, Token: {})
-	local Hold_Time = Ability:FromData('Focus_Hold_Time')
-	local Shot_Interval = Ability:FromData('Focus_Shot_Interval')
-	local HitData = Ability:FromData('Focus_Hit', nil, Caster:GetSkillLevel(Ability.__Name))
-	local HoldStart = os.clock()
-
-	local function IsHeld()
-		return Ability:Get(Caster, 'HoldToken') == Token and Caster:IsActive()
+const function Geass(Caster: Types.GenericClass)
+	if Ability:Get(Caster, "GeassCD") then
+		return false
 	end
 
-	while IsHeld() and (os.clock() - HoldStart) < Hold_Time do
+	Ability:Save(Caster, "Holding", true)
+
+	const GeassHit = Ability:FromData("Geass_Hit", nil, Caster:GetSkillLevel(Ability.Name))
+
+	local Track = nil;
+	const Sequence = Ability:Begin(Caster, {
+		{0, function()
+			Caster:SwitchState('Attacking', 0.5)
+		end},
+
+		{0.35, function()
+			Ability:CreateHitbox(Caster, vector.create(0, 0, -25), vector.create(4, 4, 50), function(Enemy)
+				Ability:Hit(Caster, Enemy, GeassHit)
+			end)
+		end},
+	})
+	
+	const Start = os.clock();
+	while (os.clock() - Start) < 0.25 do
+		if Ability:Get(Caster, "Holding") ~= true then
+			if Track and Track.IsPlaying then
+				Track:Stop()
+			end
+
+			Sequence:Destroy()
+
+			return false
+		end
+
 		task.wait()
 	end
 
-	if not IsHeld() then
-		return
-	end
+	Ability:Save(Caster, "GeassCD", true)
+	task.delay(7, function()
+		Ability:Save(Caster, "GeassCD", false)
+	end)
 
-	LelouchController:SetFocusFire(Caster, true)
-
-	while IsHeld() and not Caster:IsMoving() do
-		Caster:SwitchState('Attacking', Shot_Interval + 0.1)
-		Shoot(Caster, HitData)
-
-		task.wait(Shot_Interval)
-	end
-
-	LelouchController:SetFocusFire(Caster, false)
+	return Sequence
 end
 
 function Ability:Play(Caster: Types.GenericClass, _, State, Ctx): ()
 	if State == 'Release' then
-		Ability:Save(Caster, 'HoldToken', nil)
+		Ability:Save(Caster, 'Holding', false)
 
 		return
 	end
@@ -67,45 +80,51 @@ function Ability:Play(Caster: Types.GenericClass, _, State, Ctx): ()
 		return;
 	end
 
-	local Token = {}
-	Ability:Save(Caster, 'HoldToken', Token)
 	LelouchController:SetTarget(Caster, Ctx.Target)
 
 	local SkillLevel = Caster:GetSkillLevel(Ability.__Name)
-	local Is_Geass = M1_Count == Ability:FromData('Geass_Shot')
-	local HitData = Ability:FromData(if Is_Geass then "Geass_Hit" else "Hit", nil, SkillLevel)
+	local HitData = Ability:FromData("Hit", nil, SkillLevel)
 	local IsReshoot = Ability:Get(Caster, "M1_Thread");
+
+	const ReleaseSequence = Geass(Caster);
+	if ReleaseSequence ~= false then
+		IsReshoot = false;
+	end
+
 	local HitTime = 0.33;
 	if IsReshoot then
 		HitTime = 0;
 		task.cancel(IsReshoot);
 	end
 
-	local Attack_State_Time = Ability:FromData('Attack_State_Time') + HitTime
+	const Attack_State_Time = Ability:FromData('Attack_State_Time') + HitTime
+	const function FirstFrame()
+		Caster:SwitchState('Attacking', Attack_State_Time)
 
-	local Sequence = Ability:Begin(Caster, {
-		{0, function()
-			Caster:SwitchState('Attacking', Attack_State_Time)
+		Ability:Save(Caster, "M1_Thread", task.delay(0.8, function()
+			Ability:Save(Caster, "M1_Thread", nil)
+		end))
 
-			Ability:Save(Caster, "M1_Thread", task.delay(0.8, function()
-				Ability:Save(Caster, "M1_Thread", nil)
-			end))
-		end},
-
-		{HitTime, function()
-			Shoot(Caster, HitData)
-
-			if Is_Geass then
-				LelouchController:SummonKnights(Caster, 1)
-			end
-		end}
-	}, true)
-
-	Sequence:Start()
-
-	if FOCUS_FIRE_ENABLED then
-		FocusFire(Caster, Token)
+		if ReleaseSequence ~= false then
+			LelouchController:SummonKnight(Caster)
+		end
 	end
+
+	const function SecondFrame()
+		if Ctx.Target then
+			Caster:LookAtTarget(Ctx.Target)
+		end
+		
+		Shoot(Caster, HitData)
+	end
+
+	const UsedSequence: AbilityTypes.Sequence = ReleaseSequence ~= false and ReleaseSequence or Ability:Begin(Caster, {}, true)
+	const ExtraDelay = if ReleaseSequence ~= false then 0.3 else 0
+
+	UsedSequence:Add(0 + ExtraDelay, FirstFrame)
+	UsedSequence:Add(HitTime + ExtraDelay, SecondFrame)
+
+	UsedSequence:Start()
 end
 
 return Ability

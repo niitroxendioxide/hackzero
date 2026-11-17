@@ -57,6 +57,7 @@ end
 
 function HeapClassObj:insert(obj: number)
     table.insert(self.__items, obj)
+    self:siftUp(#self.__items)
 end
 
 function HeapClassObj:extract()

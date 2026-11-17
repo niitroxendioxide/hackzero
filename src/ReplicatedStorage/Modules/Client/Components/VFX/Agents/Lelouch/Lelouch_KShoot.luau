@@ -39,8 +39,12 @@ return function(...)
         const EPos = EnemyObject:GetPivot().Position
         const At = CFrame.lookAlong(Pos, CFrame.lookAt(Pos * Vxz, EPos * Vxz).LookVector)
 
+        if KnightmareModel == nil or not KnightmareModel:IsDescendantOf(workspace) or KnightmareModel:FindFirstChild("RootPart") == nil then
+            return;
+        end
+
         const Gun = KnightmareModel.RootPart:FindFirstChild("Gun", true);
-        KnightmareModel:PivotTo(At)
+        Effects:Tween(KnightmareModel.RootPart, {0.2, 'Quad'}, {CFrame = At})
 
         for _, Vfx in Gun.Att:GetDescendants() do
             if Vfx:IsA('ParticleEmitter') then

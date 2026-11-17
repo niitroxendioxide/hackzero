@@ -14,6 +14,11 @@ return function(...)
     const Id = Args[1] :: number;
     const State = Args[2] :: number; 
 
+    if Cache[Id] then
+        Cache[Id].Cleanup()
+        Cache[Id] = nil
+    end
+
     if State == 1 then
         -- created
 
@@ -55,13 +60,6 @@ return function(...)
                 Model:Destroy()
             end,
         };
-
-    elseif State == 2 then
-        -- deleted
-
-        if Cache[Id] then
-            Cache[Id].Cleanup();
-        end
     end
 
 end
