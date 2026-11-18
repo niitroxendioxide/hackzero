@@ -160,7 +160,7 @@ function Controller:SummonKnight(Caster: AgentTypes.ServerAgentClass, Origin: CF
     end
 
     const LocalId = Data.IdHeap:extract()
-    const At = (Origin or Caster:GetPivot()) * KNIGHT_OFFSETS[(LocalId - 1) % #KNIGHT_OFFSETS + 1]
+    const At = Origin or (Caster:GetPivot() * KNIGHT_OFFSETS[(LocalId - 1) % #KNIGHT_OFFSETS + 1])
 
     const Knight: Knight = {
         Id = GetNetworkId(Caster, LocalId),

@@ -168,6 +168,67 @@ return {
 
 			},
 			Upgrade = {},
+		},
+
+		['Dodge Counter'] = {
+			Base = {
+				Range = 75,
+				Required_Energy = 45,
+				Attack_State_Time = 0.55,
+				Speed = 1,
+				Animation_Speed = 1,
+			},
+			Upgrade = {},
+		},
+
+		["Quick Assist"] = {
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Attack_State_Time = 0.8,
+				Range = 75,
+
+				Throw_Distance = 25,
+				Grenade_Count = 3,
+				Grenade_Speed = 70,
+				Grenade_Lift = 0.35,
+				Grenade_Min_Height = 8,
+				Grenade_Lift_Step = 0.3,
+				Grenade_Stagger = 0.12,
+				Grenade_Spread = 5.5,
+				Grenade_Size = vector.create(12, 12, 12),
+
+				Hit = {
+					Damage = 60,
+					Daze = 25,
+					Affliction = "Physical",
+					HitType = "Blunt",
+					Affliction_Buildup = 22,
+					Stun = 3,
+				},
+
+				Grenade_Hit = {
+					Damage = 45,
+					Daze = 24,
+					Affliction = "Physical",
+					HitType = "Blunt",
+					Affliction_Buildup = 7,
+					HitsAirborne = true,
+					NoRotate = true,
+					Knockback = {
+						vector.create(0, 0, 1),
+						12,
+						0.2
+					},
+				},
+			},
+			Upgrade = {
+				Hit = {
+					Daze = 0.5,
+					Affliction_Buildup = 1,
+					Stun = 0.05,
+				},
+			},
 		}
 	},
 
