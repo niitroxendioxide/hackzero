@@ -497,7 +497,7 @@ function EffectUtil:Emit(Asset: Instance, Light: boolean?): ()
 
 			local Delay = Objects:GetAttribute('EmitDelay') or 0
 			task.delay( Delay :: number / WorldSpeed, EmitObj, Objects)
-		elseif Objects:IsA('PointLight') and Light then
+		elseif Objects:IsA('PointLight') and (Light == true) then
 			EffectUtil:Tween(Objects, {.5 / WorldSpeed}, {Brightness = 0})
 		end
 	end

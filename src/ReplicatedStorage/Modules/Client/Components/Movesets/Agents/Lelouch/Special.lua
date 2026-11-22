@@ -40,7 +40,7 @@ const function Throw(Caster: Types.ClientAgent, Target: Types.ClientEnemy?)
 	const Land = GetLandPosition(Caster, Target)
 	const FlightTime, Height = Math:GetArc(Start, Land, Ability:FromData("Grenade_Speed"), Ability:FromData("Grenade_Lift"))
 
-	Ability:Effect("Lelouch_Grenade", Start, Land, Height, FlightTime)
+	Ability:Effect("Lelouch_Grenade", Start, Land, Height, FlightTime, true)
 
 	task.delay(FlightTime, Shoot, Caster, Land)
 end

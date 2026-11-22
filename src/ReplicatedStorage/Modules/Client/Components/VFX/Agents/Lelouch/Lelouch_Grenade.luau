@@ -7,22 +7,39 @@ const Math = require("@game/ReplicatedStorage/Modules/Shared/Utility/Math")
 const Effects = require("@game/ReplicatedStorage/Modules/Shared/Utility/Effects")
 
 
-return function(Start: Vector3, Land: Vector3, Height: number, FlightTime: number)
+return function(Start: Vector3, Land: Vector3, Height: number, FlightTime: number, IsStunGrenade: boolean)
     const LelouchVFX = Assets.Effects.Agents.Lelouch;
+
+
+    ---
     
     const Grenade = Instance.new("Part")
     Grenade.Name = "LelouchGrenade"
-    Grenade.Size = Vector3.one * 0.45
-    Grenade.Color = Color3.fromRGB(62, 67, 9)
-    Grenade.Material = Enum.Material.Plastic
     Grenade.Anchored = true
     Grenade.CanCollide = false
     Grenade.CanQuery = false
     Grenade.CanTouch = false
-    Grenade.Shape = Enum.PartType.Ball
     Grenade.CastShadow = false
     Grenade.Position = Start
     Grenade.Parent = workspace
+
+    local FbVFX;
+    if IsStunGrenade then
+        Grenade.Color = Color3.fromRGB(79, 90, 49)
+        Grenade.Material = Enum.Material.Plastic
+        Grenade.Size = vector.create(.45, .22, .22)
+        Grenade.Shape = Enum.PartType.Cylinder
+
+        FbVFX = Effects:Create(LelouchVFX.Flashbang, FlightTime + 3.5, Grenade)
+        FbVFX:PivotTo(Grenade.CFrame)
+        FbVFX.Anchored = false;
+        Effects:Weld(FbVFX, Grenade)
+    else
+        Grenade.Color = Color3.fromRGB(62, 67, 9)
+        Grenade.Material = Enum.Material.Plastic
+        Grenade.Size = Vector3.one * 0.45
+        Grenade.Shape = Enum.PartType.Ball
+    end
 
     local Elapsed = 0
     local Connection = nil
@@ -32,18 +49,38 @@ return function(Start: Vector3, Land: Vector3, Height: number, FlightTime: numbe
         const Alpha = math.min(Elapsed / FlightTime, 1)
         Grenade.Position = Math:GetArcPosition(Start, Land, Height, Alpha)
 
+        if FbVFX then
+            FbVFX.Position = Grenade.Position;
+        end
+
         if Alpha >= 1 then
             Connection:Disconnect()
-            Grenade:Destroy()
+            Grenade.Transparency = 1;
+            Effects:CleanUp(Grenade, 2)
 
             ---
             local Ground = Effects:CastMapRaycast(Grenade.Position, vector.create(0, -250))
             if Ground then
-                const Explosion = Effects:Create(LelouchVFX.Explosion, 4)
+                local Base = LelouchVFX.Explosion;
+                if IsStunGrenade then
+                    FbVFX.Emit.PointLight.Enabled = true;
+                    FbVFX.Emit.PointLight.Range = 0;
+                    Effects:Tween(FbVFX.Emit.PointLight, { .24 }, {Range = 17});
+                    Effects:Tween(FbVFX.Emit.PointLight, { .18 }, {Brightness = 0});
+                    Effects:Toggle(FbVFX, false)
+                    Effects:Emit(FbVFX, false)
+
+                    Base = LelouchVFX.FBExp;
+                    return;
+                end
+
+                const Explosion = Effects:Create(Base, 4)
                 Explosion:PivotTo(CFrame.new(Ground.Position + Ground.Normal * 2) * CFrame.Angles(0, Effects:Random(-math.pi, math.pi), 0))
                 Effects:Emit(Explosion, true)
 
-                Effects:CreateRocks(Ground, vector.create(1.95, 0.75, 1.95), {9, 12}, {6, 9}, {-13, 13})
+                if not IsStunGrenade then
+                    Effects:CreateRocks(Ground, vector.create(1.95, 0.75, 1.95), {9, 12}, {6, 9}, {-13, 13})
+                end
             end
         end
     end)

@@ -144,12 +144,12 @@ return {
 
                 SpawnTarget = {
                     --Objective = "Train with your agents.",
-                    Goal = {KillEnemies = 1},
+                    Goal = {KillEnemies = 2},
                     EnemyBuffs = {},
                     NoBarriers = true,
                     Enemies = {
                         [1] = {
-                            {Name = "Sorcerer", Amount = 1, Level = 60, Affected_Aura = true},
+                            {Name = "Sorcerer", Amount = 2, Level = 60, Affected_Aura = true},
                             --{Name = "SandShinobi", Amount = 1, Level = 60, Affected_Aura = true},
                         }
                     },
