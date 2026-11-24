@@ -131,6 +131,17 @@ return {
 				Grenade_Lift = 0.15,
 				Grenade_Size = vector.create(7, 7, 7),
 
+				Stun_Grenade = {
+					HitType = 'Blunt',
+					Damage = 15,
+					Daze = 370,
+					Stun = 1.5,
+					Affliction = 'Physical',
+					Affliction_Buildup = 22,
+					HitsAirborne = true,
+					NoRotate = true,
+				},
+
 				Hit = {
 					HitType = 'Blunt',
 					Damage = 55,
@@ -143,6 +154,10 @@ return {
 				},
 			},
 			Upgrade = {
+				Stun_Grenade = {
+					Damage = 0.3,
+					Daze = 1.8,
+				},
 				Hit = {
 					Damage = .9,
 					Daze = .6,

@@ -71,7 +71,7 @@ return function(Start: Vector3, Land: Vector3, Height: number, FlightTime: numbe
                     Effects:Emit(FbVFX, false)
 
                     Base = LelouchVFX.FBExp;
-                    return;
+                    --return;
                 end
 
                 const Explosion = Effects:Create(Base, 4)

@@ -7,9 +7,26 @@ local Client = ReplicatedStorage.Modules.Client
 local Math = require(Shared.Utility.Math)
 local Types = require(Shared.Types.Abilities)
 local AbilityClass = require(Client.Classes.Ability)
+const Characters = require(Client.Libraries.Characters)
+const Database = require(Shared.Database.Characters)
+const Animation = require(Client.Libraries.Animation)
 
 --
 const Ability = AbilityClass.new()
+
+const function CanStunGrenade(Caster: Types.ClientAgent)
+	const RepId = Caster.__Player_Assigned:GetAttribute("ReplicationId") :: number;
+	const List = Characters:GetCharacters(RepId)
+
+	for _, Agent : Types.ClientAgent in List do
+		const Data = Database:GetCharacterData(Agent.Name, true)
+		if Data.Role == 'Stun' then
+			return true
+		end
+	end
+	
+	return false
+end
 
 const function GetLandPosition(Caster: Types.ClientAgent, Target: Types.ClientEnemy?): Vector3
 	const Pivot = Caster:GetPivot()
@@ -27,11 +44,23 @@ const function GetLandPosition(Caster: Types.ClientAgent, Target: Types.ClientEn
 	return Target:GetPivot().Position
 end
 
-const function Shoot(Caster: Types.ClientAgent, Land: Vector3)
+const function Shoot(Caster: Types.ClientAgent, Land: Vector3, IsStun: boolean?)
 	const Offset = Caster:GetPivot():PointToObjectSpace(Land)
+	const Obj = Animation:GetAnim("Characters.Lelouch.Abilities.Assist.Blindness");
 
 	Ability:CreateHitbox(Caster, Offset, Ability:FromData("Grenade_Size"), function(Enemy)
-		Ability:Hit(Caster, Enemy, {EffectData = {}, NoCameraShake = true, NoHitStop = true})
+		if IsStun then
+			const Track = Animation:Play(Enemy:GetModel(), Obj, 0, 1, 1.33);
+			task.delay(1.55, function()
+				Track:Stop(.3)
+			end)
+		end
+
+		Ability:Hit(Caster, Enemy, {EffectData = {
+			Highlight = true,
+			HueShift = 30,
+			HighlightColor = not IsStun and Color3.fromRGB(255, 154, 54) or Color3.fromRGB(255, 223, 154)
+		}, NoCameraShake = true, NoHitStop = true})
 	end)
 end
 
@@ -39,10 +68,11 @@ const function Throw(Caster: Types.ClientAgent, Target: Types.ClientEnemy?)
 	const Start = Caster:GetPivot().Position
 	const Land = GetLandPosition(Caster, Target)
 	const FlightTime, Height = Math:GetArc(Start, Land, Ability:FromData("Grenade_Speed"), Ability:FromData("Grenade_Lift"))
+	const Stun = CanStunGrenade(Caster)
 
-	Ability:Effect("Lelouch_Grenade", Start, Land, Height, FlightTime, true)
+	Ability:Effect("Lelouch_Grenade", Start, Land, Height, FlightTime, Stun)
 
-	task.delay(FlightTime, Shoot, Caster, Land)
+	task.delay(FlightTime, Shoot, Caster, Land, Stun)
 end
 
 function Ability:Play(Caster: Types.ClientAgent, _, _State, Context)
