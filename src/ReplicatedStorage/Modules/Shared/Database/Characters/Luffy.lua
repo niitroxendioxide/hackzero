@@ -9,7 +9,7 @@ return {
 	IconGlowColor = Color3.fromRGB(237, 113, 113),
 
 	Appearance = {
-		Height = 3.15
+		Height = 2.95
 	},
 
 	--
@@ -35,12 +35,76 @@ return {
 	},
 
 	Level_Stats = {
-		Attack = 12,
+		Attack = 7.2,
+		Health = 113.75,
+		Defense = 6.3,
 	},
 
 	Moveset_Data = {
 		['Basic Attack'] = {
-			Cooldown = .35
+			Base = {
+				Speed = 1,
+				Animation_Speed = 1,
+				Cooldown = .02,
+
+				Attack_Data = {
+					-- The "?" symbol means it can be there or not.
+					-- Movement Moment, Hit time, Endlag, Movement Time?, Movement Strength?, Movement Linear?
+					[1] = {0.2, 0.25, .47},
+					[2] = {0.217, 0.267, .955, .22, 1.1},
+					[2.1] = {0, 0.283,},
+					[2.2] = {0, 0.317,},
+					[2.3] = {0, 0.35,},
+					[2.4] = {0, 0.8,},
+				},
+
+				Sizes = {
+					[1] = vector.create(6, 4, 12),
+					[2] = vector.create(12, 4, 14),
+					[2.1] = vector.create(12, 4, 14),
+					[2.2] = vector.create(12, 4, 14),
+					[2.3] = vector.create(12, 4, 14),
+					[2.4] = vector.create(8, 4, 16),
+				},
+
+				Damages = {
+					[1] = 57,
+					[2] = 27,
+					[2.1] = 45,
+					[2.2] = 41,
+					[2.3] = 31,
+					[2.4] = 102,
+					[3] = 111,
+					[4] = 100,
+					[4.1] = 100,
+				},
+
+				Dazes = {
+					[1] = 12,
+					[2] = 12,
+					[2.1] = 12,
+					[2.2] = 12,
+					[2.3] = 12,
+					[2.4] = 12,
+					[3] = 12,
+					[4] = 12,
+					[4.1] = 12,
+				},
+
+				Hit = {
+					Damage = 1,
+					Daze = 1,
+					Affliction_Buildup = 10,
+					Stun = 0.45,
+					Affliction = "Physical",
+					HitType = "Blunt",
+					Knockback = {
+						vector.create(0, 0, 1),
+						7,
+						.1
+					},
+				},
+			}
 		},
 	},
 

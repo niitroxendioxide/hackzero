@@ -19,6 +19,9 @@ local TurretClass = require(Modules.Classes.Combat.ServerTurret)
 
 ---
 const KNIGHT_ID_OFFSET = 256
+const KNIGHT_MIN_DISTANCE = 4 -- closer than this counts as colliding
+const KNIGHT_RESOLVE_PASSES = 4
+const FLAT = vector.create(1, 0, 1)
 
 const KNIGHT_OFFSETS = {
     CFrame.new(-6, 0, 4),
@@ -78,6 +81,48 @@ local function FindKnightTarget(Caster: AgentTypes.ServerAgentClass, Turret: any
     const _, Nearest = EnemyLibrary:GetNearestEnemy(Turret:GetPivot().Position, KnightData.Range)
 
     return Nearest
+end
+
+--[[
+    Pushes a spawn point out of any live Knightmare closer than KNIGHT_MIN_DISTANCE (flat XZ distance).
+    For each overlap: move along (At - Other).Unit by (MIN - distance), so it ends up exactly MIN away.
+    Repeats a few passes since one push can shove it into another knight.
+    Exact overlaps (no direction) push away from the caster instead.
+]]
+local function ResolveKnightOverlap(At: CFrame, CasterPos: Vector3): CFrame
+    local Pos = At.Position
+
+    for _ = 1, KNIGHT_RESOLVE_PASSES do
+        local Moved = false
+
+        for _, AgentData in Controller.__Agents do
+            for _, Other in AgentData.Knights do
+                const OtherPos = Other.Turret:GetPivot().Position
+                local Delta = (Pos - OtherPos) * FLAT
+                const Distance = Delta.Magnitude
+
+                if Distance >= KNIGHT_MIN_DISTANCE then
+                    continue
+                end
+
+                if Distance < 1e-3 then
+                    Delta = (Pos - CasterPos) * FLAT
+                    if Delta.Magnitude < 1e-3 then
+                        Delta = At.RightVector * FLAT
+                    end
+                end
+
+                Pos += Delta.Unit * (KNIGHT_MIN_DISTANCE - Distance)
+                Moved = true
+            end
+        end
+
+        if not Moved then
+            break
+        end
+    end
+
+    return At.Rotation + Pos
 end
 
 local function KnightFire(Caster: AgentTypes.ServerAgentClass, Knight: Knight, Target: AbilityTypes.ServerEnemy)
@@ -160,7 +205,10 @@ function Controller:SummonKnight(Caster: AgentTypes.ServerAgentClass, Origin: CF
     end
 
     const LocalId = Data.IdHeap:extract()
-    const At = Origin or (Caster:GetPivot() * KNIGHT_OFFSETS[(LocalId - 1) % #KNIGHT_OFFSETS + 1])
+    const At = ResolveKnightOverlap(
+        Origin or (Caster:GetPivot() * KNIGHT_OFFSETS[(LocalId - 1) % #KNIGHT_OFFSETS + 1]),
+        Caster:GetPivot().Position
+    )
 
     const Knight: Knight = {
         Id = GetNetworkId(Caster, LocalId),

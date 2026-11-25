@@ -1,7 +1,7 @@
 return {
 	Display_Name = 'Prince Vega IV',
 	Nickname = 'Vega',
-	Element = 'Physical',
+	Element = 'Energy',
 	Role = 'Attack',
 	Tier = "Mythical",
 	Faction = "Z Warriors",
@@ -33,12 +33,60 @@ return {
 	},
 
 	Level_Stats = {
-		Attack = 12,
+		Health = 121.38,
+		Attack = 6.33,
+		Defense = 9.44,
 	},
 
 	Moveset_Data = {
+		['Passive'] = {
+			Meters = {
+				Ki = {
+					Ascension = 0,
+					Max = 100,
+					Id = 1,
+					Description = "Ki"
+				},
+			},
+		},
 		['Basic Attack'] = {
-			Cooldown = .35
+			Base = {
+				Cooldown = .02,
+				Attack_State_Time = 0.25,
+				Speed = 1,
+				Animation_Speed = 1,
+				Release = true,
+
+				Damages = {
+					[1] = 45,
+					[2] = 85,
+					[3] = 120,
+					[4] = 110,
+					[5] = 190,
+				},
+
+				Dazes = {
+					[1] = 17,
+					[2] = 14,
+					[3] = 18,
+					[4] = 22,
+					[5] = 12,
+				},
+
+				Hit = {
+					Damage = 0,
+					Stun = 0.25,
+					Daze = 0,
+					Affliction_Buildup = 10,
+					HitType = 'Blunt',
+					Affliction = 'Physical',
+					Knockback = {
+						vector.create(0, 0, 1),
+						10,
+						0.2
+					},
+				}
+			}
 		},
 	},
 
