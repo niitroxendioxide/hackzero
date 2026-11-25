@@ -40,6 +40,14 @@ function Ability:Play(Caster: Types.GenericClass, _, _, Ctx): ()
 				Hit.Damage = Damage;
 				Hit.Daze = Daze;
 
+				if Id == 4 then
+					Hit.Knockback = {
+						vector.create(0, 0, 1),
+						22,
+						0.2,
+					}
+				end
+
 				Ability:Hit(Caster, Target, Hit)
 			end,
 		})

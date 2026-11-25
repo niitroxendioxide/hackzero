@@ -38,6 +38,7 @@ return {
 		Attack = 7.2,
 		Health = 113.75,
 		Defense = 6.3,
+		Daze = 0.4,
 	},
 
 	Moveset_Data = {
@@ -56,6 +57,8 @@ return {
 					[2.2] = {0, 0.317,},
 					[2.3] = {0, 0.35,},
 					[2.4] = {0, 0.8,},
+					[3] = {0.283, 0.31, .61, .175, 1.1},
+					[4] = {0.22, 0.317, .7, .2, 1.1},
 				},
 
 				Sizes = {
@@ -65,6 +68,8 @@ return {
 					[2.2] = vector.create(12, 4, 14),
 					[2.3] = vector.create(12, 4, 14),
 					[2.4] = vector.create(8, 4, 16),
+					[3] = vector.create(8, 4, 16),
+					[4] = vector.create(6, 4, 24),
 				},
 
 				Damages = {
@@ -76,19 +81,17 @@ return {
 					[2.4] = 102,
 					[3] = 111,
 					[4] = 100,
-					[4.1] = 100,
 				},
 
 				Dazes = {
-					[1] = 12,
-					[2] = 12,
-					[2.1] = 12,
-					[2.2] = 12,
-					[2.3] = 12,
-					[2.4] = 12,
-					[3] = 12,
-					[4] = 12,
-					[4.1] = 12,
+					[1] = 71,
+					[2] = 55,
+					[2.1] = 45,
+					[2.2] = 45,
+					[2.3] = 55,
+					[2.4] = 61,
+					[3] = 99,
+					[4] = 102,
 				},
 
 				Hit = {
@@ -105,6 +108,64 @@ return {
 					},
 				},
 			}
+		},
+
+		['Special'] = {
+			Base = {
+				Attack_State_Time = 0.55,
+				Speed = 1,
+				Animation_Speed = 1,
+				Required_Energy = 25,
+
+				Hit = {
+					Damage = 127,
+					HitType = "Blunt",
+					Affliction = "Physical",
+					Affliction_Buildup = 10,
+					Stun = 0.55,
+					Daze = 85,
+					Knockback = {
+						vector.create(0, 0, 1),
+						17,
+						0.2
+					},
+				},
+			},
+			Upgrade = {
+				Hit = {
+					Damage = 2,
+					Daze = 1,
+				},
+			},
+		},
+
+		['EX Special'] = {
+			Base = {
+				Attack_State_Time = 0.61,
+				Speed = 1,
+				Animation_Speed = 1,
+				Required_Energy = 25,
+
+				Hit = {
+					Damage = 280,
+					HitType = "Blunt",
+					Affliction = "Physical",
+					Affliction_Buildup = 10,
+					Stun = 0.55,
+					Daze = 85,
+					Knockback = {
+						vector.create(0, 0, 1),
+						32,
+						0.3
+					},
+				},
+			},
+			Upgrade = {
+				Hit = {
+					Damage = 2,
+					Daze = 1,
+				},
+			},
 		},
 	},
 

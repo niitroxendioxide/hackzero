@@ -28,7 +28,8 @@ function Ability:Play(Caster: Types.ClientAgent, _, _State, Context)
 		end},
 
 		{0.35, function()
-			const Center = Context.Target:GetPivot()
+			local Center = if Context.Target then Context.Target:GetPivot()
+				else Caster:GetPivot() * CFrame.new(0, 0, -7.5)
 			const Offset = (Caster:GetPivot():ToObjectSpace(Center)).Position;
 			
 			Ability:CreateHitbox(Caster, Offset, Hitbox_Size, function(Enemy)

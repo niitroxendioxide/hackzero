@@ -29,7 +29,8 @@ function Ability:Play(Caster: Types.GenericClass, _, State, Ctx): ()
 		end},
 
 		{0.35, function()
-			const Center = Ctx.Target:GetPivot()
+			local Center = if Ctx.Target then Ctx.Target:GetPivot()
+				else Caster:GetPivot() * CFrame.new(0, 0, -7.5)
 			const Offset = (Caster:GetPivot():ToObjectSpace(Center)).Position;
 			const StrategyElement = LelouchGameplayController:GetStrategyElement(Caster);
 

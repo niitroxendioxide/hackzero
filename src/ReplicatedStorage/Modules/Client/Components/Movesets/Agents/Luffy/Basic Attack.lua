@@ -13,7 +13,7 @@ local AbilityClass = require(Client.Classes.Ability)
 local Ability = AbilityClass.new(true)
 
 Ability:ConnectHook(GameEnum.AbilityHooks.BeforeBeginConnection, function(Agent)
-	Ability:Increase(Agent, 'Count', {Limit = 2})
+	Ability:Increase(Agent, 'Count', {Limit = 4})
 end)
 
 function Ability:Play(Caster: Types.GenericClass)
@@ -47,7 +47,7 @@ function Ability:Play(Caster: Types.GenericClass)
 
 	const Sequence = Ability:Begin(Caster, {
 		{0, function()
-			Track = Ability:PlayAnimation(Caster, Id, {Active_Time = 0.45})
+			Track = Ability:PlayAnimation(Caster, Id, {Fade = 0.1})
 
 			for _, Object in Caster:GetModel():FindFirstChild("Parts"):GetChildren() do
 				if M1_Count == 1 and Object.Name ~= 'RightArm' then
@@ -55,6 +55,13 @@ function Ability:Play(Caster: Types.GenericClass)
 				end
 
 				if M1_Count == 2 and Object.Name ~= 'LeftLeg' then
+					continue
+				end
+				if M1_Count == 4 and Object.Name ~= 'RightLeg' then
+					continue
+				end
+
+				if M1_Count == 3 and (Object.Name ~= 'LeftArm' and Object.Name ~= 'RightArm') then
 					continue
 				end
 
