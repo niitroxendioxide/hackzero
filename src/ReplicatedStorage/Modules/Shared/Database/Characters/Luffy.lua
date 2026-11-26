@@ -167,6 +167,95 @@ return {
 				},
 			},
 		},
+
+		-- Gomu Gomu no Axe: wind up, then one big smash a few studs in front.
+		['Dodge Counter'] = {
+			Base = {
+				Cooldown = 0.5,
+				Range = 75,
+				Attack_State_Time = 0.95,
+				Speed = 1,
+				Animation_Speed = 1,
+
+				Smash_Time = 0.55,
+				Smash_Offset = vector.create(0, 0, -3),
+				Smash_Size = vector.create(14, 8, 14),
+
+				Hit = {
+					Damage = 310,
+					HitType = "Blunt",
+					Affliction = "Physical",
+					Affliction_Buildup = 35,
+					Stun = 0.7,
+					Daze = 140,
+					Knockback = {
+						vector.create(0, 0, 1),
+						20,
+						0.25
+					},
+				},
+			},
+			Upgrade = {
+				Hit = {
+					Damage = 3,
+					Daze = 1,
+				},
+			},
+		},
+
+		-- Gomu Gomu no Rocket: pull back, launch forward, carry whoever gets hit, release at the end.
+		['Quick Assist'] = {
+			Base = {
+				Cooldown = 1,
+				Range = 75,
+				Attack_State_Time = 1.1,
+				Speed = 1,
+				Animation_Speed = 1,
+
+				Pull_Time = 0.3,
+				Pull_Power = -0.5,
+				Launch_Time = 0.4,
+				Launch_Duration = 0.4,
+				Launch_Power = 3,
+
+				Hitbox_Size = vector.create(8, 6, 8),
+				Hitbox_Offset = vector.create(0, 0, -4),
+				Carry_Offset = CFrame.new(0, 0, -3.5),
+
+				Hit = {
+					Damage = 140,
+					HitType = "Blunt",
+					Affliction = "Physical",
+					Affliction_Buildup = 15,
+					Stun = 0.6,
+					Daze = 60,
+				},
+
+				Release_Hit = {
+					Damage = 190,
+					HitType = "Blunt",
+					Affliction = "Physical",
+					Affliction_Buildup = 20,
+					Stun = 0.6,
+					Daze = 80,
+					Knockback = {
+						vector.create(0, 0, 1),
+						28,
+						0.3
+					},
+				},
+			},
+			Upgrade = {
+				Hit = {
+					Damage = 1,
+					Daze = 1,
+				},
+				Release_Hit = {
+					Damage = 2,
+					Daze = 1,
+				},
+			},
+		},
 	},
 
 	Ascension_Data = {
