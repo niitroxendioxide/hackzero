@@ -52,6 +52,7 @@ function Ability:Play(Caster: Types.GenericClass)
 		end,},
 
 		{0.517, function()
+			Ability:Effect("Luffy_Bazooka", Caster)
 			Ability:CreateHitbox(Caster, vector.create(0, 0, -10), vector.create(6, 6, 21), function(Target: Types.EnemyClass)
 				Ability:Hit(Caster, Target, {
 					EffectData = {Highlight = true},

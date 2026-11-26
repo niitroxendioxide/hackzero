@@ -59,6 +59,7 @@ function Ability:Play(Caster: Types.GenericClass)
 		end,},
 
 		{0.35, function()
+			Ability:Effect("Luffy_Pistol", Caster, AnimCountId)
 			Ability:CreateHitbox(Caster, vector.create(0, 0, -12.5), vector.create(6, 6, 25), function(Target: Types.EnemyClass)
 				Ability:Hit(Caster, Target, {
 					EffectData = {Highlight = true},
